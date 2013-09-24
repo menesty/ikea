@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workbook>
+    <worksheet idx="0">
+        <loop startRow="0" endRow="0" items="rawOrderItems" var="item" varType="org.menesty.ikea.order.RawOrderItem">
+            <section startRow="0" endRow="0">
+                <mapping row="0" col="0">item.customerId</mapping>
+                <mapping row="0" col="1">item.count</mapping>
+                <mapping row="0" col="2">item.artNumber</mapping>
+                <mapping row="0" col="3">item.description</mapping>
+                <mapping row="0" col="4">item.combo</mapping>
+                <mapping row="0" col="5">item.comment</mapping>
+                <mapping row="0" col="6">item.price</mapping>
+
+            </section>
+            <loopbreakcondition>
+                <rowcheck offset="0">
+                    <cellcheck offset="0"></cellcheck>
+                    <cellcheck offset="1"></cellcheck>
+                </rowcheck>
+            </loopbreakcondition>
+        </loop>
+    </worksheet>
+</workbook>
