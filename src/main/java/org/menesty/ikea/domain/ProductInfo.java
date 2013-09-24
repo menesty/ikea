@@ -15,6 +15,8 @@ public class ProductInfo {
 
     private int boxCount;
     private double price;
+    private int numberBox;
+    private String shortName;
 
     public int getBoxCount() {
         return boxCount;
@@ -67,5 +69,21 @@ public class ProductInfo {
 
     public double getPrice() {
         return price;
+    }
+
+    public void setNumberBox(int numberBox) {
+        this.numberBox = numberBox;
+    }
+
+    public int getNumberBox() {
+        return numberBox;
+    }
+
+    public void setShortName(String shortName) {
+        this.shortName = shortName;
+    }
+
+    public String getShortName() {
+        return shortName;
     }
 }

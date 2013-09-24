@@ -4,10 +4,6 @@
     <output url="file://$MODULE_DIR$/target/classes" />
     <output-test url="file://$MODULE_DIR$/target/test-classes" />
     <content url="file://$MODULE_DIR$">
-      <sourceFolder url="file://$MODULE_DIR$/java/src/main/java" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/java/src/main/resources" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/javafx/src/main/java" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/javafx/src/main/resources" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/resources" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
@@ -38,6 +34,7 @@
     <orderEntry type="library" name="Maven: net.sf.jxls:jxls-core:1.0.2" level="project" />
     <orderEntry type="library" name="Maven: com.db4o:db4o-full-java5:8.1-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: org.jsoup:jsoup:1.7.2" level="project" />
+    <orderEntry type="library" name="Maven: org.mvel:mvel:2.0M2" level="project" />
   </component>
 </module>
 

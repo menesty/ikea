@@ -18,7 +18,7 @@ public class RawInvoiceProductItem {
 
     private String comment;
 
-    private double price;
+    private String priceStr;
 
     private String wat;
 
@@ -38,12 +38,12 @@ public class RawInvoiceProductItem {
         this.comment = comment;
     }
 
-    public double getPrice() {
-        return price;
+    public String getPriceStr() {
+        return priceStr;
     }
 
-    public void setPrice(double price) {
-        this.price = price;
+    public void setPriceStr(String priceStr) {
+        this.priceStr = priceStr;
     }
 
     public String getWat() {
@@ -76,5 +76,9 @@ public class RawInvoiceProductItem {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public double getPrice() {
+        return Double.valueOf(priceStr.trim().replace(",", "."));
     }
 }
