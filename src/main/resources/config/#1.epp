@@ -1,0 +1,51 @@
+[INFO]
+"1.05",3,1250,"Subiekt GT","#29","13-05-05","Orijana Trading Poland sp. z o.o.","Warszawa","01-207","Grzybowska 85c","795-248-80-01","MAG","G��wny","Magazyn g��wny",,1,20130922183544,20130922183544,"Szef",20130922183544,"Polska","PL",,0
+
+[NAGLOWEK]
+"FZ",1,0,363,"#1",,"363/09",,,,,"IKEA RET","IKEA Retail (KRK)","IKEA RetaIl Sp. z o.o.","Krak�w","31-357","Josepha Conrada 66","5270103385","Zakup","Zakup towar�w lub us�ug","Krak�w",20130922000000,20130922000000,20130922000000,1,1,"Cena ostatniej dost.",223.3700,51.3800,274.7500,223.3700,,0.0000,,20130922000000,274.7500,274.7500,0,0,1,3,,"Szef",,0.0000,0.0000,"PLN",1.0000,,,,,0,0,0,,0.0000,,0.0000,"Polska","PL",0
+
+[ZAWARTOSC]
+1,1,"IKEA_30176309",1,0,0,1,0.0000,0.0000,"szt.",1.0000,1.0000,0.0000,223.3700,274.7500,23.0000,223.3700,51.3800,274.7500,223.3700,,
+
+[NAGLOWEK]
+"KONTRAHENCI"
+
+[ZAWARTOSC]
+0,"IKEA RET","IKEA Retail (KRK)","IKEA RetaIl Sp. z o.o.","Krak�w","31-357","Josepha Conrada 66","5270103385","010577890",,,,,,,,,,,,,,,,,,,"Polska","PL",0
+
+[NAGLOWEK]
+"GRUPYKONTRAHENTOW"
+
+[ZAWARTOSC]
+"IKEA RET","Podstawowa"
+
+[NAGLOWEK]
+"CECHYKONTRAHENTOW"
+
+[ZAWARTOSC]
+
+[NAGLOWEK]
+"TOWARY"
+
+[ZAWARTOSC]
+1,"IKEA_30176309",,,"Rama l�zka 301-763-09cz��1","Rama l�zka z szufladami, brzoza, bialy, cz�� 1","Rama l�zka 301-763-09cz��1",,,"szt.","23",23.0000,"23",23.0000,0.0000,0.0000,,0,,,,0.0000,0,,,0,"szt.",0.0000,0.0000,,0,,0,0,,,,,,,,
+
+[NAGLOWEK]
+"CENNIK"
+
+[ZAWARTOSC]
+"IKEA_30176309","Detaliczna",227.8400,280.2400,2.0000,1.9600,4.4700
+"IKEA_30176309","Hurtowa",227.8400,280.2400,2.0000,1.9600,4.4700
+"IKEA_30176309","Specjalna",223.3700,274.7500,0.0000,0.0000,0.0000
+
+[NAGLOWEK]
+"GRUPYTOWAROW"
+
+[ZAWARTOSC]
+"IKEA_30176309","Podstawowa",
+
+[NAGLOWEK]
+"CECHYTOWAROW"
+
+[ZAWARTOSC]
+

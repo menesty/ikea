@@ -15,11 +15,7 @@ import org.mvel.templates.TemplateRuntime;
 import org.xml.sax.SAXException;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.FileHandler;
+import java.util.*;
 
 /**
  * User: Menesty
@@ -30,16 +26,44 @@ public class InvoiceProcessor {
 
 
     public static void main(String... arg) throws IOException, SAXException, InvalidFormatException {
+       /* StringBuilder text = new StringBuilder();
+        String fileName = "D:\\development\\workspace\\ikea\\src\\main\\resources\\config\\#1.epp";
+        Scanner scanner = new Scanner(new FileInputStream(fileName),"ANSI");
+        String NL = System.getProperty("line.separator");
+        try {
+            while (scanner.hasNextLine()){
+                text.append(scanner.nextLine() + NL);
+            }
+        }
+        finally{
+            scanner.close();
+        }
+
+       System.out.println( new String(text.toString().getBytes(),"ANSI"));*/
+        new InvoiceProcessor().convert();
+    }
+
+    private void convert() throws IOException, InvalidFormatException, SAXException {
         InvoiceProcessor processor = new InvoiceProcessor();
+        List<InvoiceItem> invoiceItems = new ArrayList<>();
+
 
         List<RawInvoiceProductItem> rawInvoiceItems = processor.process();
         ObjectContainer db = Db4oEmbedded.openFile(Db4oEmbedded.newConfiguration(), "db/data.db");
 
-        List<InvoiceItem> invoiceItems = new ArrayList<>();
         for (RawInvoiceProductItem item : rawInvoiceItems) {
             ProductInfo product = processor.getProductInfo(db, item);
             invoiceItems.addAll(InvoiceItem.get(product, item.getCount()));
         }
+
+
+       /* ProductInfo product1 = new ProductInfo();
+        product1.setArtNumber("301-763-09");
+        product1.setPrice(274.7500);
+        product1.setNumberBox(1);
+        product1.setName("Rama lozka z szufladami, brzoza, bialy");
+        product1.setShortName("Rama lozka 301-763-09");
+        invoiceItems.addAll(InvoiceItem.get(product1, 1));*/
         int index = 0;
         for (InvoiceItem invoiceItem : invoiceItems)
 
@@ -50,13 +74,32 @@ public class InvoiceProcessor {
         map.put("invoiceItems", invoiceItems);
         VariableResolverFactory vrf = new MapVariableResolverFactory(map);
 
-        String s = (String) TemplateRuntime.eval(processor.getClass().getResourceAsStream("/themes/invoice/invoice-order.chtml"),
-                null, vrf, null);
+        String fileName = "D:\\development\\workspace\\ikea\\src\\main\\resources\\themes\\invoice\\invoice-order-2.epp";
 
-        FileOutputStream fos = new FileOutputStream("/Users/Menesty/development/workspace/ikea/src/main/resources/themes/invoice/result.epp");
+
+        StringBuilder text = new StringBuilder();
+        String NL = System.getProperty("line.separator");
+        Scanner scanner = new Scanner(new FileInputStream(fileName), "cp1250");
+        try {
+            while (scanner.hasNextLine()) {
+                text.append(scanner.nextLine() + NL);
+            }
+        } finally {
+            scanner.close();
+        }
+        String template = new String(text.toString().getBytes("utf8"));
+
+       // System.out.print(template);
+
+        String s = (String) TemplateRuntime.eval(template, null, vrf, null);
+        System.out.print(s);
+        byte[] b = s.getBytes("Cp1250");
+        String x = new String(b, "Cp1250");
+        OutputStream fos = new FileOutputStream("D:\\development\\workspace\\ikea\\src\\main\\resources\\themes\\invoice/result.epp");
         fos.write(s.getBytes());
+        fos.flush();
         fos.close();
-        //System.out.println(s);
+        System.out.println(x);
 
     }
 
