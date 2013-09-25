@@ -26,20 +26,40 @@ public class InvoiceProcessor {
 
 
     public static void main(String... arg) throws IOException, SAXException, InvalidFormatException {
-       /* StringBuilder text = new StringBuilder();
-        String fileName = "D:\\development\\workspace\\ikea\\src\\main\\resources\\config\\#1.epp";
-        Scanner scanner = new Scanner(new FileInputStream(fileName),"ANSI");
+        /*StringBuilder text = new StringBuilder();
         String NL = System.getProperty("line.separator");
+        Scanner scanner = new Scanner(new FileInputStream("db/result.epp"), "utf8");
         try {
-            while (scanner.hasNextLine()){
+            while (scanner.hasNextLine()) {
                 text.append(scanner.nextLine() + NL);
             }
-        }
-        finally{
+        } finally {
             scanner.close();
         }
+        //System.out.println(text);
+        OutputStream fos = new FileOutputStream("db/result2.epp");
+        String bla = new String(text.toString().getBytes("cp1250"));
+        fos.write(bla.getBytes());
+        System.out.println(bla);
+        for (char b : text.toString().toCharArray()) {
+            switch (b) {
+                case '\u0142':
+                    fos.write(0xB3);
+                    break;
+                case '\u00F3':
+                    fos.write(0xF3);
+                    break;
+                case '\u017A':
+                    fos.write(0x9F);
+                    break;
+                case '\u017E':
+                    fos.write(0x9E);
+                    break;
+                default:
+                    fos.write(b);
+            }
 
-       System.out.println( new String(text.toString().getBytes(),"ANSI"));*/
+        }*/
         new InvoiceProcessor().convert();
     }
 
@@ -55,6 +75,7 @@ public class InvoiceProcessor {
             ProductInfo product = processor.getProductInfo(db, item);
             invoiceItems.addAll(InvoiceItem.get(product, item.getCount()));
         }
+
 
 
        /* ProductInfo product1 = new ProductInfo();
@@ -74,7 +95,7 @@ public class InvoiceProcessor {
         map.put("invoiceItems", invoiceItems);
         VariableResolverFactory vrf = new MapVariableResolverFactory(map);
 
-        String fileName = "D:\\development\\workspace\\ikea\\src\\main\\resources\\themes\\invoice\\invoice-order-2.epp";
+        String fileName = "/Users/Menesty/development/workspace/ikea/src/main/resources/themes/invoice/invoice-order-2.epp";
 
 
         StringBuilder text = new StringBuilder();
@@ -89,17 +110,24 @@ public class InvoiceProcessor {
         }
         String template = new String(text.toString().getBytes("utf8"));
 
-       // System.out.print(template);
+        //System.out.print(template);
 
         String s = (String) TemplateRuntime.eval(template, null, vrf, null);
+        /*s = s.replace('\u0142', 'l');
+        s = s.replace('\u00F3', 'o');
+        s = s.replace('\u017B', 'Z');
+        s = s.replace('\u017C', 'z');
+        s = s.replace('\u0105', 'a');
+        s = s.replace('\u0119', 'e');
+        s = s.replace('\u0119', 'e');
+        s = s.replace('\u015B', 's');*/
+
         System.out.print(s);
-        byte[] b = s.getBytes("Cp1250");
-        String x = new String(b, "Cp1250");
-        OutputStream fos = new FileOutputStream("D:\\development\\workspace\\ikea\\src\\main\\resources\\themes\\invoice/result.epp");
-        fos.write(s.getBytes());
+        FileOutputStream fos = new FileOutputStream("db/result.epp");
+        fos.write(s.getBytes("cp1250"));
         fos.flush();
         fos.close();
-        System.out.println(x);
+        //System.out.println(s);
 
     }
 
@@ -193,4 +221,25 @@ public class InvoiceProcessor {
         }
         return reduce;
     }
+}
+
+class UnicodeFormatter {
+
+    static public String byteToHex(byte b) {
+        // Returns hex String representation of byte b
+        char hexDigit[] = {
+                '0', '1', '2', '3', '4', '5', '6', '7',
+                '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
+        };
+        char[] array = {hexDigit[(b >> 4) & 0x0f], hexDigit[b & 0x0f]};
+        return new String(array);
+    }
+
+    static public String charToHex(char c) {
+        // Returns hex String representation of char c
+        byte hi = (byte) (c >>> 8);
+        byte lo = (byte) (c & 0xff);
+        return byteToHex(hi) + byteToHex(lo);
+    }
+
 }
