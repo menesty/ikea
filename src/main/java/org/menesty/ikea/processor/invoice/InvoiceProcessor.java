@@ -79,7 +79,7 @@ public class InvoiceProcessor {
 
         StringBuilder text = new StringBuilder();
         String NL = System.getProperty("line.separator");
-        Scanner scanner = new Scanner(new FileInputStream(fileName), "cp1250");
+        Scanner scanner = new Scanner(new FileInputStream(fileName), "ISO-8859-2");
         try {
             while (scanner.hasNextLine()) {
                 text.append(scanner.nextLine() + NL);
@@ -93,13 +93,16 @@ public class InvoiceProcessor {
 
         String s = (String) TemplateRuntime.eval(template, null, vrf, null);
         System.out.print(s);
-        byte[] b = s.getBytes("Cp1250");
-        String x = new String(b, "Cp1250");
-        OutputStream fos = new FileOutputStream("D:\\development\\workspace\\ikea\\src\\main\\resources\\themes\\invoice/result.epp");
-        fos.write(s.getBytes());
-        fos.flush();
-        fos.close();
-        System.out.println(x);
+        //OutputStreamWriter fos = new OutputStreamWriter (new FileOutputStream("D:\\development\\workspace\\ikea\\src\\main\\resources\\themes\\invoice/result.epp"),"ISO-8859-2");
+        //fos.write(s);
+
+        new FileOutputStream("D:\\development\\workspace\\ikea\\src\\main\\resources\\themes\\invoice/result.epp").write(s.getBytes("ISO-8859-2"));
+
+
+        /*String bla = new String(s.getBytes("ISO-8859-2"));
+        Latin2Writer  writer = new Latin2Writer(new OutputStreamWriter( new FileOutputStream("D:\\development\\workspace\\ikea\\src\\main\\resources\\themes\\invoice/result_lat.epp")),"cp1252");
+        for(char c : bla.toCharArray())
+        writer.write(c);*/
 
     }
 
