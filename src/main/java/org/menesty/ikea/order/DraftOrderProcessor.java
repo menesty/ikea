@@ -23,15 +23,21 @@ import java.util.regex.Pattern;
 public class DraftOrderProcessor {
     private static final Pattern artNumberPattern = Pattern.compile("\\w{0,}\\d+");
 
+    private ObjectContainer db;
+
     public static void main(String... arg) throws IOException, SAXException, InvalidFormatException {
 
-      //  DraftOrderProcessor draftOrderProcessor = new DraftOrderProcessor();
-      //  draftOrderProcessor.process();
+        //  DraftOrderProcessor draftOrderProcessor = new DraftOrderProcessor();
+        //  draftOrderProcessor.process();
        /* URL location = DraftOrderProcessor.class.getProtectionDomain().getCodeSource().getLocation();
         System.out.println(location.getFile());
 */
-        ObjectContainer db = Db4oEmbedded.openFile(Db4oEmbedded.newConfiguration(), "db/data.db");
+
     }
+
+     DraftOrderProcessor (){
+         db = Db4oEmbedded.openFile(Db4oEmbedded.newConfiguration(), "db/data.db");
+     }
 
 
     public void process() throws IOException, SAXException, InvalidFormatException {
@@ -51,11 +57,12 @@ public class DraftOrderProcessor {
         }
 
         ReduceResult result = reduce(rawOrderItems);
+        group(result);
         beans.clear();
         beans.put("orderItems", result.getGeneral());
         XLSTransformer transformer = new XLSTransformer();
         List<String> templateSheetNameList = Arrays.asList("factura", "combo", "color");
-        List<String> sheetNameList = Arrays.asList("factura1", "combo1", "color1");
+        List<String> sheetNameList = Arrays.asList("invoice", "combo", "color");
         List<Map<String, Object>> mapBeans = new ArrayList<>();
 
         double totalSum = 0d;
@@ -91,6 +98,12 @@ public class DraftOrderProcessor {
         Workbook workbook = transformer.transformXLS(getClass().getResourceAsStream("/config/reduce.xlsx"), templateSheetNameList, sheetNameList, mapBeans);
         workbook.write(new FileOutputStream("D:/ikea/result.xlsx"));
 
+    }
+
+    private void group(ReduceResult reduceResult) {
+        for (OrderItem orderItem : reduceResult.getGeneral()) {
+
+        }
     }
 
     private ReduceResult reduce(List<RawOrderItem> list) {

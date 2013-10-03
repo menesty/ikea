@@ -7,6 +7,10 @@ package org.menesty.ikea.domain;
  */
 public class ProductInfo {
 
+    public enum Group {
+        Regal, Kids
+    }
+
     private String originalArtNum;
 
     private String artNumber;
@@ -14,9 +18,22 @@ public class ProductInfo {
     private String name;
 
     private int boxCount;
+
     private double price;
+
     private int numberBox;
+
     private String shortName;
+
+    private Group group;
+
+    public Group getGroup() {
+        return group;
+    }
+
+    public void setGroup(Group group) {
+        this.group = group;
+    }
 
     public int getBoxCount() {
         return boxCount;
