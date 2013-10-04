@@ -6,6 +6,8 @@ import net.sf.jxls.reader.*;
 import net.sf.jxls.transformer.XLSTransformer;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.menesty.ikea.domain.ProductInfo;
+import org.menesty.ikea.service.ProductService;
 import org.xml.sax.SAXException;
 
 import java.io.FileOutputStream;
@@ -23,21 +25,21 @@ import java.util.regex.Pattern;
 public class DraftOrderProcessor {
     private static final Pattern artNumberPattern = Pattern.compile("\\w{0,}\\d+");
 
-    private ObjectContainer db;
+    private ProductService productService;
 
     public static void main(String... arg) throws IOException, SAXException, InvalidFormatException {
 
-        //  DraftOrderProcessor draftOrderProcessor = new DraftOrderProcessor();
-        //  draftOrderProcessor.process();
+        DraftOrderProcessor draftOrderProcessor = new DraftOrderProcessor();
+        draftOrderProcessor.process();
        /* URL location = DraftOrderProcessor.class.getProtectionDomain().getCodeSource().getLocation();
         System.out.println(location.getFile());
 */
 
     }
 
-     DraftOrderProcessor (){
-         db = Db4oEmbedded.openFile(Db4oEmbedded.newConfiguration(), "db/data.db");
-     }
+    DraftOrderProcessor() {
+        productService = new ProductService();
+    }
 
 
     public void process() throws IOException, SAXException, InvalidFormatException {
@@ -57,12 +59,14 @@ public class DraftOrderProcessor {
         }
 
         ReduceResult result = reduce(rawOrderItems);
-        group(result);
+
         beans.clear();
+
         beans.put("orderItems", result.getGeneral());
+
         XLSTransformer transformer = new XLSTransformer();
-        List<String> templateSheetNameList = Arrays.asList("factura", "combo", "color");
-        List<String> sheetNameList = Arrays.asList("invoice", "combo", "color");
+        List<String> templateSheetNameList = Arrays.asList("combo", "color", "na", "invoice");
+        List<String> sheetNameList = Arrays.asList("combo_r", "color_r", "na_r", "invoice_r");
         List<Map<String, Object>> mapBeans = new ArrayList<>();
 
         double totalSum = 0d;
@@ -72,7 +76,7 @@ public class DraftOrderProcessor {
             Map<String, Object> bean = new HashMap<>();
             bean.put("orderItems", result.getCombo());
             double total = getTotal(result.getGeneral());
-            totalSum += totalSum;
+            totalSum += total;
             bean.put("total", total);
             mapBeans.add(bean);
         }
@@ -81,7 +85,16 @@ public class DraftOrderProcessor {
             Map<String, Object> bean = new HashMap<>();
             bean.put("orderItems", result.getSeparate());
             double total = getTotal(result.getGeneral());
-            totalSum += totalSum;
+            totalSum += total;
+            bean.put("total", total);
+            mapBeans.add(bean);
+        }
+
+        {
+            Map<String, Object> bean = new HashMap<>();
+            bean.put("orderItems", result.getNa());
+            double total = getTotal(result.getNa());
+            totalSum += total;
             bean.put("total", total);
             mapBeans.add(bean);
         }
@@ -90,33 +103,33 @@ public class DraftOrderProcessor {
             Map<String, Object> bean = new HashMap<>();
             bean.put("orderItems", result.getGeneral());
             double total = getTotal(result.getGeneral());
-            totalSum += totalSum;
+            totalSum += total;
             bean.put("total", total);
             bean.put("totalSum", totalSum);
             mapBeans.add(bean);
         }
+
+
         Workbook workbook = transformer.transformXLS(getClass().getResourceAsStream("/config/reduce.xlsx"), templateSheetNameList, sheetNameList, mapBeans);
-        workbook.write(new FileOutputStream("D:/ikea/result.xlsx"));
+        workbook.write(new FileOutputStream("db/reduce-result.xlsx"));
 
     }
 
-    private void group(ReduceResult reduceResult) {
-        for (OrderItem orderItem : reduceResult.getGeneral()) {
-
-        }
-    }
 
     private ReduceResult reduce(List<RawOrderItem> list) {
         Map<String, OrderItem> reduceGeneral = new HashMap<>();
         Map<String, OrderItem> reduceCombo = new HashMap<>();
         Map<String, OrderItem> reduceSeparate = new HashMap<>();
+        Map<String, OrderItem> reduceNa = new HashMap<>();
 
         for (RawOrderItem rawOrderItem : list) {
             if (rawOrderItem.getArtNumber() == null) continue;
             String artNumber = getArtNumber(rawOrderItem.getArtNumber());
             if (!artNumber.isEmpty()) {
                 Map<String, OrderItem> current;
+                boolean loadProduct = false;
                 if (rawOrderItem.getCombo() == null || rawOrderItem.getCombo().isEmpty()) {
+                    loadProduct = true;
                     if (rawOrderItem.getComment() == null || rawOrderItem.getComment().isEmpty())
                         current = reduceGeneral;
                     else
@@ -132,14 +145,25 @@ public class DraftOrderProcessor {
                     orderItem.setCount(rawOrderItem.getCount());
                     orderItem.setName(rawOrderItem.getDescription());
                     orderItem.setPrice(rawOrderItem.getPrice());
+
+                    if (loadProduct) {
+                        ProductInfo productInfo = productService.loadOrCreate(orderItem.getArtNumber());
+                        if (productInfo == null)
+                            current = reduceNa;
+                        else if (productInfo != null)
+                            orderItem.setGroup(productInfo.getGroup() != null ? productInfo.getGroup().toString() : "");
+                    }
+
                     current.put(artNumber, orderItem);
+
+
                 } else
                     orderItem.setCount(orderItem.getCount() + rawOrderItem.getCount());
 
             }
 
         }
-        return new ReduceResult(new ArrayList<>(reduceGeneral.values()), new ArrayList<>(reduceCombo.values()), new ArrayList<>(reduceSeparate.values()));
+        return new ReduceResult(new ArrayList<>(reduceGeneral.values()), new ArrayList<>(reduceCombo.values()), new ArrayList<>(reduceSeparate.values()), new ArrayList<>(reduceNa.values()));
     }
 
     private String getArtNumber(String artNumber) {
@@ -165,10 +189,13 @@ public class DraftOrderProcessor {
 
         private List<OrderItem> separate;
 
-        private ReduceResult(List<OrderItem> general, List<OrderItem> combo, List<OrderItem> separate) {
+        private List<OrderItem> na;
+
+        private ReduceResult(List<OrderItem> general, List<OrderItem> combo, List<OrderItem> separate, List<OrderItem> na) {
             this.general = general;
             this.combo = combo;
             this.separate = separate;
+            this.na = na;
         }
 
 
@@ -194,6 +221,14 @@ public class DraftOrderProcessor {
 
         public void setSeparate(List<OrderItem> separate) {
             this.separate = separate;
+        }
+
+        public List<OrderItem> getNa() {
+            return na;
+        }
+
+        public void setNa(List<OrderItem> na) {
+            this.na = na;
         }
     }
 }

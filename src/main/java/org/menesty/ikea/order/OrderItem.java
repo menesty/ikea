@@ -11,6 +11,7 @@ public class OrderItem {
     private String name;
     private Double price;
     private String comment;
+    private String group;
 
 
     public int getCount() {
@@ -73,5 +74,13 @@ public class OrderItem {
     @Override
     public int hashCode() {
         return artNumber.hashCode();
+    }
+
+    public void setGroup(String group) {
+        this.group = group;
+    }
+
+    public String getGroup() {
+        return group;
     }
 }

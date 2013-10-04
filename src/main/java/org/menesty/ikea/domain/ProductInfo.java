@@ -8,7 +8,7 @@ package org.menesty.ikea.domain;
 public class ProductInfo {
 
     public enum Group {
-        Regal, Kids
+        Regal, Decor, Lights, Kitchen, Bathroom, Textil, Full, Kids
     }
 
     private String originalArtNum;
