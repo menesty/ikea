@@ -15,6 +15,8 @@ public class ProductService {
 
     private static final ObjectContainer db = Db4oEmbedded.openFile(Db4oEmbedded.newConfiguration(), "db/data.db");
 
+
+    private static final String Katowice = "306";
     public  ProductService(){
 
     }
@@ -62,12 +64,21 @@ public class ProductService {
         productInfo.setNumberBox(boxCount);
         productInfo.setName(name);
         productInfo.setShortName(generateShortName(name, invoiceItem.getArtNumber(), boxCount));
-
+        productInfo.setGroup(resolveGroup(preparedArtNumber));
 
         return productInfo;
 
     }
 
+    private static ProductInfo.Group resolveGroup(String artNumber) throws IOException {
+        Document doc = Jsoup.connect("http://www.ikea.com/pl/pl/iows/catalog/availability/"+artNumber).get();
+        doc.select("localStore[buCode=306] findIt type");
+        return null;
+    }
+
+    public static void main(String ... arg) throws IOException {
+        ProductService.resolveGroup("30160209");
+    }
 
     private String generateShortName(String name, String artNumber, int boxCount) {
         int shortNameLength = 28;
