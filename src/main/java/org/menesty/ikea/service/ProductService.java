@@ -102,7 +102,6 @@ public class ProductService {
         return productInfo;
     }
 
-
     private static ProductInfo.Group resolveGroup(String artNumber) throws IOException {
         Document doc = Jsoup.connect("http://www.ikea.com/pl/pl/iows/catalog/availability/" + artNumber).get();
         Elements elements = doc.select("localStore[buCode=" + Katowice + "] findIt type");
@@ -140,7 +139,7 @@ public class ProductService {
     }
 
     public static void main(String... arg) throws IOException {
-        System.out.println(ProductService.resolveGroup("00208024"));
+        System.out.println(ProductService.resolveGroup("S19840375"));
     }
 
     private String generateShortName(String name, String artNumber, int boxCount) {
@@ -153,5 +152,10 @@ public class ProductService {
             shortNameLength = name.length();
         shortName = name.substring(0, shortNameLength - 1) + shortName;
         return shortName;
+    }
+
+    public static ProductInfo loadComboProduct(String artNumber) throws IOException {
+        Document doc = Jsoup.connect("http://www.ikea.com/pl/pl/iows/catalog/availability/" + artNumber).get();
+        return null;
     }
 }

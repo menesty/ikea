@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import org.tbee.javafx.scene.layout.fxml.MigPane?>
+
+<?import javafx.scene.layout.HBox?>
+<MigPane id="rootPane" fx:controller="org.menesty.ikea.ui.controller.MainController"
+         styleClass="main-panel"
+         layout=""
+         cols="[grow, 50::]"
+         rows="[::50][grow]"
+         xmlns:fx="http://javafx.com/fxml">
+
+    <HBox MigPane.cc="dock north, growx">
+        <Button text="Create" styleClass="lion" onAction="#goToOrders" MigPane.cc=""/>
+    </HBox>
+
+    <TableView MigPane.cc="growy, dock center" prefHeight="500">
+        <columns>
+            <TableColumn text="First Name">
+            </TableColumn>
+            <TableColumn text="Last Name">
+            </TableColumn>
+            <TableColumn text="Email Address">
+            </TableColumn>
+        </columns>
+    </TableView>
+
+</MigPane>

@@ -1,11 +1,18 @@
 package org.menesty.ikea.order;
 
+import org.menesty.ikea.domain.ProductInfo;
+
 /**
  * User: Menesty
  * Date: 9/22/13
  * Time: 11:24 AM
  */
 public class OrderItem {
+
+    public enum Type {
+        General, Na, Specials, Combo
+    }
+
     private int count;
     private String artNumber;
     private String name;
@@ -13,6 +20,17 @@ public class OrderItem {
     private String comment;
     private String group;
 
+    private ProductInfo productInfo;
+
+    private Type type;
+
+    public Type getType() {
+        return type;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
+    }
 
     public int getCount() {
         return count;

@@ -1,5 +1,6 @@
 package org.menesty.ikea.domain;
 
+import java.util.List;
 /**
  * User: Menesty
  * Date: 9/23/13
@@ -26,6 +27,8 @@ public class ProductInfo {
     private String shortName;
 
     private Group group;
+
+    private List<ProductInfo> parts;
 
     public Group getGroup() {
         return group;

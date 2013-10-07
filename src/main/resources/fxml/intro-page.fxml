@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import org.tbee.javafx.scene.layout.fxml.MigPane?>
+
+<MigPane id="rootPane" fx:controller="org.menesty.ikea.ui.controller.MainController"
+         styleClass="main-panel"
+         layout="insets 20"
+         cols="[label, pref!][grow, 200::]"
+         rows=""
+         xmlns:fx="http://javafx.com/fxml">
+
+    <Button text="Orders" styleClass="ipad-dark-grey" onAction="#goToOrders" MigPane.cc="gap :push, gaptop 15" />
+    <Button text="Products" styleClass="ipad-dark-grey" onAction="#goToProducts" MigPane.cc="gap :push, gaptop 15, wrap" />
+
+</MigPane>
