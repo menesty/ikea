@@ -131,7 +131,11 @@
             <artifactId>mvel</artifactId>
             <version>2.0M2</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>1.8.2</version>
+        </dependency>
     </dependencies>
 
 </project>

@@ -1,5 +1,8 @@
 package org.menesty.ikea.processor.invoice;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 /**
  * User: Menesty
  * Date: 9/23/13
@@ -10,7 +13,6 @@ public class RawInvoiceProductItem {
     private String originalArtNumber;
 
     private String artNumber;
-
 
     private String name;
 
@@ -28,6 +30,10 @@ public class RawInvoiceProductItem {
 
     public void setCount(int count) {
         this.count = count;
+    }
+
+    public double getTotal() {
+        return BigDecimal.valueOf(getPrice()).setScale(2, RoundingMode.CEILING).doubleValue();
     }
 
     public String getComment() {

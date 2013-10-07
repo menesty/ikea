@@ -10,7 +10,6 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Maven: org.mvel:mvel:2.0M2" level="project" />
     <orderEntry type="library" name="Maven: com.miglayout:miglayout-javafx:4.2" level="project" />
     <orderEntry type="library" name="Maven: com.miglayout:miglayout-core:4.2" level="project" />
     <orderEntry type="library" name="Maven: commons-lang:commons-lang:2.6" level="project" />
@@ -36,6 +35,9 @@
     <orderEntry type="library" name="Maven: com.db4o:db4o-full-java5:8.1-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: org.jsoup:jsoup:1.7.2" level="project" />
     <orderEntry type="library" name="Maven: org.mvel:mvel:2.0M2" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.pdfbox:pdfbox:1.8.2" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.pdfbox:fontbox:1.8.2" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.pdfbox:jempbox:1.8.2" level="project" />
   </component>
 </module>
 
