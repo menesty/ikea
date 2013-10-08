@@ -1,7 +1,5 @@
 package org.menesty.ikea.order;
 
-import com.db4o.Db4oEmbedded;
-import com.db4o.ObjectContainer;
 import net.sf.jxls.reader.*;
 import net.sf.jxls.transformer.XLSTransformer;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;

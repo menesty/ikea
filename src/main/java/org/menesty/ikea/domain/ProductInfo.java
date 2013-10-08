@@ -30,6 +30,35 @@ public class ProductInfo {
 
     private List<ProductInfo> parts;
 
+    private boolean part;
+
+    private PackageInfo packageInfo;
+
+
+    public List<ProductInfo> getParts() {
+        return parts;
+    }
+
+    public void setParts(List<ProductInfo> parts) {
+        this.parts = parts;
+    }
+
+    public PackageInfo getPackageInfo() {
+        return packageInfo;
+    }
+
+    public void setPackageInfo(PackageInfo packageInfo) {
+        this.packageInfo = packageInfo;
+    }
+
+    public boolean isPart(){
+        return part;
+    }
+
+    public void setPart(boolean isPart){
+        this.part = isPart;
+    }
+
     public Group getGroup() {
         return group;
     }
@@ -105,5 +134,10 @@ public class ProductInfo {
 
     public String getShortName() {
         return shortName;
+    }
+
+    @Override
+    public String toString(){
+        return artNumber+" | "+ originalArtNum +" | "+ name + " | " + shortName + " | ";
     }
 }

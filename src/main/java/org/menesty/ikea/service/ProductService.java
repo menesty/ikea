@@ -5,7 +5,9 @@ import com.db4o.ObjectContainer;
 import com.db4o.ObjectSet;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.menesty.ikea.domain.PackageInfo;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 
@@ -17,10 +19,14 @@ public class ProductService {
 
     private static final ObjectContainer db = Db4oEmbedded.openFile(Db4oEmbedded.newConfiguration(), "db/data.db");
 
+    private static final String PRODUCT_DETAIL_URL = "http://www.ikea.com/pl/pl/catalog/products/";
 
-    private static final String Katowice = "306";
+
+    private static final String KATOWICE = "306";
 
     private static final Pattern WEIGHT_PATTERN = Pattern.compile("(\\d+,{1,}\\d+{1,})kg");
+
+    private static final Pattern ART_NUMBER_PART_PATTERN = Pattern.compile("(\\d{3}\\.\\d{3}\\.\\d{2})");
 
     public ProductService() {
 
@@ -78,7 +84,7 @@ public class ProductService {
 
     private ProductInfo loadFromIkea(String artNumber) throws IOException {
         String preparedArtNumber = artNumber.replaceAll("-", "").trim();
-        String requestUrl = "http://www.ikea.com/pl/pl/catalog/products/" + preparedArtNumber;
+        String requestUrl = PRODUCT_DETAIL_URL + preparedArtNumber;
         Document doc = Jsoup.connect(requestUrl).get();
         Elements nameEl = doc.select("#type");
         Elements numberOfPackages = doc.select("#numberOfPackages");
@@ -104,7 +110,7 @@ public class ProductService {
 
     private static ProductInfo.Group resolveGroup(String artNumber) throws IOException {
         Document doc = Jsoup.connect("http://www.ikea.com/pl/pl/iows/catalog/availability/" + artNumber).get();
-        Elements elements = doc.select("localStore[buCode=" + Katowice + "] findIt type");
+        Elements elements = doc.select("localStore[buCode=" + KATOWICE + "] findIt type");
         if (!elements.isEmpty())
             if ("BOX_SHELF".equals(elements.get(0).text()))
                 return ProductInfo.Group.Regal;
@@ -139,7 +145,7 @@ public class ProductService {
     }
 
     public static void main(String... arg) throws IOException {
-        System.out.println(ProductService.resolveGroup("S19840375"));
+        System.out.println(new ProductService().loadComboProduct("S39876561"));
     }
 
     private String generateShortName(String name, String artNumber, int boxCount) {
@@ -154,8 +160,77 @@ public class ProductService {
         return shortName;
     }
 
-    public static ProductInfo loadComboProduct(String artNumber) throws IOException {
-        Document doc = Jsoup.connect("http://www.ikea.com/pl/pl/iows/catalog/availability/" + artNumber).get();
-        return null;
+    public ProductInfo loadComboProduct(String artNumber) throws IOException {
+        Document doc = Jsoup.connect(PRODUCT_DETAIL_URL + artNumber).get();
+
+        String name;
+        Elements nameEl = doc.select("#type");
+        if (!nameEl.isEmpty())
+            name = nameEl.get(0).textNodes().get(0).text().trim();
+        else {
+            System.out.println("Product not found on site " + artNumber + " " + PRODUCT_DETAIL_URL + artNumber);
+            return null;
+        }
+
+        ProductInfo combo = new ProductInfo();
+        combo.setArtNumber(artNumber);
+        combo.setOriginalArtNum(artNumber);
+        combo.setName(name);
+
+        String content = doc.html();
+        Elements rows = doc.select(".rowContainer .colArticle");
+        for (Element row : rows) {
+            Matcher m = ART_NUMBER_PART_PATTERN.matcher(row.html());
+            if (m.find())
+                parsePartDetails(m.group(1), content);
+        }
+        /*
+        \{"attachmentName":"(.*?)".*80118411
+         */
+        return combo;
+    }
+
+    private void parsePartDetails(String artNumber, String content) {
+        ProductInfo part = new ProductInfo();
+        part.setPart(true);
+        String originalArtNumber = artNumber.replace(".", "");
+
+        Pattern p = Pattern.compile("metricPackageInfo.*\\{(.*?" + originalArtNumber + ".*?)\\}");
+        Matcher m = p.matcher(content);
+        if (m.find())
+            part.setPackageInfo(parsePackageInfo(m.group(1)));
+        part.setArtNumber(artNumber.replace(".","-"));
+        part.setOriginalArtNum(originalArtNumber);
+        part.setName(parsePartName(originalArtNumber, content));
+        part.setShortName(generateShortName(part.getName(), part.getArtNumber(), part.getPackageInfo().getBoxCount()));
+
+       // System.out.println(part);
+    }
+
+    private String parsePartName(String artNumber, String content) {
+        Pattern partNamePattern = Pattern.compile("\\{\"attachmentName\":\"(.*?)\",\"articleNumber\":\""+artNumber+"\".*?\\}");
+        Matcher m = partNamePattern.matcher(content);
+        if (m.find()) {
+
+            System.out.println("\\{\"attachmentName\":\"(.*?)\",\"articleNumber\":\""+artNumber+"\".*?\\}");
+            System.out.println(artNumber+ "=" + m.group(1));
+            return m.group(1);
+        }
+        return "";
+    }
+
+    private PackageInfo parsePackageInfo(String content) {
+        PackageInfo packageInfo = new PackageInfo();
+        Pattern packageInfoPattern = Pattern.compile("\"quantity\":\"(\\d+)\",\"length\":(\\d+),\"width\":(\\d+),\"articleNumber\":\"(\\d+)\",\"weight\":(\\d+),\"height\":(\\d+)");
+        Matcher m = packageInfoPattern.matcher(content);
+        if (m.find()) {
+            packageInfo.setBoxCount(Integer.valueOf(m.group(1)));
+            packageInfo.setLength(Integer.valueOf(m.group(2)));
+            packageInfo.setWidth(Integer.valueOf(m.group(3)));
+            packageInfo.setWeight(Integer.valueOf(m.group(4)));
+            packageInfo.setHeight(Integer.valueOf(m.group(5)));
+        }
+
+        return packageInfo;
     }
 }

@@ -1126,7 +1126,7 @@ public class Dialogs {
 
             focusedProperty().addListener(new InvalidationListener() {
                 @Override public void invalidated(Observable valueModel) {
-                    decoratedRoot.pseudoClassStateChanged("active");
+                    //decoratedRoot.pseudoClassStateChanged("active");
                 }
             });
 
@@ -1278,7 +1278,7 @@ public class Dialogs {
              * *
              *******************************************************************/
 
-            // !CHANGE START!
+          /*  // !CHANGE START!
             private static final long PSEUDO_CLASS_ACTIVE_MASK =
                     StyleManager.getInstance().getPseudoclassMask("active");
             // !CHANGE END!
@@ -1293,7 +1293,7 @@ public class Dialogs {
 
             private void pseudoClassStateChanged(String pseudoClass) {
                 impl_pseudoClassStateChanged(pseudoClass);
-            }
+            }*/
         }
     }
 
