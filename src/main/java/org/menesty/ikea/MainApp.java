@@ -11,12 +11,14 @@ public class MainApp extends Application {
 
     private static final Logger log = LoggerFactory.getLogger(MainApp.class);
 
+    public static Stage STAGE;
+
     public static void main(String[] args) throws Exception {
         launch(args);
     }
 
     public void start(Stage stage) throws Exception {
-
+        STAGE = stage;
        /* log.info("Starting Hello JavaFX and Maven demonstration application");
 
         String fxmlFile = "/fxml/intro-page.fxml";
@@ -40,7 +42,7 @@ public class MainApp extends Application {
 
         mainContainer.setScreen("main");
 
-        Scene scene = new Scene(mainContainer, 400, 200);
+        Scene scene = new Scene(mainContainer, 600, 400);
         scene.getStylesheets().add("/styles/styles.css");
 
 

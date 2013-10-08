@@ -4,7 +4,7 @@
 <?import org.tbee.javafx.scene.layout.fxml.MigPane?>
 
 <?import javafx.scene.layout.HBox?>
-<MigPane id="rootPane" fx:controller="org.menesty.ikea.ui.controller.MainController"
+<MigPane id="rootPane" fx:controller="org.menesty.ikea.ui.controller.OrderController"
          styleClass="main-panel"
          layout=""
          cols="[grow, 50::]"
@@ -12,7 +12,7 @@
          xmlns:fx="http://javafx.com/fxml">
 
     <HBox MigPane.cc="dock north, growx">
-        <Button text="Create" styleClass="lion" onAction="#goToOrders" MigPane.cc=""/>
+        <Button text="Create" styleClass="lion" onAction="#createOrder" MigPane.cc=""/>
     </HBox>
 
     <TableView MigPane.cc="growy, dock center" prefHeight="500">

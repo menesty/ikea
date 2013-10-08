@@ -15,6 +15,9 @@ public class Order {
         this.orderItems = orderItems;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public List<OrderItem> getByType(OrderItem.Type type) {
         List<OrderItem> result = new ArrayList<>();
