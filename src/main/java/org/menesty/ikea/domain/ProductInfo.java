@@ -138,6 +138,6 @@ public class ProductInfo {
 
     @Override
     public String toString(){
-        return artNumber+" | "+ originalArtNum +" | "+ name + " | " + shortName + " | ";
+        return artNumber+" | "+ originalArtNum +" | "+ name + " | " + shortName + " | " + boxCount;
     }
 }

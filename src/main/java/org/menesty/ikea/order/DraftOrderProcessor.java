@@ -45,7 +45,7 @@ public class DraftOrderProcessor {
 
         InputStream inputXML = getClass().getResourceAsStream("/config/config.xml");
         XLSReader mainReader = ReaderBuilder.buildFromXML(inputXML);
-        InputStream inputXLS = getClass().getResourceAsStream("/config/ikea35_original.xlsx");
+        InputStream inputXLS = getClass().getResourceAsStream("/data/orders/38/origin/ikea38.xlsx");
         ReaderConfig.getInstance().setUseDefaultValuesForPrimitiveTypes(true);
         List<RawOrderItem> rawOrderItems = new ArrayList<>();
         Map<String, Object> beans = new HashMap<>();
@@ -109,7 +109,7 @@ public class DraftOrderProcessor {
 
 
         Workbook workbook = transformer.transformXLS(getClass().getResourceAsStream("/config/reduce.xlsx"), templateSheetNameList, sheetNameList, mapBeans);
-        workbook.write(new FileOutputStream("db/reduce-result.xlsx"));
+        workbook.write(new FileOutputStream("/data/orders/38/result/reduce-result-38.xlsx"));
 
     }
 
@@ -153,7 +153,6 @@ public class DraftOrderProcessor {
                     }
 
                     current.put(artNumber, orderItem);
-
 
                 } else
                     orderItem.setCount(orderItem.getCount() + rawOrderItem.getCount());
