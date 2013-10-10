@@ -3,11 +3,8 @@ package org.menesty.ikea;
 import javafx.application.Application;
 import javafx.application.ConditionalFeature;
 import javafx.application.Platform;
-import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.Insets;
 import javafx.scene.DepthTest;
 import javafx.scene.Node;
 import javafx.scene.PerspectiveCamera;
@@ -15,11 +12,17 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.menesty.ikea.ui.controls.*;
+import org.menesty.ikea.ui.pages.BasePage;
+import org.menesty.ikea.ui.pages.CategoryPage;
+import org.menesty.ikea.ui.pages.OrderList;
+import org.menesty.ikea.ui.pages.PageManager;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * User: Menesty
@@ -34,12 +37,15 @@ public class IkeaApplication extends Application {
     private Pane pageArea;
     private PopupDialog modalDimmer;
 
-    private double mouseDragOffsetX = 0;
-
-    private double mouseDragOffsetY = 0;
     private ToolBar pageToolBar;
     private SplitPane splitPane;
     private BreadcrumbBar breadcrumbBar;
+
+    private static PageManager pageManager;
+
+    public static PageManager getPageManager() {
+        return pageManager;
+    }
 
     @Override
     public void start(final Stage stage) throws Exception {
@@ -86,7 +92,6 @@ public class IkeaApplication extends Application {
         pageToolBar.setMaxSize(Double.MAX_VALUE, Control.USE_PREF_SIZE);
 
 
-
         breadcrumbBar = new BreadcrumbBar();
         pageToolBar.getItems().add(breadcrumbBar);
         Region spacer3 = new Region();
@@ -127,7 +132,15 @@ public class IkeaApplication extends Application {
         // show stage
         stage.setScene(scene);
         stage.show();
+
+        pageManager = new PageManager(pageArea, breadcrumbBar);
+
+        CategoryPage main = new CategoryPage("MAIN", new OrderList());
+        pageManager.register(main);
+
+        pageManager.goToPage(main);
     }
+
 
     public static void main(String... args) {
         launch(args);
@@ -135,3 +148,5 @@ public class IkeaApplication extends Application {
 
 
 }
+
+

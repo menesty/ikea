@@ -17,29 +17,24 @@ import java.util.List;
  * Date: 10/10/13
  * Time: 7:58 AM
  */
-public class CategoryPage extends Page {
+public class CategoryPage extends BasePage {
 
-    private List<Page> pages;
+    private List<BasePage> pages;
 
-    public CategoryPage(String name, Page... pages) {
-        super(name);
-        this.pages = Arrays.asList(pages);
+    public  List<BasePage> getSubPages(){
+        return pages;
     }
+
+    public CategoryPage(String name, BasePage... pages) {
+        super(name);
+        this.pages = new ArrayList<>();
+        for(BasePage page: pages)
+        addPage(page);
+    }
+
 
     @Override
     public Node createView() {
-        // split children
-        List<SamplePage> directChildren = new ArrayList<SamplePage>();
-        List<CategoryPage> categoryChildren = new ArrayList<CategoryPage>();
-        for (TreeItem child : getChildren()) {
-            Page page = (Page) child;
-            if (page instanceof SamplePage) {
-                directChildren.add((SamplePage) page);
-            } else if (page instanceof CategoryPage) {
-                categoryChildren.add((CategoryPage) page);
-            }
-        }
-        // create main column
         VBox main = new VBox(8) {
             // stretch to allways fill height of scrollpane
             @Override
@@ -57,31 +52,26 @@ public class CategoryPage extends Page {
         header.setMinHeight(Control.USE_PREF_SIZE); // Workaround for RT-14251
         header.getStyleClass().add("page-header");
         main.getChildren().add(header);
-        // add direct children
-        if (!directChildren.isEmpty()) {
-            TilePane directChildFlow = new TilePane(8, 8);
-            directChildFlow.setPrefColumns(1);
-            directChildFlow.getStyleClass().add("category-page-flow");
-            for (SamplePage samplePage : directChildren) {
-                directChildFlow.getChildren().add(samplePage.createTile());
-            }
-            main.getChildren().add(directChildFlow);
-        }
+
+
+        Label categoryHeader = new Label(getName());
+        categoryHeader.setMaxWidth(Double.MAX_VALUE);
+        categoryHeader.setMinHeight(Control.USE_PREF_SIZE); // Workaround for RT-14251
+        categoryHeader.getStyleClass().add("category-header");
+        main.getChildren().add(categoryHeader);
+
+
+        TilePane directChildFlow = new TilePane(8, 8);
+        directChildFlow.setPrefColumns(1);
+        directChildFlow.getStyleClass().add("category-page-flow");
         // add sub sections
-        for (CategoryPage categoryPage : categoryChildren) {
-            // create header
-            Label categoryHeader = new Label(categoryPage.getName());
-            categoryHeader.setMaxWidth(Double.MAX_VALUE);
-            categoryHeader.setMinHeight(Control.USE_PREF_SIZE); // Workaround for RT-14251
-            categoryHeader.getStyleClass().add("category-header");
-            main.getChildren().add(categoryHeader);
-            // add direct children
-            TilePane directChildFlow = new TilePane(8, 8);
-            directChildFlow.setPrefColumns(1);
-            directChildFlow.getStyleClass().add("category-page-flow");
-            addAllCategoriesSampleTiles(categoryPage, directChildFlow);
-            main.getChildren().add(directChildFlow);
+        for (BasePage page : pages) {
+            directChildFlow.getChildren().add(page.createTile());
+
         }
+        main.getChildren().add(directChildFlow);
+
+
         // wrap in scroll pane
         ScrollPane scrollPane = new ScrollPane();
         scrollPane.getStyleClass().add("noborder-scroll-pane");
@@ -90,15 +80,10 @@ public class CategoryPage extends Page {
         return scrollPane;
     }
 
-    private void addAllCategoriesSampleTiles(CategoryPage categoryPage, TilePane pane) {
-        for (TreeItem child : categoryPage.getChildren()) {
-            Page page = (Page) child;
-            if (page instanceof SamplePage) {
-                pane.getChildren().add(((SamplePage) page).createTile());
-            } else if (page instanceof CategoryPage) {
-                addAllCategoriesSampleTiles((CategoryPage) page, pane);
-            }
-        }
+    public void addPage(BasePage basePage) {
+        basePage.setBreadCrumbPath(getBreadCrumb());
+        pages.add(basePage);
+
     }
 
 }

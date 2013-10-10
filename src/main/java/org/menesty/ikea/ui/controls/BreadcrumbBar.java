@@ -5,6 +5,7 @@ import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
+import org.menesty.ikea.IkeaApplication;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +55,7 @@ public class BreadcrumbBar extends HBox {
                 button.setText(parts[i]);
                 button.setOnAction(new EventHandler<ActionEvent>() {
                     public void handle(ActionEvent event) {
-                        //Ensemble2.getEnsemble2().goToPage(currentPath);
+                        IkeaApplication.getPageManager().goToPage(currentPath);
                     }
                 });
                 if (i == parts.length-1) {
