@@ -46,17 +46,17 @@ public class CategoryPage extends BasePage {
             }
         };
         main.getStyleClass().add("category-page");
-        // create header
+       /* // create header
         Label header = new Label(getName());
         header.setMaxWidth(Double.MAX_VALUE);
         header.setMinHeight(Control.USE_PREF_SIZE); // Workaround for RT-14251
         header.getStyleClass().add("page-header");
-        main.getChildren().add(header);
+        main.getChildren().add(header);*/
 
 
         Label categoryHeader = new Label(getName());
         categoryHeader.setMaxWidth(Double.MAX_VALUE);
-        categoryHeader.setMinHeight(Control.USE_PREF_SIZE); // Workaround for RT-14251
+        categoryHeader.setMinHeight(Control.USE_PREF_SIZE);
         categoryHeader.getStyleClass().add("category-header");
         main.getChildren().add(categoryHeader);
 

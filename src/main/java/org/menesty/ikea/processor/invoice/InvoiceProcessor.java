@@ -105,7 +105,7 @@ public class InvoiceProcessor {
     private List<RawInvoiceProductItem> reduce(final List<RawInvoiceProductItem> rawProductItems) {
         List<RawInvoiceProductItem> reduce = new ArrayList<>();
         for (RawInvoiceProductItem item : rawProductItems) {
-            if (item.getArtNumber() == null || item.getPriceStr() == null) continue;
+            if (item.getArtNumber() == null || item.getPrice() == 0) continue;
             reduce.add(item);
         }
         return reduce;

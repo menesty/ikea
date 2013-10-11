@@ -20,7 +20,7 @@ public class RawInvoiceProductItem {
 
     private String comment;
 
-    private String priceStr;
+    private double price;
 
     private String wat;
 
@@ -44,12 +44,8 @@ public class RawInvoiceProductItem {
         this.comment = comment;
     }
 
-    public String getPriceStr() {
-        return priceStr;
-    }
-
     public void setPriceStr(String priceStr) {
-        this.priceStr = priceStr;
+        price = Double.valueOf(priceStr.trim().replaceAll("[\\s\\u00A0]+", "").replace(",", "."));
     }
 
     public String getWat() {
@@ -85,6 +81,11 @@ public class RawInvoiceProductItem {
     }
 
     public double getPrice() {
-        return Double.valueOf(priceStr.trim().replace(",", "."));
+        return BigDecimal.valueOf(price).setScale(2).doubleValue();
+    }
+
+    @Override
+    public String toString() {
+        return artNumber + ";" + name + ";" + count + ";" + wat + ";" + String.valueOf(getPrice()).replace(".",",") + ";" + String.valueOf(getTotal()).replace(".",",");
     }
 }

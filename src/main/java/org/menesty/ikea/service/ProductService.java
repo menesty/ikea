@@ -1,7 +1,5 @@
 package org.menesty.ikea.service;
 
-import com.db4o.Db4oEmbedded;
-import com.db4o.ObjectContainer;
 import com.db4o.ObjectSet;
 import org.apache.commons.lang.StringUtils;
 import org.jsoup.Jsoup;
@@ -20,15 +18,13 @@ import java.util.regex.Pattern;
 
 public class ProductService {
 
-    private static final ObjectContainer db = Db4oEmbedded.openFile(Db4oEmbedded.newConfiguration(), "data/db/data.db");
-
     private static final String PRODUCT_DETAIL_URL = "http://www.ikea.com/pl/pl/catalog/products/";
 
     private static final String PRODUCT_AVAILABLE_URL = "http://www.ikea.com/pl/pl/iows/catalog/availability/";
 
     private static final String KATOWICE = "306";
 
-    private static final Pattern WEIGHT_PATTERN = Pattern.compile("(\\d+,{1,}\\d+{1,})kg");
+    private static final Pattern WEIGHT_PATTERN = Pattern.compile("(\\d{0,},{0,}\\d{1,})kg");
 
     private static final Pattern ART_NUMBER_PART_PATTERN = Pattern.compile("(\\d{3}\\.\\d{3}\\.\\d{2})");
 
@@ -52,7 +48,7 @@ public class ProductService {
                 product.setOriginalArtNum(artNumber);
             }
 
-            db.store(product);
+            DatabaseService.get().store(product);
             return product;
         } catch (IOException e) {
             System.out.println("Problem with open product : " + artNumber);
@@ -65,7 +61,7 @@ public class ProductService {
         ProductInfo product = new ProductInfo();
         product.setArtNumber(artNumber);
 
-        ObjectSet<ProductInfo> result = db.queryByExample(product);
+        ObjectSet<ProductInfo> result = DatabaseService.get().queryByExample(product);
         if (!result.isEmpty())
             return result.get(0);
 
@@ -82,7 +78,7 @@ public class ProductService {
             }
 
             product.setPrice(invoiceItem.getPrice());
-            db.store(product);
+            DatabaseService.get().store(product);
             return product;
         } catch (IOException e) {
             e.printStackTrace();
@@ -158,15 +154,41 @@ public class ProductService {
             return ProductInfo.Group.Kitchen;
         else if (breadCrumbs.contains("łazienk") || breadCrumbs.contains("Łazienka"))
             return ProductInfo.Group.Bathroom;
-        else if (breadCrumbs.contains("Sypialnia") || breadCrumbs.contains("szycia") || breadCrumbs.contains("Zasłony i rolety") || breadCrumbs.contains("zasłon"))
-            return ProductInfo.Group.Textil;
+        else if (breadCrumbs.contains("Poduszki") || breadCrumbs.contains("poszewki") || breadCrumbs.contains("Dywany") ||
+                        breadCrumbs.contains("Kołdry") || breadCrumbs.contains("Pościel") || breadCrumbs.contains("Narzuty") ||
+                        breadCrumbs.contains("Tkanina") || breadCrumbs.contains("Zasłony i rolety") || breadCrumbs.contains("Koce"))
+            return ProductInfo.Group.Textile;
+
+        else if (
+                breadCrumbs.contains("kosz") ||
+                breadCrumbs.contains("Kosze") ||
+                breadCrumbs.contains("do montażu") ||
+                breadCrumbs.contains("Akcesoria do przech") ||
+                breadCrumbs.contains("Półka") ||
+                breadCrumbs.contains("Organizatory") ||
+                breadCrumbs.contains("Suszarki") ||
+                        breadCrumbs.contains("Sortowanie odpadów") ||
+                        breadCrumbs.contains("Podpórka") ||
+                        breadCrumbs.contains("Kosze") ||
+                        breadCrumbs.contains("Wspornik") ||
+                        breadCrumbs.contains("Wieszak") ||
+                        breadCrumbs.contains("wieszaki") ||
+                        breadCrumbs.contains("Akcesoria do czyszczenia") ||
+                        breadCrumbs.contains("Deski do prasowania") ||
+                        breadCrumbs.contains("Wkład do kosza") ||
+                        breadCrumbs.contains("Łyżka do butów") ||
+                        breadCrumbs.contains("Pojemnik na ubran")
+                )
+            return ProductInfo.Group.Storing;
         return null;
     }
 
     public static void main(String... arg) throws IOException {
-        ProductInfo productInfo = new ProductService().loadComboProduct("S39002041");
-        System.out.println(productInfo);
-        System.out.println(productInfo.getParts());
+        //ProductInfo productInfo = new ProductService().loadComboProduct("S39002041");
+        //System.out.println(productInfo);
+        //System.out.println(productInfo.getParts());
+
+        System.out.println(ProductService.resolveGroup("90245705"));
     }
 
     private String generateShortName(String name, String artNumber, int boxCount) {

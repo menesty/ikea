@@ -9,7 +9,7 @@ import java.util.List;
 public class ProductInfo {
 
     public enum Group {
-        Regal, Decor, Lights, Kitchen, Bathroom, Textil, Full, Kids
+        Regal, Decor, Lights, Kitchen, Bathroom, Textile, Full, Storing, Kids
     }
 
     private String originalArtNum;

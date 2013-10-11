@@ -16,13 +16,9 @@ import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.menesty.ikea.ui.controls.*;
-import org.menesty.ikea.ui.pages.BasePage;
 import org.menesty.ikea.ui.pages.CategoryPage;
-import org.menesty.ikea.ui.pages.OrderList;
+import org.menesty.ikea.ui.pages.OrderListPage;
 import org.menesty.ikea.ui.pages.PageManager;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * User: Menesty
@@ -38,17 +34,24 @@ public class IkeaApplication extends Application {
     private PopupDialog modalDimmer;
 
     private ToolBar pageToolBar;
-    private SplitPane splitPane;
     private BreadcrumbBar breadcrumbBar;
 
     private static PageManager pageManager;
+    private static IkeaApplication instance;
+    private Stage stage;
 
     public static PageManager getPageManager() {
         return pageManager;
     }
 
+    public static IkeaApplication get(){
+        return instance;
+    }
+
     @Override
     public void start(final Stage stage) throws Exception {
+        this.instance = this;
+        this.stage = stage;
         stage.setTitle("Ensemble");
         // set default docs location
         StackPane layerPane = new StackPane();
@@ -135,12 +138,23 @@ public class IkeaApplication extends Application {
 
         pageManager = new PageManager(pageArea, breadcrumbBar);
 
-        CategoryPage main = new CategoryPage("MAIN", new OrderList());
+        CategoryPage main = new CategoryPage("IKEA", new OrderListPage());
         pageManager.register(main);
 
-        pageManager.goToPage(main);
+        pageManager.goToPage("IKEA/Order list");
     }
 
+    public void showPopupDialog(Node node){
+        modalDimmer.showModalMessage(node);
+    }
+
+    public void hidePopupDialog(){
+        modalDimmer.hideModalMessage();
+    }
+
+    public Stage getStage(){
+        return stage;
+    }
 
     public static void main(String... args) {
         launch(args);

@@ -9,6 +9,16 @@ import org.menesty.ikea.domain.ProductInfo;
  */
 public class OrderItem {
 
+    private boolean aNew;
+
+    public void setNew(boolean aNew) {
+        this.aNew = aNew;
+    }
+
+    public boolean isNew() {
+        return aNew;
+    }
+
     public enum Type {
         General, Na, Specials, Combo
     }
@@ -23,6 +33,14 @@ public class OrderItem {
     private ProductInfo productInfo;
 
     private Type type;
+
+    public ProductInfo getProductInfo() {
+        return productInfo;
+    }
+
+    public void setProductInfo(ProductInfo productInfo) {
+        this.productInfo = productInfo;
+    }
 
     public Type getType() {
         return type;

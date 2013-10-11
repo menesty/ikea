@@ -1,12 +1,13 @@
 package org.menesty.ikea.order;
 
+import org.menesty.ikea.domain.ProductInfo;
+
 /**
  * User: Menesty
  * Date: 9/22/13
  * Time: 9:49 AM
  */
 public class RawOrderItem {
-    private String customerId;
 
     private Integer count;
 
@@ -19,14 +20,6 @@ public class RawOrderItem {
     private String comment;
 
     private Double price;
-
-    public String getCustomerId() {
-        return customerId;
-    }
-
-    public void setCustomerId(String customerId) {
-        this.customerId = customerId;
-    }
 
     public Integer getCount() {
         return count;
