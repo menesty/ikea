@@ -33,7 +33,7 @@ public class RawInvoiceProductItem {
     }
 
     public double getTotal() {
-        return BigDecimal.valueOf(getPrice()).setScale(2, RoundingMode.CEILING).doubleValue();
+        return BigDecimal.valueOf(getPrice() * count).setScale(2, RoundingMode.CEILING).doubleValue();
     }
 
     public String getComment() {
@@ -86,6 +86,6 @@ public class RawInvoiceProductItem {
 
     @Override
     public String toString() {
-        return artNumber + ";" + name + ";" + count + ";" + wat + ";" + String.valueOf(getPrice()).replace(".",",") + ";" + String.valueOf(getTotal()).replace(".",",");
+        return artNumber + ";" + name + ";" + count + ";" + wat + ";" + String.valueOf(getPrice()).replace(".", ",") + ";" + String.valueOf(getTotal()).replace(".", ",");
     }
 }

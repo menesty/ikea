@@ -7,6 +7,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
@@ -20,14 +21,19 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.util.Callback;
 import org.menesty.ikea.domain.Order;
+import org.menesty.ikea.order.OrderItem;
 import org.menesty.ikea.service.OrderService;
+import org.menesty.ikea.ui.TaskProgress;
 import org.menesty.ikea.ui.controls.PathProperty;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Date;
 
 public class OrderListPage extends BasePage {
@@ -36,8 +42,11 @@ public class OrderListPage extends BasePage {
 
     private TableView<OrderTableItem> tableView;
 
+    private OrderService orderService;
+
     public OrderListPage() {
         super("Order list");
+        orderService = new OrderService();
     }
 
     @Override
@@ -141,8 +150,7 @@ public class OrderListPage extends BasePage {
                 hidePopupDialog();
 
                 try {
-                    Order order = new OrderService().createOrder(orderName, new FileInputStream(new File(filePath)));
-                    tableView.getItems().add(new OrderTableItem(false, order));
+                    new Thread(new GetDailySalesTask(orderName, new FileInputStream(new File(filePath)))).start();
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
@@ -177,6 +185,41 @@ public class OrderListPage extends BasePage {
         public void setName(String name) {
             order.setName(name);
         }
+
+    }
+
+    private class GetDailySalesTask extends Task<ObservableList<OrderTableItem>> {
+
+        private String orderName;
+
+        private InputStream is;
+
+        public GetDailySalesTask(String orderName, InputStream is) {
+            this.orderName = orderName;
+            this.is = is;
+        }
+
+        @Override
+        protected ObservableList<OrderTableItem> call() throws InterruptedException {
+            orderService.createOrder(orderName, is, new TaskProgress() {
+                @Override
+                public void updateProgress(long l, long l1) {
+                    GetDailySalesTask.this.updateProgress(l, l1);
+
+                }
+            });
+
+            ObservableList<OrderTableItem> orderTableItems = FXCollections.observableArrayList();
+            orderTableItems.addAll(transform(orderService.load()));
+            return orderTableItems;
+        }
+    }
+
+    private List<OrderTableItem> transform(List<Order> orders) {
+        List<OrderTableItem> result = new ArrayList<>();
+        for (Order order : orders)
+            result.add(new OrderTableItem(false, order));
+        return result;
 
     }
 }

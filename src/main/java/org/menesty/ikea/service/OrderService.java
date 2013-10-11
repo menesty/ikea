@@ -7,6 +7,7 @@ import org.menesty.ikea.domain.Order;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.order.OrderItem;
 import org.menesty.ikea.order.RawOrderItem;
+import org.menesty.ikea.ui.TaskProgress;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
@@ -27,7 +28,7 @@ public class OrderService {
         this.productService = new ProductService();
     }
 
-    public Order createOrder(String name, InputStream is) {
+    public Order createOrder(String name, InputStream is, TaskProgress taskProgress) {
 
         try {
             Order order = new Order();
@@ -40,12 +41,15 @@ public class OrderService {
             List<RawOrderItem> rawOrderItems = new ArrayList<>();
             Map<String, Object> beans = new HashMap<>();
             beans.put("rawOrderItems", rawOrderItems);
+
+            taskProgress.updateProgress(5, 100);
             XLSReadStatus readStatus = mainReader.read(is, beans);
+            taskProgress.updateProgress(20, 100);
 
             for (XLSReadMessage message : (List<XLSReadMessage>) readStatus.getReadMessages())
                 order.addWarning(message.getMessage());
 
-            order.setOrderItems(reduce(rawOrderItems));
+            order.setOrderItems(reduce(rawOrderItems, taskProgress));
 
             return order;
         } catch (IOException e) {
@@ -58,10 +62,14 @@ public class OrderService {
         return null;
     }
 
-    private List<OrderItem> reduce(List<RawOrderItem> list) {
+    private List<OrderItem> reduce(List<RawOrderItem> list, TaskProgress taskProgress) {
         List<OrderItem> result = new ArrayList<>();
         Map<String, OrderItem> reduceMap = new HashMap<>();
 
+        int progressPercantage = 80;
+        //load
+
+        int itemIndex = 0;
         for (RawOrderItem rawOrderItem : list) {
             if (rawOrderItem.getArtNumber() == null) continue;
 
@@ -103,6 +111,11 @@ public class OrderService {
                     orderItem.setCount(orderItem.getCount() + rawOrderItem.getCount());
 
                 result.add(orderItem);
+                itemIndex++;
+
+               int done = (100* itemIndex)/ list.size();
+
+                taskProgress.updateProgress(80,100);
             }
         }
         return result;
