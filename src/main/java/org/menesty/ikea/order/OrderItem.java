@@ -2,6 +2,9 @@ package org.menesty.ikea.order;
 
 import org.menesty.ikea.domain.ProductInfo;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 /**
  * User: Menesty
  * Date: 9/22/13
@@ -75,7 +78,8 @@ public class OrderItem {
     }
 
     public Double getTotal() {
-        return (double) count * price;
+        double value = (double) count * price;
+        return value > 0 ? BigDecimal.valueOf(value).setScale(2, RoundingMode.CEILING).doubleValue() : 0d;
     }
 
     public Double getPrice() {

@@ -1,6 +1,7 @@
 package org.menesty.ikea.domain;
 
 import java.util.List;
+
 /**
  * User: Menesty
  * Date: 9/23/13
@@ -9,7 +10,7 @@ import java.util.List;
 public class ProductInfo {
 
     public enum Group {
-        Regal, Decor, Lights, Kitchen, Bathroom, Textile, Full, Storing, Kids
+        Regal, Decor, Lights, Kitchen, Bathroom, Textile, Full, Storing, Family, Kids
     }
 
     private String originalArtNum;
@@ -18,28 +19,21 @@ public class ProductInfo {
 
     private String name;
 
-    private int boxCount;
-
     private double price;
-
-    private int numberBox;
 
     private String shortName;
 
     private Group group;
 
-    private List<ProductInfo> parts;
+    private List<ProductPart> parts;
 
-    private boolean part;
+    private PackageInfo packageInfo = new PackageInfo();
 
-    private PackageInfo packageInfo;
-
-
-    public List<ProductInfo> getParts() {
+    public List<ProductPart> getParts() {
         return parts;
     }
 
-    public void setParts(List<ProductInfo> parts) {
+    public void setParts(List<ProductPart> parts) {
         this.parts = parts;
     }
 
@@ -51,28 +45,12 @@ public class ProductInfo {
         this.packageInfo = packageInfo;
     }
 
-    public boolean isPart(){
-        return part;
-    }
-
-    public void setPart(boolean isPart){
-        this.part = isPart;
-    }
-
     public Group getGroup() {
         return group;
     }
 
     public void setGroup(Group group) {
         this.group = group;
-    }
-
-    public int getBoxCount() {
-        return boxCount;
-    }
-
-    public void setBoxCount(int boxCount) {
-        this.boxCount = boxCount;
     }
 
     public String getOriginalArtNum() {
@@ -120,14 +98,6 @@ public class ProductInfo {
         return price;
     }
 
-    public void setNumberBox(int numberBox) {
-        this.numberBox = numberBox;
-    }
-
-    public int getNumberBox() {
-        return numberBox;
-    }
-
     public void setShortName(String shortName) {
         this.shortName = shortName;
     }
@@ -137,7 +107,7 @@ public class ProductInfo {
     }
 
     @Override
-    public String toString(){
-        return artNumber+" | "+ originalArtNum +" | "+ name + " | " + shortName + " | " + boxCount;
+    public String toString() {
+        return artNumber + " | " + originalArtNum + " | " + name + " | " + shortName + " | " + (packageInfo != null ? packageInfo.getBoxCount() : "0") + " | " + parts;
     }
 }

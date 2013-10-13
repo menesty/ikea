@@ -16,9 +16,28 @@ public class Order {
 
     private List<String> parseWarnings;
 
+    private List<InvoicePdf> invoicePdfs;
+
+    public List<String> getParseWarnings() {
+        return parseWarnings;
+    }
+
+    public void setParseWarnings(List<String> parseWarnings) {
+        this.parseWarnings = parseWarnings;
+    }
+
+    public List<InvoicePdf> getInvoicePdfs() {
+        return invoicePdfs;
+    }
+
+    public void setInvoicePdfs(List<InvoicePdf> invoicePdfs) {
+        this.invoicePdfs = invoicePdfs;
+    }
+
     public Order() {
         parseWarnings = new ArrayList<>();
         orderItems = new ArrayList<>();
+        invoicePdfs = new ArrayList<>();
     }
 
     public void addWarning(String message) {
@@ -48,6 +67,10 @@ public class Order {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public List<OrderItem> getOrderItems() {
+        return orderItems;
     }
 
     public List<OrderItem> getByType(OrderItem.Type type) {

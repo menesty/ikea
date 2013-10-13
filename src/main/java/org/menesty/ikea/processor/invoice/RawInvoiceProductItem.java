@@ -1,5 +1,7 @@
 package org.menesty.ikea.processor.invoice;
 
+import org.menesty.ikea.domain.ProductInfo;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
@@ -23,6 +25,20 @@ public class RawInvoiceProductItem {
     private double price;
 
     private String wat;
+
+    private ProductInfo productInfo;
+
+    public ProductInfo getProductInfo() {
+        return productInfo;
+    }
+
+    public void setProductInfo(ProductInfo productInfo) {
+        this.productInfo = productInfo;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
 
     public int getCount() {
         return count;

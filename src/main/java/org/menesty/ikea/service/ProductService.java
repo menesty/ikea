@@ -8,6 +8,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.menesty.ikea.domain.PackageInfo;
 import org.menesty.ikea.domain.ProductInfo;
+import org.menesty.ikea.domain.ProductPart;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 
 import java.io.IOException;
@@ -28,7 +29,7 @@ public class ProductService {
 
     private static final Pattern ART_NUMBER_PART_PATTERN = Pattern.compile("(\\d{3}\\.\\d{3}\\.\\d{2})");
 
-    private static final Pattern PACKAGE_INFO_PATTERN = Pattern.compile("\"quantity\":\"(\\d+)\",\"length\":(\\d+),\"width\":(\\d+),\"articleNumber\":\"(\\d+)\",\"weight\":(\\d+),\"height\":(\\d+)");
+    private static final Pattern PACKAGE_INFO_PATTERN = Pattern.compile("\"quantity\":\"(\\d+)\",\"length\":(\\d+),\"width\":(\\d+),\"articleNumber\":\"\\d+\",\"weight\":(\\d+),\"height\":(\\d+)");
 
     public ProductService() {
 
@@ -59,7 +60,7 @@ public class ProductService {
 
     public ProductInfo findByArtNumber(String artNumber) {
         ProductInfo product = new ProductInfo();
-        product.setArtNumber(artNumber);
+        product.setOriginalArtNum(artNumber.replace(".", "").replace("-", ""));
 
         ObjectSet<ProductInfo> result = DatabaseService.get().queryByExample(product);
         if (!result.isEmpty())
@@ -100,11 +101,41 @@ public class ProductService {
 
         ProductInfo productInfo = new ProductInfo();
         productInfo.setArtNumber(artNumber);
-        productInfo.setNumberBox(getBoxCount(doc));
+        productInfo.setOriginalArtNum(preparedArtNumber);
+        productInfo.setPackageInfo(parseProductPackageInfo(doc));
         productInfo.setName(name);
-        productInfo.setShortName(generateShortName(name, artNumber, productInfo.getNumberBox()));
+        productInfo.setShortName(generateShortName(name, artNumber, productInfo.getPackageInfo().getBoxCount()));
         productInfo.setGroup(resolveGroup(preparedArtNumber));
         return productInfo;
+    }
+
+    private PackageInfo parseProductPackageInfo(Document document) {
+        PackageInfo packageInfo = parsePartPackageInfo(document.html());
+        packageInfo.setBoxCount(getBoxCount(document));
+        if (!packageInfo.hasAllSize()) {
+            String productSize = document.select("#measuresPart #metric").text();
+
+            if (packageInfo.getHeight() == 0) {
+                Matcher m = Pattern.compile("Wysokość: (\\d+{0,}\\.{0,}\\d+)").matcher(productSize);
+                if (m.find())
+                    packageInfo.setHeight((int) ((Double.valueOf(m.group(1)) * 10)));
+            }
+
+            if (packageInfo.getWidth() == 0) {
+                Matcher m = Pattern.compile("Szerokość: (\\d+{0,}\\.{0,}\\d+)").matcher(productSize);
+                if (m.find())
+                    packageInfo.setWidth((int) ((Double.valueOf(m.group(1)) * 10)));
+            }
+
+            if (packageInfo.getLength() == 0) {
+                Matcher m = Pattern.compile("(Długość|Głębokość): (\\d+{0,}\\.{0,}\\d+)").matcher(productSize);
+                if (m.find())
+                    packageInfo.setLength((int) ((Double.valueOf(m.group(2)) * 10)));
+            }
+
+        }
+
+        return packageInfo;
     }
 
     private String getProductName(Document doc) {
@@ -155,31 +186,32 @@ public class ProductService {
         else if (breadCrumbs.contains("łazienk") || breadCrumbs.contains("Łazienka"))
             return ProductInfo.Group.Bathroom;
         else if (breadCrumbs.contains("Poduszki") || breadCrumbs.contains("poszewki") || breadCrumbs.contains("Dywany") ||
-                        breadCrumbs.contains("Kołdry") || breadCrumbs.contains("Pościel") || breadCrumbs.contains("Narzuty") ||
-                        breadCrumbs.contains("Tkanina") || breadCrumbs.contains("Zasłony i rolety") || breadCrumbs.contains("Koce"))
+                breadCrumbs.contains("Kołdry") || breadCrumbs.contains("Pościel") || breadCrumbs.contains("Narzuty") ||
+                breadCrumbs.contains("Tkanina") || breadCrumbs.contains("Zasłony i rolety") || breadCrumbs.contains("Koce"))
             return ProductInfo.Group.Textile;
 
-        else if (
-                breadCrumbs.contains("kosz") ||
+        else if (breadCrumbs.contains("kosz") ||
                 breadCrumbs.contains("Kosze") ||
                 breadCrumbs.contains("do montażu") ||
                 breadCrumbs.contains("Akcesoria do przech") ||
                 breadCrumbs.contains("Półka") ||
                 breadCrumbs.contains("Organizatory") ||
                 breadCrumbs.contains("Suszarki") ||
-                        breadCrumbs.contains("Sortowanie odpadów") ||
-                        breadCrumbs.contains("Podpórka") ||
-                        breadCrumbs.contains("Kosze") ||
-                        breadCrumbs.contains("Wspornik") ||
-                        breadCrumbs.contains("Wieszak") ||
-                        breadCrumbs.contains("wieszaki") ||
-                        breadCrumbs.contains("Akcesoria do czyszczenia") ||
-                        breadCrumbs.contains("Deski do prasowania") ||
-                        breadCrumbs.contains("Wkład do kosza") ||
-                        breadCrumbs.contains("Łyżka do butów") ||
-                        breadCrumbs.contains("Pojemnik na ubran")
+                breadCrumbs.contains("Sortowanie odpadów") ||
+                breadCrumbs.contains("Podpórka") ||
+                breadCrumbs.contains("Kosze") ||
+                breadCrumbs.contains("Wspornik") ||
+                breadCrumbs.contains("Wieszak") ||
+                breadCrumbs.contains("wieszaki") ||
+                breadCrumbs.contains("Akcesoria do czyszczenia") ||
+                breadCrumbs.contains("Deski do prasowania") ||
+                breadCrumbs.contains("Wkład do kosza") ||
+                breadCrumbs.contains("Łyżka do butów") ||
+                breadCrumbs.contains("Pojemnik na ubran")
                 )
             return ProductInfo.Group.Storing;
+        else if (breadCrumbs.contains("Bezpieczeństwo") || breadCrumbs.contains("IKEA FAMILY") || breadCrumbs.contains("ADG / Przechow") || breadCrumbs.contains("Podstawa pod laptopa"))
+            return ProductInfo.Group.Family;
         return null;
     }
 
@@ -187,8 +219,8 @@ public class ProductService {
         //ProductInfo productInfo = new ProductService().loadComboProduct("S39002041");
         //System.out.println(productInfo);
         //System.out.println(productInfo.getParts());
-
-        System.out.println(ProductService.resolveGroup("90245705"));
+        ProductInfo productInfo = new ProductService().loadComboProduct("S39002041");
+        System.out.println(productInfo);
     }
 
     private String generateShortName(String name, String artNumber, int boxCount) {
@@ -199,7 +231,7 @@ public class ProductService {
             shortNameLength -= 4;
         if (name.length() < shortNameLength)
             shortNameLength = name.length();
-        shortName = name.substring(0, shortNameLength - 1) + shortName;
+        shortName = shortNameLength != 0 ? name.substring(0, shortNameLength - 1) + shortName : shortName;
         return shortName;
     }
 
@@ -217,55 +249,70 @@ public class ProductService {
         combo.setOriginalArtNum(artNumber);
         combo.setName(name);
         combo.setShortName(name);
-        combo.setBoxCount(getBoxCount(doc));
+        combo.setPackageInfo(parseProductPackageInfo(doc));
 
-        List<ProductInfo> parts = new ArrayList<>();
+        List<ProductPart> parts = new ArrayList<>();
         String content = doc.html();
-        Elements rows = doc.select(".rowContainer .colArticle");
+
+        Document rowDetailsDoc = Jsoup.connect("http://www.ikea.com/pl/pl/catalog/packagepopup/" + artNumber).get();
+        Elements rows = rowDetailsDoc.select(".rowContainerPackage .colArticle");
         for (Element row : rows) {
             Matcher m = ART_NUMBER_PART_PATTERN.matcher(row.html());
             if (m.find())
-                parts.add(parsePartDetails(m.group(1), content, combo.getNumberBox()));
+                parts.add(parsePartDetails(m.group(1).replace(".", "-"), content));
         }
         combo.setParts(parts);
 
-        List<ProductInfo> partsNoSize = new ArrayList<>();
+        List<ProductPart> partsNoSize = new ArrayList<>();
         int partsBox = 0;
-        for (ProductInfo productInfo : combo.getParts()) {
-            if (!productInfo.getPackageInfo().hasSize())
-                partsNoSize.add(productInfo);
+        for (ProductPart productPart : combo.getParts()) {
+            if (!productPart.getProductInfo().getPackageInfo().hasAllSize())
+                partsNoSize.add(productPart);
             else
-                partsBox += productInfo.getPackageInfo().getBoxCount();
+                partsBox += productPart.getBoxCount();
         }
-        int undefinedCount = combo.getBoxCount() - partsBox;
+        int undefinedCount = combo.getPackageInfo().getBoxCount() - partsBox;
         if (undefinedCount > 0 && undefinedCount - partsNoSize.size() > 0) {
-            for (ProductInfo productInfo : partsNoSize) {
+            for (ProductPart productInfo : partsNoSize) {
 
             }
         }
 
-
         return combo;
     }
 
-    private ProductInfo parsePartDetails(String artNumber, String content, int countBox) {
-        ProductInfo part = new ProductInfo();
-        part.setPart(true);
+    private ProductPart parsePartDetails(String artNumber, String content) {
+        ProductPart productPart = new ProductPart();
+        String originalArtNumber = artNumber.replaceAll("\\.|-", "");
+        ProductInfo part = findByArtNumber(artNumber);
+        if (part == null)
+            try {
+                part = loadFromIkea(artNumber);
+            } catch (IOException e) {
 
-        String originalArtNumber = artNumber.replace(".", "");
+            }
 
         Pattern p = Pattern.compile("metricPackageInfo.*\\{(.*?" + originalArtNumber + ".*?)\\}");
         Matcher m = p.matcher(content);
 
+        PackageInfo packageInfo = new PackageInfo();
         if (m.find())
-            part.setPackageInfo(parsePartPackageInfo(m.group(1)));
+            packageInfo = parsePartPackageInfo(m.group(1));
 
-        part.setArtNumber(artNumber.replace(".", "-"));
-        part.setOriginalArtNum(originalArtNumber);
-        part.setName(parsePartName(originalArtNumber, content));
-        part.setShortName(generateShortName(part.getName(), part.getArtNumber(), countBox));
-        System.out.println(part);
-        return part;
+        if (part == null) {
+            part = new ProductInfo();
+
+            part.setPackageInfo(packageInfo);
+            part.setArtNumber(artNumber.replace(".", "-"));
+            part.setOriginalArtNum(originalArtNumber);
+            part.setName(parsePartName(originalArtNumber, content));
+            part.setShortName(generateShortName(part.getName(), part.getArtNumber(), part.getPackageInfo().getBoxCount()));
+            part.getPackageInfo().setBoxCount(1);
+        }
+
+        productPart.setCount(packageInfo.getBoxCount());
+        productPart.setProductInfo(part);
+        return productPart;
     }
 
     private String parsePartName(String artNumber, String content) {
@@ -281,6 +328,7 @@ public class ProductService {
 
         Matcher m = PACKAGE_INFO_PATTERN.matcher(content);
         if (m.find()) {
+            System.out.println(m.group());
             packageInfo.setBoxCount(Integer.valueOf(m.group(1)));
             packageInfo.setLength(Integer.valueOf(m.group(2)));
             packageInfo.setWidth(Integer.valueOf(m.group(3)));

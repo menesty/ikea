@@ -6,7 +6,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import javafx.collections.ListChangeListener;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -19,9 +19,11 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.util.Callback;
+import org.menesty.ikea.IkeaApplication;
 import org.menesty.ikea.domain.Order;
-import org.menesty.ikea.order.OrderItem;
 import org.menesty.ikea.service.OrderService;
 import org.menesty.ikea.ui.TaskProgress;
 import org.menesty.ikea.ui.controls.PathProperty;
@@ -34,15 +36,18 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Date;
 
 public class OrderListPage extends BasePage {
 
-    private DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+    public static final DateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy");
 
     private TableView<OrderTableItem> tableView;
 
     private OrderService orderService;
+
+    private Region maskRegion;
+
+    private ProgressIndicator progressIndicator;
 
     public OrderListPage() {
         super("Order list");
@@ -60,17 +65,23 @@ public class OrderListPage extends BasePage {
         borderPane.setTop(control);
 
         Pane pane = createRoot();
-        pane.getChildren().add(borderPane);
+
+        maskRegion = new Region();
+        maskRegion.setVisible(false);
+        maskRegion.setStyle("-fx-background-color: rgba(0, 0, 0, 0.4)");
+        progressIndicator = new ProgressIndicator();
+        progressIndicator.setMaxSize(150, 150);
+        progressIndicator.setVisible(false);
+
+        StackPane stack = new StackPane();
+        stack.getChildren().addAll(borderPane, maskRegion, progressIndicator);
+        pane.getChildren().add(stack);
 
         return pane;
     }
 
     private TableView<OrderTableItem> createTableView() {
-        final ObservableList<OrderTableItem> data = FXCollections.observableArrayList(
-                new OrderTableItem(false, new Order("Test", new Date())),
-                new OrderTableItem(true, new Order("Test 2", new Date())),
-                new OrderTableItem(false, new Order("Test 3", new Date()))
-        );
+
 
         TableColumn checked = new TableColumn<OrderTableItem, Boolean>();
 
@@ -89,7 +100,7 @@ public class OrderListPage extends BasePage {
         orderName.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderTableItem, String>, ObservableValue<String>>() {
             @Override
             public ObservableValue<String> call(TableColumn.CellDataFeatures<OrderTableItem, String> item) {
-                return new PathProperty(item.getValue(), "order.name", String.class);
+                return new PathProperty<>(item.getValue(), "order.name");
             }
         });
         orderName.setCellFactory(TextFieldTableCell.forTableColumn());
@@ -98,6 +109,7 @@ public class OrderListPage extends BasePage {
             public void handle(TableColumn.CellEditEvent<OrderTableItem, String> t) {
                 OrderTableItem orderTableItem = t.getTableView().getItems().get(t.getTablePosition().getRow());
                 orderTableItem.setName(t.getNewValue());
+                orderService.save(orderTableItem.getOrder());
             }
         });
 
@@ -109,13 +121,14 @@ public class OrderListPage extends BasePage {
                 new Callback<TableColumn.CellDataFeatures<OrderTableItem, String>, ObservableValue<String>>() {
                     @Override
                     public ObservableValue<String> call(TableColumn.CellDataFeatures<OrderTableItem, String> item) {
-                        return new SimpleStringProperty(dateFormat.format(item.getValue().getOrder().getCreatedDate()));
+                        return new SimpleStringProperty(DATE_FORMAT.format(item.getValue().getOrder().getCreatedDate()));
                     }
                 });
 
         TableView tableView = new TableView();
-        tableView.setItems(data);
+        tableView.setItems(FXCollections.observableArrayList(transform(orderService.load())));
         tableView.setEditable(true);
+
         tableView.getColumns().addAll(checked, orderName, createdDate);
         return tableView;
     }
@@ -125,16 +138,33 @@ public class OrderListPage extends BasePage {
         ImageView imageView = new ImageView(new Image("/styles/images/icon/add1-48x48.png"));
         Button addOrder = new Button("", imageView);
         addOrder.setContentDisplay(ContentDisplay.RIGHT);
-        control.getItems().add(addOrder);
+
         addOrder.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
                 showCreateOrderDialog();
             }
         });
 
-        ProgressIndicator p1 = new ProgressIndicator();
-        p1.setProgress(0.5F);
-        control.getItems().add(p1);
+        imageView = new ImageView(new Image("/styles/images/icon/edit-48x48.png"));
+        final Button editOrder = new Button("", imageView);
+        editOrder.setContentDisplay(ContentDisplay.RIGHT);
+        editOrder.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent event) {
+                IkeaApplication.getPageManager().goToPageByName("Order", tableView.getSelectionModel().selectedItemProperty().getValue().getOrder());
+            }
+        });
+        editOrder.setDisable(true);
+
+        tableView.getSelectionModel().getSelectedIndices().addListener(new ListChangeListener<Integer>() {
+            @Override
+            public void onChanged(Change<? extends Integer> change) {
+                editOrder.setDisable(change.getList().size() == 0);
+            }
+
+        });
+
+        control.getItems().add(addOrder);
+        control.getItems().add(editOrder);
         return control;
     }
 
@@ -150,7 +180,12 @@ public class OrderListPage extends BasePage {
                 hidePopupDialog();
 
                 try {
-                    new Thread(new GetDailySalesTask(orderName, new FileInputStream(new File(filePath)))).start();
+                    Task<Void> task = new CreateOrderTask(orderName, new FileInputStream(new File(filePath)));
+                    progressIndicator.progressProperty().bind(task.progressProperty());
+                    maskRegion.visibleProperty().bind(task.runningProperty());
+                    progressIndicator.visibleProperty().bind(task.runningProperty());
+
+                    new Thread(task).start();
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
@@ -188,30 +223,33 @@ public class OrderListPage extends BasePage {
 
     }
 
-    private class GetDailySalesTask extends Task<ObservableList<OrderTableItem>> {
+    private class CreateOrderTask extends Task<Void> {
 
         private String orderName;
 
         private InputStream is;
 
-        public GetDailySalesTask(String orderName, InputStream is) {
+        public CreateOrderTask(String orderName, InputStream is) {
             this.orderName = orderName;
             this.is = is;
         }
 
         @Override
-        protected ObservableList<OrderTableItem> call() throws InterruptedException {
-            orderService.createOrder(orderName, is, new TaskProgress() {
-                @Override
-                public void updateProgress(long l, long l1) {
-                    GetDailySalesTask.this.updateProgress(l, l1);
-
-                }
-            });
-
-            ObservableList<OrderTableItem> orderTableItems = FXCollections.observableArrayList();
-            orderTableItems.addAll(transform(orderService.load()));
-            return orderTableItems;
+        protected Void call() throws InterruptedException {
+            try {
+                Order order = orderService.createOrder(orderName, is, new TaskProgress() {
+                    @Override
+                    public void updateProgress(long l, long l1) {
+                        CreateOrderTask.this.updateProgress(l, l1);
+                    }
+                });
+                orderService.save(order);
+                tableView.getItems().clear();
+                tableView.getItems().addAll(transform(orderService.load()));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
         }
     }
 

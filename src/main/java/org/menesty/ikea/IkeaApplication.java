@@ -18,6 +18,7 @@ import javafx.stage.StageStyle;
 import org.menesty.ikea.ui.controls.*;
 import org.menesty.ikea.ui.pages.CategoryPage;
 import org.menesty.ikea.ui.pages.OrderListPage;
+import org.menesty.ikea.ui.pages.OrderViewPage;
 import org.menesty.ikea.ui.pages.PageManager;
 
 /**
@@ -50,7 +51,7 @@ public class IkeaApplication extends Application {
 
     @Override
     public void start(final Stage stage) throws Exception {
-        this.instance = this;
+        instance = this;
         this.stage = stage;
         stage.setTitle("Ensemble");
         // set default docs location
@@ -138,9 +139,15 @@ public class IkeaApplication extends Application {
 
         pageManager = new PageManager(pageArea, breadcrumbBar);
 
-        CategoryPage main = new CategoryPage("IKEA", new OrderListPage());
-        pageManager.register(main);
 
+
+
+        OrderListPage orderListPage = new OrderListPage();
+        pageManager.register(new CategoryPage("IKEA", orderListPage));
+
+        OrderViewPage orderViewPage = new OrderViewPage();
+        orderViewPage.setBreadCrumbPath(orderListPage.getBreadCrumb());
+        pageManager.register(orderViewPage);
         pageManager.goToPage("IKEA/Order list");
     }
 

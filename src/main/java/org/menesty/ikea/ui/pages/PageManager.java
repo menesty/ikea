@@ -32,12 +32,12 @@ public class PageManager {
             pages.put(page.getBreadCrumb(), page);
     }
 
-    public void goToPage(BasePage page) {
-        goToPage(page, false, true);
+    public void goToPage(BasePage page, Object ... params) {
+        goToPage(page, false, true, params);
     }
 
-    public void goToPage(String breadcrumbPath) {
-        goToPage(pages.get(breadcrumbPath), false, true);
+    public void goToPage(String breadcrumbPath, Object ... params) {
+        goToPage(pages.get(breadcrumbPath), false, true, params);
     }
 
     /**
@@ -47,7 +47,7 @@ public class PageManager {
      * @param force     When true reload page if page is current page
      * @param swapViews If view should be swapped to new page
      */
-    private void goToPage(BasePage page, boolean force, boolean swapViews) {
+    private void goToPage(BasePage page, boolean force, boolean swapViews, Object ... params) {
         if (page == null) return;
         if (!force && page == currentPage) {
             return;
@@ -68,11 +68,20 @@ public class PageManager {
             }
         }
         currentPage = page;
+        currentPage.onActive(params);
         currentPagePath = page.getBreadCrumb();
         // when in applet update location bar
         // update breadcrumb bar
         breadcrumbBar.setPath(currentPagePath);
         // done
         changingPage = false;
+    }
+
+    public void goToPageByName(String order, Object ... params) {
+        for (BasePage entry : pages.values())
+            if (entry.getName().equals(order)) {
+                goToPage(entry, params);
+                break;
+            }
     }
 }

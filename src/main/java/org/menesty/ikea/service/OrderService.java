@@ -3,6 +3,7 @@ package org.menesty.ikea.service;
 import net.sf.jxls.reader.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.menesty.ikea.domain.InvoicePdf;
 import org.menesty.ikea.domain.Order;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.order.OrderItem;
@@ -12,10 +13,7 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,6 +31,7 @@ public class OrderService {
         try {
             Order order = new Order();
             order.setName(name);
+            order.setCreatedDate(new Date());
 
             InputStream inputXML = getClass().getResourceAsStream("/config/config.xml");
             XLSReader mainReader = ReaderBuilder.buildFromXML(inputXML);
@@ -65,13 +64,12 @@ public class OrderService {
     private List<OrderItem> reduce(List<RawOrderItem> list, TaskProgress taskProgress) {
         List<OrderItem> result = new ArrayList<>();
         Map<String, OrderItem> reduceMap = new HashMap<>();
-
-        int progressPercantage = 80;
-        //load
-
         int itemIndex = 0;
+
         for (RawOrderItem rawOrderItem : list) {
-            if (rawOrderItem.getArtNumber() == null) continue;
+            itemIndex++;
+            if (rawOrderItem.getArtNumber() == null || (StringUtils.isNotBlank(rawOrderItem.getCombo()) && rawOrderItem.getPrice() == 0))
+                continue;
 
             String artNumber = getArtNumber(rawOrderItem.getArtNumber());
             if (!artNumber.isEmpty()) {
@@ -94,16 +92,16 @@ public class OrderService {
 
                     ProductInfo productInfo = productService.findByArtNumber(orderItem.getArtNumber());
 
-                    if (productInfo == null)
-                        orderItem.setNew(true);
-                    else
+                    if (productInfo == null) {
                         productInfo = productService.loadOrCreate(orderItem.getArtNumber());
 
-                    if (productInfo == null) {
-                        orderItem.setType(OrderItem.Type.Na);
-                        orderItem.setNew(false);
-                    } else
-                        orderItem.setProductInfo(productInfo);
+                        if (productInfo == null)
+                            orderItem.setType(OrderItem.Type.Na);
+
+                        orderItem.setNew(productInfo != null);
+                    }
+
+                    orderItem.setProductInfo(productInfo);
 
                     reduceMap.put(artNumber, orderItem);
 
@@ -111,11 +109,10 @@ public class OrderService {
                     orderItem.setCount(orderItem.getCount() + rawOrderItem.getCount());
 
                 result.add(orderItem);
-                itemIndex++;
 
-               int done = (100* itemIndex)/ list.size();
 
-                taskProgress.updateProgress(80,100);
+                int done = (100 * itemIndex) / list.size();
+                taskProgress.updateProgress((80 * done) / 100 + 20, 100);
             }
         }
         return result;
@@ -128,8 +125,15 @@ public class OrderService {
         return "";
     }
 
-
     public List<Order> load() {
-        return null;
+        return DatabaseService.get().query(Order.class);
+    }
+
+    public void save(Order order) {
+        DatabaseService.get().store(order);
+    }
+
+    public void save(InvoicePdf invoicePdf) {
+        DatabaseService.get().store(invoicePdf);
     }
 }

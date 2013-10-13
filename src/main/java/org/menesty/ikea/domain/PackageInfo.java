@@ -11,7 +11,7 @@ public class PackageInfo {
 
     private int boxCount;
 
-    public boolean hasSize(){
+    public boolean hasAllSize(){
         return !(width == 0 || height == 0 || length == 0);
     }
 

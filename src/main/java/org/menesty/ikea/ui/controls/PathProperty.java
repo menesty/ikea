@@ -12,7 +12,7 @@ public class PathProperty<B, T> extends ObjectPropertyBase<T> {
     private PropertyMethodHandles propMethHandles;
     private final B bean;
 
-    public PathProperty(final B bean, final String fieldPath, final Class type) {
+    public PathProperty(final B bean, final String fieldPath) {
         super();
         this.bean = bean;
         this.fieldPath = fieldPath;
@@ -130,8 +130,9 @@ public class PathProperty<B, T> extends ObjectPropertyBase<T> {
                 }
                 return mh1;
             } catch (final Throwable t) {
-                throw new IllegalArgumentException("Unable to resolve setter "
-                        + fieldName, t);
+               /* throw new IllegalArgumentException("Unable to resolve setter "
+                        + fieldName, t);*/
+                return null;
             }
         }
 
@@ -146,8 +147,9 @@ public class PathProperty<B, T> extends ObjectPropertyBase<T> {
             } catch (final NoSuchMethodException e) {
                 return buildAccessor(target, fieldName, Arrays.copyOfRange(fieldNamePrefix, 1, fieldNamePrefix.length));
             } catch (final Throwable t) {
-                throw new IllegalArgumentException(
-                        "Unable to resolve accessor " + accessorName, t);
+               /* throw new IllegalArgumentException(
+                        "Unable to resolve accessor " + accessorName, t);*/
+                return null;
             }
         }
 

@@ -39,7 +39,7 @@ public abstract class BasePage {
         return name;
     }
 
-    void setBreadCrumbPath(String path) {
+    public void setBreadCrumbPath(String path) {
         breadCrumbPath = path;
     }
 
@@ -145,4 +145,7 @@ public abstract class BasePage {
         return IkeaApplication.get().getStage();
     }
 
+    public void onActive(Object... params) {
+
+    }
 }

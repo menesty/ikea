@@ -129,9 +129,9 @@ public class InvoiceItem {
 
     public static List<InvoiceItem> get(ProductInfo productInfo, int count) {
         List<InvoiceItem> result = new ArrayList<>();
-        if (productInfo.getNumberBox() > 1)
-            for (int i = 1; i <= productInfo.getNumberBox(); i++)
-                result.add(InvoiceItem.get(productInfo, count, i, productInfo.getNumberBox()));
+        if (productInfo.getPackageInfo().getBoxCount() > 1)
+            for (int i = 1; i <= productInfo.getPackageInfo().getBoxCount(); i++)
+                result.add(InvoiceItem.get(productInfo, count, i, productInfo.getPackageInfo().getBoxCount()));
         else
             result.add(InvoiceItem.get(productInfo, count, 1, 1));
         return result;
