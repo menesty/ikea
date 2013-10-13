@@ -9,10 +9,12 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
@@ -33,11 +35,13 @@ import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.service.InvoicePdfService;
 import org.menesty.ikea.service.OrderService;
 import org.menesty.ikea.ui.controls.PathProperty;
+import org.menesty.ikea.ui.controls.table.RawInvoiceTableView;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,12 +53,11 @@ import java.util.List;
 public class OrderViewPage extends BasePage {
     TableView<OrderItem> tableView;
     OrderService orderService;
-    private Region maskRegion;
-    private ProgressIndicator progressIndicator;
+
     private InvoicePdfService invoicePdfService;
 
     private Order currentOrder;
-    private TableView<RawInvoiceProductItem> rawInvoiceItemTableView;
+    private RawInvoiceTableView rawInvoiceItemTableView;
     private TableView<InvoicePdfTableItem> invoicePfdTableView;
 
     public OrderViewPage() {
@@ -65,17 +68,10 @@ public class OrderViewPage extends BasePage {
 
     @Override
     public Node createView() {
-        maskRegion = new Region();
-        maskRegion.setVisible(false);
-        maskRegion.setStyle("-fx-background-color: rgba(0, 0, 0, 0.4)");
-        progressIndicator = new ProgressIndicator();
-        progressIndicator.setMaxSize(150, 150);
-        progressIndicator.setVisible(false);
-        Pane pane = createRoot();
 
-        StackPane stack = new StackPane();
-        stack.getChildren().addAll(createInvoiceView(), maskRegion, progressIndicator);
-        pane.getChildren().add(stack);
+        StackPane pane = createRoot();
+        pane.getChildren().add(0, createInvoiceView());
+
         return pane;
     }
 
@@ -84,7 +80,7 @@ public class OrderViewPage extends BasePage {
         {
             TableColumn<OrderItem, Number> column = new TableColumn<>();
             column.setText("");
-            column.setMinWidth(30);
+            column.setMaxWidth(40);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderItem, Number>, ObservableValue<Number>>() {
                 @Override
                 public ObservableValue<Number> call(TableColumn.CellDataFeatures<OrderItem, Number> item) {
@@ -192,9 +188,11 @@ public class OrderViewPage extends BasePage {
         }
 
 
-        tableView.itemsProperty().addListener(new ChangeListener() {
+        tableView.itemsProperty().addListener(new ChangeListener<ObservableList<OrderItem>>() {
+
             @Override
-            public void changed(ObservableValue observableValue, Object o, Object o2) {
+            public void changed(ObservableValue<? extends ObservableList<OrderItem>> observableValue, ObservableList<OrderItem> orderItems, ObservableList<OrderItem> orderItems2) {
+                System.out.print("items uodate");
             }
         });
 
@@ -205,7 +203,22 @@ public class OrderViewPage extends BasePage {
         exportOrder.setTooltip(new Tooltip("Export to XLS"));
         exportOrder.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
-                // showCreateOrderDialog();
+                FileChooser fileChooser = new FileChooser();
+
+                //Set extension filter
+                FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("Zip file (*.zip)", "*.zip");
+                fileChooser.getExtensionFilters().add(extFilter);
+
+                //Show save file dialog
+                File file = fileChooser.showSaveDialog(getStage());
+
+                if (file != null) {
+                    try {
+                        orderService.exportToXls(currentOrder, file.getAbsolutePath());
+                    } catch (URISyntaxException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
         });
         toolBar.getItems().add(exportOrder);
@@ -257,12 +270,7 @@ public class OrderViewPage extends BasePage {
 
                 if (selectedFile != null) {
                     try {
-                        Task<Void> task = new CreateInvoicePdfTask(selectedFile.getName(), new FileInputStream(selectedFile));
-                        progressIndicator.progressProperty().bind(task.progressProperty());
-                        maskRegion.visibleProperty().bind(task.runningProperty());
-                        progressIndicator.visibleProperty().bind(task.runningProperty());
-
-                        new Thread(task).start();
+                        runTask(new CreateInvoicePdfTask(selectedFile.getName(), new FileInputStream(selectedFile)));
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
                     }
@@ -277,11 +285,14 @@ public class OrderViewPage extends BasePage {
 
         TableColumn<InvoicePdfTableItem, Boolean> checked = new TableColumn<>();
 
-        checked.setMinWidth(50);
+        checked.setMaxWidth(40);
+        checked.setResizable(false);
         checked.setCellValueFactory(new PropertyValueFactory<InvoicePdfTableItem, Boolean>("checked"));
         checked.setCellFactory(new Callback<TableColumn<InvoicePdfTableItem, Boolean>, TableCell<InvoicePdfTableItem, Boolean>>() {
             public TableCell<InvoicePdfTableItem, Boolean> call(TableColumn<InvoicePdfTableItem, Boolean> p) {
-                return new CheckBoxTableCell<>();
+                CheckBoxTableCell<InvoicePdfTableItem, Boolean> checkBoxTableCell = new CheckBoxTableCell();
+                checkBoxTableCell.setAlignment(Pos.CENTER);
+                return checkBoxTableCell;
             }
         });
 
@@ -327,6 +338,7 @@ public class OrderViewPage extends BasePage {
                     }
                 });
         invoicePfdTableView = new TableView<>();
+        invoicePfdTableView.setEditable(true);
         invoicePfdTableView.getColumns().addAll(checked, name, priceColumn, createdDate);
 
         pdfInvoicePane.setCenter(invoicePfdTableView);
@@ -336,7 +348,7 @@ public class OrderViewPage extends BasePage {
         splitPane.setOrientation(Orientation.VERTICAL);
 
 
-        rawInvoiceItemTableView = createRawInvoiceTableView();
+        rawInvoiceItemTableView = new RawInvoiceTableView();
 
         splitPane.getItems().addAll(pdfInvoicePane, rawInvoiceItemTableView);
         splitPane.setDividerPosition(0, 0.40);
@@ -347,94 +359,6 @@ public class OrderViewPage extends BasePage {
         return tabPane;
     }
 
-    private TableView<RawInvoiceProductItem> createRawInvoiceTableView() {
-        TableView<RawInvoiceProductItem> tableView = new TableView<>();
-
-        {
-            TableColumn<RawInvoiceProductItem, String> column = new TableColumn<>();
-            column.setText("Art # ");
-            column.setMinWidth(100);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<RawInvoiceProductItem, String>, ObservableValue<String>>() {
-                @Override
-                public ObservableValue<String> call(TableColumn.CellDataFeatures<RawInvoiceProductItem, String> item) {
-                    return new PathProperty<>(item.getValue(), "artNumber");
-                }
-            });
-            tableView.getColumns().add(column);
-        }
-
-        {
-            TableColumn<RawInvoiceProductItem, String> column = new TableColumn<>();
-            column.setText("Name");
-            column.setMinWidth(200);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<RawInvoiceProductItem, String>, ObservableValue<String>>() {
-                @Override
-                public ObservableValue<String> call(TableColumn.CellDataFeatures<RawInvoiceProductItem, String> item) {
-                    return new PathProperty<>(item.getValue(), "name");
-                }
-            });
-
-            tableView.getColumns().add(column);
-        }
-
-        {
-            TableColumn<RawInvoiceProductItem, Integer> column = new TableColumn<>();
-            column.setText("Count");
-            column.setMinWidth(60);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<RawInvoiceProductItem, Integer>, ObservableValue<Integer>>() {
-                @Override
-                public ObservableValue<Integer> call(TableColumn.CellDataFeatures<RawInvoiceProductItem, Integer> item) {
-                    return new PathProperty<>(item.getValue(), "count");
-                }
-            });
-
-            tableView.getColumns().add(column);
-        }
-
-
-        {
-            TableColumn<RawInvoiceProductItem, Double> column = new TableColumn<>();
-            column.setText("Price");
-            column.setMinWidth(60);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<RawInvoiceProductItem, Double>, ObservableValue<Double>>() {
-                @Override
-                public ObservableValue<Double> call(TableColumn.CellDataFeatures<RawInvoiceProductItem, Double> item) {
-                    return new PathProperty<>(item.getValue(), "price");
-                }
-            });
-
-            tableView.getColumns().add(column);
-        }
-
-        {
-            TableColumn<RawInvoiceProductItem, String> column = new TableColumn<>();
-            column.setText("Wat");
-            column.setMinWidth(60);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<RawInvoiceProductItem, String>, ObservableValue<String>>() {
-                @Override
-                public ObservableValue<String> call(TableColumn.CellDataFeatures<RawInvoiceProductItem, String> item) {
-                    return new PathProperty<>(item.getValue(), "wat");
-                }
-            });
-
-            tableView.getColumns().add(column);
-        }
-
-        {
-            TableColumn<RawInvoiceProductItem, Double> column = new TableColumn<>();
-            column.setText("T Price");
-            column.setMinWidth(60);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<RawInvoiceProductItem, Double>, ObservableValue<Double>>() {
-                @Override
-                public ObservableValue<Double> call(TableColumn.CellDataFeatures<RawInvoiceProductItem, Double> item) {
-                    return new PathProperty<>(item.getValue(), "total");
-                }
-            });
-
-            tableView.getColumns().add(column);
-        }
-        return tableView;
-    }
 
     @Override
     public void onActive(Object... params) {
@@ -444,7 +368,7 @@ public class OrderViewPage extends BasePage {
         updateRawInvoiceTableView();
     }
 
-    public static class InvoicePdfTableItem {
+    public class InvoicePdfTableItem {
         private BooleanProperty checked;
 
         private InvoicePdf invoicePdf;
@@ -456,8 +380,13 @@ public class OrderViewPage extends BasePage {
             this.checked.addListener(new ChangeListener<Boolean>() {
                 public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1) {
                     System.out.println(InvoicePdfTableItem.this.invoicePdf.getName() + " invited: " + t1);
+                    OrderViewPage.this.updateRawInvoiceTableView();
                 }
             });
+        }
+
+        public BooleanProperty checkedProperty() {
+            return checked;
         }
 
         public InvoicePdf getInvoicePdf() {
@@ -509,6 +438,7 @@ public class OrderViewPage extends BasePage {
                 checked.add(item.getInvoicePdf());
 
         List<RawInvoiceProductItem> forDisplay = new ArrayList<>();
+
         if (checked.isEmpty() && currentOrder.getInvoicePdfs() != null)
             checked.addAll(currentOrder.getInvoicePdfs());
 

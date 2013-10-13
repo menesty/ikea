@@ -25,11 +25,6 @@ public class ProductService {
 
     private static final String KATOWICE = "306";
 
-    private static final Pattern WEIGHT_PATTERN = Pattern.compile("(\\d{0,},{0,}\\d{1,})kg");
-
-    private static final Pattern ART_NUMBER_PART_PATTERN = Pattern.compile("(\\d{3}\\.\\d{3}\\.\\d{2})");
-
-    private static final Pattern PACKAGE_INFO_PATTERN = Pattern.compile("\"quantity\":\"(\\d+)\",\"length\":(\\d+),\"width\":(\\d+),\"articleNumber\":\"\\d+\",\"weight\":(\\d+),\"height\":(\\d+)");
 
     public ProductService() {
 
@@ -116,19 +111,19 @@ public class ProductService {
             String productSize = document.select("#measuresPart #metric").text();
 
             if (packageInfo.getHeight() == 0) {
-                Matcher m = Pattern.compile("Wysokość: (\\d+{0,}\\.{0,}\\d+)").matcher(productSize);
+                Matcher m = Patterns.HEIGHT_PATTERN.matcher(productSize);
                 if (m.find())
                     packageInfo.setHeight((int) ((Double.valueOf(m.group(1)) * 10)));
             }
 
             if (packageInfo.getWidth() == 0) {
-                Matcher m = Pattern.compile("Szerokość: (\\d+{0,}\\.{0,}\\d+)").matcher(productSize);
+                Matcher m = Patterns.WIDTH_PATTERN.matcher(productSize);
                 if (m.find())
                     packageInfo.setWidth((int) ((Double.valueOf(m.group(1)) * 10)));
             }
 
             if (packageInfo.getLength() == 0) {
-                Matcher m = Pattern.compile("(Długość|Głębokość): (\\d+{0,}\\.{0,}\\d+)").matcher(productSize);
+                Matcher m = Patterns.LENGHT_PATTERN.matcher(productSize);
                 if (m.find())
                     packageInfo.setLength((int) ((Double.valueOf(m.group(2)) * 10)));
             }
@@ -165,7 +160,7 @@ public class ProductService {
 
         elements = doc.select("#packageInfo .texts");
 
-        Matcher m = WEIGHT_PATTERN.matcher(elements.text());
+        Matcher m = Patterns.WEIGHT_PATTERN.matcher(elements.text());
         if (m.find()) {
             if (Double.valueOf(m.group(1).replace(',', '.')) > 19)
                 return ProductInfo.Group.Full;
@@ -257,7 +252,7 @@ public class ProductService {
         Document rowDetailsDoc = Jsoup.connect("http://www.ikea.com/pl/pl/catalog/packagepopup/" + artNumber).get();
         Elements rows = rowDetailsDoc.select(".rowContainerPackage .colArticle");
         for (Element row : rows) {
-            Matcher m = ART_NUMBER_PART_PATTERN.matcher(row.html());
+            Matcher m = Patterns.ART_NUMBER_PART_PATTERN.matcher(row.html());
             if (m.find())
                 parts.add(parsePartDetails(m.group(1).replace(".", "-"), content));
         }
@@ -326,7 +321,7 @@ public class ProductService {
     private PackageInfo parsePartPackageInfo(String content) {
         PackageInfo packageInfo = new PackageInfo();
 
-        Matcher m = PACKAGE_INFO_PATTERN.matcher(content);
+        Matcher m = Patterns.PACKAGE_INFO_PATTERN.matcher(content);
         if (m.find()) {
             System.out.println(m.group());
             packageInfo.setBoxCount(Integer.valueOf(m.group(1)));

@@ -45,10 +45,6 @@ public class OrderListPage extends BasePage {
 
     private OrderService orderService;
 
-    private Region maskRegion;
-
-    private ProgressIndicator progressIndicator;
-
     public OrderListPage() {
         super("Order list");
         orderService = new OrderService();
@@ -64,18 +60,8 @@ public class OrderListPage extends BasePage {
         borderPane.setCenter(tableView);
         borderPane.setTop(control);
 
-        Pane pane = createRoot();
-
-        maskRegion = new Region();
-        maskRegion.setVisible(false);
-        maskRegion.setStyle("-fx-background-color: rgba(0, 0, 0, 0.4)");
-        progressIndicator = new ProgressIndicator();
-        progressIndicator.setMaxSize(150, 150);
-        progressIndicator.setVisible(false);
-
-        StackPane stack = new StackPane();
-        stack.getChildren().addAll(borderPane, maskRegion, progressIndicator);
-        pane.getChildren().add(stack);
+        StackPane pane = createRoot();
+        pane.getChildren().add(0, borderPane);
 
         return pane;
     }
@@ -178,14 +164,8 @@ public class OrderListPage extends BasePage {
             @Override
             public void onCreate(String orderName, String filePath) {
                 hidePopupDialog();
-
                 try {
-                    Task<Void> task = new CreateOrderTask(orderName, new FileInputStream(new File(filePath)));
-                    progressIndicator.progressProperty().bind(task.progressProperty());
-                    maskRegion.visibleProperty().bind(task.runningProperty());
-                    progressIndicator.visibleProperty().bind(task.runningProperty());
-
-                    new Thread(task).start();
+                    runTask(new CreateOrderTask(orderName, new FileInputStream(new File(filePath))));
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
@@ -194,9 +174,15 @@ public class OrderListPage extends BasePage {
     }
 
     public static class OrderTableItem {
+
         private BooleanProperty checked;
 
         private Order order;
+
+
+        public BooleanProperty checkedProperty() {
+            return checked;
+        }
 
         private OrderTableItem(boolean checked, Order order) {
             this.order = order;
@@ -220,6 +206,7 @@ public class OrderListPage extends BasePage {
         public void setName(String name) {
             order.setName(name);
         }
+
 
     }
 

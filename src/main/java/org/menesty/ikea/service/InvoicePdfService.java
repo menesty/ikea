@@ -29,14 +29,16 @@ public class InvoicePdfService {
     }
 
     public static void main(String... arg) throws IOException {
-        InvoicePdfService pdfService = new InvoicePdfService();
 
-        String[] files = new String[]{"599 self.pdf", "600 tekstylia.pdf", "601 kuchnia.pdf", "602 kuchnia.pdf", "603 dekoracje.pdf", "604 famili.pdf", "606 full.pdf", "607 self.pdf", "608 oswitlenie.pdf",
+        System.out.print(Integer.valueOf("s001".replaceAll("\\D+","")));
+        /*InvoicePdfService pdfService = new InvoicePdfService();
+
+        String[] files = new String[]{"306-S-12021.pdf", "306-S-12022.pdf", "306-S-12023.pdf", "599 self.pdf", "600 tekstylia.pdf", "601 kuchnia.pdf", "602 kuchnia.pdf", "603 dekoracje.pdf", "604 famili.pdf", "606 full.pdf", "607 self.pdf", "608 oswitlenie.pdf",
                 "610 self.pdf", "613 lazienka.pdf"};
 
-        FileOutputStream fos = new FileOutputStream("data/pdf/result.csv");
+        FileOutputStream fos = new FileOutputStream("D:\\113faktur/result.csv");
         for (String fileName : files) {
-            InvoicePdf invoicePdf = pdfService.parseInvoice(fileName, InvoicePdfService.class.getResourceAsStream("/pdf/" + fileName));
+            InvoicePdf invoicePdf = pdfService.parseInvoice(fileName, new FileInputStream("D:\\113faktur/" + fileName));
 
             for (RawInvoiceProductItem item : invoicePdf.getProducts()) {
                 fos.write(item.toString().getBytes());
@@ -47,7 +49,7 @@ public class InvoicePdfService {
 
         }
         fos.close();
-
+*/
     }
 
     private void render(List<InvoicePdf> invoicePdfs) {
@@ -81,7 +83,7 @@ public class InvoicePdfService {
                 product.setCount(Integer.valueOf(m.group(5)));
                 product.setPriceStr(m.group(6));
                 product.setWat(m.group(7));
-                product.setProductInfo(productService.loadOrCreate(product.getArtNumber()));
+               // product.setProductInfo(productService.loadOrCreate(product.getArtNumber()));
                 products.add(product);
             }
         }

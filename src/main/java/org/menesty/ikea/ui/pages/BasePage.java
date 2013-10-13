@@ -1,5 +1,6 @@
 package org.menesty.ikea.ui.pages;
 
+import javafx.concurrent.Task;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.geometry.HPos;
@@ -9,12 +10,11 @@ import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.effect.BlendMode;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.CycleMethod;
 import javafx.scene.paint.LinearGradient;
@@ -27,12 +27,24 @@ import org.menesty.ikea.IkeaApplication;
 import java.util.List;
 
 public abstract class BasePage {
+
+    private Region maskRegion;
+
+    private ProgressIndicator progressIndicator;
+
     String breadCrumbPath;
 
     String name;
 
     public BasePage(String name) {
         this.name = name;
+
+        maskRegion = new Region();
+        maskRegion.setVisible(false);
+        maskRegion.setStyle("-fx-background-color: rgba(0, 0, 0, 0.4)");
+        progressIndicator = new ProgressIndicator();
+        progressIndicator.setMaxSize(150, 150);
+        progressIndicator.setVisible(false);
     }
 
     public String getName() {
@@ -49,8 +61,8 @@ public abstract class BasePage {
 
     public abstract Node createView();
 
-    protected Pane createRoot() {
-        Pane pane = new Pane() {
+    protected StackPane createRoot() {
+        StackPane pane = new StackPane() {
             @Override
             protected void layoutChildren() {
                 List<Node> managed = getManagedChildren();
@@ -71,10 +83,22 @@ public abstract class BasePage {
             }
 
         };
+
         VBox.setVgrow(pane, Priority.ALWAYS);
         pane.setMaxWidth(Double.MAX_VALUE);
         pane.setMaxHeight(Double.MAX_VALUE);
-        return pane;
+
+        StackPane stack = new StackPane();
+        stack.getChildren().addAll(maskRegion, progressIndicator);
+        return stack;
+    }
+
+    protected  <T> void  runTask(Task<T> task){
+        progressIndicator.progressProperty().bind(task.progressProperty());
+        maskRegion.visibleProperty().bind(task.runningProperty());
+        progressIndicator.visibleProperty().bind(task.runningProperty());
+
+        new Thread(task).start();
     }
 
     public Node createTile() {

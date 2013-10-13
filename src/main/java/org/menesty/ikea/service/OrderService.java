@@ -1,8 +1,10 @@
 package org.menesty.ikea.service;
 
 import net.sf.jxls.reader.*;
+import net.sf.jxls.transformer.XLSTransformer;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.menesty.ikea.domain.InvoicePdf;
 import org.menesty.ikea.domain.Order;
 import org.menesty.ikea.domain.ProductInfo;
@@ -11,8 +13,13 @@ import org.menesty.ikea.order.RawOrderItem;
 import org.menesty.ikea.ui.TaskProgress;
 import org.xml.sax.SAXException;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -62,7 +69,6 @@ public class OrderService {
     }
 
     private List<OrderItem> reduce(List<RawOrderItem> list, TaskProgress taskProgress) {
-        List<OrderItem> result = new ArrayList<>();
         Map<String, OrderItem> reduceMap = new HashMap<>();
         int itemIndex = 0;
 
@@ -83,10 +89,10 @@ public class OrderService {
                     orderItem.setName(rawOrderItem.getDescription());
                     orderItem.setPrice(rawOrderItem.getPrice());
 
-                    if (StringUtils.isNotBlank(rawOrderItem.getCombo()))
-                        orderItem.setType(OrderItem.Type.Combo);
-                    else if (StringUtils.isNotBlank(rawOrderItem.getComment()))
+                    if (StringUtils.isNotBlank(rawOrderItem.getComment()))
                         orderItem.setType(OrderItem.Type.Specials);
+                    else if (StringUtils.isNotBlank(rawOrderItem.getCombo()))
+                        orderItem.setType(OrderItem.Type.Combo);
                     else
                         orderItem.setType(OrderItem.Type.General);
 
@@ -108,14 +114,20 @@ public class OrderService {
                 } else
                     orderItem.setCount(orderItem.getCount() + rawOrderItem.getCount());
 
-                result.add(orderItem);
-
-
                 int done = (100 * itemIndex) / list.size();
                 taskProgress.updateProgress((80 * done) / 100 + 20, 100);
             }
         }
-        return result;
+        return new ArrayList<>(reduceMap.values());
+    }
+
+    public static void main(String... args) throws FileNotFoundException {
+        OrderService orderService = new OrderService();
+        orderService.createOrder("39", new FileInputStream("C:\\Users\\Menesty\\Downloads/ikea39.xlsx"), new TaskProgress() {
+            @Override
+            public void updateProgress(long l, long l1) {
+            }
+        });
     }
 
     private String getArtNumber(String artNumber) {
@@ -135,5 +147,101 @@ public class OrderService {
 
     public void save(InvoicePdf invoicePdf) {
         DatabaseService.get().store(invoicePdf);
+    }
+
+    public void exportToXls(Order order, String filePath) throws URISyntaxException {
+        Map<OrderItem.Type, List<OrderItem>> typeFilterMap = new HashMap<>();
+
+        for (OrderItem orderItem : order.getOrderItems()) {
+            List<OrderItem> orderItems = getByType(orderItem.getType(), typeFilterMap);
+            orderItems.add(orderItem);
+        }
+
+        XLSTransformer transformer = new XLSTransformer();
+        List<String> templateSheetNameList = Arrays.asList("combo", "color", "na", "invoice");
+        List<String> sheetNameList = Arrays.asList("combo_r", "color_r", "na_r", "invoice_r");
+
+        double totalSum = 0d;
+        List<Map<String, Object>> mapBeans = new ArrayList<>();
+
+
+        totalSum += populateData(OrderItem.Type.Combo, typeFilterMap, mapBeans);
+        totalSum += populateData(OrderItem.Type.Specials, typeFilterMap, mapBeans);
+        totalSum += populateData(OrderItem.Type.Na, typeFilterMap, mapBeans);
+        totalSum += populateData(OrderItem.Type.General, typeFilterMap, mapBeans);
+        mapBeans.get(3).put("totalSum", totalSum);
+
+
+        Map<String, String> env = new HashMap<>();
+        env.put("create", "true");
+
+        URI fileUri = new File(filePath).toURI();
+        URI zipUri = new URI("jar:" + fileUri.getScheme(), fileUri.getPath(), null);
+
+        try (FileSystem zipfs = FileSystems.newFileSystem(zipUri, env)) {
+            Workbook workbook = transformer.transformXLS(getClass().getResourceAsStream("/config/reduce.xlsx"), templateSheetNameList, sheetNameList, mapBeans);
+
+            workbook.write(Files.newOutputStream(zipfs.getPath("reduce-result.xlsx"), StandardOpenOption.TRUNCATE_EXISTING));
+            for (ProductInfo.Group group : ProductInfo.Group.values()) {
+                Map<String, Object> bean = new HashMap<>();
+                bean.put("orderItems", filterByProductGroup(group, (List<OrderItem>) mapBeans.get(3).get("orderItems")));
+                workbook = transformer.transformXLS(getClass().getResourceAsStream("/config/group.xlsx"), bean);
+                workbook.write(Files.newOutputStream(zipfs.getPath(group.toString().toLowerCase() + ".xlsx"), StandardOpenOption.TRUNCATE_EXISTING));
+
+            }
+
+            Map<String, Object> bean = new HashMap<>();
+            bean.put("orderItems", filterByProductGroup(null, (List<OrderItem>) mapBeans.get(3).get("orderItems")));
+            workbook = transformer.transformXLS(getClass().getResourceAsStream("/config/group.xlsx"), bean);
+            workbook.write(Files.newOutputStream(zipfs.getPath("unknown-group.xlsx"), StandardOpenOption.TRUNCATE_EXISTING));
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InvalidFormatException e1) {
+            e1.printStackTrace();
+        }
+    }
+
+    private List<OrderItem> filterByProductGroup(ProductInfo.Group group, List<OrderItem> orderItems) {
+        List<OrderItem> result = new ArrayList<>();
+
+        for (OrderItem orderItem : orderItems) {
+            if (group == null && orderItem.getProductInfo() == null) {
+                result.add(orderItem);
+                continue;
+            }
+
+            if (orderItem.getProductInfo() != null && orderItem.getProductInfo().getGroup() == group)
+                result.add(orderItem);
+        }
+
+        return result;
+    }
+
+    private double populateData(OrderItem.Type type, Map<OrderItem.Type, List<OrderItem>> typeFilterMap, List<Map<String, Object>> mapBeans) {
+        Map<String, Object> bean = new HashMap<>();
+        List<OrderItem> data = getByType(type, typeFilterMap);
+        bean.put("orderItems", data);
+        double total = getTotal(data);
+        bean.put("total", total);
+        mapBeans.add(bean);
+        return total;
+    }
+
+    private List<OrderItem> getByType(OrderItem.Type type, Map<OrderItem.Type, List<OrderItem>> typeFilterMap) {
+        List<OrderItem> orderItems = typeFilterMap.get(type);
+        if (orderItems == null)
+            typeFilterMap.put(type, orderItems = new ArrayList<>());
+
+        return orderItems;
+    }
+
+    private double getTotal(List<OrderItem> orderItems) {
+        double total = 0d;
+
+        for (OrderItem item : orderItems) {
+            total += item.getTotal();
+        }
+        return total;
     }
 }
