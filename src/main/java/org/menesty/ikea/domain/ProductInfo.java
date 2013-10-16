@@ -29,6 +29,16 @@ public class ProductInfo {
 
     private PackageInfo packageInfo = new PackageInfo();
 
+    private boolean verified;
+
+    public boolean isVerified() {
+        return verified;
+    }
+
+    public void setVerified(boolean verified) {
+        this.verified = verified;
+    }
+
     public List<ProductPart> getParts() {
         return parts;
     }

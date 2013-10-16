@@ -22,8 +22,6 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.util.Callback;
@@ -34,14 +32,15 @@ import org.menesty.ikea.order.OrderItem;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.service.InvoicePdfService;
 import org.menesty.ikea.service.OrderService;
+import org.menesty.ikea.ui.TaskProgress;
 import org.menesty.ikea.ui.controls.PathProperty;
+import org.menesty.ikea.ui.controls.dialog.ProductDialog;
 import org.menesty.ikea.ui.controls.table.RawInvoiceTableView;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,6 +59,8 @@ public class OrderViewPage extends BasePage {
     private RawInvoiceTableView rawInvoiceItemTableView;
     private TableView<InvoicePdfTableItem> invoicePfdTableView;
 
+    private ProductDialog productEditDialog;
+
     public OrderViewPage() {
         super("Order");
         orderService = new OrderService();
@@ -71,7 +72,7 @@ public class OrderViewPage extends BasePage {
 
         StackPane pane = createRoot();
         pane.getChildren().add(0, createInvoiceView());
-
+        productEditDialog = new ProductDialog();
         return pane;
     }
 
@@ -213,11 +214,7 @@ public class OrderViewPage extends BasePage {
                 File file = fileChooser.showSaveDialog(getStage());
 
                 if (file != null) {
-                    try {
-                        orderService.exportToXls(currentOrder, file.getAbsolutePath());
-                    } catch (URISyntaxException e) {
-                        e.printStackTrace();
-                    }
+                    runTask(new ExportOrderItemsTask(currentOrder, file.getAbsolutePath()));
                 }
             }
         });
@@ -234,6 +231,7 @@ public class OrderViewPage extends BasePage {
         tab.setClosable(false);
         return tab;
     }
+
 
     private TabPane createInvoiceView() {
         final TabPane tabPane = new TabPane();
@@ -258,7 +256,7 @@ public class OrderViewPage extends BasePage {
         ImageView imageView = new ImageView(new javafx.scene.image.Image("/styles/images/icon/upload-32x32.png"));
         Button uploadInvoice = new Button("", imageView);
         uploadInvoice.setContentDisplay(ContentDisplay.RIGHT);
-        uploadInvoice.setTooltip(new Tooltip("Export to XLS"));
+        uploadInvoice.setTooltip(new Tooltip("Upload Invoice PDF"));
         uploadInvoice.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
 
@@ -290,7 +288,7 @@ public class OrderViewPage extends BasePage {
         checked.setCellValueFactory(new PropertyValueFactory<InvoicePdfTableItem, Boolean>("checked"));
         checked.setCellFactory(new Callback<TableColumn<InvoicePdfTableItem, Boolean>, TableCell<InvoicePdfTableItem, Boolean>>() {
             public TableCell<InvoicePdfTableItem, Boolean> call(TableColumn<InvoicePdfTableItem, Boolean> p) {
-                CheckBoxTableCell<InvoicePdfTableItem, Boolean> checkBoxTableCell = new CheckBoxTableCell();
+                CheckBoxTableCell<InvoicePdfTableItem, Boolean> checkBoxTableCell = new CheckBoxTableCell<>();
                 checkBoxTableCell.setAlignment(Pos.CENTER);
                 return checkBoxTableCell;
             }
@@ -348,9 +346,44 @@ public class OrderViewPage extends BasePage {
         splitPane.setOrientation(Orientation.VERTICAL);
 
 
-        rawInvoiceItemTableView = new RawInvoiceTableView();
+        BorderPane rawInvoicePane = new BorderPane();
+        ToolBar rawInvoiceControl = new ToolBar();
+        imageView = new ImageView(new javafx.scene.image.Image("/styles/images/icon/export-32x32.png"));
+        Button exportEppButton = new Button("", imageView);
+        exportEppButton.setContentDisplay(ContentDisplay.RIGHT);
+        exportEppButton.setTooltip(new Tooltip("Export to EPP"));
+        exportEppButton.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent event) {
 
-        splitPane.getItems().addAll(pdfInvoicePane, rawInvoiceItemTableView);
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle("Epp location");
+                FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("Epp file (*.epp)", "*.epp");
+                fileChooser.getExtensionFilters().add(extFilter);
+                File selectedFile = fileChooser.showOpenDialog(getStage());
+
+                if (selectedFile != null) {
+                    String fileName = selectedFile.getAbsolutePath();
+
+                }
+
+            }
+        });
+        rawInvoiceControl.getItems().add(exportEppButton);
+
+
+        rawInvoiceItemTableView = new RawInvoiceTableView() {
+            @Override
+            public void onRowDoubleClick(RawInvoiceProductItem item) {
+                showPopupDialog(productEditDialog);
+                productEditDialog.bind(item.getProductInfo());
+            }
+        };
+
+        rawInvoicePane.setTop(rawInvoiceControl);
+        rawInvoicePane.setCenter(rawInvoiceItemTableView);
+
+
+        splitPane.getItems().addAll(pdfInvoicePane, rawInvoicePane);
         splitPane.setDividerPosition(0, 0.40);
 
         sourceTab.setContent(splitPane);
@@ -415,7 +448,7 @@ public class OrderViewPage extends BasePage {
         }
 
         @Override
-        protected Void call() throws InterruptedException {
+        protected Void call() throws Exception {
             try {
                 InvoicePdf entity = invoicePdfService.createInvoicePdf(orderName, is);
                 orderService.save(entity);
@@ -424,6 +457,31 @@ public class OrderViewPage extends BasePage {
                 invoicePfdTableView.getItems().clear();
                 invoicePfdTableView.getItems().addAll(transform(currentOrder.getInvoicePdfs()));
                 updateRawInvoiceTableView();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+    }
+
+    private class ExportOrderItemsTask extends Task<Void> {
+        private Order order;
+        private String fileName;
+
+        public ExportOrderItemsTask(Order order, String fileName) {
+            this.order = order;
+            this.fileName = fileName;
+        }
+
+        @Override
+        protected Void call() throws Exception {
+            try {
+                orderService.exportToXls(order, fileName, new TaskProgress() {
+                    @Override
+                    public void updateProgress(long l, long l1) {
+                        ExportOrderItemsTask.this.updateProgress(l, l1);
+                    }
+                });
             } catch (Exception e) {
                 e.printStackTrace();
             }

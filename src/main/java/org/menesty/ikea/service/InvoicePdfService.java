@@ -3,8 +3,8 @@ package org.menesty.ikea.service;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.util.PDFTextStripper;
 import org.menesty.ikea.domain.InvoicePdf;
+import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
-import org.menesty.ikea.ui.TaskProgress;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -30,7 +30,7 @@ public class InvoicePdfService {
 
     public static void main(String... arg) throws IOException {
 
-        System.out.print(Integer.valueOf("s001".replaceAll("\\D+","")));
+        System.out.print(Integer.valueOf("s001".replaceAll("\\D+", "")));
         /*InvoicePdfService pdfService = new InvoicePdfService();
 
         String[] files = new String[]{"306-S-12021.pdf", "306-S-12022.pdf", "306-S-12023.pdf", "599 self.pdf", "600 tekstylia.pdf", "601 kuchnia.pdf", "602 kuchnia.pdf", "603 dekoracje.pdf", "604 famili.pdf", "606 full.pdf", "607 self.pdf", "608 oswitlenie.pdf",
@@ -83,7 +83,7 @@ public class InvoicePdfService {
                 product.setCount(Integer.valueOf(m.group(5)));
                 product.setPriceStr(m.group(6));
                 product.setWat(m.group(7));
-               // product.setProductInfo(productService.loadOrCreate(product.getArtNumber()));
+                product.setProductInfo(loadProductInfo(product));
                 products.add(product);
             }
         }
@@ -97,6 +97,20 @@ public class InvoicePdfService {
         p.close();
         return result;
 
+    }
+
+    private ProductInfo loadProductInfo(RawInvoiceProductItem product) {
+        ProductInfo productInfo = productService.loadOrCreate(product.getArtNumber());
+        if (productInfo == null) {
+            productInfo = new ProductInfo();
+            productInfo.setArtNumber(product.getArtNumber());
+            productInfo.setOriginalArtNum(product.getOriginalArtNumber());
+            productInfo.setName(product.getName());
+            productInfo.setShortName(ProductService.generateShortName(product.getName(), product.getArtNumber(), 1));
+            productInfo.getPackageInfo().setBoxCount(1);
+        }
+        productInfo.setPrice(product.getPrice());
+        return productInfo;
     }
 
     public InvoicePdf createInvoicePdf(String orderName, InputStream is) {

@@ -1,6 +1,7 @@
 package org.menesty.ikea.ui.pages;
 
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.geometry.HPos;
@@ -65,7 +66,6 @@ public abstract class BasePage {
         StackPane pane = new StackPane() {
             @Override
             protected void layoutChildren() {
-                List<Node> managed = getManagedChildren();
                 double width = getWidth();
                 ///System.out.println("width = " + width);
                 double height = getHeight();
@@ -74,8 +74,7 @@ public abstract class BasePage {
                 double right = getInsets().getRight();
                 double left = getInsets().getLeft();
                 double bottom = getInsets().getBottom();
-                for (int i = 0; i < managed.size(); i++) {
-                    Node child = managed.get(i);
+                for (Node child : getManagedChildren()) {
                     layoutInArea(child, left, top,
                             width - left - right, height - top - bottom,
                             0, Insets.EMPTY, true, true, HPos.CENTER, VPos.CENTER);
@@ -93,7 +92,7 @@ public abstract class BasePage {
         return stack;
     }
 
-    protected  <T> void  runTask(Task<T> task){
+    protected <T> void runTask(Task<T> task) {
         progressIndicator.progressProperty().bind(task.progressProperty());
         maskRegion.visibleProperty().bind(task.runningProperty());
         progressIndicator.visibleProperty().bind(task.runningProperty());
@@ -109,8 +108,8 @@ public abstract class BasePage {
         tile.setContentDisplay(ContentDisplay.TOP);
         tile.getStyleClass().clear();
         tile.getStyleClass().add("sample-tile");
-        tile.setOnAction(new EventHandler() {
-            public void handle(Event event) {
+        tile.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent event) {
                 IkeaApplication.getPageManager().goToPage(BasePage.this);
             }
         });
@@ -133,7 +132,7 @@ public abstract class BasePage {
             ImageView imageView = new ImageView(new Image(IkeaApplication.class.getResource("/styles/images/icon-overlay.png").toString()));
             imageView.setMouseTransparent(true);
             Rectangle overlayHighlight = new Rectangle(-8, -8, 130, 130);
-            overlayHighlight.setFill(new LinearGradient(0, 0.5, 0, 1, true, CycleMethod.NO_CYCLE, new Stop[]{new Stop(0, Color.BLACK), new Stop(1, Color.web("#444444"))}));
+            overlayHighlight.setFill(new LinearGradient(0, 0.5, 0, 1, true, CycleMethod.NO_CYCLE, new Stop(0, Color.BLACK), new Stop(1, Color.web("#444444"))));
             overlayHighlight.setOpacity(0.8);
             overlayHighlight.setMouseTransparent(true);
             overlayHighlight.setBlendMode(BlendMode.ADD);

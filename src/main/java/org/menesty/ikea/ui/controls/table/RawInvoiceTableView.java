@@ -1,8 +1,12 @@
 package org.menesty.ikea.ui.controls.table;
 
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.EventHandler;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
+import javafx.scene.input.MouseEvent;
 import javafx.util.Callback;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.ui.controls.PathProperty;
@@ -103,5 +107,34 @@ public class RawInvoiceTableView extends TableView<RawInvoiceProductItem> {
 
             getColumns().add(column);
         }
+
+        setRowFactory(new Callback<TableView<RawInvoiceProductItem>, TableRow<RawInvoiceProductItem>>() {
+            @Override
+            public TableRow<RawInvoiceProductItem> call(final TableView<RawInvoiceProductItem> rawInvoiceProductItemTableView) {
+                final TableRow<RawInvoiceProductItem> row = new TableRow<>();
+                row.setOnMouseClicked(new EventHandler<MouseEvent>() {
+                    @Override
+                    public void handle(MouseEvent mouseEvent) {
+                        if (mouseEvent.getClickCount() == 2)
+                            onRowDoubleClick(row.getItem());
+                    }
+                });
+                row.itemProperty().addListener(new ChangeListener<RawInvoiceProductItem>() {
+                    @Override
+                    public void changed(ObservableValue<? extends RawInvoiceProductItem> observableValue, RawInvoiceProductItem rawInvoiceProductItem, RawInvoiceProductItem newValue) {
+                        if (newValue != null)
+                            if (!newValue.getProductInfo().isVerified())
+                                row.getStyleClass().add("productNotVerified");
+                            else
+                                row.getStyleClass().remove("productNotVerified");
+                    }
+                });
+                return row;
+            }
+        });
+    }
+
+    public void onRowDoubleClick(RawInvoiceProductItem item) {
+
     }
 }

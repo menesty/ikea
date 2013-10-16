@@ -79,8 +79,9 @@ public class OrderService {
 
             String artNumber = getArtNumber(rawOrderItem.getArtNumber());
             if (!artNumber.isEmpty()) {
+                String keyPrefix = StringUtils.isNotBlank(rawOrderItem.getComment()) ? "_s" : "";
+                OrderItem orderItem = reduceMap.get(artNumber + keyPrefix);
 
-                OrderItem orderItem = reduceMap.get(artNumber);
                 if (orderItem == null) {
                     orderItem = new OrderItem();
                     orderItem.setArtNumber(artNumber);
@@ -96,10 +97,12 @@ public class OrderService {
                     else
                         orderItem.setType(OrderItem.Type.General);
 
-                    ProductInfo productInfo = productService.findByArtNumber(orderItem.getArtNumber());
+                    String productArtNumber = getPrapareArtNumber(orderItem.getArtNumber());
+
+                    ProductInfo productInfo = productService.findByArtNumber(productArtNumber);
 
                     if (productInfo == null) {
-                        productInfo = productService.loadOrCreate(orderItem.getArtNumber());
+                        productInfo = productService.loadOrCreate(productArtNumber);
 
                         if (productInfo == null)
                             orderItem.setType(OrderItem.Type.Na);
@@ -109,7 +112,7 @@ public class OrderService {
 
                     orderItem.setProductInfo(productInfo);
 
-                    reduceMap.put(artNumber, orderItem);
+                    reduceMap.put(artNumber + keyPrefix, orderItem);
 
                 } else
                     orderItem.setCount(orderItem.getCount() + rawOrderItem.getCount());
@@ -128,6 +131,13 @@ public class OrderService {
             public void updateProgress(long l, long l1) {
             }
         });
+    }
+
+    public String getPrapareArtNumber(String artNumber) {
+        String prepared = StringUtils.leftPad(artNumber.trim(), 8, '0');
+        int lastPos = artNumber.length();
+        prepared = artNumber.substring(0, lastPos - 5) + "-" + artNumber.substring(lastPos - 5, lastPos - 2) + "-" + artNumber.substring(lastPos - 2, lastPos);
+        return prepared;
     }
 
     private String getArtNumber(String artNumber) {
@@ -149,7 +159,7 @@ public class OrderService {
         DatabaseService.get().store(invoicePdf);
     }
 
-    public void exportToXls(Order order, String filePath) throws URISyntaxException {
+    public void exportToXls(Order order, String filePath, TaskProgress taskProgress) throws URISyntaxException {
         Map<OrderItem.Type, List<OrderItem>> typeFilterMap = new HashMap<>();
 
         for (OrderItem orderItem : order.getOrderItems()) {
@@ -164,36 +174,48 @@ public class OrderService {
         double totalSum = 0d;
         List<Map<String, Object>> mapBeans = new ArrayList<>();
 
-
+        taskProgress.updateProgress(2, 100);
         totalSum += populateData(OrderItem.Type.Combo, typeFilterMap, mapBeans);
         totalSum += populateData(OrderItem.Type.Specials, typeFilterMap, mapBeans);
         totalSum += populateData(OrderItem.Type.Na, typeFilterMap, mapBeans);
         totalSum += populateData(OrderItem.Type.General, typeFilterMap, mapBeans);
+        taskProgress.updateProgress(5, 100);
         mapBeans.get(3).put("totalSum", totalSum);
-
 
         Map<String, String> env = new HashMap<>();
         env.put("create", "true");
+
+
+        if (!filePath.endsWith(".zip")) filePath += ".zip";
 
         URI fileUri = new File(filePath).toURI();
         URI zipUri = new URI("jar:" + fileUri.getScheme(), fileUri.getPath(), null);
 
         try (FileSystem zipfs = FileSystems.newFileSystem(zipUri, env)) {
-            Workbook workbook = transformer.transformXLS(getClass().getResourceAsStream("/config/reduce.xlsx"), templateSheetNameList, sheetNameList, mapBeans);
+            taskProgress.updateProgress(10, 100);
 
+            Workbook workbook = transformer.transformXLS(getClass().getResourceAsStream("/config/reduce.xlsx"), templateSheetNameList, sheetNameList, mapBeans);
             workbook.write(Files.newOutputStream(zipfs.getPath("reduce-result.xlsx"), StandardOpenOption.TRUNCATE_EXISTING));
+
+            taskProgress.updateProgress(15, 100);
+
+            int taskStep = 85 / (ProductInfo.Group.values().length + 1);
+            int taskIndex = 0;
+
             for (ProductInfo.Group group : ProductInfo.Group.values()) {
+                taskIndex++;
                 Map<String, Object> bean = new HashMap<>();
                 bean.put("orderItems", filterByProductGroup(group, (List<OrderItem>) mapBeans.get(3).get("orderItems")));
                 workbook = transformer.transformXLS(getClass().getResourceAsStream("/config/group.xlsx"), bean);
                 workbook.write(Files.newOutputStream(zipfs.getPath(group.toString().toLowerCase() + ".xlsx"), StandardOpenOption.TRUNCATE_EXISTING));
-
+                taskProgress.updateProgress(15 + taskStep * taskIndex, 100);
             }
 
             Map<String, Object> bean = new HashMap<>();
             bean.put("orderItems", filterByProductGroup(null, (List<OrderItem>) mapBeans.get(3).get("orderItems")));
             workbook = transformer.transformXLS(getClass().getResourceAsStream("/config/group.xlsx"), bean);
             workbook.write(Files.newOutputStream(zipfs.getPath("unknown-group.xlsx"), StandardOpenOption.TRUNCATE_EXISTING));
+            taskProgress.updateProgress(100, 100);
 
         } catch (IOException e) {
             e.printStackTrace();

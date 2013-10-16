@@ -16,10 +16,7 @@ import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.menesty.ikea.ui.controls.*;
-import org.menesty.ikea.ui.pages.CategoryPage;
-import org.menesty.ikea.ui.pages.OrderListPage;
-import org.menesty.ikea.ui.pages.OrderViewPage;
-import org.menesty.ikea.ui.pages.PageManager;
+import org.menesty.ikea.ui.pages.*;
 
 /**
  * User: Menesty
@@ -45,7 +42,7 @@ public class IkeaApplication extends Application {
         return pageManager;
     }
 
-    public static IkeaApplication get(){
+    public static IkeaApplication get() {
         return instance;
     }
 
@@ -140,10 +137,8 @@ public class IkeaApplication extends Application {
         pageManager = new PageManager(pageArea, breadcrumbBar);
 
 
-
-
         OrderListPage orderListPage = new OrderListPage();
-        pageManager.register(new CategoryPage("IKEA", orderListPage));
+        pageManager.register(new CategoryPage("IKEA", orderListPage, new ProductPage()));
 
         OrderViewPage orderViewPage = new OrderViewPage();
         orderViewPage.setBreadCrumbPath(orderListPage.getBreadCrumb());
@@ -151,15 +146,15 @@ public class IkeaApplication extends Application {
         pageManager.goToPage("IKEA/Order list");
     }
 
-    public void showPopupDialog(Node node){
+    public void showPopupDialog(Node node) {
         modalDimmer.showModalMessage(node);
     }
 
-    public void hidePopupDialog(){
+    public void hidePopupDialog() {
         modalDimmer.hideModalMessage();
     }
 
-    public Stage getStage(){
+    public Stage getStage() {
         return stage;
     }
 

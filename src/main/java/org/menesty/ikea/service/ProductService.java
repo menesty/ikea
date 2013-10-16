@@ -41,7 +41,6 @@ public class ProductService {
                     product = loadComboProduct(artNumber);
                 if (product == null)
                     return null;
-                product.setOriginalArtNum(artNumber);
             }
 
             DatabaseService.get().store(product);
@@ -69,7 +68,7 @@ public class ProductService {
             ProductInfo product = findByArtNumber(invoiceItem.getArtNumber());
 
             if (product == null) {
-                product = loadFromIkea(invoiceItem.getArtNumber());
+                product = loadFromIkea(invoiceItem.getPrepareArtNumber());
                 product.setOriginalArtNum(invoiceItem.getOriginalArtNumber());
             }
 
@@ -100,7 +99,7 @@ public class ProductService {
         productInfo.setPackageInfo(parseProductPackageInfo(doc));
         productInfo.setName(name);
         productInfo.setShortName(generateShortName(name, artNumber, productInfo.getPackageInfo().getBoxCount()));
-        productInfo.setGroup(resolveGroup(preparedArtNumber));
+        productInfo.setGroup(resolveGroup(preparedArtNumber, doc));
         return productInfo;
     }
 
@@ -149,42 +148,29 @@ public class ProductService {
         return boxCount;
     }
 
-    private static ProductInfo.Group resolveGroup(String artNumber) throws IOException {
+    private ProductInfo.Group resolveGroup(String artNumber, Document productDetails) throws IOException {
         Document doc = Jsoup.connect(PRODUCT_AVAILABLE_URL + artNumber).get();
         Elements elements = doc.select("localStore[buCode=" + KATOWICE + "] findIt type");
         if (!elements.isEmpty())
             if ("BOX_SHELF".equals(elements.get(0).text()))
                 return ProductInfo.Group.Regal;
         //go to product page check breadCum
-        doc = Jsoup.connect("http://www.ikea.com/pl/pl/catalog/products/" + artNumber).get();
 
-        elements = doc.select("#packageInfo .texts");
+        elements = productDetails.select("#packageInfo .texts");
 
         Matcher m = Patterns.WEIGHT_PATTERN.matcher(elements.text());
+        double weight = 0;
         if (m.find()) {
-            if (Double.valueOf(m.group(1).replace(',', '.')) > 19)
+            if ((weight = Double.valueOf(m.group(1).replace(',', '.'))) > 19)
                 return ProductInfo.Group.Full;
         }
 
-        String breadCrumbs = doc.select("#breadCrumbs").text();
-        String content = doc.select(".rightContent").text();
-        if (breadCrumbs.contains("dziec") || content.contains("dziec"))
+        String breadCrumbs = productDetails.select("#breadCrumbs").text();
+        String content = productDetails.select(".rightContent").text();
+        if (breadCrumbs.contains("dziec"))
             return ProductInfo.Group.Kids;
-        else if (breadCrumbs.contains("Dekor") || breadCrumbs.contains("dekor"))
-            return ProductInfo.Group.Decor;
-        else if (breadCrumbs.contains("Oświe") || breadCrumbs.contains("Lamp") || breadCrumbs.contains("Klosz") || breadCrumbs.contains("Kabl"))
+        else if (breadCrumbs.contains("Oświe") || breadCrumbs.contains("Lamp") || breadCrumbs.contains("Klosz") || breadCrumbs.contains("Kabl") || breadCrumbs.contains("Żarówk"))
             return ProductInfo.Group.Lights;
-        else if (breadCrumbs.contains("Jedz") || breadCrumbs.contains("Gotow") || breadCrumbs.contains("kuch") || breadCrumbs.contains("Słoik")
-                || breadCrumbs.contains("żywnoś") || breadCrumbs.contains("kieliszek") || breadCrumbs.contains("lodówkach i zamrażarkach") ||
-                breadCrumbs.contains("tekstylia do jadalni ") || breadCrumbs.contains("ciast"))
-            return ProductInfo.Group.Kitchen;
-        else if (breadCrumbs.contains("łazienk") || breadCrumbs.contains("Łazienka"))
-            return ProductInfo.Group.Bathroom;
-        else if (breadCrumbs.contains("Poduszki") || breadCrumbs.contains("poszewki") || breadCrumbs.contains("Dywany") ||
-                breadCrumbs.contains("Kołdry") || breadCrumbs.contains("Pościel") || breadCrumbs.contains("Narzuty") ||
-                breadCrumbs.contains("Tkanina") || breadCrumbs.contains("Zasłony i rolety") || breadCrumbs.contains("Koce"))
-            return ProductInfo.Group.Textile;
-
         else if (breadCrumbs.contains("kosz") ||
                 breadCrumbs.contains("Kosze") ||
                 breadCrumbs.contains("do montażu") ||
@@ -202,11 +188,31 @@ public class ProductService {
                 breadCrumbs.contains("Deski do prasowania") ||
                 breadCrumbs.contains("Wkład do kosza") ||
                 breadCrumbs.contains("Łyżka do butów") ||
-                breadCrumbs.contains("Pojemnik na ubran")
+                breadCrumbs.contains("Pojemnik na ubran") || breadCrumbs.contains("Budzik") || breadCrumbs.contains("Okablowanie i akcesoria")
                 )
             return ProductInfo.Group.Storing;
-        else if (breadCrumbs.contains("Bezpieczeństwo") || breadCrumbs.contains("IKEA FAMILY") || breadCrumbs.contains("ADG / Przechow") || breadCrumbs.contains("Podstawa pod laptopa"))
+        else if (breadCrumbs.contains("Dekor") || breadCrumbs.contains("dekor") || breadCrumbs.contains("Karneciki") || breadCrumbs.contains("Lustra"))
+            return ProductInfo.Group.Decor;
+
+        else if (breadCrumbs.contains("Jedz") || breadCrumbs.contains("Gotow") || breadCrumbs.contains("kuch") || breadCrumbs.contains("Słoik")
+                || breadCrumbs.contains("żywnoś") || breadCrumbs.contains("kieliszek") || breadCrumbs.contains("lodówkach i zamrażarkach") ||
+                breadCrumbs.contains("tekstylia do jadalni ") || breadCrumbs.contains("ciast"))
+            return ProductInfo.Group.Kitchen;
+        else if (breadCrumbs.contains("łazienk") || breadCrumbs.contains("Łazienka"))
+            return ProductInfo.Group.Bathroom;
+        else if (breadCrumbs.contains("Poduszki") || breadCrumbs.contains("poszewki") || breadCrumbs.contains("Dywany") ||
+                breadCrumbs.contains("Kołdry") || breadCrumbs.contains("Pościel") || breadCrumbs.contains("Narzuty") ||
+                breadCrumbs.contains("Tkanin") || breadCrumbs.contains("Zasłony i rolety") || breadCrumbs.contains("Koce") || breadCrumbs.contains("Ochraniacze na materace"))
+            return ProductInfo.Group.Textile;
+
+
+        else if (breadCrumbs.contains("Bezpieczeństwo") || breadCrumbs.contains("IKEA FAMILY") || breadCrumbs.contains("AGD / Przechow") || breadCrumbs.contains("Rozwiązania mobilne") || breadCrumbs.contains("Rozwiązania na ścian"))
             return ProductInfo.Group.Family;
+        else if (content.contains("dziec"))
+            return ProductInfo.Group.Kids;
+        else if (content.contains("Dekor") || content.contains("dekor"))
+            return ProductInfo.Group.Decor;
+        else if (weight != 0 && weight > 5) return ProductInfo.Group.Full;
         return null;
     }
 
@@ -214,11 +220,12 @@ public class ProductService {
         //ProductInfo productInfo = new ProductService().loadComboProduct("S39002041");
         //System.out.println(productInfo);
         //System.out.println(productInfo.getParts());
-        ProductInfo productInfo = new ProductService().loadComboProduct("S39002041");
-        System.out.println(productInfo);
+        //ProductInfo productInfo = new ProductService().loadComboProduct("S39002041");
+        // System.out.println(ProductService.resolveGroup("70238169"));
+        System.out.println((double) 10 / 13);
     }
 
-    private String generateShortName(String name, String artNumber, int boxCount) {
+    public static String generateShortName(String name, String artNumber, int boxCount) {
         int shortNameLength = 28;
         String shortName = " " + artNumber;
         shortNameLength -= artNumber.length() + 1;
@@ -231,17 +238,18 @@ public class ProductService {
     }
 
     private ProductInfo loadComboProduct(String artNumber) throws IOException {
-        Document doc = Jsoup.connect(PRODUCT_DETAIL_URL + artNumber).get();
+        String preparedArtNumber = artNumber.replaceAll("-", "").trim();
+        Document doc = Jsoup.connect(PRODUCT_DETAIL_URL + preparedArtNumber).get();
 
         String name = getProductName(doc);
         if (name == null) {
-            System.out.println("Product not found on site " + artNumber + " " + PRODUCT_DETAIL_URL + artNumber);
+            System.out.println("Product not found on site " + preparedArtNumber + " " + PRODUCT_DETAIL_URL + preparedArtNumber);
             return null;
         }
 
         ProductInfo combo = new ProductInfo();
         combo.setArtNumber(artNumber);
-        combo.setOriginalArtNum(artNumber);
+        combo.setOriginalArtNum(preparedArtNumber);
         combo.setName(name);
         combo.setShortName(name);
         combo.setPackageInfo(parseProductPackageInfo(doc));
@@ -249,7 +257,7 @@ public class ProductService {
         List<ProductPart> parts = new ArrayList<>();
         String content = doc.html();
 
-        Document rowDetailsDoc = Jsoup.connect("http://www.ikea.com/pl/pl/catalog/packagepopup/" + artNumber).get();
+        Document rowDetailsDoc = Jsoup.connect("http://www.ikea.com/pl/pl/catalog/packagepopup/" + preparedArtNumber).get();
         Elements rows = rowDetailsDoc.select(".rowContainerPackage .colArticle");
         for (Element row : rows) {
             Matcher m = Patterns.ART_NUMBER_PART_PATTERN.matcher(row.html());
@@ -300,7 +308,7 @@ public class ProductService {
             part.setPackageInfo(packageInfo);
             part.setArtNumber(artNumber.replace(".", "-"));
             part.setOriginalArtNum(originalArtNumber);
-            part.setName(parsePartName(originalArtNumber, content));
+            part.setName(parsePartName(part.getArtNumber(), content));
             part.setShortName(generateShortName(part.getName(), part.getArtNumber(), part.getPackageInfo().getBoxCount()));
             part.getPackageInfo().setBoxCount(1);
         }
@@ -332,5 +340,9 @@ public class ProductService {
         }
 
         return packageInfo;
+    }
+
+    public List<ProductInfo> load() {
+        return DatabaseService.get().query(ProductInfo.class);
     }
 }

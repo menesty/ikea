@@ -1,6 +1,6 @@
 package org.menesty.ikea.order;
 
-import org.menesty.ikea.domain.ProductInfo;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * User: Menesty
@@ -40,6 +40,8 @@ public class RawOrderItem {
     public String getDescription() {
         return description;
     }
+
+
 
     public void setDescription(String description) {
         this.description = description;

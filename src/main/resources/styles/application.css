@@ -63,27 +63,14 @@
     -fx-background-position: left top;
     -fx-background-repeat: no-repeat;
 }
-#highlightsButton {
-    -fx-background-color: null;
-    -fx-padding: -10 0 -10 0;
-    -fx-background-image: url("images/ribbon-highlights.png");
-    -fx-background-position: left top;
-    -fx-background-repeat: no-repeat;
+
+.productNotVerified {
+    -fx-control-inner-background: #faffa2;
+    -fx-accent: derive(-fx-control-inner-background, -30%);
+    -fx-cell-hover-color: derive(-fx-control-inner-background, -20%);
 }
-#highlightsButton:hover, #newButton:hover {
-    -fx-effect: dropshadow( three-pass-box , rgba(255,255,255,0.6) , 10, 0.5 , 0 , 0 );
-}
-#highlightsButton:focused, #newButton:focused {
-    -fx-effect: dropshadow( three-pass-box , -fx-focus-color , 5, 0.7 , 0 , 0 );
-}
-/*
-#highlightsButton:focus, #newButton:focus {
-    -fx-effect: dropshadow( three-pass-box , -fx-focus-color , 10, 0.5 , 0 , 0 );
-}
-#highlightsButton .button:focus, #newButton .button:focus {
-    -fx-effect: dropshadow( three-pass-box , -fx-focus-color , 10, 0.5 , 0 , 0 );
-}
-*/
+
+
 #SearchBox .text-field {
     -fx-background-color: white;
     -fx-background-insets: 1;

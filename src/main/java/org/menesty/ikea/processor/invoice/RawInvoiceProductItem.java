@@ -1,5 +1,6 @@
 package org.menesty.ikea.processor.invoice;
 
+import org.apache.commons.lang.StringUtils;
 import org.menesty.ikea.domain.ProductInfo;
 
 import java.math.BigDecimal;
@@ -81,6 +82,13 @@ public class RawInvoiceProductItem {
     }
 
     public String getArtNumber() {
+        return artNumber;
+    }
+
+    public String getPrepareArtNumber(){
+        String artNumber = StringUtils.leftPad(this.artNumber.trim(),8,'0');
+        int lastPos = artNumber.length();
+        artNumber =artNumber.substring(0,lastPos-5) + "-" +artNumber.substring(lastPos-5,lastPos-2)+ "-" +artNumber.substring(lastPos-2,lastPos);
         return artNumber;
     }
 
