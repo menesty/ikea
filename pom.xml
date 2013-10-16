@@ -50,7 +50,7 @@
                 <version>2.0</version>
                 <configuration>
 
-                    <mainClass>org.menesty.ikea.MainApp</mainClass>
+                    <mainClass>org.menesty.ikea.IkeaApplication</mainClass>
 
                     <!-- only required if signing the jar file -->
                     <keyStoreAlias>example-user</keyStoreAlias>

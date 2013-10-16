@@ -1,17 +1,22 @@
 package org.menesty.ikea.ui.pages;
 
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import javafx.util.Callback;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.service.ProductService;
 import org.menesty.ikea.ui.controls.PathProperty;
+import org.menesty.ikea.ui.controls.dialog.ProductDialog;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -23,6 +28,8 @@ import java.math.RoundingMode;
  */
 public class ProductPage extends BasePage {
     private ProductService productService;
+
+    private ProductDialog productEditDialog;
 
     public ProductPage() {
         super("Products");
@@ -186,11 +193,37 @@ public class ProductPage extends BasePage {
 
             tableView.getColumns().add(column);
         }
+        tableView.setRowFactory(new Callback<TableView<ProductInfo>, TableRow<ProductInfo>>() {
+            @Override
+            public TableRow<ProductInfo> call(final TableView<ProductInfo> tableView) {
+                final TableRow<ProductInfo> row = new TableRow<>();
+                row.setOnMouseClicked(new EventHandler<MouseEvent>() {
+                    @Override
+                    public void handle(MouseEvent mouseEvent) {
+                        if (mouseEvent.getClickCount() == 2) {
+                            showPopupDialog(productEditDialog);
+                            productEditDialog.bind(row.getItem());
+                        }
+                    }
+                });
+                row.itemProperty().addListener(new ChangeListener<ProductInfo>() {
+                    @Override
+                    public void changed(ObservableValue<? extends ProductInfo> observableValue, ProductInfo oldValue, ProductInfo newValue) {
+                        if (newValue != null)
+                            if (!newValue.isVerified())
+                                row.getStyleClass().add("productNotVerified");
+                            else
+                                row.getStyleClass().remove("productNotVerified");
+                    }
+                });
+                return row;
+            }
+        });
 
         tableView.setItems(FXCollections.observableArrayList(productService.load()));
         StackPane pane = createRoot();
         pane.getChildren().add(0, tableView);
-
+        productEditDialog = new ProductDialog();
         return pane;
     }
 

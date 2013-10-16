@@ -195,7 +195,7 @@ public class OrderService {
             taskProgress.updateProgress(10, 100);
 
             Workbook workbook = transformer.transformXLS(getClass().getResourceAsStream("/config/reduce.xlsx"), templateSheetNameList, sheetNameList, mapBeans);
-            workbook.write(Files.newOutputStream(zipfs.getPath("reduce-result.xlsx"), StandardOpenOption.TRUNCATE_EXISTING));
+            workbook.write(Files.newOutputStream(zipfs.getPath("reduce-result.xlsx"), StandardOpenOption.CREATE_NEW));
 
             taskProgress.updateProgress(15, 100);
 
@@ -207,14 +207,14 @@ public class OrderService {
                 Map<String, Object> bean = new HashMap<>();
                 bean.put("orderItems", filterByProductGroup(group, (List<OrderItem>) mapBeans.get(3).get("orderItems")));
                 workbook = transformer.transformXLS(getClass().getResourceAsStream("/config/group.xlsx"), bean);
-                workbook.write(Files.newOutputStream(zipfs.getPath(group.toString().toLowerCase() + ".xlsx"), StandardOpenOption.TRUNCATE_EXISTING));
+                workbook.write(Files.newOutputStream(zipfs.getPath(group.toString().toLowerCase() + ".xlsx"), StandardOpenOption.CREATE_NEW));
                 taskProgress.updateProgress(15 + taskStep * taskIndex, 100);
             }
 
             Map<String, Object> bean = new HashMap<>();
             bean.put("orderItems", filterByProductGroup(null, (List<OrderItem>) mapBeans.get(3).get("orderItems")));
             workbook = transformer.transformXLS(getClass().getResourceAsStream("/config/group.xlsx"), bean);
-            workbook.write(Files.newOutputStream(zipfs.getPath("unknown-group.xlsx"), StandardOpenOption.TRUNCATE_EXISTING));
+            workbook.write(Files.newOutputStream(zipfs.getPath("unknown-group.xlsx"), StandardOpenOption.CREATE_NEW));
             taskProgress.updateProgress(100, 100);
 
         } catch (IOException e) {

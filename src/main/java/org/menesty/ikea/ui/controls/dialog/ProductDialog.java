@@ -1,11 +1,12 @@
 package org.menesty.ikea.ui.controls.dialog;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.util.Callback;
 import org.menesty.ikea.domain.ProductInfo;
+import org.menesty.ikea.domain.ProductPart;
 import org.menesty.ikea.ui.controls.PathProperty;
 import org.menesty.ikea.ui.controls.form.DoubleTextField;
 import org.menesty.ikea.ui.controls.form.IntegerTextField;
@@ -18,6 +19,7 @@ import org.menesty.ikea.ui.controls.form.IntegerTextField;
 public class ProductDialog extends BaseDialog {
 
     private final ProductForm productForm;
+    private final TableView<ProductPart> subProductTableView;
 
     private TextField artNumber;
 
@@ -60,7 +62,64 @@ public class ProductDialog extends BaseDialog {
         options.getTabs().addAll(productMain, packageInfoTab);
 
 
-        getChildren().addAll(options, bottomBar);
+        subProductTableView = new TableView<>();
+        subProductTableView.setMaxHeight(150);
+        subProductTableView.setPrefHeight(150);
+        {
+            TableColumn<ProductPart, Integer> column = new TableColumn<>();
+            column.setText("Count");
+            column.setMinWidth(50);
+            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ProductPart, Integer>, ObservableValue<Integer>>() {
+                @Override
+                public ObservableValue<Integer> call(TableColumn.CellDataFeatures<ProductPart, Integer> item) {
+                    return new PathProperty<>(item.getValue(), "count");
+                }
+            });
+
+            subProductTableView.getColumns().add(column);
+        }
+        {
+            TableColumn<ProductPart, String> column = new TableColumn<>();
+            column.setText("Art # ");
+            column.setMinWidth(100);
+            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ProductPart, String>, ObservableValue<String>>() {
+                @Override
+                public ObservableValue<String> call(TableColumn.CellDataFeatures<ProductPart, String> item) {
+                    return new PathProperty<>(item.getValue(), "productInfo.artNumber");
+                }
+            });
+            subProductTableView.getColumns().add(column);
+        }
+        {
+            TableColumn<ProductPart, String> column = new TableColumn<>();
+            column.setText("Name");
+            column.setMinWidth(200);
+            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ProductPart, String>, ObservableValue<String>>() {
+                @Override
+                public ObservableValue<String> call(TableColumn.CellDataFeatures<ProductPart, String> item) {
+                    return new PathProperty<>(item.getValue(), "productInfo.name");
+                }
+            });
+
+            subProductTableView.getColumns().add(column);
+        }
+        subProductTableView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<ProductPart>() {
+            @Override
+            public void changed(ObservableValue<? extends ProductPart> observableValue, ProductPart old, ProductPart newValue) {
+                if (newValue != null)
+                    bind(newValue);
+            }
+        });
+
+
+        subProductTableView.setVisible(false);
+        getChildren().addAll(options, subProductTableView, bottomBar);
+    }
+
+    private void bind(ProductPart productPart) {
+        unbind();
+        currentProductInfo = productPart.getProductInfo();
+        bindProperties();
     }
 
     private class ProductForm extends FormPanel {
@@ -95,18 +154,27 @@ public class ProductDialog extends BaseDialog {
     public void bind(ProductInfo productInfo) {
         unbind();
         currentProductInfo = productInfo;
-        artNumber.textProperty().bindBidirectional(new PathProperty<ProductInfo, String>(productInfo, "artNumber"));
-        originalArtNumber.textProperty().bindBidirectional(new PathProperty<ProductInfo, String>(productInfo, "originalArtNum"));
-        name.textProperty().bindBidirectional(new PathProperty<ProductInfo, String>(productInfo, "name"));
-        shortName.textProperty().bindBidirectional(new PathProperty<ProductInfo, String>(productInfo, "shortName"));
-        price.numberProperty().bindBidirectional(new PathProperty<ProductInfo, Number>(productInfo, "price"));
-        group.getSelectionModel().select(productInfo.getGroup());
-        weight.numberProperty().bindBidirectional(new PathProperty<ProductInfo, Number>(productInfo, "packageInfo.weight"));
-        boxCount.numberProperty().bindBidirectional(new PathProperty<ProductInfo, Number>(productInfo, "packageInfo.boxCount"));
-        height.numberProperty().bindBidirectional(new PathProperty<ProductInfo, Number>(productInfo, "packageInfo.height"));
-        width.numberProperty().bindBidirectional(new PathProperty<ProductInfo, Number>(productInfo, "packageInfo.width"));
-        length.numberProperty().bindBidirectional(new PathProperty<ProductInfo, Number>(productInfo, "packageInfo.length"));
+        bindProperties();
 
+        if (productInfo.getParts() != null) {
+            subProductTableView.setItems(FXCollections.observableArrayList(productInfo.getParts()));
+            subProductTableView.getItems().add(0, new ProductPart(0, currentProductInfo));
+        }
+        subProductTableView.setVisible(productInfo.getParts() != null);
+    }
+
+    private void bindProperties() {
+        artNumber.textProperty().bind(new PathProperty<ProductInfo, String>(currentProductInfo, "artNumber"));
+        originalArtNumber.textProperty().bind(new PathProperty<ProductInfo, String>(currentProductInfo, "originalArtNum"));
+        name.textProperty().bind(new PathProperty<ProductInfo, String>(currentProductInfo, "name"));
+        shortName.textProperty().bind(new PathProperty<ProductInfo, String>(currentProductInfo, "shortName"));
+        price.numberProperty().bind(new PathProperty<ProductInfo, Number>(currentProductInfo, "price"));
+        group.getSelectionModel().select(currentProductInfo.getGroup());
+        weight.numberProperty().bind(new PathProperty<ProductInfo, Number>(currentProductInfo, "packageInfo.weight"));
+        boxCount.numberProperty().bind(new PathProperty<ProductInfo, Number>(currentProductInfo, "packageInfo.boxCount"));
+        height.numberProperty().bind(new PathProperty<ProductInfo, Number>(currentProductInfo, "packageInfo.height"));
+        width.numberProperty().bind(new PathProperty<ProductInfo, Number>(currentProductInfo, "packageInfo.width"));
+        length.numberProperty().bind(new PathProperty<ProductInfo, Number>(currentProductInfo, "packageInfo.length"));
     }
 
     public void unbind() {
