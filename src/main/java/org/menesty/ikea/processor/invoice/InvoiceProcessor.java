@@ -49,7 +49,7 @@ public class InvoiceProcessor {
         map.put("invoiceItems", invoiceItems);
         VariableResolverFactory vrf = new MapVariableResolverFactory(map);
 
-        String fileName = "D:\\development\\workspace\\ikea\\src\\main\\resources\\themes\\invoice\\invoice-order-2.epp";
+        String fileName = "D:\\development\\workspace\\ikea\\src\\main\\resources\\config\\invoice-order.epp";
 
 
         StringBuilder text = new StringBuilder();

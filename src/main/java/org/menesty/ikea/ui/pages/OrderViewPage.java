@@ -31,6 +31,7 @@ import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.order.OrderItem;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.service.InvoicePdfService;
+import org.menesty.ikea.service.InvoiceService;
 import org.menesty.ikea.service.OrderService;
 import org.menesty.ikea.ui.TaskProgress;
 import org.menesty.ikea.ui.controls.PathProperty;
@@ -50,13 +51,18 @@ import java.util.List;
  * Time: 9:51 PM
  */
 public class OrderViewPage extends BasePage {
-    TableView<OrderItem> tableView;
-    OrderService orderService;
+    private TableView<OrderItem> tableView;
+
+    private OrderService orderService;
 
     private InvoicePdfService invoicePdfService;
 
+    private InvoiceService invoiceService;
+
     private Order currentOrder;
+
     private RawInvoiceTableView rawInvoiceItemTableView;
+
     private TableView<InvoicePdfTableItem> invoicePfdTableView;
 
     private ProductDialog productEditDialog;
@@ -65,6 +71,7 @@ public class OrderViewPage extends BasePage {
         super("Order");
         orderService = new OrderService();
         invoicePdfService = new InvoicePdfService();
+        invoiceService = new InvoiceService();
     }
 
     @Override
@@ -361,10 +368,8 @@ public class OrderViewPage extends BasePage {
                 fileChooser.getExtensionFilters().add(extFilter);
                 File selectedFile = fileChooser.showOpenDialog(getStage());
 
-                if (selectedFile != null) {
-                    String fileName = selectedFile.getAbsolutePath();
-
-                }
+                if (selectedFile != null)
+                    invoiceService.exportToEpp(rawInvoiceItemTableView.getItems(), selectedFile.getAbsolutePath());
 
             }
         });

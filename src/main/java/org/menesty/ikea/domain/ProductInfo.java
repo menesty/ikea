@@ -9,6 +9,16 @@ import java.util.List;
  */
 public class ProductInfo {
 
+    private int wat;
+
+    public int getWat() {
+        return wat;
+    }
+
+    public void setWat(int wat) {
+        this.wat = wat;
+    }
+
     public enum Group {
         Regal, Decor, Lights, Kitchen, Bathroom, Textile, Full, Storing, Family, Kids
     }

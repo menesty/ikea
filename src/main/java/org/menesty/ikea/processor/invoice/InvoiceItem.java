@@ -83,7 +83,7 @@ public class InvoiceItem {
         return round((getPriceWat() - getPrice()) * count);
     }
 
-    private double round(double value) {
+    private static double round(double value) {
         return BigDecimal.valueOf(value).setScale(2, RoundingMode.CEILING).doubleValue();
     }
 
@@ -134,22 +134,35 @@ public class InvoiceItem {
                 result.add(InvoiceItem.get(productInfo, count, i, productInfo.getPackageInfo().getBoxCount()));
         else
             result.add(InvoiceItem.get(productInfo, count, 1, 1));
-        return result;
 
+        if (productInfo.getPackageInfo().getBoxCount() > 1) {
+            double price = productInfo.getPrice();
+            double pricePerItem = round(price / productInfo.getPackageInfo().getBoxCount());
+
+            for (InvoiceItem item : result)
+                item.price = pricePerItem;
+
+            double total = round(pricePerItem * productInfo.getPackageInfo().getBoxCount());
+            if (total != price)
+                result.get(0).price = pricePerItem + (price - total);
+
+        }
+        return result;
     }
+
 
     public static InvoiceItem get(ProductInfo productInfo, int count, int box, int boxes) {
         InvoiceItem invoiceItem = new InvoiceItem();
 
         invoiceItem.name = productInfo.getName();
-        invoiceItem.artNumber = "IKEA_" + productInfo.getArtNumber().replaceAll("-", "");
+        invoiceItem.artNumber = "IKEA_" + productInfo.getOriginalArtNum();
         invoiceItem.shortName = productInfo.getShortName();
         if (boxes > 1) {
             invoiceItem.artNumber += "(" + box + ")";
             invoiceItem.shortName += " " + box + "/" + boxes;
         }
         invoiceItem.price = productInfo.getPrice();
-        invoiceItem.wat = 23;
+        invoiceItem.wat = productInfo.getWat();
         invoiceItem.count = count;
 
         return invoiceItem;
