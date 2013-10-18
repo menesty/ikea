@@ -44,7 +44,7 @@ public class ProductDialog extends BaseDialog {
 
     public ProductDialog() {
         getChildren().add(createTitle("Create new order from customer"));
-
+        okBtn.setText("Save");
 
         TabPane options = new TabPane();
         options.getStyleClass().add(TabPane.STYLE_CLASS_FLOATING);
@@ -197,7 +197,24 @@ public class ProductDialog extends BaseDialog {
     @Override
     public void onOk() {
         currentProductInfo.setGroup(group.getSelectionModel().getSelectedItem());
+        currentProductInfo.setVerified(true);
+        currentProductInfo.setArtNumber(artNumber.getText());
+        currentProductInfo.setOriginalArtNum(originalArtNumber.getText());
+        currentProductInfo.setName(name.getText());
+        currentProductInfo.setShortName(shortName.getText());
+        currentProductInfo.setPrice(price.getNumber());
+
+        currentProductInfo.getPackageInfo().setWeight(weight.getNumber());
+        currentProductInfo.getPackageInfo().setBoxCount(boxCount.getNumber());
+        currentProductInfo.getPackageInfo().setHeight(height.getNumber());
+        currentProductInfo.getPackageInfo().setWidth(width.getNumber());
+        currentProductInfo.getPackageInfo().setLength(length.getNumber());
+
         unbind();
-        System.out.println(currentProductInfo.toString());
+        onSave(currentProductInfo, subProductTableView.isVisible());
+    }
+
+    public void onSave(ProductInfo productInfo, boolean isCombo) {
+
     }
 }

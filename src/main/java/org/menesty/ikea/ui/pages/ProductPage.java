@@ -223,7 +223,21 @@ public class ProductPage extends BasePage {
         tableView.setItems(FXCollections.observableArrayList(productService.load()));
         StackPane pane = createRoot();
         pane.getChildren().add(0, tableView);
-        productEditDialog = new ProductDialog();
+        productEditDialog = new ProductDialog() {
+
+            @Override
+            public void onSave(ProductInfo productInfo, boolean isCombo) {
+                productService.save(productInfo);
+                if (!isCombo)
+                    hidePopupDialog();
+            }
+
+            @Override
+            public void onCancel() {
+                super.onCancel();
+                hidePopupDialog();
+            }
+        };
         return pane;
     }
 

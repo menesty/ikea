@@ -33,6 +33,7 @@ import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.service.InvoicePdfService;
 import org.menesty.ikea.service.InvoiceService;
 import org.menesty.ikea.service.OrderService;
+import org.menesty.ikea.service.ProductService;
 import org.menesty.ikea.ui.TaskProgress;
 import org.menesty.ikea.ui.controls.PathProperty;
 import org.menesty.ikea.ui.controls.dialog.ProductDialog;
@@ -67,11 +68,14 @@ public class OrderViewPage extends BasePage {
 
     private ProductDialog productEditDialog;
 
+    private ProductService productService;
+
     public OrderViewPage() {
         super("Order");
         orderService = new OrderService();
         invoicePdfService = new InvoicePdfService();
         invoiceService = new InvoiceService();
+        productService = new ProductService();
     }
 
     @Override
@@ -79,7 +83,20 @@ public class OrderViewPage extends BasePage {
 
         StackPane pane = createRoot();
         pane.getChildren().add(0, createInvoiceView());
-        productEditDialog = new ProductDialog();
+        productEditDialog = new ProductDialog() {
+            @Override
+            public void onSave(ProductInfo productInfo, boolean isCombo) {
+                productService.save(productInfo);
+                if (!isCombo)
+                    hidePopupDialog();
+            }
+
+            @Override
+            public void onCancel() {
+                super.onCancel();
+                hidePopupDialog();
+            }
+        };
         return pane;
     }
 
@@ -331,7 +348,7 @@ public class OrderViewPage extends BasePage {
             }
         });
 
-        TableColumn createdDate = new TableColumn();
+        TableColumn<InvoicePdfTableItem, String> createdDate = new TableColumn();
 
         createdDate.setText("Created Date");
         createdDate.setMinWidth(200);
@@ -366,7 +383,7 @@ public class OrderViewPage extends BasePage {
                 fileChooser.setTitle("Epp location");
                 FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("Epp file (*.epp)", "*.epp");
                 fileChooser.getExtensionFilters().add(extFilter);
-                File selectedFile = fileChooser.showOpenDialog(getStage());
+                File selectedFile = fileChooser.showSaveDialog(getStage());
 
                 if (selectedFile != null)
                     invoiceService.exportToEpp(rawInvoiceItemTableView.getItems(), selectedFile.getAbsolutePath());

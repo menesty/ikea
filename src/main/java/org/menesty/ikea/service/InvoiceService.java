@@ -16,7 +16,7 @@ public class InvoiceService {
 
         StringBuilder text = new StringBuilder();
         String NL = System.getProperty("line.separator");
-        try (Scanner scanner = new Scanner(new FileInputStream(templateFile), "ISO-8859-2")) {
+        try (Scanner scanner = new Scanner(getClass().getResourceAsStream(templateFile), "ISO-8859-2")) {
             while (scanner.hasNextLine())
                 text.append(scanner.nextLine() + NL);
 

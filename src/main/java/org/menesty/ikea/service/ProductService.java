@@ -345,4 +345,8 @@ public class ProductService {
     public List<ProductInfo> load() {
         return DatabaseService.get().query(ProductInfo.class);
     }
+
+    public void save(ProductInfo productInfo) {
+        DatabaseService.get().store(productInfo);
+    }
 }
