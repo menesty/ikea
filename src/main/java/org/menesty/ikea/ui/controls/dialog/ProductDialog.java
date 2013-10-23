@@ -10,6 +10,7 @@ import org.menesty.ikea.domain.ProductPart;
 import org.menesty.ikea.ui.controls.PathProperty;
 import org.menesty.ikea.ui.controls.form.DoubleTextField;
 import org.menesty.ikea.ui.controls.form.IntegerTextField;
+import org.menesty.ikea.ui.pages.DialogCallback;
 
 /**
  * User: Menesty
@@ -40,6 +41,7 @@ public class ProductDialog extends BaseDialog {
     private IntegerTextField width;
     private IntegerTextField length;
     private ProductInfo currentProductInfo;
+    private DialogCallback callback;
 
 
     public ProductDialog() {
@@ -117,7 +119,6 @@ public class ProductDialog extends BaseDialog {
     }
 
     private void bind(ProductPart productPart) {
-        unbind();
         currentProductInfo = productPart.getProductInfo();
         bindProperties();
     }
@@ -151,8 +152,8 @@ public class ProductDialog extends BaseDialog {
         }
     }
 
-    public void bind(ProductInfo productInfo) {
-        unbind();
+    public void bind(ProductInfo productInfo, DialogCallback callback) {
+        this.callback = callback;
         currentProductInfo = productInfo;
         bindProperties();
 
@@ -164,34 +165,23 @@ public class ProductDialog extends BaseDialog {
     }
 
     private void bindProperties() {
-        artNumber.textProperty().bind(new PathProperty<ProductInfo, String>(currentProductInfo, "artNumber"));
-        originalArtNumber.textProperty().bind(new PathProperty<ProductInfo, String>(currentProductInfo, "originalArtNum"));
-        name.textProperty().bind(new PathProperty<ProductInfo, String>(currentProductInfo, "name"));
-        shortName.textProperty().bind(new PathProperty<ProductInfo, String>(currentProductInfo, "shortName"));
-        price.numberProperty().bind(new PathProperty<ProductInfo, Number>(currentProductInfo, "price"));
+        artNumber.setText(currentProductInfo.getArtNumber());
+        originalArtNumber.setText(currentProductInfo.getOriginalArtNum());
+        name.setText(currentProductInfo.getName());
+        shortName.setText(currentProductInfo.getShortName());
+        price.setNumber(currentProductInfo.getPrice());
         group.getSelectionModel().select(currentProductInfo.getGroup());
-        weight.numberProperty().bind(new PathProperty<ProductInfo, Number>(currentProductInfo, "packageInfo.weight"));
-        boxCount.numberProperty().bind(new PathProperty<ProductInfo, Number>(currentProductInfo, "packageInfo.boxCount"));
-        height.numberProperty().bind(new PathProperty<ProductInfo, Number>(currentProductInfo, "packageInfo.height"));
-        width.numberProperty().bind(new PathProperty<ProductInfo, Number>(currentProductInfo, "packageInfo.width"));
-        length.numberProperty().bind(new PathProperty<ProductInfo, Number>(currentProductInfo, "packageInfo.length"));
+        weight.setNumber(currentProductInfo.getPackageInfo().getWeight());
+        boxCount.setNumber(currentProductInfo.getPackageInfo().getBoxCount());
+        height.setNumber(currentProductInfo.getPackageInfo().getHeight());
+        width.setNumber(currentProductInfo.getPackageInfo().getWidth());
+        length.setNumber(currentProductInfo.getPackageInfo().getLength());
     }
 
-    public void unbind() {
-        artNumber.textProperty().unbind();
-        originalArtNumber.textProperty().unbind();
-        name.textProperty().unbind();
-        shortName.textProperty().unbind();
-        price.numberProperty().unbind();
-        weight.numberProperty().unbind();
-        boxCount.numberProperty().unbind();
-        height.numberProperty().unbind();
-        width.numberProperty().unbind();
-        length.numberProperty().unbind();
-    }
 
     public void onCancel() {
-        unbind();
+        if (callback != null)
+            callback.onCancel();
     }
 
     @Override
@@ -210,11 +200,11 @@ public class ProductDialog extends BaseDialog {
         currentProductInfo.getPackageInfo().setWidth(width.getNumber());
         currentProductInfo.getPackageInfo().setLength(length.getNumber());
 
-        unbind();
         onSave(currentProductInfo, subProductTableView.isVisible());
     }
 
     public void onSave(ProductInfo productInfo, boolean isCombo) {
-
+        if (callback != null)
+            callback.onSave(productInfo, isCombo);
     }
 }

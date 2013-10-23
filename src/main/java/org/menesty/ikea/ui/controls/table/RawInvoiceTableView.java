@@ -116,17 +116,18 @@ public class RawInvoiceTableView extends TableView<RawInvoiceProductItem> {
                     @Override
                     public void handle(MouseEvent mouseEvent) {
                         if (mouseEvent.getClickCount() == 2)
-                            onRowDoubleClick(row.getItem());
+                            onRowDoubleClick(row);
                     }
                 });
                 row.itemProperty().addListener(new ChangeListener<RawInvoiceProductItem>() {
                     @Override
                     public void changed(ObservableValue<? extends RawInvoiceProductItem> observableValue, RawInvoiceProductItem rawInvoiceProductItem, RawInvoiceProductItem newValue) {
                         if (newValue != null)
-                            if (!newValue.getProductInfo().isVerified())
+                            if (!newValue.getProductInfo().isVerified()) {
                                 row.getStyleClass().add("productNotVerified");
-                            else
-                                row.getStyleClass().remove("productNotVerified");
+                                return;
+                            }
+                        row.getStyleClass().remove("productNotVerified");
                     }
                 });
                 return row;
@@ -134,7 +135,7 @@ public class RawInvoiceTableView extends TableView<RawInvoiceProductItem> {
         });
     }
 
-    public void onRowDoubleClick(RawInvoiceProductItem item) {
+    public void onRowDoubleClick(TableRow<RawInvoiceProductItem> row) {
 
     }
 }

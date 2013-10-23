@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
  * Time: 11:42 AM
  */
 public class InvoicePdfService {
-    private final static Pattern linePattern = Pattern.compile("(\\d+) (\\d{3}-\\d{3}-\\d{2}) (.*) (SZT\\.) (\\d+) (\\S+) (\\d+,\\d+%) (\\S+,\\d{2})");
+    private final static Pattern linePattern = Pattern.compile("(\\d+) (\\d{3}-\\d{3}-\\d{2}) (.*) (SZT\\.|CM\\.) (\\d+) (\\S+) (\\d+,\\d+%) (\\S+,\\d{2})");
     private final static Pattern totalPattern = Pattern.compile("DO ZAPŁATY:(.*)");
 
     private ProductService productService;
@@ -49,7 +49,9 @@ public class InvoicePdfService {
 
         }
         fos.close();
+
 */
+        new InvoicePdfService().createInvoicePdf("test", new FileInputStream("/Users/Menesty/Downloads/600tekstylia.pdf"));
     }
 
     private void render(List<InvoicePdf> invoicePdfs) {
@@ -67,10 +69,9 @@ public class InvoicePdfService {
 
         Scanner scanner = new Scanner(content);
 
-
         List<RawInvoiceProductItem> products = new ArrayList<>();
         result.setProducts(products);
-        int itemIndex = 0;
+
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
             Matcher m = linePattern.matcher(line);
@@ -85,6 +86,8 @@ public class InvoicePdfService {
                 product.setWat(m.group(7));
                 product.setProductInfo(loadProductInfo(product));
                 products.add(product);
+            }else{
+                System.out.println(line);
             }
         }
 

@@ -202,7 +202,20 @@ public class ProductPage extends BasePage {
                     public void handle(MouseEvent mouseEvent) {
                         if (mouseEvent.getClickCount() == 2) {
                             showPopupDialog(productEditDialog);
-                            productEditDialog.bind(row.getItem());
+                            productEditDialog.bind(row.getItem(), new DialogCallback() {
+                                @Override
+                                public void onSave(ProductInfo productInfo, boolean isCombo) {
+                                    productService.save(productInfo);
+                                    if (!isCombo)
+                                        hidePopupDialog();
+                                    row.setItem(null);
+                                }
+
+                                @Override
+                                public void onCancel() {
+                                    hidePopupDialog();
+                                }
+                            });
                         }
                     }
                 });
@@ -210,10 +223,11 @@ public class ProductPage extends BasePage {
                     @Override
                     public void changed(ObservableValue<? extends ProductInfo> observableValue, ProductInfo oldValue, ProductInfo newValue) {
                         if (newValue != null)
-                            if (!newValue.isVerified())
+                            if (!newValue.isVerified()) {
                                 row.getStyleClass().add("productNotVerified");
-                            else
-                                row.getStyleClass().remove("productNotVerified");
+                                return;
+                            }
+                        row.getStyleClass().remove("productNotVerified");
                     }
                 });
                 return row;
@@ -223,21 +237,7 @@ public class ProductPage extends BasePage {
         tableView.setItems(FXCollections.observableArrayList(productService.load()));
         StackPane pane = createRoot();
         pane.getChildren().add(0, tableView);
-        productEditDialog = new ProductDialog() {
-
-            @Override
-            public void onSave(ProductInfo productInfo, boolean isCombo) {
-                productService.save(productInfo);
-                if (!isCombo)
-                    hidePopupDialog();
-            }
-
-            @Override
-            public void onCancel() {
-                super.onCancel();
-                hidePopupDialog();
-            }
-        };
+        productEditDialog = new ProductDialog();
         return pane;
     }
 

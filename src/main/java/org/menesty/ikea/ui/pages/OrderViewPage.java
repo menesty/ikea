@@ -37,6 +37,7 @@ import org.menesty.ikea.service.ProductService;
 import org.menesty.ikea.ui.TaskProgress;
 import org.menesty.ikea.ui.controls.PathProperty;
 import org.menesty.ikea.ui.controls.dialog.ProductDialog;
+import org.menesty.ikea.ui.controls.table.OrderItemTableView;
 import org.menesty.ikea.ui.controls.table.RawInvoiceTableView;
 
 import java.io.File;
@@ -52,7 +53,8 @@ import java.util.List;
  * Time: 9:51 PM
  */
 public class OrderViewPage extends BasePage {
-    private TableView<OrderItem> tableView;
+
+    private OrderItemTableView tableView;
 
     private OrderService orderService;
 
@@ -83,141 +85,39 @@ public class OrderViewPage extends BasePage {
 
         StackPane pane = createRoot();
         pane.getChildren().add(0, createInvoiceView());
-        productEditDialog = new ProductDialog() {
-            @Override
-            public void onSave(ProductInfo productInfo, boolean isCombo) {
-                productService.save(productInfo);
-                if (!isCombo)
-                    hidePopupDialog();
-            }
-
-            @Override
-            public void onCancel() {
-                super.onCancel();
-                hidePopupDialog();
-            }
-        };
+        productEditDialog = new ProductDialog();
         return pane;
     }
 
     private Tab createOrderItemTab() {
-        tableView = new TableView<>();
-        {
-            TableColumn<OrderItem, Number> column = new TableColumn<>();
-            column.setText("");
-            column.setMaxWidth(40);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderItem, Number>, ObservableValue<Number>>() {
-                @Override
-                public ObservableValue<Number> call(TableColumn.CellDataFeatures<OrderItem, Number> item) {
-                    return new SimpleIntegerProperty(item.getTableView().getItems().indexOf(item.getValue()) + 1);
-                }
-            });
-            tableView.getColumns().add(column);
-        }
+        tableView = new OrderItemTableView() {
+            @Override
+            public void onRowDoubleClick(final TableRow<OrderItem> row) {
+                showPopupDialog(productEditDialog);
+                productEditDialog.bind(row.getItem().getProductInfo(), new DialogCallback() {
+                    @Override
+                    public void onSave(ProductInfo productInfo, boolean isCombo) {
+                        productService.save(productInfo);
+                        if (!isCombo)
+                            hidePopupDialog();
 
-        {
-            TableColumn<OrderItem, String> column = new TableColumn<>();
-            column.setText("Art # ");
-            column.setMinWidth(100);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderItem, String>, ObservableValue<String>>() {
-                @Override
-                public ObservableValue<String> call(TableColumn.CellDataFeatures<OrderItem, String> item) {
-                    return new PathProperty<>(item.getValue(), "artNumber");
-                }
-            });
-            tableView.getColumns().add(column);
-        }
-        {
-            TableColumn<OrderItem, String> column = new TableColumn<>();
-            column.setText("Name");
-            column.setMinWidth(200);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderItem, String>, ObservableValue<String>>() {
-                @Override
-                public ObservableValue<String> call(TableColumn.CellDataFeatures<OrderItem, String> item) {
-                    return new PathProperty<>(item.getValue(), "name");
-                }
-            });
+                        row.setItem(null);
+                    }
 
-            tableView.getColumns().add(column);
-        }
-
-        {
-            TableColumn<OrderItem, String> column = new TableColumn<>();
-            column.setText("Count");
-            column.setMinWidth(60);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderItem, String>, ObservableValue<String>>() {
-                @Override
-                public ObservableValue<String> call(TableColumn.CellDataFeatures<OrderItem, String> item) {
-                    return new PathProperty<>(item.getValue(), "count");
-                }
-            });
-
-            tableView.getColumns().add(column);
-        }
-
-
-        {
-            TableColumn<OrderItem, Double> column = new TableColumn<>();
-            column.setText("Price");
-            column.setMinWidth(60);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderItem, Double>, ObservableValue<Double>>() {
-                @Override
-                public ObservableValue<Double> call(TableColumn.CellDataFeatures<OrderItem, Double> item) {
-                    return new PathProperty<>(item.getValue(), "price");
-                }
-            });
-
-            tableView.getColumns().add(column);
-        }
-
-        {
-            TableColumn<OrderItem, Double> column = new TableColumn<>();
-            column.setText("T Price");
-            column.setMinWidth(60);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderItem, Double>, ObservableValue<Double>>() {
-                @Override
-                public ObservableValue<Double> call(TableColumn.CellDataFeatures<OrderItem, Double> item) {
-                    return new PathProperty<>(item.getValue(), "total");
-                }
-            });
-
-            tableView.getColumns().add(column);
-        }
-
-        {
-            TableColumn<OrderItem, OrderItem.Type> column = new TableColumn<>();
-            column.setText("Type");
-            column.setMinWidth(100);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderItem, OrderItem.Type>, ObservableValue<OrderItem.Type>>() {
-                @Override
-                public ObservableValue<OrderItem.Type> call(TableColumn.CellDataFeatures<OrderItem, OrderItem.Type> item) {
-                    return new PathProperty<>(item.getValue(), "type");
-                }
-            });
-
-            tableView.getColumns().add(column);
-        }
-
-        {
-            TableColumn<OrderItem, ProductInfo.Group> column = new TableColumn<>();
-            column.setText("Group");
-            column.setMinWidth(100);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderItem, ProductInfo.Group>, ObservableValue<ProductInfo.Group>>() {
-                @Override
-                public ObservableValue<ProductInfo.Group> call(TableColumn.CellDataFeatures<OrderItem, ProductInfo.Group> item) {
-                    return new PathProperty<>(item.getValue(), "productInfo.group");
-                }
-            });
-
-            tableView.getColumns().add(column);
-        }
+                    @Override
+                    public void onCancel() {
+                        hidePopupDialog();
+                    }
+                });
+            }
+        };
 
 
         tableView.itemsProperty().addListener(new ChangeListener<ObservableList<OrderItem>>() {
 
             @Override
             public void changed(ObservableValue<? extends ObservableList<OrderItem>> observableValue, ObservableList<OrderItem> orderItems, ObservableList<OrderItem> orderItems2) {
-                System.out.print("items uodate");
+                System.out.print("items update");
             }
         });
 
@@ -395,9 +295,22 @@ public class OrderViewPage extends BasePage {
 
         rawInvoiceItemTableView = new RawInvoiceTableView() {
             @Override
-            public void onRowDoubleClick(RawInvoiceProductItem item) {
+            public void onRowDoubleClick(final TableRow<RawInvoiceProductItem> row) {
                 showPopupDialog(productEditDialog);
-                productEditDialog.bind(item.getProductInfo());
+                productEditDialog.bind(row.getItem().getProductInfo(), new DialogCallback() {
+                    @Override
+                    public void onSave(ProductInfo productInfo, boolean isCombo) {
+                        productService.save(productInfo);
+                        if (!isCombo)
+                            hidePopupDialog();
+                        row.setItem(null);
+                    }
+
+                    @Override
+                    public void onCancel() {
+                        hidePopupDialog();
+                    }
+                });
             }
         };
 
