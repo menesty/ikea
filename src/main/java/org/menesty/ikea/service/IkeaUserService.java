@@ -1,95 +1,91 @@
 package org.menesty.ikea.service;
 
+import org.apache.http.Consts;
+import org.apache.http.HttpEntity;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.cookie.Cookie;
+import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 public class IkeaUserService {
 
     private final String USER_AGENT = "Mozilla/5.0";
 
-    public static void main(String ... arg) throws IOException {
-        new IkeaUserService().run();
-    }
+    public static void main(String... arg) throws IOException {
+        BasicCookieStore cookieStore = new BasicCookieStore();
+        CloseableHttpClient httpclient = HttpClients.custom().setDefaultCookieStore(cookieStore).build();
+        try {
+           /* HttpGet httpget = new HttpGet("https://secure.ikea.com/webapp/wcs/stores/servlet/LogonForm?storeId=19&langId=-27&catalogId=11001");
 
-    public void run() throws IOException {
-        CookieHandler.setDefault(new CookieManager(null, CookiePolicy.ACCEPT_ALL));
+            CloseableHttpResponse response1 = httpclient.execute(httpget);
+            try {
+                HttpEntity entity = response1.getEntity();
 
-        Map<String, String> params = new HashMap<>();
-        params.put("storeId", "19");
-        params.put("langId", "-27");
-        params.put("logonId", "komb_husar@gmail.com");
-        params.put("logonPassword", "Mature65");
-        params.put("rememberMe", "");
+                System.out.println("Login form get: " + response1.getStatusLine());
+                EntityUtils.consume(entity);
 
+                System.out.println("Initial set of cookies:");
+                List<Cookie> cookies = cookieStore.getCookies();
+                if (cookies.isEmpty()) {
+                    System.out.println("None");
+                } else {
+                    for (int i = 0; i < cookies.size(); i++) {
+                        System.out.println("- " + cookies.get(i).toString());
+                    }
+                }
+            } finally {
+                response1.close();
+            }*/
 
+            HttpPost httpost = new HttpPost("https://secure.ikea.com/webapp/wcs/stores/servlet/Logon");
+            List<NameValuePair> nvps = new ArrayList<>();
+            nvps.add(new BasicNameValuePair("storeId", "19"));
+            nvps.add(new BasicNameValuePair("langId", "-27"));
+            nvps.add(new BasicNameValuePair("logonId", "komb_husar@gmail.com"));
+            nvps.add(new BasicNameValuePair("logonPassword", "Mature65"));
 
-        Document response = sendPost("https://secure.ikea.com/webapp/wcs/stores/servlet/Logon", params);
-        System.out.println(response.html());
+            httpost.setEntity(new UrlEncodedFormEntity(nvps, Consts.UTF_8));
 
-    }
+            CloseableHttpResponse response2 = httpclient.execute(httpost);
+            try {
+                HttpEntity entity = response2.getEntity();
 
+                System.out.println("Login form get: " + response2.getStatusLine());
+                System.out.println(EntityUtils.toString(entity) + " =====");
 
-    private Document sendPost(String address, Map<String, String> params) throws IOException {
-        URL url = new URL(address);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-
-        conn.setUseCaches(false);
-        conn.setRequestMethod("POST");
-        conn.setRequestProperty("Host", url.getHost());
-        conn.setRequestProperty("User-Agent", USER_AGENT);
-        conn.setRequestProperty("Accept",
-                "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
-        conn.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
-        /*for (String cookie : this.cookies) {
-            conn.addRequestProperty("Cookie", cookie.split(";", 1)[0]);
-        }*/
-        conn.setRequestProperty("Connection", "keep-alive");
-        conn.setRequestProperty("Referer", "https://secure.ikea.com/webapp/wcs/stores/servlet/LogonForm?storeId=19&langId=-27&catalogId=11001");
-        conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-
-        StringBuilder sb = new StringBuilder();
-
-        for (Map.Entry<String, String> entry : params.entrySet()) {
-            if (sb.length() != 0)
-                sb.append("&");
-            sb.append(entry.getKey()).append("=").append(URLEncoder.encode(entry.getValue(), "UTF-8"));
+                System.out.println("Post logon cookies:");
+                List<Cookie> cookies = cookieStore.getCookies();
+                if (cookies.isEmpty()) {
+                    System.out.println("None");
+                } else {
+                    for (int i = 0; i < cookies.size(); i++) {
+                        System.out.println("- " + cookies.get(i).toString());
+                    }
+                }
+            } finally {
+                response2.close();
+            }
+        } finally {
+            httpclient.close();
         }
 
-        conn.setRequestProperty("Content-Length", Integer.toString(sb.length()));
-
-        conn.setDoOutput(true);
-        conn.setDoInput(true);
-
-
-        DataOutputStream wr = new DataOutputStream(conn.getOutputStream());
-        wr.writeBytes(sb.toString());
-        wr.flush();
-        wr.close();
-
-        int responseCode = conn.getResponseCode();
-        System.out.println("\nSending 'POST' request to URL : " + url);
-        System.out.println("Post parameters : " + sb.toString());
-        System.out.println("Response Code : " + responseCode);
-
-
-        /*try (BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
-            String inputLine;
-            StringBuffer response = new StringBuffer();
-
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
-            }
-        }*/
-
-        return Jsoup.parse(conn.getInputStream(), "UTF-8", url.getHost());
-
-
     }
+
 
 }

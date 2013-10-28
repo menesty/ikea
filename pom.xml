@@ -82,7 +82,7 @@
             <version>2.6</version>
         </dependency>
 
-        <!--<dependency>
+        <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
             <version>4.3.1</version>
@@ -92,7 +92,7 @@
                     <artifactId>commons-logging</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>-->
+        </dependency>
         <!-- Logging  -->
 
         <dependency>
