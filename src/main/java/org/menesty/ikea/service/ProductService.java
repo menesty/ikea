@@ -252,6 +252,7 @@ public class ProductService {
         combo.setOriginalArtNum(preparedArtNumber);
         combo.setName(name);
         combo.setShortName(name);
+        combo.setGroup(ProductInfo.Group.Combo);
         combo.setPackageInfo(parseProductPackageInfo(doc));
 
         List<ProductPart> parts = new ArrayList<>();

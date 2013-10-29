@@ -20,7 +20,7 @@ public class ProductInfo {
     }
 
     public enum Group {
-        Regal, Decor, Lights, Kitchen, Bathroom, Textile, Full, Storing, Family, Kids
+        Regal, Decor, Lights, Kitchen, Bathroom, Textile, Full, Storing, Family, Kids, Combo
     }
 
     private String originalArtNum;

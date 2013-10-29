@@ -30,20 +30,14 @@ import org.menesty.ikea.domain.Order;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.order.OrderItem;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
-import org.menesty.ikea.service.InvoicePdfService;
-import org.menesty.ikea.service.InvoiceService;
-import org.menesty.ikea.service.OrderService;
-import org.menesty.ikea.service.ProductService;
+import org.menesty.ikea.service.*;
 import org.menesty.ikea.ui.TaskProgress;
 import org.menesty.ikea.ui.controls.PathProperty;
 import org.menesty.ikea.ui.controls.dialog.ProductDialog;
 import org.menesty.ikea.ui.controls.table.OrderItemTableView;
 import org.menesty.ikea.ui.controls.table.RawInvoiceTableView;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,12 +66,15 @@ public class OrderViewPage extends BasePage {
 
     private ProductService productService;
 
+    private IkeaUserService ikeaUserService;
+
     public OrderViewPage() {
         super("Order");
         orderService = new OrderService();
         invoicePdfService = new InvoicePdfService();
         invoiceService = new InvoiceService();
         productService = new ProductService();
+        ikeaUserService = new IkeaUserService();
     }
 
     @Override
@@ -143,6 +140,23 @@ public class OrderViewPage extends BasePage {
             }
         });
         toolBar.getItems().add(exportOrder);
+
+
+
+        Button fillIkeaCart = new Button("", imageView);
+        fillIkeaCart.setContentDisplay(ContentDisplay.RIGHT);
+        fillIkeaCart.setTooltip(new Tooltip("IKEA Site"));
+        fillIkeaCart.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent event) {
+                try {
+                    ikeaUserService.fillOrder(currentOrder);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        toolBar.getItems().add(fillIkeaCart);
+
 
         BorderPane content = new BorderPane();
         content.setCenter(tableView);
