@@ -75,6 +75,10 @@ public class BaseDialog extends VBox {
 
     }
 
+    public void onShow() {
+
+    }
+
     protected Label createTitle(String text) {
         Label title = new Label(text);
         title.setId("title");

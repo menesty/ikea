@@ -1,5 +1,6 @@
 package org.menesty.ikea.domain;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -20,7 +21,27 @@ public class ProductInfo {
     }
 
     public enum Group {
-        Regal, Decor, Lights, Kitchen, Bathroom, Textile, Full, Storing, Family, Kids, Combo
+
+        Regal, Decor, Lights, Kitchen, Bathroom, Textile, Full, Storing, Family, Kids, Combo(false);
+
+        private final boolean defaults;
+
+        Group() {
+            defaults = true;
+        }
+
+        Group(boolean defaults) {
+            this.defaults = defaults;
+        }
+
+        public static List<Group> general() {
+            List<Group> groups = new ArrayList<>();
+
+            for (Group value : values())
+                if (value.defaults) groups.add(value);
+
+            return groups;
+        }
     }
 
     private String originalArtNum;

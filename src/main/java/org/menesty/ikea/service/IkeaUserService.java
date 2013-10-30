@@ -18,13 +18,11 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.menesty.ikea.domain.Order;
 import org.menesty.ikea.domain.ProductInfo;
+import org.menesty.ikea.domain.User;
 import org.menesty.ikea.order.OrderItem;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,20 +39,14 @@ public class IkeaUserService {
     }
 
 
-    public static void main(String... arg) throws IOException {
-
-        IkeaUserService ikeaUserService = new IkeaUserService();
-
-
-    }
-
     public void fillOrder(Order order) throws IOException {
-        login();
+        login(order.getGeneralUser());
+
         deleteExisted();
 
         Map<ProductInfo.Group, List<OrderItem>> groupMap = groupItems(order.getByType(OrderItem.Type.General));
 
-        List<Category> categories = createList();
+        List<Category> categories = createList(ProductInfo.Group.general());
 
         for (Category category : categories) {
             List<OrderItem> list = groupMap.get(category.group);
@@ -68,6 +60,23 @@ public class IkeaUserService {
 
             }
         }
+        logout();
+
+        login(order.getComboUser());
+        deleteExisted();
+
+        Category category = createList(Arrays.asList(ProductInfo.Group.Combo)).get(0);
+        List<OrderItem> list = order.getByType(OrderItem.Type.Combo);
+        int index = 0;
+
+        for (OrderItem item : list) {
+            index++;
+            System.out.println(String.format("Add Product : %1$s  Group : %2$s  %3$s/%4$s Category id : %5$s", item.getArtNumber(), category.group, index, list.size(), category.id));
+            addProductToList(category.id, item.getArtNumber(), item.getCount());
+
+        }
+
+        logout();
 
         closeSession();
     }
@@ -90,7 +99,6 @@ public class IkeaUserService {
         httPost.setEntity(new UrlEncodedFormEntity(nvps, Consts.UTF_8));
         try (CloseableHttpResponse response = httpClient.execute(httPost)) {
             EntityUtils.consume(response.getEntity());
-
         }
 
 
@@ -146,8 +154,8 @@ public class IkeaUserService {
     }
 
 
-    private List<Category> createList() throws IOException {
-        for (ProductInfo.Group group : ProductInfo.Group.values()) {
+    private List<Category> createList(List<ProductInfo.Group> groups) throws IOException {
+        for (ProductInfo.Group group : groups) {
             HttpGet request = new HttpGet("http://www.ikea.com/webapp/wcs/stores/servlet/IrwWSCreateInterestList?langId=-27&storeId=19&slName=" + group.toString());
             try (CloseableHttpResponse response = httpClient.execute(request)) {
                 EntityUtils.consume(response.getEntity());
@@ -177,14 +185,18 @@ public class IkeaUserService {
 
     }
 
-    private String login() throws IOException {
+    private void logout() throws IOException {
+        httpClient.execute(new HttpGet("https://secure.ikea.com/webapp/wcs/stores/servlet/Logoff?langId=-27&storeId=19&rememberMe=false")).close();
+    }
+
+    private String login(User user) throws IOException {
         HttpPost httPost = new HttpPost("https://secure.ikea.com/webapp/wcs/stores/servlet/Logon");
         List<NameValuePair> nvps = new ArrayList<>();
 
         nvps.add(new BasicNameValuePair("storeId", "19"));
         nvps.add(new BasicNameValuePair("langId", "-27"));
-        nvps.add(new BasicNameValuePair("logonId", "komb_husar@gmail.com"));
-        nvps.add(new BasicNameValuePair("logonPassword", "Mature65"));
+        nvps.add(new BasicNameValuePair("logonId", user.getLogin())); //"komb_husar@gmail.com"
+        nvps.add(new BasicNameValuePair("logonPassword", user.getPassword())); //"Mature65"
 
         httPost.setEntity(new UrlEncodedFormEntity(nvps, Consts.UTF_8));
 

@@ -2,31 +2,43 @@ package org.menesty.ikea.ui.controls.dialog;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
+import org.menesty.ikea.domain.User;
+import org.menesty.ikea.service.UserService;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.List;
 
 public class OrderCreateDialog extends BaseDialog {
 
-
     private OrderForm orderForm;
+
     private final Window owner;
+
+    private UserService userService;
+
 
     public OrderCreateDialog(final Window owner) {
         this.owner = owner;
+        userService = new UserService();
+
         okBtn.setDisable(true);
         getChildren().add(createTitle("Create new order from customer"));
+
         orderForm = new OrderForm();
+
         getChildren().addAll(orderForm, bottomBar);
     }
 
@@ -35,13 +47,30 @@ public class OrderCreateDialog extends BaseDialog {
         onCreate(orderForm.getOrderName(), orderForm.getFilePath());
     }
 
+    @Override
+    public void onShow() {
+        orderForm.setGeneralUsers(userService.getGeneral());
+        orderForm.setComboUsers(userService.getCombos());
+    }
+
     public void onCreate(String orderName, String filePath) {
 
     }
 
     private class OrderForm extends FormPanel {
+        private final ComboBox<User> generalUsers;
+        private final ComboBox<User> comboUsers;
         TextField orderName;
         TextField textField;
+
+
+        public void setGeneralUsers(List<User> list) {
+            generalUsers.setItems(FXCollections.observableArrayList(list));
+        }
+
+        public void setComboUsers(List<User> list) {
+            comboUsers.setItems(FXCollections.observableArrayList(list));
+        }
 
         public String getOrderName() {
             return orderName.getText();
@@ -52,12 +81,25 @@ public class OrderCreateDialog extends BaseDialog {
         }
 
         public OrderForm() {
-
             addRow("Name");
-
             orderName = new TextField();
             orderName.setPrefColumnCount(20);
             addRow(orderName);
+
+            addRow("General User");
+            generalUsers = new ComboBox<>();
+            generalUsers.setId("uneditable-combobox");
+            generalUsers.setPromptText("Select user");
+            generalUsers.setMinWidth(200);
+            addRow(generalUsers);
+
+            addRow("Combo User");
+            comboUsers = new ComboBox<>();
+            comboUsers.setId("uneditable-combobox");
+            comboUsers.setPromptText("Select user");
+            comboUsers.setMinWidth(200);
+            addRow(comboUsers);
+
 
             addRow("File");
 

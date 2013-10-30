@@ -2,7 +2,6 @@ package org.menesty.ikea.ui.pages;
 
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
@@ -15,7 +14,10 @@ import javafx.scene.control.ProgressIndicator;
 import javafx.scene.effect.BlendMode;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.*;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.CycleMethod;
 import javafx.scene.paint.LinearGradient;
@@ -24,8 +26,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import org.apache.commons.lang.StringUtils;
 import org.menesty.ikea.IkeaApplication;
-
-import java.util.List;
+import org.menesty.ikea.ui.controls.dialog.BaseDialog;
 
 public abstract class BasePage {
 
@@ -156,7 +157,7 @@ public abstract class BasePage {
         return previewIcon;
     }
 
-    protected void showPopupDialog(Node node) {
+    protected void showPopupDialog(BaseDialog node) {
         IkeaApplication.get().showPopupDialog(node);
     }
 

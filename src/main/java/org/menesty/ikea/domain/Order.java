@@ -18,6 +18,10 @@ public class Order {
 
     private List<InvoicePdf> invoicePdfs;
 
+    private User generalUser;
+
+    private User comboUser;
+
     public List<String> getParseWarnings() {
         return parseWarnings;
     }
@@ -85,4 +89,19 @@ public class Order {
     }
 
 
+    public User getGeneralUser() {
+        return generalUser;
+    }
+
+    public void setGeneralUser(User generalUser) {
+        this.generalUser = generalUser;
+    }
+
+    public User getComboUser() {
+        return comboUser;
+    }
+
+    public void setComboUser(User comboUser) {
+        this.comboUser = comboUser;
+    }
 }

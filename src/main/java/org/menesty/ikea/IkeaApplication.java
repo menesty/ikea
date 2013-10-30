@@ -16,6 +16,7 @@ import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.menesty.ikea.ui.controls.*;
+import org.menesty.ikea.ui.controls.dialog.BaseDialog;
 import org.menesty.ikea.ui.pages.*;
 
 /**
@@ -144,8 +145,9 @@ public class IkeaApplication extends Application {
         pageManager.goToPage("IKEA/Order list");
     }
 
-    public void showPopupDialog(Node node) {
+    public void showPopupDialog(BaseDialog node) {
         modalDimmer.showModalMessage(node);
+        node.onShow();
     }
 
     public void hidePopupDialog() {

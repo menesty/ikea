@@ -13,7 +13,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import javafx.util.Callback;
 import org.menesty.ikea.domain.ProductInfo;
-import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.service.ProductService;
 import org.menesty.ikea.ui.controls.PathProperty;
 import org.menesty.ikea.ui.controls.dialog.ProductDialog;
@@ -202,11 +201,11 @@ public class ProductPage extends BasePage {
                     public void handle(MouseEvent mouseEvent) {
                         if (mouseEvent.getClickCount() == 2) {
                             showPopupDialog(productEditDialog);
-                            productEditDialog.bind(row.getItem(), new DialogCallback() {
+                            productEditDialog.bind(row.getItem(), new DialogCallback<ProductInfo>() {
                                 @Override
-                                public void onSave(ProductInfo productInfo, boolean isCombo) {
+                                public void onSave(ProductInfo productInfo, Object[] params) {
                                     productService.save(productInfo);
-                                    if (!isCombo)
+                                    if (!(Boolean) params[0])
                                         hidePopupDialog();
                                     row.setItem(null);
                                 }
