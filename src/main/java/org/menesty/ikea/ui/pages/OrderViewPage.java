@@ -4,7 +4,6 @@ import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -95,6 +94,13 @@ public class OrderViewPage extends BasePage {
                     @Override
                     public void onSave(ProductInfo productInfo, boolean isCombo) {
                         productService.save(productInfo);
+                        OrderItem orderItem = row.getItem();
+
+                        if (OrderItem.Type.Na == orderItem.getType() && productInfo.getGroup() != null) {
+                            orderItem.setType(OrderItem.Type.General);
+                            orderService.save(orderItem);
+                        }
+
                         if (!isCombo)
                             hidePopupDialog();
 
@@ -140,7 +146,6 @@ public class OrderViewPage extends BasePage {
             }
         });
         toolBar.getItems().add(exportOrder);
-
 
 
         Button fillIkeaCart = new Button("", imageView);

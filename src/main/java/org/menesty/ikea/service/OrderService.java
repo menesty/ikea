@@ -11,7 +11,6 @@ import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.order.OrderItem;
 import org.menesty.ikea.order.RawOrderItem;
 import org.menesty.ikea.ui.TaskProgress;
-import org.xml.sax.SAXException;
 
 import java.io.*;
 import java.net.URI;
@@ -58,11 +57,7 @@ public class OrderService {
             order.setOrderItems(reduce(rawOrderItems, taskProgress));
 
             return order;
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (SAXException e) {
-            e.printStackTrace();
-        } catch (InvalidFormatException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
@@ -97,7 +92,7 @@ public class OrderService {
                     else
                         orderItem.setType(OrderItem.Type.General);
 
-                    String productArtNumber = getPrapareArtNumber(orderItem.getArtNumber());
+                    String productArtNumber = getPrepareArtNumber(orderItem.getArtNumber());
 
                     ProductInfo productInfo = productService.findByArtNumber(productArtNumber);
 
@@ -133,10 +128,10 @@ public class OrderService {
         });
     }
 
-    public String getPrapareArtNumber(String artNumber) {
+    public String getPrepareArtNumber(String artNumber) {
         String prepared = StringUtils.leftPad(artNumber.trim(), 8, '0');
         int lastPos = artNumber.length();
-        prepared = artNumber.substring(0, lastPos - 5) + "-" + artNumber.substring(lastPos - 5, lastPos - 2) + "-" + artNumber.substring(lastPos - 2, lastPos);
+        prepared = prepared.substring(0, lastPos - 5) + "-" + prepared.substring(lastPos - 5, lastPos - 2) + "-" + prepared.substring(lastPos - 2, lastPos);
         return prepared;
     }
 
@@ -217,10 +212,8 @@ public class OrderService {
             workbook.write(Files.newOutputStream(zipfs.getPath("unknown-group.xlsx"), StandardOpenOption.CREATE_NEW));
             taskProgress.updateProgress(100, 100);
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
-        } catch (InvalidFormatException e1) {
-            e1.printStackTrace();
         }
     }
 
@@ -265,5 +258,9 @@ public class OrderService {
             total += item.getTotal();
         }
         return total;
+    }
+
+    public void save(OrderItem orderItem) {
+        DatabaseService.get().store(orderItem);
     }
 }
