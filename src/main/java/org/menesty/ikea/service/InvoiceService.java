@@ -23,7 +23,7 @@ public class InvoiceService {
             String template = new String(text.toString().getBytes("utf8"));
 
             Map<String, Object> map = new HashMap<>();
-            map.put("invoiceItems", prapareData(items));
+            map.put("invoiceItems", prepareData(items));
             VariableResolverFactory vrf = new MapVariableResolverFactory(map);
             String result = (String) TemplateRuntime.eval(template, null, vrf, null);
 
@@ -41,7 +41,7 @@ public class InvoiceService {
     }
 
 
-    private List<InvoiceItem> prapareData(List<RawInvoiceProductItem> items) {
+    private List<InvoiceItem> prepareData(List<RawInvoiceProductItem> items) {
         List<InvoiceItem> invoiceItems = new ArrayList<>();
 
         for (RawInvoiceProductItem item : items)

@@ -90,9 +90,9 @@ public class OrderViewPage extends BasePage {
             @Override
             public void onRowDoubleClick(final TableRow<OrderItem> row) {
                 showPopupDialog(productEditDialog);
-                productEditDialog.bind(row.getItem().getProductInfo(), new DialogCallback() {
+                productEditDialog.bind(row.getItem().getProductInfo(), new DialogCallback<ProductInfo>() {
                     @Override
-                    public void onSave(ProductInfo productInfo, boolean isCombo) {
+                    public void onSave(ProductInfo productInfo, Object[] params) {
                         productService.save(productInfo);
                         OrderItem orderItem = row.getItem();
 
@@ -101,7 +101,7 @@ public class OrderViewPage extends BasePage {
                             orderService.save(orderItem);
                         }
 
-                        if (!isCombo)
+                        if (!(Boolean) params[0])
                             hidePopupDialog();
 
                         row.setItem(null);
@@ -316,11 +316,11 @@ public class OrderViewPage extends BasePage {
             @Override
             public void onRowDoubleClick(final TableRow<RawInvoiceProductItem> row) {
                 showPopupDialog(productEditDialog);
-                productEditDialog.bind(row.getItem().getProductInfo(), new DialogCallback() {
+                productEditDialog.bind(row.getItem().getProductInfo(), new DialogCallback<ProductInfo>() {
                     @Override
-                    public void onSave(ProductInfo productInfo, boolean isCombo) {
+                    public void onSave(ProductInfo productInfo, Object[] params) {
                         productService.save(productInfo);
-                        if (!isCombo)
+                        if (!(Boolean) params[0])
                             hidePopupDialog();
                         row.setItem(null);
                     }

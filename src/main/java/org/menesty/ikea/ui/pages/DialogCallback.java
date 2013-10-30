@@ -1,9 +1,7 @@
 package org.menesty.ikea.ui.pages;
 
-import org.menesty.ikea.domain.ProductInfo;
-
-public abstract class DialogCallback {
-    public abstract void onSave(ProductInfo productInfo, boolean isCombo);
+public abstract class DialogCallback<Entity> {
+    public abstract void onSave(Entity entity, Object... params);
 
     public abstract void onCancel();
 }

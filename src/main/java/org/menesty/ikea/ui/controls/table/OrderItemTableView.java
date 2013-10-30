@@ -18,7 +18,6 @@ public class OrderItemTableView extends TableView<OrderItem> {
     public OrderItemTableView() {
         {
             TableColumn<OrderItem, Number> column = new TableColumn<>();
-            column.setText("");
             column.setMaxWidth(40);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderItem, Number>, ObservableValue<Number>>() {
                 @Override
@@ -30,8 +29,7 @@ public class OrderItemTableView extends TableView<OrderItem> {
         }
 
         {
-            TableColumn<OrderItem, String> column = new TableColumn<>();
-            column.setText("Art # ");
+            TableColumn<OrderItem, String> column = new TableColumn<>("Art # ");
             column.setMinWidth(100);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderItem, String>, ObservableValue<String>>() {
                 @Override
@@ -42,8 +40,7 @@ public class OrderItemTableView extends TableView<OrderItem> {
             getColumns().add(column);
         }
         {
-            TableColumn<OrderItem, String> column = new TableColumn<>();
-            column.setText("Name");
+            TableColumn<OrderItem, String> column = new TableColumn<>("Name");
             column.setMinWidth(200);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderItem, String>, ObservableValue<String>>() {
                 @Override
@@ -56,8 +53,7 @@ public class OrderItemTableView extends TableView<OrderItem> {
         }
 
         {
-            TableColumn<OrderItem, String> column = new TableColumn<>();
-            column.setText("Count");
+            TableColumn<OrderItem, String> column = new TableColumn<>("Count");
             column.setMinWidth(60);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderItem, String>, ObservableValue<String>>() {
                 @Override
@@ -71,8 +67,7 @@ public class OrderItemTableView extends TableView<OrderItem> {
 
 
         {
-            TableColumn<OrderItem, Double> column = new TableColumn<>();
-            column.setText("Price");
+            TableColumn<OrderItem, Double> column = new TableColumn<>("Price");
             column.setMinWidth(60);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderItem, Double>, ObservableValue<Double>>() {
                 @Override
@@ -85,8 +80,7 @@ public class OrderItemTableView extends TableView<OrderItem> {
         }
 
         {
-            TableColumn<OrderItem, Double> column = new TableColumn<>();
-            column.setText("T Price");
+            TableColumn<OrderItem, Double> column = new TableColumn<>("T Price");
             column.setMinWidth(60);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderItem, Double>, ObservableValue<Double>>() {
                 @Override
@@ -99,8 +93,7 @@ public class OrderItemTableView extends TableView<OrderItem> {
         }
 
         {
-            TableColumn<OrderItem, OrderItem.Type> column = new TableColumn<>();
-            column.setText("Type");
+            TableColumn<OrderItem, OrderItem.Type> column = new TableColumn<>("Type");
             column.setMinWidth(100);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderItem, OrderItem.Type>, ObservableValue<OrderItem.Type>>() {
                 @Override
@@ -113,8 +106,7 @@ public class OrderItemTableView extends TableView<OrderItem> {
         }
 
         {
-            TableColumn<OrderItem, ProductInfo.Group> column = new TableColumn<>();
-            column.setText("Group");
+            TableColumn<OrderItem, ProductInfo.Group> column = new TableColumn<>("Group");
             column.setMinWidth(100);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderItem, ProductInfo.Group>, ObservableValue<ProductInfo.Group>>() {
                 @Override

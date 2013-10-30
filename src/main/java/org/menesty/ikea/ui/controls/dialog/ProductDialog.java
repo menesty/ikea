@@ -178,7 +178,7 @@ public class ProductDialog extends BaseDialog {
         length.setNumber(currentProductInfo.getPackageInfo().getLength());
     }
 
-
+    @Override
     public void onCancel() {
         if (callback != null)
             callback.onCancel();

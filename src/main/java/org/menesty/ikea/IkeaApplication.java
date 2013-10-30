@@ -128,9 +128,7 @@ public class IkeaApplication extends Application {
         // add window resize button so its on top
         windowResizeButton.setManaged(false);
         this.root.getChildren().add(windowResizeButton);
-        // expand first level of the tree
-        // goto initial page
-        // show stage
+
         stage.setScene(scene);
         stage.show();
 
@@ -138,7 +136,7 @@ public class IkeaApplication extends Application {
 
 
         OrderListPage orderListPage = new OrderListPage();
-        pageManager.register(new CategoryPage("IKEA", orderListPage, new ProductPage()));
+        pageManager.register(new CategoryPage("IKEA", orderListPage, new ProductPage(), new UserPage()));
 
         OrderViewPage orderViewPage = new OrderViewPage();
         orderViewPage.setBreadCrumbPath(orderListPage.getBreadCrumb());
