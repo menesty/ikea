@@ -118,7 +118,7 @@ class FormPanel extends GridPane {
     }
 
     public void addRow(Control field) {
-        GridPane.setConstraints(field, 0, getCurrentRow(), 1, 1, HPos.CENTER, VPos.CENTER, Priority.ALWAYS, Priority.NEVER);
+        GridPane.setConstraints(field, 0, getCurrentRow(), 1, 1, HPos.LEFT, VPos.CENTER, Priority.ALWAYS, Priority.NEVER);
         getChildren().add(field);
         nextRow();
     }

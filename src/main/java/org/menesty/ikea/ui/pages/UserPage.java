@@ -35,7 +35,7 @@ public class UserPage extends BasePage {
         final TableView<User> tableView = new TableView<>();
         {
             TableColumn<User, String> column = new TableColumn<>("Login");
-            column.setMinWidth(100);
+            column.setMinWidth(200);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<User, String>, ObservableValue<String>>() {
                 @Override
                 public ObservableValue<String> call(TableColumn.CellDataFeatures<User, String> item) {
@@ -47,7 +47,7 @@ public class UserPage extends BasePage {
 
         {
             TableColumn<User, String> column = new TableColumn<>("Password");
-            column.setMinWidth(100);
+            column.setMinWidth(200);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<User, String>, ObservableValue<String>>() {
                 @Override
                 public ObservableValue<String> call(TableColumn.CellDataFeatures<User, String> item) {
@@ -71,6 +71,7 @@ public class UserPage extends BasePage {
                             public void onSave(User user, Object... params) {
                                 userService.save(user);
                                 hidePopupDialog();
+                                row.setItem(null);
                             }
 
                             @Override
@@ -94,10 +95,10 @@ public class UserPage extends BasePage {
 
         ToolBar control = new ToolBar();
         ImageView imageView = new ImageView(new Image("/styles/images/icon/add1-48x48.png"));
-        Button addOrder = new Button("", imageView);
-        addOrder.setContentDisplay(ContentDisplay.RIGHT);
+        Button createUser = new Button("", imageView);
+        createUser.setContentDisplay(ContentDisplay.RIGHT);
 
-        addOrder.setOnAction(new EventHandler<ActionEvent>() {
+        createUser.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
                 showPopupDialog(userDialog);
                 userDialog.bind(new User(), new DialogCallback<User>() {
@@ -115,11 +116,12 @@ public class UserPage extends BasePage {
                 });
             }
         });
+        control.getItems().add(createUser);
 
         borderPane.setTop(control);
 
         StackPane pane = createRoot();
-        pane.getChildren().add(0, tableView);
+        pane.getChildren().add(0, borderPane);
 
         return pane;
     }

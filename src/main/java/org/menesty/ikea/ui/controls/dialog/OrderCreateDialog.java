@@ -90,14 +90,12 @@ public class OrderCreateDialog extends BaseDialog {
             generalUsers = new ComboBox<>();
             generalUsers.setId("uneditable-combobox");
             generalUsers.setPromptText("Select user");
-            generalUsers.setMinWidth(200);
             addRow(generalUsers);
 
             addRow("Combo User");
             comboUsers = new ComboBox<>();
             comboUsers.setId("uneditable-combobox");
             comboUsers.setPromptText("Select user");
-            comboUsers.setMinWidth(200);
             addRow(comboUsers);
 
 

@@ -14,9 +14,9 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.util.Callback;
@@ -26,6 +26,7 @@ import org.menesty.ikea.service.OrderService;
 import org.menesty.ikea.ui.TaskProgress;
 import org.menesty.ikea.ui.controls.PathProperty;
 import org.menesty.ikea.ui.controls.dialog.OrderCreateDialog;
+import org.menesty.ikea.ui.controls.dialog.OrderEditDialog;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -44,9 +45,13 @@ public class OrderListPage extends BasePage {
 
     private OrderService orderService;
 
+    private OrderEditDialog editDialog;
+
     public OrderListPage() {
         super("Order list");
         orderService = new OrderService();
+        editDialog = new OrderEditDialog();
+
     }
 
     @Override
@@ -68,17 +73,17 @@ public class OrderListPage extends BasePage {
     private TableView<OrderTableItem> createTableView() {
 
 
-        TableColumn checked = new TableColumn<OrderTableItem, Boolean>();
+        TableColumn<OrderTableItem, Boolean> checked = new TableColumn<>();
 
         checked.setMinWidth(50);
-        checked.setCellValueFactory(new PropertyValueFactory("checked"));
+        checked.setCellValueFactory(new PropertyValueFactory<OrderTableItem, Boolean>("checked"));
         checked.setCellFactory(new Callback<TableColumn<OrderTableItem, Boolean>, TableCell<OrderTableItem, Boolean>>() {
             public TableCell<OrderTableItem, Boolean> call(TableColumn<OrderTableItem, Boolean> p) {
                 return new CheckBoxTableCell<>();
             }
         });
 
-        TableColumn orderName = new TableColumn();
+        TableColumn<OrderTableItem, String> orderName = new TableColumn<>();
 
         orderName.setText("Name");
         orderName.setMinWidth(200);
@@ -88,17 +93,9 @@ public class OrderListPage extends BasePage {
                 return new PathProperty<>(item.getValue(), "order.name");
             }
         });
-        orderName.setCellFactory(TextFieldTableCell.forTableColumn());
-        orderName.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<OrderTableItem, String>>() {
-            @Override
-            public void handle(TableColumn.CellEditEvent<OrderTableItem, String> t) {
-                OrderTableItem orderTableItem = t.getTableView().getItems().get(t.getTablePosition().getRow());
-                orderTableItem.setName(t.getNewValue());
-                orderService.save(orderTableItem.getOrder());
-            }
-        });
 
-        TableColumn createdDate = new TableColumn();
+
+        TableColumn<OrderTableItem, String> createdDate = new TableColumn<>();
 
         createdDate.setText("Created Date");
         createdDate.setMinWidth(200);
@@ -110,11 +107,40 @@ public class OrderListPage extends BasePage {
                     }
                 });
 
-        TableView tableView = new TableView();
+        TableView<OrderTableItem> tableView = new TableView<>();
         tableView.setItems(FXCollections.observableArrayList(transform(orderService.load())));
-        tableView.setEditable(true);
+
+        tableView.setRowFactory(new Callback<TableView<OrderTableItem>, TableRow<OrderTableItem>>() {
+            @Override
+            public TableRow<OrderTableItem> call(final TableView<OrderTableItem> tableView) {
+                final TableRow<OrderTableItem> row = new TableRow<>();
+                row.setOnMouseClicked(new EventHandler<MouseEvent>() {
+                    @Override
+                    public void handle(MouseEvent mouseEvent) {
+                        if (mouseEvent.getClickCount() == 2)
+                            showPopupDialog(editDialog);
+                        editDialog.bind(row.getItem().getOrder(), new DialogCallback<Order>() {
+                            @Override
+                            public void onSave(Order user, Object... params) {
+                                orderService.save(user);
+                                hidePopupDialog();
+                                row.setItem(null);
+                            }
+
+                            @Override
+                            public void onCancel() {
+                                hidePopupDialog();
+                            }
+                        });
+                    }
+                });
+                return row;
+            }
+        });
 
         tableView.getColumns().addAll(checked, orderName, createdDate);
+
+
         return tableView;
     }
 

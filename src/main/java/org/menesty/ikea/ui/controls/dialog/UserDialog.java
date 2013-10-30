@@ -7,7 +7,7 @@ import org.menesty.ikea.ui.pages.DialogCallback;
 
 public class UserDialog extends BaseDialog {
     private UserForm form;
-    private DialogCallback callback;
+    private DialogCallback<User> callback;
     private User currentEntity;
 
     public UserDialog() {
@@ -16,7 +16,7 @@ public class UserDialog extends BaseDialog {
     }
 
 
-    public void bind(User entity, DialogCallback callback) {
+    public void bind(User entity, DialogCallback<User> callback) {
         currentEntity = entity;
         form.setCombo(entity.isComboUser());
         form.setLogin(entity.getLogin());

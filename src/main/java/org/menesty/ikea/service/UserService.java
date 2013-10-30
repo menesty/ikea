@@ -16,12 +16,12 @@ public class UserService {
     }
 
     public List<User> getGeneral() {
-        User example = new User();
-        example.setComboUser(true);
-        return DatabaseService.get().queryByExample(example);
+        return DatabaseService.get().queryByExample(new User());
     }
 
     public List<User> getCombos() {
-        return DatabaseService.get().queryByExample(new User());
+        User example = new User();
+        example.setComboUser(true);
+        return DatabaseService.get().queryByExample(example);
     }
 }
