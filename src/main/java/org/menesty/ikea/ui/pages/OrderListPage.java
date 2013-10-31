@@ -117,21 +117,22 @@ public class OrderListPage extends BasePage {
                 row.setOnMouseClicked(new EventHandler<MouseEvent>() {
                     @Override
                     public void handle(MouseEvent mouseEvent) {
-                        if (mouseEvent.getClickCount() == 2)
+                        if (mouseEvent.getClickCount() == 2 && row.getItem() != null) {
                             showPopupDialog(editDialog);
-                        editDialog.bind(row.getItem().getOrder(), new DialogCallback<Order>() {
-                            @Override
-                            public void onSave(Order user, Object... params) {
-                                orderService.save(user);
-                                hidePopupDialog();
-                                row.setItem(null);
-                            }
+                            editDialog.bind(row.getItem().getOrder(), new DialogCallback<Order>() {
+                                @Override
+                                public void onSave(Order user, Object... params) {
+                                    orderService.save(user);
+                                    hidePopupDialog();
+                                    row.setItem(null);
+                                }
 
-                            @Override
-                            public void onCancel() {
-                                hidePopupDialog();
-                            }
-                        });
+                                @Override
+                                public void onCancel() {
+                                    hidePopupDialog();
+                                }
+                            });
+                        }
                     }
                 });
                 return row;

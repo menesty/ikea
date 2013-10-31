@@ -1,6 +1,8 @@
 package org.menesty.ikea.domain;
 
+import org.apache.commons.lang.StringUtils;
 import org.menesty.ikea.order.OrderItem;
+import org.menesty.ikea.ui.controls.search.OrderItemSearchForm;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -88,7 +90,6 @@ public class Order {
 
     }
 
-
     public User getGeneralUser() {
         return generalUser;
     }
@@ -103,5 +104,20 @@ public class Order {
 
     public void setComboUser(User comboUser) {
         this.comboUser = comboUser;
+    }
+
+    public List<OrderItem> filterOrderItems(OrderItemSearchForm orderItemSearchForm) {
+        List<OrderItem> result = new ArrayList<>();
+
+        for (OrderItem orderItem : orderItems) {
+            if (orderItemSearchForm.type != null && orderItemSearchForm.type != orderItem.getType())
+                continue;
+            if (StringUtils.isNotBlank(orderItemSearchForm.artNumber) && !orderItem.getArtNumber().contains(orderItemSearchForm.artNumber))
+                continue;
+            result.add(orderItem);
+        }
+
+
+        return result;
     }
 }

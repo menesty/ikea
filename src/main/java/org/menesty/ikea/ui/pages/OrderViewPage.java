@@ -1,7 +1,5 @@
 package org.menesty.ikea.ui.pages;
 
-import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -22,6 +20,7 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.util.Callback;
 import org.menesty.ikea.domain.InvoicePdf;
@@ -33,6 +32,8 @@ import org.menesty.ikea.service.*;
 import org.menesty.ikea.ui.TaskProgress;
 import org.menesty.ikea.ui.controls.PathProperty;
 import org.menesty.ikea.ui.controls.dialog.ProductDialog;
+import org.menesty.ikea.ui.controls.search.OrderItemSearchBar;
+import org.menesty.ikea.ui.controls.search.OrderItemSearchForm;
 import org.menesty.ikea.ui.controls.table.OrderItemTableView;
 import org.menesty.ikea.ui.controls.table.RawInvoiceTableView;
 
@@ -132,22 +133,19 @@ public class OrderViewPage extends BasePage {
         exportOrder.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
                 FileChooser fileChooser = new FileChooser();
-
                 //Set extension filter
                 FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("Zip file (*.zip)", "*.zip");
                 fileChooser.getExtensionFilters().add(extFilter);
-
                 //Show save file dialog
                 File file = fileChooser.showSaveDialog(getStage());
 
-                if (file != null) {
+                if (file != null)
                     runTask(new ExportOrderItemsTask(currentOrder, file.getAbsolutePath()));
-                }
             }
         });
         toolBar.getItems().add(exportOrder);
 
-
+        imageView = new ImageView(new javafx.scene.image.Image("/styles/images/icon/export-32x32.png"));
         Button fillIkeaCart = new Button("", imageView);
         fillIkeaCart.setContentDisplay(ContentDisplay.RIGHT);
         fillIkeaCart.setTooltip(new Tooltip("IKEA Site"));
@@ -163,9 +161,19 @@ public class OrderViewPage extends BasePage {
         toolBar.getItems().add(fillIkeaCart);
 
 
+        VBox controlBox = new VBox();
+        controlBox.getChildren().add(toolBar);
+        controlBox.getChildren().add(new OrderItemSearchBar() {
+            public void onSearch(OrderItemSearchForm orderItemSearchForm) {
+                tableView.setItems(FXCollections.observableArrayList(currentOrder.filterOrderItems(orderItemSearchForm)));
+            }
+
+        });
+
+
         BorderPane content = new BorderPane();
         content.setCenter(tableView);
-        content.setTop(toolBar);
+        content.setTop(controlBox);
 
 
         Tab tab = new Tab();
@@ -175,7 +183,6 @@ public class OrderViewPage extends BasePage {
         return tab;
     }
 
-
     private TabPane createInvoiceView() {
         final TabPane tabPane = new TabPane();
         tabPane.setId("source-tabs");
@@ -183,16 +190,6 @@ public class OrderViewPage extends BasePage {
         sourceTab.setText("Invoice");
 
         sourceTab.setClosable(false);
-        tabPane.getSelectionModel().selectedItemProperty().addListener(new InvalidationListener() {
-            @Override
-            public void invalidated(Observable ov) {
-                /*if (tabPane.getSelectionModel().getSelectedItem() == sampleTab) {
-                    sample.play();
-                } else {
-                    sample.stop();
-                }*/
-            }
-        });
         tabPane.getTabs().addAll(createOrderItemTab(), sourceTab);
 
         ToolBar pdfToolBar = new ToolBar();
@@ -202,7 +199,6 @@ public class OrderViewPage extends BasePage {
         uploadInvoice.setTooltip(new Tooltip("Upload Invoice PDF"));
         uploadInvoice.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
-
                 FileChooser fileChooser = new FileChooser();
                 fileChooser.setTitle("Invoice PDF location");
                 FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("Pdf files (*.pdf)", "*.pdf");
@@ -267,7 +263,7 @@ public class OrderViewPage extends BasePage {
             }
         });
 
-        TableColumn<InvoicePdfTableItem, String> createdDate = new TableColumn();
+        TableColumn<InvoicePdfTableItem, String> createdDate = new TableColumn<>();
 
         createdDate.setText("Created Date");
         createdDate.setMinWidth(200);
