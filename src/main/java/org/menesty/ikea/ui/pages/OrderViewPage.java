@@ -91,6 +91,9 @@ public class OrderViewPage extends BasePage {
         tableView = new OrderItemTableView() {
             @Override
             public void onRowDoubleClick(final TableRow<OrderItem> row) {
+                if (OrderItem.Type.Na == row.getItem().getType())
+                    return;
+
                 showPopupDialog(productEditDialog);
                 productEditDialog.bind(row.getItem().getProductInfo(), new DialogCallback<ProductInfo>() {
                     @Override

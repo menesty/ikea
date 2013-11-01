@@ -21,7 +21,6 @@ import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.domain.User;
 import org.menesty.ikea.order.OrderItem;
 import org.menesty.ikea.ui.TaskProgressLog;
-import org.menesty.ikea.ui.controls.dialog.IkeaUserFillProgressDialog;
 
 import java.io.IOException;
 import java.util.*;
@@ -47,13 +46,17 @@ public class IkeaUserService {
 
         Map<ProductInfo.Group, List<OrderItem>> groupMap = groupItems(order.getByType(OrderItem.Type.General));
 
+        Map<ProductInfo.Group, List<OrderItem>> subGroupMap = new HashMap<>();
+
         taskProgressLog.addLog("Create list of categories ...");
         List<Category> categories = createList(ProductInfo.Group.general());
         taskProgressLog.updateLog("Finish creating  list of categories");
 
-        for (Category category : categories) {
+        for (final Category category : categories) {
             List<OrderItem> list = groupMap.get(category.group);
-            fillListWithProduct(category, list, taskProgressLog);
+            List<OrderItem> subList = fillListWithProduct(category, list, taskProgressLog);
+            if (subList != null)
+                subGroupMap.put(category.group, subList);
 
         }
         taskProgressLog.addLog("logout ....");
@@ -61,31 +64,44 @@ public class IkeaUserService {
 
         prepareUserWorkSpace(order.getComboUser(), taskProgressLog);
 
-        Category category = createList(Arrays.asList(ProductInfo.Group.Combo)).get(0);
+        subGroupMap.put(ProductInfo.Group.Combo, order.getByType(OrderItem.Type.Combo));
 
-        List<OrderItem> list = order.getByType(OrderItem.Type.Combo);
-        fillListWithProduct(category, list, taskProgressLog);
+        taskProgressLog.addLog("Create list of categories ...");
+        categories = createList(subGroupMap.keySet());
+
+        for (final Category category : categories) {
+            List<OrderItem> list = subGroupMap.get(category.group);
+            fillListWithProduct(category, list, taskProgressLog);
+        }
 
         taskProgressLog.addLog("logout ....");
         logout();
         taskProgressLog.addLog("Finish");
 
         closeSession();
+        taskProgressLog.done();
     }
 
-    private void fillListWithProduct(Category category, List<OrderItem> list, TaskProgressLog taskProgressLog) throws IOException {
-        if (list == null) return;
-
-        taskProgressLog.addLog(String.format("Fill list: %1$s  with products", category.group));
-        taskProgressLog.addLog("Starting ...");
+    private List<OrderItem> fillListWithProduct(final Category category, final List<OrderItem> list, final TaskProgressLog taskProgressLog) throws IOException {
+        if (list == null) return null;
 
         int index = 0;
-        for (OrderItem item : list) {
+        List<OrderItem> workList = list.size() > 99 ? list.subList(0, 99) : list;
+        taskProgressLog.addLog("Next group");
+
+        for (OrderItem item : workList) {
             index++;
-            taskProgressLog.updateLog(String.format("Add Product : %1$s  %2$s/%3$s", item.getArtNumber(), index, list.size()));
-            addProductToList(category.id, item.getArtNumber(), item.getCount());
+            taskProgressLog.updateLog(String.format("Group %1$s - product : %2$s  %3$s/%4$s", category.group, item.getArtNumber(), index, list.size()));
+            addProductToList(category.id, prepareArtNumber(item.getArtNumber()), item.getCount());
 
         }
+        return list.size() > 99 ? list.subList(99, list.size()) : null;
+    }
+
+    private String prepareArtNumber(String artNumber) {
+        if (Character.isAlphabetic(artNumber.charAt(0)))
+            return artNumber.substring(1);
+        return artNumber;
     }
 
     private void prepareUserWorkSpace(User user, TaskProgressLog taskProgressLog) throws IOException {
@@ -101,8 +117,6 @@ public class IkeaUserService {
     }
 
     private void addProductToList(String categoryId, String artNumber, int quantity) throws IOException {
-
-
         HttpPost httPost = new HttpPost("http://www.ikea.com/webapp/wcs/stores/servlet/IrwInterestItemAddByPartNumber");
 
         List<NameValuePair> nvps = new ArrayList<>();
@@ -173,7 +187,7 @@ public class IkeaUserService {
     }
 
 
-    private List<Category> createList(List<ProductInfo.Group> groups) throws IOException {
+    private List<Category> createList(Collection<ProductInfo.Group> groups) throws IOException {
         for (ProductInfo.Group group : groups) {
             HttpGet request = new HttpGet("http://www.ikea.com/webapp/wcs/stores/servlet/IrwWSCreateInterestList?langId=-27&storeId=19&slName=" + group.toString());
             try (CloseableHttpResponse response = httpClient.execute(request)) {
