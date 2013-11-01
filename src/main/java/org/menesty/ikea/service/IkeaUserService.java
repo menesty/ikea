@@ -20,6 +20,8 @@ import org.menesty.ikea.domain.Order;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.domain.User;
 import org.menesty.ikea.order.OrderItem;
+import org.menesty.ikea.ui.TaskProgressLog;
+import org.menesty.ikea.ui.controls.dialog.IkeaUserFillProgressDialog;
 
 import java.io.IOException;
 import java.util.*;
@@ -39,46 +41,63 @@ public class IkeaUserService {
     }
 
 
-    public void fillOrder(Order order) throws IOException {
-        login(order.getGeneralUser());
+    public void fillOrder(Order order, TaskProgressLog taskProgressLog) throws IOException {
 
-        deleteExisted();
+        prepareUserWorkSpace(order.getGeneralUser(), taskProgressLog);
 
         Map<ProductInfo.Group, List<OrderItem>> groupMap = groupItems(order.getByType(OrderItem.Type.General));
 
+        taskProgressLog.addLog("Create list of categories ...");
         List<Category> categories = createList(ProductInfo.Group.general());
+        taskProgressLog.updateLog("Finish creating  list of categories");
 
         for (Category category : categories) {
             List<OrderItem> list = groupMap.get(category.group);
+            fillListWithProduct(category, list, taskProgressLog);
 
-            if (list == null) continue;
-            int index = 0;
-            for (OrderItem item : list) {
-                index++;
-                System.out.println(String.format("Add Product : %1$s  Group : %2$s  %3$s/%4$s Category id : %5$s", item.getArtNumber(), category.group, index, list.size(), category.id));
-                addProductToList(category.id, item.getArtNumber(), item.getCount());
-
-            }
         }
+        taskProgressLog.addLog("logout ....");
         logout();
 
-        login(order.getComboUser());
-        deleteExisted();
+        prepareUserWorkSpace(order.getComboUser(), taskProgressLog);
 
         Category category = createList(Arrays.asList(ProductInfo.Group.Combo)).get(0);
-        List<OrderItem> list = order.getByType(OrderItem.Type.Combo);
-        int index = 0;
 
+        List<OrderItem> list = order.getByType(OrderItem.Type.Combo);
+        fillListWithProduct(category, list, taskProgressLog);
+
+        taskProgressLog.addLog("logout ....");
+        logout();
+        taskProgressLog.addLog("Finish");
+
+        closeSession();
+    }
+
+    private void fillListWithProduct(Category category, List<OrderItem> list, TaskProgressLog taskProgressLog) throws IOException {
+        if (list == null) return;
+
+        taskProgressLog.addLog(String.format("Fill list: %1$s  with products", category.group));
+        taskProgressLog.addLog("Starting ...");
+
+        int index = 0;
         for (OrderItem item : list) {
             index++;
-            System.out.println(String.format("Add Product : %1$s  Group : %2$s  %3$s/%4$s Category id : %5$s", item.getArtNumber(), category.group, index, list.size(), category.id));
+            taskProgressLog.updateLog(String.format("Add Product : %1$s  %2$s/%3$s", item.getArtNumber(), index, list.size()));
             addProductToList(category.id, item.getArtNumber(), item.getCount());
 
         }
+    }
 
-        logout();
+    private void prepareUserWorkSpace(User user, TaskProgressLog taskProgressLog) throws IOException {
+        taskProgressLog.addLog(String.format("Try to login by user : %1$s ...", user.getLogin()));
+        //TODO Handle login error
+        login(user);
+        taskProgressLog.updateLog(String.format("Logged as user : %1$s", user.getLogin()));
 
-        closeSession();
+        taskProgressLog.addLog("Deleting categories under this user ...");
+        deleteExisted();
+        taskProgressLog.updateLog("Finish deleting categories");
+
     }
 
     private void addProductToList(String categoryId, String artNumber, int quantity) throws IOException {

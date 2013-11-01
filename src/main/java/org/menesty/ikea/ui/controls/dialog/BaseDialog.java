@@ -26,6 +26,8 @@ public class BaseDialog extends VBox {
 
     protected Button okBtn;
 
+    protected Button cancelBtn;
+
     public BaseDialog() {
         setId("ProxyDialog");
         setSpacing(10);
@@ -36,7 +38,7 @@ public class BaseDialog extends VBox {
                 t.consume();
             }
         });
-        Button cancelBtn = new Button("Cancel");
+        cancelBtn = new Button("Cancel");
         cancelBtn.setId("cancelButton");
         cancelBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override

@@ -31,6 +31,7 @@ import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.service.*;
 import org.menesty.ikea.ui.TaskProgress;
 import org.menesty.ikea.ui.controls.PathProperty;
+import org.menesty.ikea.ui.controls.dialog.IkeaUserFillProgressDialog;
 import org.menesty.ikea.ui.controls.dialog.ProductDialog;
 import org.menesty.ikea.ui.controls.search.OrderItemSearchBar;
 import org.menesty.ikea.ui.controls.search.OrderItemSearchForm;
@@ -152,8 +153,15 @@ public class OrderViewPage extends BasePage {
         fillIkeaCart.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
                 try {
-                    ikeaUserService.fillOrder(currentOrder);
-                } catch (IOException e) {
+                    new Thread(new Task<Void>() {
+                        @Override
+                        protected Void call() throws Exception {
+                            IkeaUserFillProgressDialog logDialog = new IkeaUserFillProgressDialog();
+                            ikeaUserService.fillOrder(currentOrder, logDialog);
+                            return null;
+                        }
+                    }).start();
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
