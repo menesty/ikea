@@ -96,12 +96,6 @@ public class OrderViewPage extends BasePage {
                     @Override
                     public void onSave(ProductInfo productInfo, Object[] params) {
                         productService.save(productInfo);
-                        OrderItem orderItem = row.getItem();
-
-                        if (OrderItem.Type.Na == orderItem.getType() && productInfo.getGroup() != null) {
-                            orderItem.setType(OrderItem.Type.General);
-                            orderService.save(orderItem);
-                        }
 
                         if (!(Boolean) params[0])
                             hidePopupDialog();
@@ -152,11 +146,18 @@ public class OrderViewPage extends BasePage {
         fillIkeaCart.setTooltip(new Tooltip("IKEA Site"));
         fillIkeaCart.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
+                final IkeaUserFillProgressDialog logDialog = new IkeaUserFillProgressDialog() {
+                    @Override
+                    public void onOk() {
+                        hidePopupDialog();
+                    }
+                };
+                showPopupDialog(logDialog);
                 try {
                     new Thread(new Task<Void>() {
                         @Override
                         protected Void call() throws Exception {
-                            IkeaUserFillProgressDialog logDialog = new IkeaUserFillProgressDialog();
+
                             ikeaUserService.fillOrder(currentOrder, logDialog);
                             return null;
                         }

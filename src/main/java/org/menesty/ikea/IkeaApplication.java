@@ -26,14 +26,8 @@ import org.menesty.ikea.ui.pages.*;
  */
 public class IkeaApplication extends Application {
     private WindowResizeButton windowResizeButton;
-    private BorderPane root;
-    private Scene scene;
-    private ToolBar toolBar;
     private Pane pageArea;
     private PopupDialog modalDimmer;
-
-    private ToolBar pageToolBar;
-    private BreadcrumbBar breadcrumbBar;
 
     private static PageManager pageManager;
     private static IkeaApplication instance;
@@ -58,7 +52,7 @@ public class IkeaApplication extends Application {
         // create window resize button
         windowResizeButton = new WindowResizeButton(stage, 1020, 700);
         // create root
-        root = new BorderPane() {
+        BorderPane root = new BorderPane() {
             @Override
             protected void layoutChildren() {
                 super.layoutChildren();
@@ -74,7 +68,7 @@ public class IkeaApplication extends Application {
         layerPane.getChildren().add(root);
         // create scene
         boolean is3dSupported = Platform.isSupported(ConditionalFeature.SCENE3D);
-        scene = new Scene(layerPane, 1020, 700, is3dSupported);
+        Scene scene = new Scene(layerPane, 1020, 700, is3dSupported);
         if (is3dSupported) {
             //RT-13234
             scene.setCamera(new PerspectiveCamera());
@@ -85,16 +79,16 @@ public class IkeaApplication extends Application {
 
         layerPane.getChildren().add(modalDimmer);
         // create main toolbar
-        toolBar = new MainToolBar(stage);
+        ToolBar toolBar = new MainToolBar(stage);
         // add close min max
 
-        pageToolBar = new ToolBar();
+        ToolBar pageToolBar = new ToolBar();
         pageToolBar.setId("page-toolbar");
         pageToolBar.setMinHeight(29);
         pageToolBar.setMaxSize(Double.MAX_VALUE, Control.USE_PREF_SIZE);
 
 
-        breadcrumbBar = new BreadcrumbBar();
+        BreadcrumbBar breadcrumbBar = new BreadcrumbBar();
         pageToolBar.getItems().add(breadcrumbBar);
         Region spacer3 = new Region();
         HBox.setHgrow(spacer3, Priority.ALWAYS);
@@ -124,11 +118,11 @@ public class IkeaApplication extends Application {
         rightSplitPane.setCenter(pageArea);
         // create split pane
 
-        this.root.setTop(toolBar);
-        this.root.setCenter(rightSplitPane);
+        root.setTop(toolBar);
+        root.setCenter(rightSplitPane);
         // add window resize button so its on top
         windowResizeButton.setManaged(false);
-        this.root.getChildren().add(windowResizeButton);
+        root.getChildren().add(windowResizeButton);
 
         stage.setScene(scene);
         stage.show();
@@ -146,7 +140,7 @@ public class IkeaApplication extends Application {
     }
 
     public void showPopupDialog(BaseDialog node) {
-        modalDimmer.showModalMessage(node);
+        modalDimmer.showModalMessage(node, node.isAllowAutoHide());
         node.onShow();
     }
 

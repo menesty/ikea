@@ -1,5 +1,6 @@
 package org.menesty.ikea.ui.controls.dialog;
 
+import javafx.application.Platform;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import org.menesty.ikea.ui.TaskProgressLog;
@@ -11,7 +12,9 @@ public class IkeaUserFillProgressDialog extends BaseDialog implements TaskProgre
     private Label activeItem;
 
     public IkeaUserFillProgressDialog() {
+        setAllowAutoHide(false);
         cancelBtn.setVisible(false);
+        okBtn.setVisible(false);
         getChildren().addAll(logBox = new VBox(), bottomBar);
 
     }
@@ -20,19 +23,41 @@ public class IkeaUserFillProgressDialog extends BaseDialog implements TaskProgre
     @Override
     public void addLog(String log) {
         activeItem = new Label(log);
-        logBox.getChildren().add(activeItem);
+
+        final Label currentActive = activeItem;
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                logBox.getChildren().add(currentActive);
+            }
+        });
+
     }
 
     @Override
-    public void updateLog(String log) {
+    public void updateLog(final String log) {
         if (activeItem == null) addLog(log);
-        else
-            activeItem.setText(log);
+        else {
+            final Label currentActive = activeItem;
+
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    currentActive.setText(log);
+                }
+            });
+        }
+
     }
 
     @Override
     public void done() {
-
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                okBtn.setVisible(true);
+            }
+        });
     }
 }
 

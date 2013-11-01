@@ -17,20 +17,23 @@ import javafx.util.Duration;
  * Time: 7:29 PM
  */
 public class PopupDialog extends StackPane {
+    private boolean allowAutoHide;
 
     public PopupDialog() {
         setId("ModalDimmer");
         setOnMouseClicked(new EventHandler<MouseEvent>() {
             public void handle(MouseEvent t) {
                 t.consume();
-                hideModalMessage();
+                if (allowAutoHide)
+                    hideModalMessage();
             }
         });
         setVisible(false);
     }
 
 
-    public void showModalMessage(Node message) {
+    public void showModalMessage(Node message, boolean allowAutoHide) {
+        this.allowAutoHide = allowAutoHide;
         getChildren().add(message);
         setOpacity(0);
         setVisible(true);

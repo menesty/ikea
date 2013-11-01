@@ -28,6 +28,8 @@ public class BaseDialog extends VBox {
 
     protected Button cancelBtn;
 
+    private boolean allowAutoHide = true;
+
     public BaseDialog() {
         setId("ProxyDialog");
         setSpacing(10);
@@ -79,6 +81,14 @@ public class BaseDialog extends VBox {
 
     public void onShow() {
 
+    }
+
+    public boolean isAllowAutoHide() {
+        return allowAutoHide;
+    }
+
+    public void setAllowAutoHide(boolean allowAutoHide) {
+        this.allowAutoHide = allowAutoHide;
     }
 
     protected Label createTitle(String text) {

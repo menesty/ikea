@@ -134,10 +134,10 @@ public class OrderItemTableView extends TableView<OrderItem> {
                 row.itemProperty().addListener(new ChangeListener<OrderItem>() {
                     @Override
                     public void changed(ObservableValue<? extends OrderItem> observableValue, OrderItem oldValue, OrderItem newValue) {
-                        if (newValue != null && !newValue.getProductInfo().isVerified())
+                        row.getStyleClass().remove("productNotVerified");
+                        if (newValue != null && OrderItem.Type.Na != newValue.getType() && !newValue.getProductInfo().isVerified())
                             row.getStyleClass().add("productNotVerified");
-                        else
-                            row.getStyleClass().remove("productNotVerified");
+
                     }
                 });
 
