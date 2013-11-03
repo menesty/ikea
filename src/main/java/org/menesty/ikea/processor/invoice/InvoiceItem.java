@@ -72,15 +72,19 @@ public class InvoiceItem {
     }
 
     public double getRetailWat() {
-        return round(getRetail() * 1.23);
+        return round(getRetail() * getWatCof());
     }
 
     public double getPrice() {
-        return round(price / ((double) wat / (double) 100 + 1));
+        return round(price / getWatCof());
     }
 
     public double getTaxPay() {
         return round((getPriceWat() - getPrice()) * count);
+    }
+
+    private double getWatCof(){
+        return  (double) wat / (double) 100 + 1;
     }
 
     private static double round(double value) {
@@ -97,6 +101,14 @@ public class InvoiceItem {
 
     public static void main(String... arg) {
         format(23d);
+
+        InvoiceItem invoiceItem = new InvoiceItem();
+        invoiceItem.setWat(23);
+        invoiceItem.setPrice(115d);
+
+        System.out.print("Price :" + invoiceItem.getPrice());
+        System.out.print("Price Wat :" + invoiceItem.getPriceWat());
+
     }
 
     public void setPrice(double price) {
@@ -170,4 +182,5 @@ public class InvoiceItem {
 
         return invoiceItem;
     }
+
 }

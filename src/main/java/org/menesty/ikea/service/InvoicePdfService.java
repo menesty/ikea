@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
  * Time: 11:42 AM
  */
 public class InvoicePdfService {
-    private final static Pattern linePattern = Pattern.compile("(\\d+) (\\d{3}-\\d{3}-\\d{2}) (.*) (SZT\\.|CM\\.) (\\d+) (\\S+) (\\d+,\\d+%) (\\S+,\\d{2})");
+    private final static Pattern linePattern = Pattern.compile("(\\d+) (\\d{3}-\\d{3}-\\d{2}) (.*) (SZT\\.|CM\\.) (\\d+) (\\S+) (\\d+,\\d+)% (\\S+,\\d{2})");
     private final static Pattern totalPattern = Pattern.compile("DO ZAPŁATY:(.*)");
 
     private ProductService productService;
@@ -108,6 +108,7 @@ public class InvoicePdfService {
             productInfo.setShortName(ProductService.generateShortName(product.getName(), product.getArtNumber(), 1));
             productInfo.getPackageInfo().setBoxCount(1);
         }
+        productInfo.setWat(product.getIntWat());
         productInfo.setPrice(product.getPrice());
         return productInfo;
     }

@@ -66,7 +66,16 @@ public class RawInvoiceProductItem {
     }
 
     public String getWat() {
-        return wat;
+        return wat + "%";
+    }
+
+    public int getIntWat() {
+        try {
+            Double.valueOf(wat.trim().replace(",", "."));
+        } catch (NumberFormatException e) {
+
+        }
+        return 23;
     }
 
     public void setWat(String wat) {
@@ -85,10 +94,10 @@ public class RawInvoiceProductItem {
         return artNumber;
     }
 
-    public String getPrepareArtNumber(){
-        String artNumber = StringUtils.leftPad(this.artNumber.trim(),8,'0');
+    public String getPrepareArtNumber() {
+        String artNumber = StringUtils.leftPad(this.artNumber.trim(), 8, '0');
         int lastPos = artNumber.length();
-        artNumber =artNumber.substring(0,lastPos-5) + "-" +artNumber.substring(lastPos-5,lastPos-2)+ "-" +artNumber.substring(lastPos-2,lastPos);
+        artNumber = artNumber.substring(0, lastPos - 5) + "-" + artNumber.substring(lastPos - 5, lastPos - 2) + "-" + artNumber.substring(lastPos - 2, lastPos);
         return artNumber;
     }
 
