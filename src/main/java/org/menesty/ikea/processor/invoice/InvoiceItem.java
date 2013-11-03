@@ -129,13 +129,15 @@ public class InvoiceItem {
 
     public static List<InvoiceItem> get(ProductInfo productInfo, int count) {
         List<InvoiceItem> result = new ArrayList<>();
-        if (productInfo.getPackageInfo().getBoxCount() > 1)
+        boolean needGrind = productInfo.getPackageInfo().getBoxCount() > 1 && productInfo.getPackageInfo().getWeight() > 20000;
+
+        if (needGrind)
             for (int i = 1; i <= productInfo.getPackageInfo().getBoxCount(); i++)
                 result.add(InvoiceItem.get(productInfo, count, i, productInfo.getPackageInfo().getBoxCount()));
         else
             result.add(InvoiceItem.get(productInfo, count, 1, 1));
 
-        if (productInfo.getPackageInfo().getBoxCount() > 1) {
+        if (needGrind) {
             double price = productInfo.getPrice();
             double pricePerItem = round(price / productInfo.getPackageInfo().getBoxCount());
 
@@ -147,6 +149,7 @@ public class InvoiceItem {
                 result.get(0).price = pricePerItem + (price - total);
 
         }
+
         return result;
     }
 
