@@ -3,7 +3,6 @@ package org.menesty.ikea.service;
 import net.sf.jxls.reader.*;
 import net.sf.jxls.transformer.XLSTransformer;
 import org.apache.commons.lang.StringUtils;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.menesty.ikea.domain.InvoicePdf;
 import org.menesty.ikea.domain.Order;
@@ -12,7 +11,10 @@ import org.menesty.ikea.order.OrderItem;
 import org.menesty.ikea.order.RawOrderItem;
 import org.menesty.ikea.ui.TaskProgress;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.FileSystem;
@@ -83,7 +85,7 @@ public class OrderService {
                     orderItem.setComment(rawOrderItem.getComment());
                     orderItem.setCount(rawOrderItem.getCount());
                     orderItem.setName(rawOrderItem.getDescription());
-                    orderItem.setPrice(rawOrderItem.getPrice());
+                    orderItem.setPrice(rawOrderItem.getPrice() / rawOrderItem.getCount());
 
                     if (StringUtils.isNotBlank(rawOrderItem.getComment()))
                         orderItem.setType(OrderItem.Type.Specials);

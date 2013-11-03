@@ -1,7 +1,6 @@
 package org.menesty.ikea.service;
 
 import com.db4o.ObjectSet;
-import org.apache.commons.lang.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -35,7 +34,7 @@ public class ProductService {
             ProductInfo product = findByArtNumber(artNumber);
 
             if (product == null) {
-                if (StringUtils.isNumeric(artNumber.charAt(0) + ""))
+                if (Character.isDigit(artNumber.charAt(0)))
                     product = loadFromIkea(artNumber);
                 else
                     product = loadComboProduct(artNumber);
@@ -213,7 +212,8 @@ public class ProductService {
         else if (content.contains("Dekor") || content.contains("dekor"))
             return ProductInfo.Group.Decor;
         else if (weight != 0 && weight > 5) return ProductInfo.Group.Full;
-        return null;
+
+        return ProductInfo.Group.Unknown;
     }
 
     public static void main(String... arg) throws IOException {
@@ -222,6 +222,17 @@ public class ProductService {
         //System.out.println(productInfo.getParts());
         //ProductInfo productInfo = new ProductService().loadComboProduct("S39002041");
         // System.out.println(ProductService.resolveGroup("70238169"));
+
+        ProductInfo productInfo = new ProductInfo();
+        productInfo.setGroup(null);
+
+        List<ProductInfo> list = DatabaseService.get().queryByExample(productInfo);
+        for (ProductInfo product : list)
+            if (product.getGroup() == null) {
+                product.setGroup(ProductInfo.Group.Unknown);
+                DatabaseService.get().store(product);
+            }
+
         System.out.println((double) 10 / 13);
     }
 

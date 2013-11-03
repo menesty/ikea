@@ -22,7 +22,7 @@ public class ProductInfo {
 
     public enum Group {
 
-        Regal, Decor, Lights, Kitchen, Bathroom, Textile, Full, Storing, Family, Kids, Combo(false);
+        Regal, Decor, Lights, Kitchen, Bathroom, Textile, Full, Storing, Family, Kids, Combo(false), Unknown(false);
 
         private final boolean defaults;
 
@@ -54,7 +54,7 @@ public class ProductInfo {
 
     private String shortName;
 
-    private Group group;
+    private Group group = Group.Unknown;
 
     private List<ProductPart> parts;
 

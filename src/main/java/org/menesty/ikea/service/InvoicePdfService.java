@@ -54,10 +54,6 @@ public class InvoicePdfService {
         new InvoicePdfService().createInvoicePdf("test", new FileInputStream("/Users/Menesty/Downloads/600tekstylia.pdf"));
     }
 
-    private void render(List<InvoicePdf> invoicePdfs) {
-
-    }
-
 
     private InvoicePdf parseInvoice(String name, InputStream stream) throws IOException {
         InvoicePdf result = new InvoicePdf(name);
@@ -86,7 +82,7 @@ public class InvoicePdfService {
                 product.setWat(m.group(7));
                 product.setProductInfo(loadProductInfo(product));
                 products.add(product);
-            }else{
+            } else {
                 System.out.println(line);
             }
         }

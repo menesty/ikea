@@ -9,7 +9,6 @@
                 <mapping row="0" col="4">item.combo</mapping>
                 <mapping row="0" col="5">item.comment</mapping>
                 <mapping row="0" col="6">item.price</mapping>
-
             </section>
             <loopbreakcondition>
                 <rowcheck offset="0">

@@ -1,5 +1,6 @@
 package org.menesty.ikea.ui.controls.search;
 
+import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.order.OrderItem;
 
 /**
@@ -8,7 +9,10 @@ import org.menesty.ikea.order.OrderItem;
  * Time: 12:02 AM
  */
 public class OrderItemSearchForm {
+
     public OrderItem.Type type;
+
     public String artNumber;
 
+    public ProductInfo.Group productGroup;
 }

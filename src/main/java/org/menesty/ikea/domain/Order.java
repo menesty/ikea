@@ -110,10 +110,15 @@ public class Order {
         List<OrderItem> result = new ArrayList<>();
 
         for (OrderItem orderItem : orderItems) {
+
             if (orderItemSearchForm.type != null && orderItemSearchForm.type != orderItem.getType())
                 continue;
             if (StringUtils.isNotBlank(orderItemSearchForm.artNumber) && !orderItem.getArtNumber().contains(orderItemSearchForm.artNumber))
                 continue;
+            if (orderItemSearchForm.productGroup != null &&
+                    (orderItem.getProductInfo() == null || !orderItemSearchForm.productGroup.equals(orderItem.getProductInfo().getGroup())))
+                continue;
+
             result.add(orderItem);
         }
 
