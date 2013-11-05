@@ -247,6 +247,6 @@ public class ProductPage extends BasePage {
 
     @Override
     protected Node createIconContent() {
-        return new ImageView(new javafx.scene.image.Image("/styles/images/icon/products-72x72.png"));
+        return new ImageView(new javafx.scene.image.Image("/styles/images/icon/products-63x63.png"));
     }
 }

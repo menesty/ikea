@@ -273,4 +273,9 @@ public class OrderListPage extends BasePage {
         return result;
 
     }
+
+    @Override
+    protected Node createIconContent() {
+        return new ImageView(new javafx.scene.image.Image("/styles/images/icon/orders-72x72.png"));
+    }
 }

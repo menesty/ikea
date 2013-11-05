@@ -20,6 +20,7 @@ import org.menesty.ikea.ui.pages.DialogCallback;
 import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.NumberFormat;
 import java.util.List;
 
 /**
@@ -151,7 +152,8 @@ public abstract class OrderItemViewComponent extends BorderPane {
         }
 
         public void setTotal(double total) {
-            totalLabel.setText(BigDecimal.valueOf(total).setScale(2, RoundingMode.CEILING).toString());
+            double totalPrice = BigDecimal.valueOf(total).setScale(2, RoundingMode.CEILING).doubleValue();
+            totalLabel.setText(NumberFormat.getNumberInstance().format(totalPrice));
         }
     }
 }
