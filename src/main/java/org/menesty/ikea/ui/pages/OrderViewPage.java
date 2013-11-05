@@ -1,25 +1,15 @@
 package org.menesty.ikea.ui.pages;
 
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.CheckBoxTableCell;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
-import javafx.util.Callback;
 import org.menesty.ikea.domain.InvoicePdf;
 import org.menesty.ikea.domain.Order;
 import org.menesty.ikea.domain.ProductInfo;
@@ -27,8 +17,8 @@ import org.menesty.ikea.order.OrderItem;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.service.*;
 import org.menesty.ikea.ui.TaskProgress;
+import org.menesty.ikea.ui.controls.InvoicePdfViewComponent;
 import org.menesty.ikea.ui.controls.OrderItemViewComponent;
-import org.menesty.ikea.ui.controls.PathProperty;
 import org.menesty.ikea.ui.controls.dialog.IkeaUserFillProgressDialog;
 import org.menesty.ikea.ui.controls.dialog.ProductDialog;
 import org.menesty.ikea.ui.controls.search.OrderItemSearchForm;
@@ -59,7 +49,7 @@ public class OrderViewPage extends BasePage {
 
     private RawInvoiceTableView rawInvoiceItemTableView;
 
-    private TableView<InvoicePdfTableItem> invoicePfdTableView;
+    private InvoicePdfViewComponent invoicePdfViewComponent;
 
     private ProductDialog productEditDialog;
 
@@ -132,6 +122,7 @@ public class OrderViewPage extends BasePage {
                     }).start();
                 } catch (Exception e) {
                     e.printStackTrace();
+                    hidePopupDialog();
                 }
             }
         };
@@ -153,93 +144,28 @@ public class OrderViewPage extends BasePage {
         sourceTab.setClosable(false);
         tabPane.getTabs().addAll(createOrderItemTab(), sourceTab);
 
-        ToolBar pdfToolBar = new ToolBar();
-        ImageView imageView = new ImageView(new javafx.scene.image.Image("/styles/images/icon/upload-32x32.png"));
-        Button uploadInvoice = new Button("", imageView);
-        uploadInvoice.setContentDisplay(ContentDisplay.RIGHT);
-        uploadInvoice.setTooltip(new Tooltip("Upload Invoice PDF"));
-        uploadInvoice.setOnAction(new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent event) {
-                FileChooser fileChooser = new FileChooser();
-                fileChooser.setTitle("Invoice PDF location");
-                FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("Pdf files (*.pdf)", "*.pdf");
-                fileChooser.getExtensionFilters().add(extFilter);
-                File selectedFile = fileChooser.showOpenDialog(getStage());
+        invoicePdfViewComponent = new InvoicePdfViewComponent(getStage()) {
+            @Override
+            public void onSave(InvoicePdf invoicePdf) {
+                orderService.save(invoicePdf);
+            }
 
-                if (selectedFile != null) {
-                    try {
-                        runTask(new CreateInvoicePdfTask(selectedFile.getName(), new FileInputStream(selectedFile)));
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    }
+            @Override
+            public void onExport(String fileName, String filePath) {
+                try {
+                    runTask(new CreateInvoicePdfTask(fileName, new FileInputStream(filePath)));
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
                 }
-
             }
-        });
-        pdfToolBar.getItems().add(uploadInvoice);
-        BorderPane pdfInvoicePane = new BorderPane();
-        pdfInvoicePane.setTop(pdfToolBar);
 
-
-        TableColumn<InvoicePdfTableItem, Boolean> checked = new TableColumn<>();
-
-        checked.setMaxWidth(40);
-        checked.setResizable(false);
-        checked.setCellValueFactory(new PropertyValueFactory<InvoicePdfTableItem, Boolean>("checked"));
-        checked.setCellFactory(new Callback<TableColumn<InvoicePdfTableItem, Boolean>, TableCell<InvoicePdfTableItem, Boolean>>() {
-            public TableCell<InvoicePdfTableItem, Boolean> call(TableColumn<InvoicePdfTableItem, Boolean> p) {
-                CheckBoxTableCell<InvoicePdfTableItem, Boolean> checkBoxTableCell = new CheckBoxTableCell<>();
-                checkBoxTableCell.setAlignment(Pos.CENTER);
-                return checkBoxTableCell;
-            }
-        });
-
-        TableColumn<InvoicePdfTableItem, String> name = new TableColumn<>();
-
-        name.setText("Name");
-        name.setMinWidth(200);
-        name.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<InvoicePdfTableItem, String>, ObservableValue<String>>() {
             @Override
-            public ObservableValue<String> call(TableColumn.CellDataFeatures<InvoicePdfTableItem, String> item) {
-                return new PathProperty<>(item.getValue(), "invoicePdf.name");
+            public void onCheck(InvoicePdf invoicePdf) {
+                updateRawInvoiceTableView();
             }
-        });
-        name.setCellFactory(TextFieldTableCell.<InvoicePdfTableItem>forTableColumn());
-        name.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<InvoicePdfTableItem, String>>() {
-            @Override
-            public void handle(TableColumn.CellEditEvent<InvoicePdfTableItem, String> t) {
-                InvoicePdfTableItem tableItem = t.getTableView().getItems().get(t.getTablePosition().getRow());
-                tableItem.setName(t.getNewValue());
-                orderService.save(tableItem.getInvoicePdf());
-            }
-        });
+        };
 
-        TableColumn<InvoicePdfTableItem, Double> priceColumn = new TableColumn<>();
-        priceColumn.setText("Price");
-        priceColumn.setMinWidth(60);
-        priceColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<InvoicePdfTableItem, Double>, ObservableValue<Double>>() {
-            @Override
-            public ObservableValue<Double> call(TableColumn.CellDataFeatures<InvoicePdfTableItem, Double> item) {
-                return new PathProperty<>(item.getValue(), "invoicePdf.price");
-            }
-        });
 
-        TableColumn<InvoicePdfTableItem, String> createdDate = new TableColumn<>();
-
-        createdDate.setText("Created Date");
-        createdDate.setMinWidth(200);
-        createdDate.setCellValueFactory(
-                new Callback<TableColumn.CellDataFeatures<InvoicePdfTableItem, String>, ObservableValue<String>>() {
-                    @Override
-                    public ObservableValue<String> call(TableColumn.CellDataFeatures<InvoicePdfTableItem, String> item) {
-                        return new SimpleStringProperty(OrderListPage.DATE_FORMAT.format(item.getValue().getInvoicePdf().getCreatedDate()));
-                    }
-                });
-        invoicePfdTableView = new TableView<>();
-        invoicePfdTableView.setEditable(true);
-        invoicePfdTableView.getColumns().addAll(checked, name, priceColumn, createdDate);
-
-        pdfInvoicePane.setCenter(invoicePfdTableView);
         SplitPane splitPane = new SplitPane();
         splitPane.setId("page-splitpane");
         splitPane.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
@@ -248,7 +174,7 @@ public class OrderViewPage extends BasePage {
 
         BorderPane rawInvoicePane = new BorderPane();
         ToolBar rawInvoiceControl = new ToolBar();
-        imageView = new ImageView(new javafx.scene.image.Image("/styles/images/icon/export-32x32.png"));
+        ImageView imageView = new ImageView(new javafx.scene.image.Image("/styles/images/icon/epp-32x32.png"));
         Button exportEppButton = new Button("", imageView);
         exportEppButton.setContentDisplay(ContentDisplay.RIGHT);
         exportEppButton.setTooltip(new Tooltip("Export to EPP"));
@@ -294,7 +220,7 @@ public class OrderViewPage extends BasePage {
         rawInvoicePane.setCenter(rawInvoiceItemTableView);
 
 
-        splitPane.getItems().addAll(pdfInvoicePane, rawInvoicePane);
+        splitPane.getItems().addAll(invoicePdfViewComponent, rawInvoicePane);
         splitPane.setDividerPosition(0, 0.40);
 
         sourceTab.setContent(splitPane);
@@ -308,44 +234,10 @@ public class OrderViewPage extends BasePage {
     public void onActive(Object... params) {
         currentOrder = (Order) params[0];
         orderItemViewComponent.setItems(currentOrder.getOrderItems());
-        invoicePfdTableView.getItems().addAll(transform(currentOrder.getInvoicePdfs()));
+        invoicePdfViewComponent.setItems(currentOrder.getInvoicePdfs());
         updateRawInvoiceTableView();
 
         orderItemViewComponent.disableIkeaExport(currentOrder.getGeneralUser() == null || currentOrder.getComboUser() == null);
-    }
-
-    public class InvoicePdfTableItem {
-        private BooleanProperty checked;
-
-        private InvoicePdf invoicePdf;
-
-        public InvoicePdfTableItem(boolean checked, InvoicePdf invoicePdf) {
-            setInvoicePdf(invoicePdf);
-            this.checked = new SimpleBooleanProperty(checked);
-
-            this.checked.addListener(new ChangeListener<Boolean>() {
-                public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1) {
-                    System.out.println(InvoicePdfTableItem.this.invoicePdf.getName() + " invited: " + t1);
-                    OrderViewPage.this.updateRawInvoiceTableView();
-                }
-            });
-        }
-
-        public BooleanProperty checkedProperty() {
-            return checked;
-        }
-
-        public InvoicePdf getInvoicePdf() {
-            return invoicePdf;
-        }
-
-        public void setInvoicePdf(InvoicePdf invoicePdf) {
-            this.invoicePdf = invoicePdf;
-        }
-
-        public void setName(String name) {
-            invoicePdf.setName(name);
-        }
     }
 
 
@@ -363,12 +255,17 @@ public class OrderViewPage extends BasePage {
         @Override
         protected Void call() throws Exception {
             try {
+
                 InvoicePdf entity = invoicePdfService.createInvoicePdf(orderName, is);
+
                 orderService.save(entity);
+
                 currentOrder.getInvoicePdfs().add(entity);
+
                 orderService.save(currentOrder);
-                invoicePfdTableView.getItems().clear();
-                invoicePfdTableView.getItems().addAll(transform(currentOrder.getInvoicePdfs()));
+
+                invoicePdfViewComponent.setItems(currentOrder.getInvoicePdfs());
+
                 updateRawInvoiceTableView();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -403,10 +300,7 @@ public class OrderViewPage extends BasePage {
     }
 
     private void updateRawInvoiceTableView() {
-        List<InvoicePdf> checked = new ArrayList<>();
-        for (InvoicePdfTableItem item : invoicePfdTableView.getItems())
-            if (item.checked.getValue())
-                checked.add(item.getInvoicePdf());
+        List<InvoicePdf> checked = invoicePdfViewComponent.getChecked();
 
         List<RawInvoiceProductItem> forDisplay = new ArrayList<>();
 
@@ -421,13 +315,5 @@ public class OrderViewPage extends BasePage {
 
     }
 
-    private List<InvoicePdfTableItem> transform(List<InvoicePdf> entities) {
-        List<InvoicePdfTableItem> result = new ArrayList<>();
-        if (entities == null) return result;
-        for (InvoicePdf entity : entities)
-            result.add(new InvoicePdfTableItem(false, entity));
-        return result;
-
-    }
 
 }

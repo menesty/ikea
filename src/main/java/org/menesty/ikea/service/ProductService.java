@@ -9,6 +9,7 @@ import org.menesty.ikea.domain.PackageInfo;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.domain.ProductPart;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
+import org.menesty.ikea.util.NumberUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,7 +41,8 @@ public class ProductService {
                     product = loadComboProduct(artNumber);
                 if (product == null)
                     return null;
-            }
+            } else
+                updateProductPrice(product);
 
             DatabaseService.get().store(product);
             return product;
@@ -51,11 +53,18 @@ public class ProductService {
         return null;
     }
 
+    private void updateProductPrice(ProductInfo productInfo) throws IOException {
+        String requestUrl = PRODUCT_DETAIL_URL + productInfo.getOriginalArtNum();
+        Document doc = Jsoup.connect(requestUrl).get();
+        productInfo.setPrice(NumberUtil.parse(doc.select("#price1").text()));
+    }
+
     public ProductInfo findByArtNumber(String artNumber) {
         ProductInfo product = new ProductInfo();
         product.setOriginalArtNum(artNumber.replace(".", "").replace("-", ""));
 
         ObjectSet<ProductInfo> result = DatabaseService.get().queryByExample(product);
+
         if (!result.isEmpty())
             return result.get(0);
 
@@ -99,6 +108,7 @@ public class ProductService {
         productInfo.setName(name);
         productInfo.setShortName(generateShortName(name, artNumber, productInfo.getPackageInfo().getBoxCount()));
         productInfo.setGroup(resolveGroup(preparedArtNumber, doc));
+        productInfo.setPrice(NumberUtil.parse(doc.select("#price1").text()));
         return productInfo;
     }
 
@@ -223,17 +233,7 @@ public class ProductService {
         //ProductInfo productInfo = new ProductService().loadComboProduct("S39002041");
         // System.out.println(ProductService.resolveGroup("70238169"));
 
-        ProductInfo productInfo = new ProductInfo();
-        productInfo.setGroup(null);
-
-        List<ProductInfo> list = DatabaseService.get().queryByExample(productInfo);
-        for (ProductInfo product : list)
-            if (product.getGroup() == null) {
-                product.setGroup(ProductInfo.Group.Unknown);
-                DatabaseService.get().store(product);
-            }
-
-        System.out.println((double) 10 / 13);
+        System.out.println("34      9,99 PLN ".replaceAll("[a-zA-z ]", "") + " ====");
     }
 
     public static String generateShortName(String name, String artNumber, int boxCount) {
@@ -251,8 +251,8 @@ public class ProductService {
     private ProductInfo loadComboProduct(String artNumber) throws IOException {
         String preparedArtNumber = artNumber.replaceAll("-", "").trim();
         Document doc = Jsoup.connect(PRODUCT_DETAIL_URL + preparedArtNumber).get();
-
         String name = getProductName(doc);
+
         if (name == null) {
             System.out.println("Product not found on site " + preparedArtNumber + " " + PRODUCT_DETAIL_URL + preparedArtNumber);
             return null;
@@ -265,34 +265,22 @@ public class ProductService {
         combo.setShortName(name);
         combo.setGroup(ProductInfo.Group.Combo);
         combo.setPackageInfo(parseProductPackageInfo(doc));
+        combo.setPrice(NumberUtil.parse(doc.select("#price1").text()));
 
         List<ProductPart> parts = new ArrayList<>();
         String content = doc.html();
 
         Document rowDetailsDoc = Jsoup.connect("http://www.ikea.com/pl/pl/catalog/packagepopup/" + preparedArtNumber).get();
         Elements rows = rowDetailsDoc.select(".rowContainerPackage .colArticle");
+
         for (Element row : rows) {
             Matcher m = Patterns.ART_NUMBER_PART_PATTERN.matcher(row.html());
+
             if (m.find())
                 parts.add(parsePartDetails(m.group(1).replace(".", "-"), content));
         }
+
         combo.setParts(parts);
-
-        List<ProductPart> partsNoSize = new ArrayList<>();
-        int partsBox = 0;
-        for (ProductPart productPart : combo.getParts()) {
-            if (!productPart.getProductInfo().getPackageInfo().hasAllSize())
-                partsNoSize.add(productPart);
-            else
-                partsBox += productPart.getBoxCount();
-        }
-        int undefinedCount = combo.getPackageInfo().getBoxCount() - partsBox;
-        if (undefinedCount > 0 && undefinedCount - partsNoSize.size() > 0) {
-            for (ProductPart productInfo : partsNoSize) {
-
-            }
-        }
-
         return combo;
     }
 
@@ -300,6 +288,7 @@ public class ProductService {
         ProductPart productPart = new ProductPart();
         String originalArtNumber = artNumber.replaceAll("\\.|-", "");
         ProductInfo part = findByArtNumber(artNumber);
+
         if (part == null)
             try {
                 part = loadFromIkea(artNumber);

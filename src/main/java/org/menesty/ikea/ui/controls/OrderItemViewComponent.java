@@ -71,7 +71,7 @@ public abstract class OrderItemViewComponent extends BorderPane {
 
 
         ToolBar toolBar = new ToolBar();
-        ImageView imageView = new ImageView(new javafx.scene.image.Image("/styles/images/icon/export-32x32.png"));
+        ImageView imageView = new ImageView(new javafx.scene.image.Image("/styles/images/icon/xls-32x32.png"));
         Button exportOrder = new Button("", imageView);
         exportOrder.setContentDisplay(ContentDisplay.RIGHT);
         exportOrder.setTooltip(new Tooltip("Export to XLS"));

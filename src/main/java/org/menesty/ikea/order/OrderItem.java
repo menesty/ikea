@@ -124,7 +124,4 @@ public class OrderItem {
         return group;
     }
 
-    public int getArtNumbverAsInteger(){
-        return Integer.valueOf(artNumber.replaceAll("\\D+",""));
-    }
 }

@@ -2,6 +2,7 @@ package org.menesty.ikea.processor.invoice;
 
 import org.apache.commons.lang.StringUtils;
 import org.menesty.ikea.domain.ProductInfo;
+import org.menesty.ikea.util.NumberUtil;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -70,12 +71,7 @@ public class RawInvoiceProductItem {
     }
 
     public int getIntWat() {
-        try {
-            Double.valueOf(wat.trim().replace(",", "."));
-        } catch (NumberFormatException e) {
-
-        }
-        return 23;
+        return (int) NumberUtil.parse(wat, 23);
     }
 
     public void setWat(String wat) {
@@ -114,7 +110,7 @@ public class RawInvoiceProductItem {
     }
 
     public double getPrice() {
-        return BigDecimal.valueOf(price).setScale(2).doubleValue();
+        return NumberUtil.round(price, 2);
     }
 
     @Override
