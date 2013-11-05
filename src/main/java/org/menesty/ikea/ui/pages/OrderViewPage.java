@@ -126,7 +126,6 @@ public class OrderViewPage extends BasePage {
                     new Thread(new Task<Void>() {
                         @Override
                         protected Void call() throws Exception {
-
                             ikeaUserService.fillOrder(currentOrder, logDialog);
                             return null;
                         }

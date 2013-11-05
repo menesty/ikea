@@ -19,6 +19,7 @@ import org.jsoup.select.Elements;
 import org.menesty.ikea.domain.Order;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.domain.User;
+import org.menesty.ikea.exception.LoginIkeaException;
 import org.menesty.ikea.order.OrderItem;
 import org.menesty.ikea.ui.TaskProgressLog;
 
@@ -40,45 +41,50 @@ public class IkeaUserService {
     }
 
 
-    public void fillOrder(Order order, TaskProgressLog taskProgressLog) throws IOException {
+    public void fillOrder(Order order, TaskProgressLog taskProgressLog) {
+        try {
+            prepareUserWorkSpace(order.getGeneralUser(), taskProgressLog);
 
-        prepareUserWorkSpace(order.getGeneralUser(), taskProgressLog);
+            Map<ProductInfo.Group, List<OrderItem>> groupMap = groupItems(order.getByType(OrderItem.Type.General));
 
-        Map<ProductInfo.Group, List<OrderItem>> groupMap = groupItems(order.getByType(OrderItem.Type.General));
+            Map<ProductInfo.Group, List<OrderItem>> subGroupMap = new HashMap<>();
 
-        Map<ProductInfo.Group, List<OrderItem>> subGroupMap = new HashMap<>();
+            taskProgressLog.addLog("Create list of categories ...");
+            List<Category> categories = createList(ProductInfo.Group.general());
+            taskProgressLog.updateLog("Finish creating  list of categories");
 
-        taskProgressLog.addLog("Create list of categories ...");
-        List<Category> categories = createList(ProductInfo.Group.general());
-        taskProgressLog.updateLog("Finish creating  list of categories");
+            for (final Category category : categories) {
+                List<OrderItem> list = groupMap.get(category.group);
+                List<OrderItem> subList = fillListWithProduct(category, list, taskProgressLog);
+                if (subList != null)
+                    subGroupMap.put(category.group, subList);
 
-        for (final Category category : categories) {
-            List<OrderItem> list = groupMap.get(category.group);
-            List<OrderItem> subList = fillListWithProduct(category, list, taskProgressLog);
-            if (subList != null)
-                subGroupMap.put(category.group, subList);
+            }
+            taskProgressLog.addLog("logout ....");
+            logout();
 
+            prepareUserWorkSpace(order.getComboUser(), taskProgressLog);
+
+            subGroupMap.put(ProductInfo.Group.Combo, order.getByType(OrderItem.Type.Combo));
+
+            taskProgressLog.addLog("Create list of categories ...");
+            categories = createList(subGroupMap.keySet());
+
+            for (final Category category : categories) {
+                List<OrderItem> list = subGroupMap.get(category.group);
+                fillListWithProduct(category, list, taskProgressLog);
+            }
+
+            taskProgressLog.addLog("logout ....");
+            logout();
+            taskProgressLog.addLog("Finish");
+            closeSession();
+        } catch (LoginIkeaException e) {
+            taskProgressLog.addLog(e.getMessage());
+        } catch (IOException e) {
+            taskProgressLog.addLog("Error happened during connection to IKEA site");
         }
-        taskProgressLog.addLog("logout ....");
-        logout();
 
-        prepareUserWorkSpace(order.getComboUser(), taskProgressLog);
-
-        subGroupMap.put(ProductInfo.Group.Combo, order.getByType(OrderItem.Type.Combo));
-
-        taskProgressLog.addLog("Create list of categories ...");
-        categories = createList(subGroupMap.keySet());
-
-        for (final Category category : categories) {
-            List<OrderItem> list = subGroupMap.get(category.group);
-            fillListWithProduct(category, list, taskProgressLog);
-        }
-
-        taskProgressLog.addLog("logout ....");
-        logout();
-        taskProgressLog.addLog("Finish");
-
-        closeSession();
         taskProgressLog.done();
     }
 
@@ -106,7 +112,7 @@ public class IkeaUserService {
 
     private void prepareUserWorkSpace(User user, TaskProgressLog taskProgressLog) throws IOException {
         taskProgressLog.addLog(String.format("Try to login by user : %1$s ...", user.getLogin()));
-        //TODO Handle login error
+
         login(user);
         taskProgressLog.updateLog(String.format("Logged as user : %1$s", user.getLogin()));
 
@@ -222,7 +228,7 @@ public class IkeaUserService {
         httpClient.execute(new HttpGet("https://secure.ikea.com/webapp/wcs/stores/servlet/Logoff?langId=-27&storeId=19&rememberMe=false")).close();
     }
 
-    private String login(User user) throws IOException {
+    private String login(User user) throws LoginIkeaException {
         HttpPost httPost = new HttpPost("https://secure.ikea.com/webapp/wcs/stores/servlet/Logon");
         List<NameValuePair> nvps = new ArrayList<>();
 
@@ -235,40 +241,32 @@ public class IkeaUserService {
 
         String forwardUrl;
 
-        try (CloseableHttpResponse response = httpClient.execute(httPost)) {
-            Header[] locations = response.getHeaders("location");
-            forwardUrl = locations[0].getValue();
+        try {
+            try (CloseableHttpResponse response = httpClient.execute(httPost)) {
+                Header[] locations = response.getHeaders("location");
+                forwardUrl = locations[0].getValue();
 
-            if (!forwardUrl.contains("MyProfile"))
-                throw new RuntimeException("Login or password invalid");
+                if (!forwardUrl.contains("MyProfile"))
+                    throw new LoginIkeaException("Invalid login or password for user : " + user.getLogin());
 
+            }
+        } catch (IOException e) {
+            throw new LoginIkeaException(e);
         }
         return forwardUrl;
 
     }
 
+    class Category {
 
-}
+        public Category(ProductInfo.Group group, String id) {
+            this.group = group;
+            this.id = id;
+        }
 
-class Category {
-
-    public Category(ProductInfo.Group group, String id) {
-        this.group = group;
-        this.id = id;
+        public String id;
+        public ProductInfo.Group group;
     }
-
-    public String id;
-    public ProductInfo.Group group;
 }
-/*System.out.println("Login form get: " + response.getStatusLine());
-            System.out.println(EntityUtils.toString(entity) + " =====");
 
-            System.out.println("Post logon cookies:");
-            List<Cookie> cookies = cookieStore.getCookies();
-            if (cookies.isEmpty()) {
-                System.out.println("None");
-            } else {
-                for (int i = 0; i < cookies.size(); i++) {
-                    System.out.println("- " + cookies.get(i).toString());
-                }
-            }*/
+
