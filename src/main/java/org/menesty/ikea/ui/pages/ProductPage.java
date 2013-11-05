@@ -9,6 +9,7 @@ import javafx.scene.Node;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import javafx.util.Callback;
@@ -242,5 +243,10 @@ public class ProductPage extends BasePage {
 
     private SimpleStringProperty preparePackInfo(int value, int dive, String prefix) {
         return new SimpleStringProperty((value != 0 ? BigDecimal.valueOf((double) value / dive).setScale(2, RoundingMode.CEILING).doubleValue() + "" : "0") + " " + prefix);
+    }
+
+    @Override
+    protected Node createIconContent() {
+        return new ImageView(new javafx.scene.image.Image("/styles/images/icon/products-72x72.png"));
     }
 }

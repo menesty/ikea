@@ -125,4 +125,9 @@ public class UserPage extends BasePage {
 
         return pane;
     }
+
+    @Override
+    protected Node createIconContent() {
+        return new ImageView(new javafx.scene.image.Image("/styles/images/icon/users-64x64.png"));
+    }
 }

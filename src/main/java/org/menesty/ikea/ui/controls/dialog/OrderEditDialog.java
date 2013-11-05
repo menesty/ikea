@@ -27,7 +27,7 @@ public class OrderEditDialog extends BaseDialog {
         userService = new UserService();
 
         okBtn.setDisable(true);
-        getChildren().add(createTitle("Create new order from customer"));
+        getChildren().add(createTitle("Edit order"));
 
         form = new OrderForm();
 
@@ -93,10 +93,12 @@ public class OrderEditDialog extends BaseDialog {
             addRow("General User", generalUsers = new ComboBox<>());
             generalUsers.setId("uneditable-combobox");
             generalUsers.setPromptText("Select user");
+            generalUsers.setPrefWidth(200);
 
             addRow("Combo User", comboUsers = new ComboBox<>());
             comboUsers.setId("uneditable-combobox");
             comboUsers.setPromptText("Select user");
+            comboUsers.setPrefWidth(200);
 
 
             ChangeListener<String> textListener = new ChangeListener<String>() {

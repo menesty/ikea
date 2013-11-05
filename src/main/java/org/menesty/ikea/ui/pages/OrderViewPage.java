@@ -5,8 +5,6 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -20,7 +18,6 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.util.Callback;
 import org.menesty.ikea.domain.InvoicePdf;
@@ -30,15 +27,17 @@ import org.menesty.ikea.order.OrderItem;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.service.*;
 import org.menesty.ikea.ui.TaskProgress;
+import org.menesty.ikea.ui.controls.OrderItemViewComponent;
 import org.menesty.ikea.ui.controls.PathProperty;
 import org.menesty.ikea.ui.controls.dialog.IkeaUserFillProgressDialog;
 import org.menesty.ikea.ui.controls.dialog.ProductDialog;
-import org.menesty.ikea.ui.controls.search.OrderItemSearchBar;
 import org.menesty.ikea.ui.controls.search.OrderItemSearchForm;
-import org.menesty.ikea.ui.controls.table.OrderItemTableView;
 import org.menesty.ikea.ui.controls.table.RawInvoiceTableView;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,8 +47,7 @@ import java.util.List;
  * Time: 9:51 PM
  */
 public class OrderViewPage extends BasePage {
-
-    private OrderItemTableView tableView;
+    private OrderItemViewComponent orderItemViewComponent;
 
     private OrderService orderService;
 
@@ -88,74 +86,42 @@ public class OrderViewPage extends BasePage {
     }
 
     private Tab createOrderItemTab() {
-        tableView = new OrderItemTableView() {
+
+        orderItemViewComponent = new OrderItemViewComponent(getStage()) {
             @Override
-            public void onRowDoubleClick(final TableRow<OrderItem> row) {
-                if (OrderItem.Type.Na == row.getItem().getType())
-                    return;
-
-                showPopupDialog(productEditDialog);
-                productEditDialog.bind(row.getItem().getProductInfo(), new DialogCallback<ProductInfo>() {
-                    @Override
-                    public void onSave(ProductInfo productInfo, Object[] params) {
-                        productService.save(productInfo);
-
-                        if (!(Boolean) params[0])
-                            hidePopupDialog();
-
-                        row.setItem(null);
-                    }
-
-                    @Override
-                    public void onCancel() {
-                        hidePopupDialog();
-                    }
-                });
+            public void save(ProductInfo productInfo) {
+                productService.save(productInfo);
             }
-        };
-
-
-        tableView.itemsProperty().addListener(new ChangeListener<ObservableList<OrderItem>>() {
 
             @Override
-            public void changed(ObservableValue<? extends ObservableList<OrderItem>> observableValue, ObservableList<OrderItem> orderItems, ObservableList<OrderItem> orderItems2) {
-                System.out.print("items update");
+            public void hidePopupDialog() {
+                OrderViewPage.this.hidePopupDialog();
             }
-        });
 
-        ToolBar toolBar = new ToolBar();
-        ImageView imageView = new ImageView(new javafx.scene.image.Image("/styles/images/icon/export-32x32.png"));
-        Button exportOrder = new Button("", imageView);
-        exportOrder.setContentDisplay(ContentDisplay.RIGHT);
-        exportOrder.setTooltip(new Tooltip("Export to XLS"));
-        exportOrder.setOnAction(new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent event) {
-                FileChooser fileChooser = new FileChooser();
-                //Set extension filter
-                FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("Zip file (*.zip)", "*.zip");
-                fileChooser.getExtensionFilters().add(extFilter);
-                //Show save file dialog
-                File file = fileChooser.showSaveDialog(getStage());
-
-                if (file != null)
-                    runTask(new ExportOrderItemsTask(currentOrder, file.getAbsolutePath()));
+            @Override
+            public void showPopupDialog(ProductDialog productEditDialog) {
+                OrderViewPage.this.showPopupDialog(productEditDialog);
             }
-        });
-        toolBar.getItems().add(exportOrder);
 
-        imageView = new ImageView(new javafx.scene.image.Image("/styles/images/icon/export-32x32.png"));
-        Button fillIkeaCart = new Button("", imageView);
-        fillIkeaCart.setContentDisplay(ContentDisplay.RIGHT);
-        fillIkeaCart.setTooltip(new Tooltip("IKEA Site"));
-        fillIkeaCart.setOnAction(new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent event) {
+            @Override
+            public List<OrderItem> filter(OrderItemSearchForm orderItemSearchForm) {
+                return currentOrder.filterOrderItems(orderItemSearchForm);
+            }
+
+            @Override
+            public void onExport(String filePath) {
+                runTask(new ExportOrderItemsTask(currentOrder, filePath));
+            }
+
+            @Override
+            public void onExportToIkea() {
                 final IkeaUserFillProgressDialog logDialog = new IkeaUserFillProgressDialog() {
                     @Override
                     public void onOk() {
                         hidePopupDialog();
                     }
                 };
-                showPopupDialog(logDialog);
+                OrderViewPage.this.showPopupDialog(logDialog);
                 try {
                     new Thread(new Task<Void>() {
                         @Override
@@ -169,28 +135,12 @@ public class OrderViewPage extends BasePage {
                     e.printStackTrace();
                 }
             }
-        });
-        toolBar.getItems().add(fillIkeaCart);
-
-
-        VBox controlBox = new VBox();
-        controlBox.getChildren().add(toolBar);
-        controlBox.getChildren().add(new OrderItemSearchBar() {
-            public void onSearch(OrderItemSearchForm orderItemSearchForm) {
-                tableView.setItems(FXCollections.observableArrayList(currentOrder.filterOrderItems(orderItemSearchForm)));
-            }
-
-        });
-
-
-        BorderPane content = new BorderPane();
-        content.setCenter(tableView);
-        content.setTop(controlBox);
+        };
 
 
         Tab tab = new Tab();
         tab.setText("Order Items");
-        tab.setContent(content);
+        tab.setContent(orderItemViewComponent);
         tab.setClosable(false);
         return tab;
     }
@@ -358,9 +308,11 @@ public class OrderViewPage extends BasePage {
     @Override
     public void onActive(Object... params) {
         currentOrder = (Order) params[0];
-        tableView.setItems(FXCollections.observableArrayList(currentOrder.getOrderItems()));
+        orderItemViewComponent.setItems(currentOrder.getOrderItems());
         invoicePfdTableView.getItems().addAll(transform(currentOrder.getInvoicePdfs()));
         updateRawInvoiceTableView();
+
+        orderItemViewComponent.disableIkeaExport(currentOrder.getGeneralUser() == null || currentOrder.getComboUser() == null);
     }
 
     public class InvoicePdfTableItem {
