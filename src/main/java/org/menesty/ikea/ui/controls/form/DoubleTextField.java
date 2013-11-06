@@ -8,6 +8,7 @@ import javafx.event.EventHandler;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
 import org.apache.commons.lang.math.NumberUtils;
+import org.menesty.ikea.util.NumberUtil;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -95,18 +96,11 @@ public class DoubleTextField extends TextField {
      * NumberFormat
      */
     private void parseAndFormatInput() {
-        try {
-            String input = getText();
-            if (input == null || input.length() == 0) {
-                return;
-            }
-            Number parsedNumber = nf.parse(input);
-            Double newValue = parsedNumber.doubleValue();
-            setNumber(newValue);
-            selectAll();
-        } catch (ParseException ex) {
-            // If parsing fails keep old number
-            setText(number.get() + "");
+        String input = getText();
+        if (input == null || input.length() == 0) {
+            return;
         }
+        setNumber(NumberUtil.parse(input));
+        selectAll();
     }
 }
