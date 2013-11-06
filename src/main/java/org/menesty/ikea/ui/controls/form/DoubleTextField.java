@@ -10,9 +10,6 @@ import javafx.scene.input.KeyEvent;
 import org.apache.commons.lang.math.NumberUtils;
 import org.menesty.ikea.util.NumberUtil;
 
-import java.text.NumberFormat;
-import java.text.ParseException;
-
 /**
  * User: Menesty
  * Date: 10/14/13
@@ -20,7 +17,6 @@ import java.text.ParseException;
  */
 public class DoubleTextField extends TextField {
 
-    private final NumberFormat nf;
     private SimpleDoubleProperty number = new SimpleDoubleProperty(0);
 
     public final Double getNumber() {
@@ -39,15 +35,8 @@ public class DoubleTextField extends TextField {
         this(0d);
     }
 
-
     public DoubleTextField(Double value) {
-        this(value, NumberFormat.getInstance());
-        initHandlers();
-    }
-
-    public DoubleTextField(Double value, NumberFormat nf) {
         super();
-        this.nf = nf;
         initHandlers();
         setNumber(value);
     }
@@ -67,16 +56,16 @@ public class DoubleTextField extends TextField {
 
             @Override
             public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                if (!newValue.booleanValue()) {
+                if (!newValue)
                     parseAndFormatInput();
-                }
+
             }
         });
 
         // Set text in field if BigDecimal property is changed from outside.
         numberProperty().addListener(new ChangeListener<Number>() {
             @Override
-            public void changed(ObservableValue<? extends Number> obserable, Number oldValue, Number newValue) {
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
                 setText(newValue.doubleValue() + "");
             }
         });
