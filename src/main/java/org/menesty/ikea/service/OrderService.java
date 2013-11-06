@@ -10,6 +10,7 @@ import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.order.OrderItem;
 import org.menesty.ikea.order.RawOrderItem;
 import org.menesty.ikea.ui.TaskProgress;
+import org.menesty.ikea.util.NumberUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -85,7 +86,7 @@ public class OrderService {
                     orderItem.setComment(rawOrderItem.getComment());
                     orderItem.setCount(rawOrderItem.getCount());
                     orderItem.setName(rawOrderItem.getDescription());
-                    orderItem.setPrice(rawOrderItem.getPrice() / rawOrderItem.getCount());
+                    orderItem.setPrice(NumberUtil.round(rawOrderItem.getPrice() / rawOrderItem.getCount()));
 
                     if (StringUtils.isNotBlank(rawOrderItem.getComment()))
                         orderItem.setType(OrderItem.Type.Specials);
@@ -262,7 +263,4 @@ public class OrderService {
         return total;
     }
 
-    public void save(OrderItem orderItem) {
-        DatabaseService.get().store(orderItem);
-    }
 }

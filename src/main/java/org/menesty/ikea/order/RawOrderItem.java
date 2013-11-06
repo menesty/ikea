@@ -1,7 +1,5 @@
 package org.menesty.ikea.order;
 
-import org.apache.commons.lang.StringUtils;
-
 /**
  * User: Menesty
  * Date: 9/22/13
@@ -40,8 +38,6 @@ public class RawOrderItem {
     public String getDescription() {
         return description;
     }
-
-
 
     public void setDescription(String description) {
         this.description = description;
