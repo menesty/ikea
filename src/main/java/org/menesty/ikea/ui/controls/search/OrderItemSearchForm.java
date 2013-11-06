@@ -15,4 +15,6 @@ public class OrderItemSearchForm {
     public String artNumber;
 
     public ProductInfo.Group productGroup;
+
+    public boolean pum;
 }

@@ -94,7 +94,7 @@ public class OrderItemTableView extends TableView<OrderItem> {
 
         {
             TableColumn<OrderItem, OrderItem.Type> column = new TableColumn<>("Type");
-            column.setMinWidth(100);
+            column.setMinWidth(80);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderItem, OrderItem.Type>, ObservableValue<OrderItem.Type>>() {
                 @Override
                 public ObservableValue<OrderItem.Type> call(TableColumn.CellDataFeatures<OrderItem, OrderItem.Type> item) {
@@ -107,7 +107,7 @@ public class OrderItemTableView extends TableView<OrderItem> {
 
         {
             TableColumn<OrderItem, ProductInfo.Group> column = new TableColumn<>("Group");
-            column.setMinWidth(100);
+            column.setMinWidth(80);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderItem, ProductInfo.Group>, ObservableValue<ProductInfo.Group>>() {
                 @Override
                 public ObservableValue<ProductInfo.Group> call(TableColumn.CellDataFeatures<OrderItem, ProductInfo.Group> item) {

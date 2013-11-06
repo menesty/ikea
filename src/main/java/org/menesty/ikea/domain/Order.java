@@ -119,6 +119,9 @@ public class Order {
                     (orderItem.getProductInfo() == null || !orderItemSearchForm.productGroup.equals(orderItem.getProductInfo().getGroup())))
                 continue;
 
+            if (orderItemSearchForm.pum && (OrderItem.Type.Na == orderItem.getType() || orderItem.getPrice() == orderItem.getProductInfo().getPrice()))
+                continue;
+
             result.add(orderItem);
         }
 
