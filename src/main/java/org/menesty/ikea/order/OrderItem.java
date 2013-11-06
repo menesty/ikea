@@ -12,30 +12,34 @@ import java.math.RoundingMode;
  */
 public class OrderItem {
 
-    private boolean aNew;
-
-    public void setNew(boolean aNew) {
-        this.aNew = aNew;
-    }
-
-    public boolean isNew() {
-        return aNew;
-    }
-
     public enum Type {
         General, Na, Specials, Combo
     }
 
+    private boolean invalidFetch;
     private int count;
+
     private String artNumber;
+
     private String name;
+
     private Double price;
+
     private String comment;
+
     private String group;
 
     private ProductInfo productInfo;
 
     private Type type;
+
+    public boolean isInvalidFetch() {
+        return invalidFetch;
+    }
+
+    public void setInvalidFetch(boolean invalidFetch) {
+        this.invalidFetch = invalidFetch;
+    }
 
     public ProductInfo getProductInfo() {
         return productInfo;

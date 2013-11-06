@@ -7,7 +7,7 @@ package org.menesty.ikea.order;
  */
 public class RawOrderItem {
 
-    private Integer count;
+    private Double count;
 
     private String artNumber;
 
@@ -19,11 +19,11 @@ public class RawOrderItem {
 
     private Double price;
 
-    public Integer getCount() {
+    public Double getCount() {
         return count;
     }
 
-    public void setCount(Integer count) {
+    public void setCount(Double count) {
         this.count = count;
     }
 
