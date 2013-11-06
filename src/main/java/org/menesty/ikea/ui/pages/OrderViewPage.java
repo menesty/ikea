@@ -1,5 +1,6 @@
 package org.menesty.ikea.ui.pages;
 
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -165,12 +166,10 @@ public class OrderViewPage extends BasePage {
             }
         };
 
-
         SplitPane splitPane = new SplitPane();
         splitPane.setId("page-splitpane");
         splitPane.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         splitPane.setOrientation(Orientation.VERTICAL);
-
 
         BorderPane rawInvoicePane = new BorderPane();
         ToolBar rawInvoiceControl = new ToolBar();
@@ -193,7 +192,6 @@ public class OrderViewPage extends BasePage {
             }
         });
         rawInvoiceControl.getItems().add(exportEppButton);
-
 
         rawInvoiceItemTableView = new RawInvoiceTableView() {
             @Override
@@ -218,7 +216,6 @@ public class OrderViewPage extends BasePage {
 
         rawInvoicePane.setTop(rawInvoiceControl);
         rawInvoicePane.setCenter(rawInvoiceItemTableView);
-
 
         splitPane.getItems().addAll(invoicePdfViewComponent, rawInvoicePane);
         splitPane.setDividerPosition(0, 0.40);
@@ -255,18 +252,18 @@ public class OrderViewPage extends BasePage {
         @Override
         protected Void call() throws Exception {
             try {
-
                 InvoicePdf entity = invoicePdfService.createInvoicePdf(orderName, is);
-
                 orderService.save(entity);
-
                 currentOrder.getInvoicePdfs().add(entity);
-
                 orderService.save(currentOrder);
 
-                invoicePdfViewComponent.setItems(currentOrder.getInvoicePdfs());
-
-                updateRawInvoiceTableView();
+                Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        invoicePdfViewComponent.setItems(currentOrder.getInvoicePdfs());
+                        updateRawInvoiceTableView();
+                    }
+                });
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -314,6 +311,4 @@ public class OrderViewPage extends BasePage {
         rawInvoiceItemTableView.getItems().addAll(forDisplay);
 
     }
-
-
 }

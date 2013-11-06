@@ -16,10 +16,9 @@ import org.menesty.ikea.ui.controls.search.OrderItemSearchBar;
 import org.menesty.ikea.ui.controls.search.OrderItemSearchForm;
 import org.menesty.ikea.ui.controls.table.OrderItemTableView;
 import org.menesty.ikea.ui.pages.DialogCallback;
+import org.menesty.ikea.util.NumberUtil;
 
 import java.io.File;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.text.NumberFormat;
 import java.util.List;
 
@@ -93,6 +92,7 @@ public abstract class OrderItemViewComponent extends BorderPane {
         imageView = new ImageView(new javafx.scene.image.Image("/styles/images/icon/export-32x32.png"));
         exportToIkeaBtn = new Button("", imageView);
         exportToIkeaBtn.setContentDisplay(ContentDisplay.RIGHT);
+        exportToIkeaBtn.setTooltip(new Tooltip("Export Order to IKEA"));
         exportToIkeaBtn.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
                 onExportToIkea();
@@ -131,11 +131,27 @@ public abstract class OrderItemViewComponent extends BorderPane {
     public void setItems(List<OrderItem> items) {
         orderItemTableView.setItems(FXCollections.observableArrayList(items));
 
-        double total = 0d;
-        for (OrderItem item : items)
-            total += item.getTotal();
+        double orderTotal = 0d;
+        double orderNaTotal = 0d;
+        double productTotal = 0d;
 
-        statusPanel.setTotal(total);
+        for (OrderItem item : items) {
+            orderTotal += item.getTotal();
+
+            if (OrderItem.Type.Na == item.getType())
+                orderNaTotal += item.getTotal();
+            else
+                productTotal += item.getPrice() * item.getCount();
+
+        }
+
+        orderTotal = NumberUtil.round(orderTotal);
+        productTotal = NumberUtil.round(productTotal);
+
+        double diff = NumberUtil.round(orderTotal - orderNaTotal, 2);
+
+        statusPanel.setTotal(orderTotal);
+        statusPanel.showPriceWarning(diff != productTotal);
     }
 
     public void disableIkeaExport(boolean disable) {
@@ -144,16 +160,21 @@ public abstract class OrderItemViewComponent extends BorderPane {
 
     class StatusPanel extends ToolBar {
         private Label totalLabel;
+        ImageView warningIcon;
 
         public StatusPanel() {
             getItems().add(new Label("Total :"));
             getItems().add(totalLabel = new Label());
-
+            //getItems().add()
+           // warningIcon.se
         }
 
         public void setTotal(double total) {
-            double totalPrice = BigDecimal.valueOf(total).setScale(2, RoundingMode.CEILING).doubleValue();
-            totalLabel.setText(NumberFormat.getNumberInstance().format(totalPrice));
+            totalLabel.setText(NumberFormat.getNumberInstance().format(total));
+        }
+
+        public void showPriceWarning(boolean show) {
+
         }
     }
 }

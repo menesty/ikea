@@ -16,6 +16,10 @@ public class NumberUtil {
         }
     }
 
+    public static double round(double value) {
+        return round(value, 2);
+    }
+
     public static double round(double value, int scale) {
         return BigDecimal.valueOf(value).setScale(scale, BigDecimal.ROUND_CEILING).doubleValue();
     }
