@@ -1,5 +1,7 @@
 package org.menesty.ikea.ui.controls;
 
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -39,6 +41,15 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
             }
         };
 
+        invoicePdfTableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+
+        invoicePdfTableView.getSelectionModel().selectedIndexProperty().addListener(new InvalidationListener() {
+            @Override
+            public void invalidated(Observable observable) {
+                onSelect(getSelected());
+            }
+        });
+
         ToolBar pdfToolBar = new ToolBar();
         ImageView imageView = new ImageView(new javafx.scene.image.Image("/styles/images/icon/pdf-32x32.png"));
         Button uploadInvoice = new Button("", imageView);
@@ -71,6 +82,8 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
 
     public abstract void onCheck(InvoicePdf invoicePdf);
 
+    public abstract void onSelect(List<InvoicePdf> invoicePdfs);
+
     public void setItems(List<InvoicePdf> items) {
         invoicePdfTableView.setItems(transform(items));
 
@@ -79,6 +92,15 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
             total += item.getPrice();
 
         statusPanel.setTotal(total);
+    }
+
+    private List<InvoicePdf> revertTransform(List<InvoicePdfTableView.InvoicePdfTableItem> entities) {
+        List<InvoicePdf> result = new ArrayList<>();
+
+        for (InvoicePdfTableView.InvoicePdfTableItem item : entities)
+            result.add(item.getInvoicePdf());
+
+        return result;
     }
 
     private ObservableList<InvoicePdfTableView.InvoicePdfTableItem> transform(List<InvoicePdf> entities) {
@@ -101,6 +123,11 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
                 checked.add(item.getInvoicePdf());
 
         return checked;
+    }
+
+    public List<InvoicePdf> getSelected() {
+        List<InvoicePdfTableView.InvoicePdfTableItem> selected = invoicePdfTableView.getSelectionModel().getSelectedItems();
+        return revertTransform(selected);
     }
 
     class StatusPanel extends ToolBar {

@@ -22,7 +22,6 @@ public abstract class InvoicePdfTableView extends TableView<InvoicePdfTableView.
 
     public InvoicePdfTableView() {
         TableColumn<InvoicePdfTableItem, Boolean> checked = new TableColumn<>();
-
         checked.setMaxWidth(40);
         checked.setResizable(false);
         checked.setCellValueFactory(new PropertyValueFactory<InvoicePdfTableItem, Boolean>("checked"));

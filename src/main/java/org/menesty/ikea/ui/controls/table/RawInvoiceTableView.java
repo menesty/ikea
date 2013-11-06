@@ -1,5 +1,6 @@
 package org.menesty.ikea.ui.controls.table;
 
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
@@ -24,6 +25,17 @@ public class RawInvoiceTableView extends TableView<RawInvoiceProductItem> {
     }
 
     private void initColumns() {
+        {
+            TableColumn<RawInvoiceProductItem, Number> column = new TableColumn<>();
+            column.setMaxWidth(45);
+            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<RawInvoiceProductItem, Number>, ObservableValue<Number>>() {
+                @Override
+                public ObservableValue<Number> call(TableColumn.CellDataFeatures<RawInvoiceProductItem, Number> item) {
+                    return new SimpleIntegerProperty(item.getTableView().getItems().indexOf(item.getValue()) + 1);
+                }
+            });
+            getColumns().add(column);
+        }
         {
             TableColumn<RawInvoiceProductItem, String> column = new TableColumn<>();
             column.setText("Art # ");

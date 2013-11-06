@@ -4,6 +4,7 @@ import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
@@ -70,7 +71,7 @@ public abstract class OrderItemViewComponent extends BorderPane {
 
 
         ToolBar toolBar = new ToolBar();
-        ImageView imageView = new ImageView(new javafx.scene.image.Image("/styles/images/icon/xls-32x32.png"));
+        ImageView imageView = new ImageView(new Image("/styles/images/icon/xls-32x32.png"));
         Button exportOrder = new Button("", imageView);
         exportOrder.setContentDisplay(ContentDisplay.RIGHT);
         exportOrder.setTooltip(new Tooltip("Export to XLS"));
@@ -89,7 +90,7 @@ public abstract class OrderItemViewComponent extends BorderPane {
         });
         toolBar.getItems().add(exportOrder);
 
-        imageView = new ImageView(new javafx.scene.image.Image("/styles/images/icon/export-32x32.png"));
+        imageView = new ImageView(new Image("/styles/images/icon/export-32x32.png"));
         exportToIkeaBtn = new Button("", imageView);
         exportToIkeaBtn.setContentDisplay(ContentDisplay.RIGHT);
         exportToIkeaBtn.setTooltip(new Tooltip("Export Order to IKEA"));
@@ -160,13 +161,15 @@ public abstract class OrderItemViewComponent extends BorderPane {
 
     class StatusPanel extends ToolBar {
         private Label totalLabel;
-        ImageView warningIcon;
+        private Label warningLabel;
 
         public StatusPanel() {
             getItems().add(new Label("Total :"));
             getItems().add(totalLabel = new Label());
-            //getItems().add()
-           // warningIcon.se
+            getItems().add(warningLabel = new Label());
+            warningLabel.setGraphic(new ImageView(new Image("/styles/images/icon/warning-16x16.png")));
+            warningLabel.setVisible(false);
+            warningLabel.setTooltip(new Tooltip("Total Order price is different then total IKEA site product"));
         }
 
         public void setTotal(double total) {
@@ -174,7 +177,7 @@ public abstract class OrderItemViewComponent extends BorderPane {
         }
 
         public void showPriceWarning(boolean show) {
-
+            warningLabel.setVisible(show);
         }
     }
 }

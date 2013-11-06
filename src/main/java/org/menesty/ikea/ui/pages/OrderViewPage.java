@@ -162,7 +162,11 @@ public class OrderViewPage extends BasePage {
 
             @Override
             public void onCheck(InvoicePdf invoicePdf) {
-                updateRawInvoiceTableView();
+            }
+
+            @Override
+            public void onSelect(List<InvoicePdf> invoicePdfs) {
+                updateRawInvoiceTableView(invoicePdfs);
             }
         };
 
@@ -272,7 +276,9 @@ public class OrderViewPage extends BasePage {
     }
 
     private class ExportOrderItemsTask extends Task<Void> {
+
         private Order order;
+
         private String fileName;
 
         public ExportOrderItemsTask(Order order, String fileName) {
@@ -297,14 +303,17 @@ public class OrderViewPage extends BasePage {
     }
 
     private void updateRawInvoiceTableView() {
-        List<InvoicePdf> checked = invoicePdfViewComponent.getChecked();
+        updateRawInvoiceTableView(invoicePdfViewComponent.getSelected());
+    }
+
+    private void updateRawInvoiceTableView(List<InvoicePdf> selected) {
 
         List<RawInvoiceProductItem> forDisplay = new ArrayList<>();
 
-        if (checked.isEmpty() && currentOrder.getInvoicePdfs() != null)
-            checked.addAll(currentOrder.getInvoicePdfs());
+        if (selected.isEmpty() && currentOrder.getInvoicePdfs() != null)
+            selected.addAll(currentOrder.getInvoicePdfs());
 
-        for (InvoicePdf invoicePdf : checked)
+        for (InvoicePdf invoicePdf : selected)
             forDisplay.addAll(invoicePdf.getProducts());
 
         rawInvoiceItemTableView.getItems().clear();
