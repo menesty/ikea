@@ -1,5 +1,6 @@
 package org.menesty.ikea.ui.pages;
 
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -257,8 +258,14 @@ public class OrderListPage extends BasePage {
                     }
                 });
                 orderService.save(order);
-                tableView.getItems().clear();
-                tableView.getItems().addAll(transform(orderService.load()));
+                Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        tableView.getItems().clear();
+                        tableView.getItems().addAll(transform(orderService.load()));
+                    }
+                });
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
