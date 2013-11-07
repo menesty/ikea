@@ -161,10 +161,6 @@ public class OrderViewPage extends BasePage {
             }
 
             @Override
-            public void onCheck(InvoicePdf invoicePdf) {
-            }
-
-            @Override
             public void onSelect(List<InvoicePdf> invoicePdfs) {
                 updateRawInvoiceTableView(invoicePdfs);
             }

@@ -23,6 +23,8 @@ import java.util.List;
 
 public abstract class InvoicePdfViewComponent extends BorderPane {
 
+    private final Button deleteBtn;
+
     private InvoicePdfTableView invoicePdfTableView;
 
     private StatusPanel statusPanel;
@@ -36,8 +38,8 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
             }
 
             @Override
-            public void onCheck(InvoicePdf invoicePdf) {
-                InvoicePdfViewComponent.this.onCheck(invoicePdf);
+            public void onCheck(InvoicePdf invoicePdf, boolean newValue) {
+                deleteBtn.setDisable(getChecked().size() == 0);
             }
         };
 
@@ -69,7 +71,13 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
             }
         });
 
-        pdfToolBar.getItems().add(uploadInvoice);
+        imageView = new ImageView(new javafx.scene.image.Image("/styles/images/icon/delete-32x32.png"));
+        deleteBtn = new Button(null, imageView);
+        deleteBtn.setContentDisplay(ContentDisplay.RIGHT);
+        deleteBtn.setTooltip(new Tooltip("Delete invoice"));
+        deleteBtn.setDisable(true);
+
+        pdfToolBar.getItems().addAll(uploadInvoice, deleteBtn);
 
         setTop(pdfToolBar);
         setCenter(invoicePdfTableView);
@@ -80,7 +88,7 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
 
     public abstract void onExport(String fileName, String filePath);
 
-    public abstract void onCheck(InvoicePdf invoicePdf);
+    // public abstract void onCheck(InvoicePdf invoicePdf);
 
     public abstract void onSelect(List<InvoicePdf> invoicePdfs);
 

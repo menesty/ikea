@@ -159,8 +159,6 @@ public class OrderItemTableView extends TableView<OrderItem> {
                                 row.getStyleClass().add("productFetchFailed");
 
                         }
-
-
                     }
                 });
 

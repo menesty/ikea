@@ -82,7 +82,7 @@ public abstract class InvoicePdfTableView extends TableView<InvoicePdfTableView.
 
     public abstract void onSave(InvoicePdf invoicePdf);
 
-    public abstract void onCheck(InvoicePdf invoicePdf);
+    public abstract void onCheck(InvoicePdf invoicePdf, boolean newValue);
 
     public class InvoicePdfTableItem {
 
@@ -95,8 +95,8 @@ public abstract class InvoicePdfTableView extends TableView<InvoicePdfTableView.
             this.checked = new SimpleBooleanProperty(checked);
 
             this.checked.addListener(new ChangeListener<Boolean>() {
-                public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1) {
-                    onCheck(InvoicePdfTableItem.this.invoicePdf);
+                public void changed(ObservableValue<? extends Boolean> ov, Boolean old, Boolean newValue) {
+                    onCheck(InvoicePdfTableItem.this.invoicePdf, newValue);
                 }
             });
         }
