@@ -122,7 +122,7 @@ public class IkeaUserService {
 
     }
 
-    private void addProductToList(String categoryId, String artNumber, int quantity) throws IOException {
+    private void addProductToList(String categoryId, String artNumber, double quantity) throws IOException {
         HttpPost httPost = new HttpPost("http://www.ikea.com/webapp/wcs/stores/servlet/IrwInterestItemAddByPartNumber");
 
         List<NameValuePair> nvps = new ArrayList<>();

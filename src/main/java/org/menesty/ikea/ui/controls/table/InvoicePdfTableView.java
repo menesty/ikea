@@ -66,7 +66,7 @@ public abstract class InvoicePdfTableView extends TableView<InvoicePdfTableView.
 
         TableColumn<InvoicePdfTableItem, String> createdDate = new TableColumn<>();
 
-        createdDate.setText("Created Date");
+        createdDate.setText("Upload Date");
         createdDate.setMinWidth(200);
         createdDate.setCellValueFactory(
                 new Callback<TableColumn.CellDataFeatures<InvoicePdfTableItem, String>, ObservableValue<String>>() {

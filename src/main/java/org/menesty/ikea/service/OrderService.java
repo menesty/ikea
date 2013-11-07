@@ -7,6 +7,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.menesty.ikea.domain.InvoicePdf;
 import org.menesty.ikea.domain.Order;
 import org.menesty.ikea.domain.ProductInfo;
+import org.menesty.ikea.exception.ProductFetchException;
 import org.menesty.ikea.order.OrderItem;
 import org.menesty.ikea.order.RawOrderItem;
 import org.menesty.ikea.ui.TaskProgress;
@@ -86,7 +87,9 @@ public class OrderService {
                     orderItem.setComment(rawOrderItem.getComment());
                     orderItem.setCount(rawOrderItem.getCount());
                     orderItem.setName(rawOrderItem.getDescription());
-                    orderItem.setPrice(NumberUtil.round(rawOrderItem.getPrice() / rawOrderItem.getCount()));
+
+                    if (rawOrderItem.getCount() != 0)
+                        orderItem.setPrice(NumberUtil.round(rawOrderItem.getPrice() / rawOrderItem.getCount()));
 
                     if (StringUtils.isNotBlank(rawOrderItem.getComment()))
                         orderItem.setType(OrderItem.Type.Specials);
@@ -100,12 +103,16 @@ public class OrderService {
                     ProductInfo productInfo = productService.findByArtNumber(productArtNumber);
 
                     if (productInfo == null) {
-                        productInfo = productService.loadOrCreate(productArtNumber);
+                        try {
+                            productInfo = productService.loadOrCreate(productArtNumber);
 
-                        if (productInfo == null)
-                            orderItem.setType(OrderItem.Type.Na);
+                            if (productInfo == null)
+                                orderItem.setType(OrderItem.Type.Na);
 
-                        orderItem.setNew(productInfo != null);
+                        } catch (ProductFetchException e) {
+                            orderItem.setInvalidFetch(true);
+                            orderItem.setTryCount(1);
+                        }
                     }
 
                     orderItem.setProductInfo(productInfo);

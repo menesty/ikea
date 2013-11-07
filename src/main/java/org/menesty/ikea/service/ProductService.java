@@ -8,6 +8,7 @@ import org.jsoup.select.Elements;
 import org.menesty.ikea.domain.PackageInfo;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.domain.ProductPart;
+import org.menesty.ikea.exception.ProductFetchException;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.util.NumberUtil;
 
@@ -48,9 +49,8 @@ public class ProductService {
             return product;
         } catch (IOException e) {
             System.out.println("Problem with open product : " + artNumber);
-            e.printStackTrace();
+            throw new ProductFetchException();
         }
-        return null;
     }
 
     private void updateProductPrice(ProductInfo productInfo) throws IOException {

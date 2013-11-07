@@ -20,7 +20,7 @@ public class RawInvoiceProductItem {
 
     private String name;
 
-    private int count;
+    private double count;
 
     private String comment;
 
@@ -42,11 +42,11 @@ public class RawInvoiceProductItem {
         this.price = price;
     }
 
-    public int getCount() {
+    public double getCount() {
         return count;
     }
 
-    public void setCount(int count) {
+    public void setCount(double count) {
         this.count = count;
     }
 

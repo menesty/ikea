@@ -17,7 +17,10 @@ public class OrderItem {
     }
 
     private boolean invalidFetch;
-    private int count;
+
+    private int tryCount;
+
+    private double count;
 
     private String artNumber;
 
@@ -32,6 +35,22 @@ public class OrderItem {
     private ProductInfo productInfo;
 
     private Type type;
+
+    public int getTryCount() {
+        return tryCount;
+    }
+
+    public void setTryCount(int tryCount) {
+        this.tryCount = tryCount;
+    }
+
+    public void setCount(double count) {
+        this.count = count;
+    }
+
+    public double getCount() {
+        return count;
+    }
 
     public boolean isInvalidFetch() {
         return invalidFetch;
@@ -55,14 +74,6 @@ public class OrderItem {
 
     public void setType(Type type) {
         this.type = type;
-    }
-
-    public int getCount() {
-        return count;
-    }
-
-    public void setCount(int count) {
-        this.count = count;
     }
 
     public String getArtNumber() {

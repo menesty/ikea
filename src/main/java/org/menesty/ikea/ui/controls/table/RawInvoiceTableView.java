@@ -1,6 +1,7 @@
 package org.menesty.ikea.ui.controls.table;
 
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
@@ -11,6 +12,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.util.Callback;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.ui.controls.PathProperty;
+import org.menesty.ikea.util.NumberUtil;
 
 /**
  * User: Menesty
@@ -64,13 +66,13 @@ public class RawInvoiceTableView extends TableView<RawInvoiceProductItem> {
         }
 
         {
-            TableColumn<RawInvoiceProductItem, Integer> column = new TableColumn<>();
+            TableColumn<RawInvoiceProductItem, String> column = new TableColumn<>();
             column.setText("Count");
             column.setMinWidth(60);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<RawInvoiceProductItem, Integer>, ObservableValue<Integer>>() {
+            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<RawInvoiceProductItem, String>, ObservableValue<String>>() {
                 @Override
-                public ObservableValue<Integer> call(TableColumn.CellDataFeatures<RawInvoiceProductItem, Integer> item) {
-                    return new PathProperty<>(item.getValue(), "count");
+                public ObservableValue<String> call(TableColumn.CellDataFeatures<RawInvoiceProductItem, String> item) {
+                    return new SimpleStringProperty(NumberUtil.toString(item.getValue().getCount()));
                 }
             });
 

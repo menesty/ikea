@@ -1,6 +1,7 @@
 package org.menesty.ikea.ui.controls.table;
 
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
@@ -12,6 +13,7 @@ import javafx.util.Callback;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.order.OrderItem;
 import org.menesty.ikea.ui.controls.PathProperty;
+import org.menesty.ikea.util.NumberUtil;
 
 public class OrderItemTableView extends TableView<OrderItem> {
 
@@ -58,7 +60,7 @@ public class OrderItemTableView extends TableView<OrderItem> {
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderItem, String>, ObservableValue<String>>() {
                 @Override
                 public ObservableValue<String> call(TableColumn.CellDataFeatures<OrderItem, String> item) {
-                    return new PathProperty<>(item.getValue(), "count");
+                    return new SimpleStringProperty(NumberUtil.toString(item.getValue().getCount()));
                 }
             });
 

@@ -21,7 +21,7 @@ public class InvoiceItem {
 
     private int wat;
 
-    private int count;
+    private double count;
 
     public int getIndex() {
         return index;
@@ -131,15 +131,15 @@ public class InvoiceItem {
         this.wat = wat;
     }
 
-    public int getCount() {
+    public double getCount() {
         return count;
     }
 
-    public void setCount(int count) {
+    public void setCount(double count) {
         this.count = count;
     }
 
-    public static List<InvoiceItem> get(ProductInfo productInfo, int count) {
+    public static List<InvoiceItem> get(ProductInfo productInfo, double count) {
         List<InvoiceItem> result = new ArrayList<>();
         boolean needGrind = productInfo.getPackageInfo().getBoxCount() > 1 && productInfo.getPackageInfo().getWeight() > 20000;
 
@@ -166,7 +166,7 @@ public class InvoiceItem {
     }
 
 
-    public static InvoiceItem get(ProductInfo productInfo, int count, int box, int boxes) {
+    public static InvoiceItem get(ProductInfo productInfo, double count, int box, int boxes) {
         InvoiceItem invoiceItem = new InvoiceItem();
 
         invoiceItem.name = productInfo.getName();

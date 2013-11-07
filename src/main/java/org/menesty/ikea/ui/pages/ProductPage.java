@@ -42,7 +42,7 @@ public class ProductPage extends BasePage {
         {
             TableColumn<ProductInfo, String> column = new TableColumn<>();
             column.setText("Art # ");
-            column.setMinWidth(100);
+            column.setMinWidth(80);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ProductInfo, String>, ObservableValue<String>>() {
                 @Override
                 public ObservableValue<String> call(TableColumn.CellDataFeatures<ProductInfo, String> item) {
@@ -55,7 +55,7 @@ public class ProductPage extends BasePage {
         {
             TableColumn<ProductInfo, String> column = new TableColumn<>();
             column.setText("O Art #");
-            column.setMinWidth(100);
+            column.setMinWidth(80);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ProductInfo, String>, ObservableValue<String>>() {
                 @Override
                 public ObservableValue<String> call(TableColumn.CellDataFeatures<ProductInfo, String> item) {
@@ -97,7 +97,7 @@ public class ProductPage extends BasePage {
         {
             TableColumn<ProductInfo, Double> column = new TableColumn<>();
             column.setText("Price");
-            column.setMinWidth(200);
+            column.setMinWidth(60);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ProductInfo, Double>, ObservableValue<Double>>() {
                 @Override
                 public ObservableValue<Double> call(TableColumn.CellDataFeatures<ProductInfo, Double> item) {
@@ -124,7 +124,7 @@ public class ProductPage extends BasePage {
 
         {
             TableColumn<ProductInfo, Integer> column = new TableColumn<>();
-            column.setText("Box count");
+            column.setText("B count");
             column.setMinWidth(60);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ProductInfo, Integer>, ObservableValue<Integer>>() {
                 @Override

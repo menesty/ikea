@@ -4,7 +4,9 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.util.PDFTextStripper;
 import org.menesty.ikea.domain.InvoicePdf;
 import org.menesty.ikea.domain.ProductInfo;
+import org.menesty.ikea.exception.ProductFetchException;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
+import org.menesty.ikea.util.NumberUtil;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -19,7 +21,9 @@ import java.util.regex.Pattern;
  * Time: 11:42 AM
  */
 public class InvoicePdfService {
-    private final static Pattern linePattern = Pattern.compile("(\\d+) (\\d{3}-\\d{3}-\\d{2}) (.*) (SZT\\.|CM\\.) (\\d+) (\\S+) (\\d+,\\d+)% (\\S+,\\d{2})");
+
+    private final static Pattern linePattern = Pattern.compile("(\\d+) (\\d{3}-\\d{3}-\\d{2}) (.*) (SZT\\.) (\\d{0,},{0,}\\d+) (\\S+) (\\d+,\\d+%) (\\S+,\\d{2})");
+
     private final static Pattern totalPattern = Pattern.compile("DO ZAPŁATY:(.*)");
 
     private ProductService productService;
@@ -77,7 +81,7 @@ public class InvoicePdfService {
                 product.setArtNumber(m.group(2));
                 product.setOriginalArtNumber(m.group(2).replace("-", ""));
                 product.setName(m.group(3));
-                product.setCount(Integer.valueOf(m.group(5)));
+                product.setCount(NumberUtil.parse(m.group(5)));
                 product.setPriceStr(m.group(6));
                 product.setWat(m.group(7));
                 product.setProductInfo(loadProductInfo(product));
@@ -99,7 +103,11 @@ public class InvoicePdfService {
     }
 
     private ProductInfo loadProductInfo(RawInvoiceProductItem product) {
-        ProductInfo productInfo = productService.loadOrCreate(product.getArtNumber());
+        ProductInfo productInfo = null;
+        try {
+            productInfo = productService.loadOrCreate(product.getArtNumber());
+        } catch (ProductFetchException e) {
+        }
         if (productInfo == null) {
             productInfo = new ProductInfo();
             productInfo.setArtNumber(product.getArtNumber());

@@ -142,13 +142,12 @@ public abstract class OrderItemViewComponent extends BorderPane {
             if (OrderItem.Type.Na == item.getType())
                 orderNaTotal += item.getTotal();
             else
-                productTotal += item.getPrice() * item.getCount();
+                productTotal += item.getProductInfo().getPrice() * item.getCount();
 
         }
 
         orderTotal = NumberUtil.round(orderTotal);
         productTotal = NumberUtil.round(productTotal);
-
         double diff = NumberUtil.round(orderTotal - orderNaTotal, 2);
 
         statusPanel.setTotal(orderTotal);
