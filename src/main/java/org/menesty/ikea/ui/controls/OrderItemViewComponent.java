@@ -44,7 +44,7 @@ public abstract class OrderItemViewComponent extends BorderPane {
         orderItemTableView = new OrderItemTableView() {
             @Override
             public void onRowDoubleClick(final TableRow<OrderItem> row) {
-                if (OrderItem.Type.Na == row.getItem().getType())
+                if (OrderItem.Type.Na == row.getItem().getType() || row.getItem().isInvalidFetch())
                     return;
 
                 showPopupDialog(productEditDialog);
@@ -141,7 +141,7 @@ public abstract class OrderItemViewComponent extends BorderPane {
 
             if (OrderItem.Type.Na == item.getType())
                 orderNaTotal += item.getTotal();
-            else
+            else if (item.getProductInfo() != null)
                 productTotal += NumberUtil.round(item.getProductInfo().getPrice() * item.getCount());
 
         }
