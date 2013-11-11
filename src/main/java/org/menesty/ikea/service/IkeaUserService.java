@@ -22,6 +22,7 @@ import org.menesty.ikea.domain.User;
 import org.menesty.ikea.exception.LoginIkeaException;
 import org.menesty.ikea.order.OrderItem;
 import org.menesty.ikea.ui.TaskProgressLog;
+import org.menesty.ikea.util.NumberUtil;
 
 import java.io.IOException;
 import java.util.*;
@@ -83,6 +84,8 @@ public class IkeaUserService {
             taskProgressLog.addLog(e.getMessage());
         } catch (IOException e) {
             taskProgressLog.addLog("Error happened during connection to IKEA site");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         taskProgressLog.done();
@@ -133,7 +136,7 @@ public class IkeaUserService {
         nvps.add(new BasicNameValuePair("partNumber", artNumber));
         nvps.add(new BasicNameValuePair("priceexclvat", ""));
         nvps.add(new BasicNameValuePair("listId", categoryId));
-        nvps.add(new BasicNameValuePair("quantity", quantity + ""));
+        nvps.add(new BasicNameValuePair("quantity", NumberUtil.toString(quantity)));
 
         httPost.setEntity(new UrlEncodedFormEntity(nvps, Consts.UTF_8));
         try (CloseableHttpResponse response = httpClient.execute(httPost)) {
@@ -146,6 +149,9 @@ public class IkeaUserService {
     private Map<ProductInfo.Group, List<OrderItem>> groupItems(List<OrderItem> orderItems) {
         Map<ProductInfo.Group, List<OrderItem>> groupMap = new HashMap<>();
         for (OrderItem item : orderItems) {
+
+            if(item.getProductInfo() == null) continue;
+
             List<OrderItem> list = groupMap.get(item.getProductInfo().getGroup());
 
             if (list == null) groupMap.put(item.getProductInfo().getGroup(), list = new ArrayList<>());
