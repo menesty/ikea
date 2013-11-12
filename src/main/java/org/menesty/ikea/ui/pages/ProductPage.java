@@ -11,12 +11,15 @@ import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.util.Callback;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.service.ProductService;
 import org.menesty.ikea.ui.controls.PathProperty;
 import org.menesty.ikea.ui.controls.dialog.ProductDialog;
+import org.menesty.ikea.ui.controls.search.ProductItemSearchBar;
+import org.menesty.ikea.ui.controls.search.ProductItemSearchData;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -31,6 +34,8 @@ public class ProductPage extends BasePage {
 
     private ProductDialog productEditDialog;
 
+    private TableView<ProductInfo> tableView;
+
     public ProductPage() {
         super("Products");
         this.productService = new ProductService();
@@ -38,7 +43,7 @@ public class ProductPage extends BasePage {
 
     @Override
     public Node createView() {
-        TableView<ProductInfo> tableView = new TableView<>();
+        tableView = new TableView<>();
         {
             TableColumn<ProductInfo, String> column = new TableColumn<>();
             column.setText("Art # ");
@@ -234,11 +239,27 @@ public class ProductPage extends BasePage {
             }
         });
 
-        tableView.setItems(FXCollections.observableArrayList(productService.load()));
+        filter(new ProductItemSearchData());
+
+        ProductItemSearchBar searchBar = new ProductItemSearchBar() {
+            @Override
+            public void onSearch(ProductItemSearchData data) {
+                filter(data);
+            }
+        };
+
+        BorderPane container = new BorderPane();
+        container.setTop(searchBar);
+        container.setCenter(tableView);
+
         StackPane pane = createRoot();
-        pane.getChildren().add(0, tableView);
+        pane.getChildren().add(0, container);
         productEditDialog = new ProductDialog();
         return pane;
+    }
+
+    private void filter(ProductItemSearchData data) {
+        tableView.setItems(FXCollections.observableArrayList(productService.load(data)));
     }
 
     private SimpleStringProperty preparePackInfo(int value, int dive, String prefix) {

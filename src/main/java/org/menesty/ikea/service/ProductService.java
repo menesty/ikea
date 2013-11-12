@@ -1,6 +1,7 @@
 package org.menesty.ikea.service;
 
 import com.db4o.ObjectSet;
+import com.db4o.query.Predicate;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -10,6 +11,7 @@ import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.domain.ProductPart;
 import org.menesty.ikea.exception.ProductFetchException;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
+import org.menesty.ikea.ui.controls.search.ProductItemSearchData;
 import org.menesty.ikea.util.NumberUtil;
 
 import java.io.IOException;
@@ -343,11 +345,23 @@ public class ProductService {
         return packageInfo;
     }
 
-    public List<ProductInfo> load() {
-        return DatabaseService.get().query(ProductInfo.class);
-    }
-
     public void save(ProductInfo productInfo) {
         DatabaseService.get().store(productInfo);
+    }
+
+    public List<ProductInfo> load(final ProductItemSearchData data) {
+        return DatabaseService.get().query(new Predicate<ProductInfo>() {
+
+            @Override
+            public boolean match(ProductInfo productInfo) {
+                if (data.artNumber != null && !productInfo.getArtNumber().contains(data.artNumber))
+                    return false;
+
+                if (data.productGroup != null && data.productGroup != productInfo.getGroup())
+                    return false;
+
+                return true;
+            }
+        });
     }
 }
