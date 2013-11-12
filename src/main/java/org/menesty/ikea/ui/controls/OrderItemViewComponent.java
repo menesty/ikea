@@ -16,7 +16,7 @@ import org.menesty.ikea.ui.controls.dialog.ProductDialog;
 import org.menesty.ikea.ui.controls.search.OrderItemSearchBar;
 import org.menesty.ikea.ui.controls.search.OrderItemSearchForm;
 import org.menesty.ikea.ui.controls.table.OrderItemTableView;
-import org.menesty.ikea.ui.pages.DialogCallback;
+import org.menesty.ikea.ui.pages.EntityDialogCallback;
 import org.menesty.ikea.util.NumberUtil;
 
 import java.io.File;
@@ -48,7 +48,7 @@ public abstract class OrderItemViewComponent extends BorderPane {
                     return;
 
                 showPopupDialog(productEditDialog);
-                productEditDialog.bind(row.getItem().getProductInfo(), new DialogCallback<ProductInfo>() {
+                productEditDialog.bind(row.getItem().getProductInfo(), new EntityDialogCallback<ProductInfo>() {
                     @Override
                     public void onSave(ProductInfo productInfo, Object[] params) {
                         save(productInfo);

@@ -197,7 +197,7 @@ public class OrderViewPage extends BasePage {
             @Override
             public void onRowDoubleClick(final TableRow<RawInvoiceProductItem> row) {
                 showPopupDialog(productEditDialog);
-                productEditDialog.bind(row.getItem().getProductInfo(), new DialogCallback<ProductInfo>() {
+                productEditDialog.bind(row.getItem().getProductInfo(), new EntityDialogCallback<ProductInfo>() {
                     @Override
                     public void onSave(ProductInfo productInfo, Object[] params) {
                         productService.save(productInfo);

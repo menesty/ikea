@@ -120,7 +120,7 @@ public class OrderListPage extends BasePage {
                     public void handle(MouseEvent mouseEvent) {
                         if (mouseEvent.getClickCount() == 2 && row.getItem() != null) {
                             showPopupDialog(editDialog);
-                            editDialog.bind(row.getItem().getOrder(), new DialogCallback<Order>() {
+                            editDialog.bind(row.getItem().getOrder(), new EntityDialogCallback<Order>() {
                                 @Override
                                 public void onSave(Order user, Object... params) {
                                     orderService.save(user);

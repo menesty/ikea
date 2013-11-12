@@ -12,7 +12,9 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.menesty.ikea.domain.InvoicePdf;
+import org.menesty.ikea.ui.controls.dialog.Dialog;
 import org.menesty.ikea.ui.controls.table.InvoicePdfTableView;
+import org.menesty.ikea.ui.pages.DialogCallback;
 
 import java.io.File;
 import java.math.BigDecimal;
@@ -76,6 +78,20 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
         deleteBtn.setContentDisplay(ContentDisplay.RIGHT);
         deleteBtn.setTooltip(new Tooltip("Delete invoice"));
         deleteBtn.setDisable(true);
+        deleteBtn.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                Dialog.confirm("Are you sure to delete items", new DialogCallback() {
+                    @Override
+                    public void onCancel() {
+                    }
+
+                    @Override
+                    public void onYes() {
+                    }
+                });
+            }
+        });
 
         pdfToolBar.getItems().addAll(uploadInvoice, deleteBtn);
 

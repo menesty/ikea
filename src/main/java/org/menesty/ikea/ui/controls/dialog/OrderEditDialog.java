@@ -8,7 +8,7 @@ import javafx.scene.control.TextField;
 import org.menesty.ikea.domain.Order;
 import org.menesty.ikea.domain.User;
 import org.menesty.ikea.service.UserService;
-import org.menesty.ikea.ui.pages.DialogCallback;
+import org.menesty.ikea.ui.pages.EntityDialogCallback;
 
 import java.util.List;
 
@@ -20,7 +20,7 @@ public class OrderEditDialog extends BaseDialog {
 
     private Order currentEntity;
 
-    private DialogCallback<Order> callback;
+    private EntityDialogCallback<Order> callback;
 
 
     public OrderEditDialog() {
@@ -48,7 +48,7 @@ public class OrderEditDialog extends BaseDialog {
             callback.onCancel();
     }
 
-    public void bind(Order entity, DialogCallback<Order> callback) {
+    public void bind(Order entity, EntityDialogCallback<Order> callback) {
         currentEntity = entity;
         form.setOrderName(entity.getName());
         form.setComboUser(entity.getComboUser());

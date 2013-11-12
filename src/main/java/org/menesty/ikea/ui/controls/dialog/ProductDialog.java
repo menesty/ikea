@@ -10,7 +10,7 @@ import org.menesty.ikea.domain.ProductPart;
 import org.menesty.ikea.ui.controls.PathProperty;
 import org.menesty.ikea.ui.controls.form.DoubleTextField;
 import org.menesty.ikea.ui.controls.form.IntegerTextField;
-import org.menesty.ikea.ui.pages.DialogCallback;
+import org.menesty.ikea.ui.pages.EntityDialogCallback;
 
 /**
  * User: Menesty
@@ -41,7 +41,7 @@ public class ProductDialog extends BaseDialog {
     private IntegerTextField width;
     private IntegerTextField length;
     private ProductInfo currentProductInfo;
-    private DialogCallback callback;
+    private EntityDialogCallback callback;
 
 
     public ProductDialog() {
@@ -152,7 +152,7 @@ public class ProductDialog extends BaseDialog {
         }
     }
 
-    public void bind(ProductInfo productInfo, DialogCallback callback) {
+    public void bind(ProductInfo productInfo, EntityDialogCallback callback) {
         this.callback = callback;
         currentProductInfo = productInfo;
         bindProperties();

@@ -66,7 +66,7 @@ public class UserPage extends BasePage {
                     public void handle(MouseEvent mouseEvent) {
                         if (mouseEvent.getClickCount() == 2)
                             showPopupDialog(userDialog);
-                        userDialog.bind(row.getItem(), new DialogCallback<User>() {
+                        userDialog.bind(row.getItem(), new EntityDialogCallback<User>() {
                             @Override
                             public void onSave(User user, Object... params) {
                                 userService.save(user);
@@ -101,7 +101,7 @@ public class UserPage extends BasePage {
         createUser.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
                 showPopupDialog(userDialog);
-                userDialog.bind(new User(), new DialogCallback<User>() {
+                userDialog.bind(new User(), new EntityDialogCallback<User>() {
                     @Override
                     public void onSave(User user, Object... params) {
                         userService.save(user);

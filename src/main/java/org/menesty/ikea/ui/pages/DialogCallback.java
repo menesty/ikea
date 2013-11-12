@@ -1,7 +1,12 @@
 package org.menesty.ikea.ui.pages;
 
-public abstract class DialogCallback<Entity> {
-    public abstract void onSave(Entity entity, Object... params);
-
+/**
+ * User: Menesty
+ * Date: 11/11/13
+ * Time: 7:54 PM
+ */
+public interface DialogCallback {
     public abstract void onCancel();
+
+    public abstract void onYes();
 }

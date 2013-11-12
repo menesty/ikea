@@ -202,7 +202,7 @@ public class ProductPage extends BasePage {
                     public void handle(MouseEvent mouseEvent) {
                         if (mouseEvent.getClickCount() == 2) {
                             showPopupDialog(productEditDialog);
-                            productEditDialog.bind(row.getItem(), new DialogCallback<ProductInfo>() {
+                            productEditDialog.bind(row.getItem(), new EntityDialogCallback<ProductInfo>() {
                                 @Override
                                 public void onSave(ProductInfo productInfo, Object[] params) {
                                     productService.save(productInfo);
