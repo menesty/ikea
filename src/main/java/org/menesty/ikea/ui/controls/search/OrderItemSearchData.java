@@ -8,7 +8,7 @@ import org.menesty.ikea.order.OrderItem;
  * Date: 11/1/13
  * Time: 12:02 AM
  */
-public class OrderItemSearchForm {
+public class OrderItemSearchData {
 
     public OrderItem.Type type;
 

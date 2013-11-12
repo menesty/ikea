@@ -14,7 +14,7 @@ import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.order.OrderItem;
 import org.menesty.ikea.ui.controls.dialog.ProductDialog;
 import org.menesty.ikea.ui.controls.search.OrderItemSearchBar;
-import org.menesty.ikea.ui.controls.search.OrderItemSearchForm;
+import org.menesty.ikea.ui.controls.search.OrderItemSearchData;
 import org.menesty.ikea.ui.controls.table.OrderItemTableView;
 import org.menesty.ikea.ui.pages.EntityDialogCallback;
 import org.menesty.ikea.util.NumberUtil;
@@ -106,7 +106,7 @@ public abstract class OrderItemViewComponent extends BorderPane {
         controlBox.getChildren().add(toolBar);
         controlBox.getChildren().add(new OrderItemSearchBar() {
             @Override
-            public void onSearch(OrderItemSearchForm orderItemSearchForm) {
+            public void onSearch(OrderItemSearchData orderItemSearchForm) {
                 setItems(filter(orderItemSearchForm));
             }
 
@@ -123,7 +123,7 @@ public abstract class OrderItemViewComponent extends BorderPane {
 
     public abstract void showPopupDialog(ProductDialog productEditDialog);
 
-    public abstract List<OrderItem> filter(OrderItemSearchForm orderItemSearchForm);
+    public abstract List<OrderItem> filter(OrderItemSearchData orderItemSearchForm);
 
     public abstract void onExport(String filePath);
 

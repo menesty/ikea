@@ -1,15 +1,13 @@
 package org.menesty.ikea.ui.controls.search;
 
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.*;
-import javafx.util.Duration;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.order.OrderItem;
+import org.menesty.ikea.ui.controls.form.TextField;
 
 
 /**
@@ -29,15 +27,6 @@ public class OrderItemSearchBar extends ToolBar {
 
     public OrderItemSearchBar() {
 
-        final Timeline fiveSecondsWonder = new Timeline(new KeyFrame(Duration.seconds(1), new EventHandler<ActionEvent>() {
-
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                applyFilter();
-            }
-        }));
-
-        fiveSecondsWonder.setCycleCount(1);
 
         InvalidationListener invalidationListener = new InvalidationListener() {
             @Override
@@ -60,14 +49,15 @@ public class OrderItemSearchBar extends ToolBar {
 
 
         artNumber = new TextField();
-        artNumber.setPromptText("Product ID #");
-        artNumber.textProperty().addListener(new InvalidationListener() {
+        artNumber.setDelay(1);
+        artNumber.setOnDelayAction(new EventHandler<ActionEvent>() {
             @Override
-            public void invalidated(Observable observable) {
-                fiveSecondsWonder.stop();
-                fiveSecondsWonder.playFromStart();
+            public void handle(ActionEvent actionEvent) {
+                applyFilter();
             }
         });
+        artNumber.setPromptText("Product ID #");
+
 
 
         Label pumLable = new Label("PUM");
@@ -83,7 +73,7 @@ public class OrderItemSearchBar extends ToolBar {
                 type.getSelectionModel().select(null);
                 productGroup.getSelectionModel().select(null);
                 pum.setSelected(false);
-                onSearch(new OrderItemSearchForm());
+                onSearch(new OrderItemSearchData());
             }
         });
 
@@ -94,8 +84,8 @@ public class OrderItemSearchBar extends ToolBar {
         onSearch(collectData());
     }
 
-    private OrderItemSearchForm collectData() {
-        OrderItemSearchForm orderItemSearchForm = new OrderItemSearchForm();
+    private OrderItemSearchData collectData() {
+        OrderItemSearchData orderItemSearchForm = new OrderItemSearchData();
         orderItemSearchForm.type = type.getSelectionModel().getSelectedItem();
         orderItemSearchForm.artNumber = artNumber.getText();
         orderItemSearchForm.productGroup = productGroup.getSelectionModel().getSelectedItem();
@@ -103,7 +93,7 @@ public class OrderItemSearchBar extends ToolBar {
         return orderItemSearchForm;
     }
 
-    public void onSearch(OrderItemSearchForm orderItemSearchForm) {
+    public void onSearch(OrderItemSearchData orderItemSearchForm) {
 
     }
 
