@@ -9,9 +9,7 @@ import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.util.NumberUtil;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -66,11 +64,12 @@ public class InvoicePdfService {
 
         PDFTextStripper t = new PDFTextStripper();
         String content = t.getText(p);
+        p.close();
 
         Scanner scanner = new Scanner(content);
 
         List<RawInvoiceProductItem> products = new ArrayList<>();
-        result.setProducts(products);
+
 
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
@@ -97,8 +96,24 @@ public class InvoicePdfService {
             double price = Double.valueOf(m.group(1).trim().replaceAll("[\\s\\u00A0]+", "").replace(",", "."));
             result.setPrice(price);
         }
-        p.close();
+
+        result.setProducts(reduce(products));
+
         return result;
+
+    }
+
+    private List<RawInvoiceProductItem> reduce(List<RawInvoiceProductItem> items) {
+        Map<String, RawInvoiceProductItem> filtered = new HashMap<>();
+
+        for (RawInvoiceProductItem item : items) {
+            RawInvoiceProductItem current = filtered.get(item.getOriginalArtNumber());
+            if (current == null)
+                filtered.put(item.getOriginalArtNumber(), item);
+            else
+                current.setCount(NumberUtil.round(current.getCount() + item.getCount()));
+        }
+        return new ArrayList<>(filtered.values());
 
     }
 
