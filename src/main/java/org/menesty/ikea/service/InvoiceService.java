@@ -11,7 +11,7 @@ import java.util.*;
 
 public class InvoiceService {
 
-    public void exportToEpp(List<RawInvoiceProductItem> items, String fileName) {
+    public void exportToEpp(List<InvoiceItem> items, String fileName) {
         String templateFile = "/config/invoice-order.epp";
 
         StringBuilder text = new StringBuilder();
@@ -23,7 +23,7 @@ public class InvoiceService {
             String template = new String(text.toString().getBytes("utf8"));
 
             Map<String, Object> map = new HashMap<>();
-            map.put("invoiceItems", prepareData(items));
+            map.put("invoiceItems", items);
             VariableResolverFactory vrf = new MapVariableResolverFactory(map);
             String result = (String) TemplateRuntime.eval(template, null, vrf, null);
 
@@ -38,19 +38,5 @@ public class InvoiceService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-
-    private List<InvoiceItem> prepareData(List<RawInvoiceProductItem> items) {
-        List<InvoiceItem> invoiceItems = new ArrayList<>();
-
-        for (RawInvoiceProductItem item : items)
-            invoiceItems.addAll(InvoiceItem.get(item.getProductInfo(), item.getCount()));
-
-        int index = 0;
-        for (InvoiceItem invoiceItem : invoiceItems)
-            invoiceItem.setIndex(++index);
-
-        return invoiceItems;
     }
 }

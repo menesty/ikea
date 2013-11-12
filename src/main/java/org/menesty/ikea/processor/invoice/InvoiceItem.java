@@ -83,8 +83,8 @@ public class InvoiceItem {
         return round((getPriceWat() - getPrice()) * count);
     }
 
-    private double getWatCof(){
-        return  (double) wat / (double) 100 + 1;
+    private double getWatCof() {
+        return (double) wat / (double) 100 + 1;
     }
 
     private static double round(double value) {
@@ -167,17 +167,21 @@ public class InvoiceItem {
 
 
     public static InvoiceItem get(ProductInfo productInfo, double count, int box, int boxes) {
+        return get(productInfo.getOriginalArtNum(), productInfo.getName(), productInfo.getShortName(), productInfo.getPrice(), productInfo.getWat(), count, box, boxes);
+    }
+
+    public static InvoiceItem get(String artNumber, String name, String shortName, double price, int wat, double count, int box, int boxes) {
         InvoiceItem invoiceItem = new InvoiceItem();
 
-        invoiceItem.name = productInfo.getName();
-        invoiceItem.artNumber = "IKEA_" + productInfo.getOriginalArtNum();
-        invoiceItem.shortName = productInfo.getShortName();
+        invoiceItem.name = name;
+        invoiceItem.artNumber = "IKEA_" + artNumber;
+        invoiceItem.shortName = shortName;
         if (boxes > 1) {
             invoiceItem.artNumber += "(" + box + ")";
             invoiceItem.shortName += " " + box + "/" + boxes;
         }
-        invoiceItem.price = productInfo.getPrice();
-        invoiceItem.wat = productInfo.getWat();
+        invoiceItem.price = price;
+        invoiceItem.wat = wat;
         invoiceItem.count = count;
 
         return invoiceItem;

@@ -39,8 +39,7 @@ public class RawInvoiceTableView extends TableView<RawInvoiceProductItem> {
             getColumns().add(column);
         }
         {
-            TableColumn<RawInvoiceProductItem, String> column = new TableColumn<>();
-            column.setText("Art # ");
+            TableColumn<RawInvoiceProductItem, String> column = new TableColumn<>("Art # ");
             column.setMinWidth(100);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<RawInvoiceProductItem, String>, ObservableValue<String>>() {
                 @Override
@@ -52,8 +51,7 @@ public class RawInvoiceTableView extends TableView<RawInvoiceProductItem> {
         }
 
         {
-            TableColumn<RawInvoiceProductItem, String> column = new TableColumn<>();
-            column.setText("Name");
+            TableColumn<RawInvoiceProductItem, String> column = new TableColumn<>("Name");
             column.setMinWidth(200);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<RawInvoiceProductItem, String>, ObservableValue<String>>() {
                 @Override
@@ -66,8 +64,7 @@ public class RawInvoiceTableView extends TableView<RawInvoiceProductItem> {
         }
 
         {
-            TableColumn<RawInvoiceProductItem, String> column = new TableColumn<>();
-            column.setText("Count");
+            TableColumn<RawInvoiceProductItem, String> column = new TableColumn<>("Count");
             column.setMinWidth(60);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<RawInvoiceProductItem, String>, ObservableValue<String>>() {
                 @Override
@@ -81,8 +78,7 @@ public class RawInvoiceTableView extends TableView<RawInvoiceProductItem> {
 
 
         {
-            TableColumn<RawInvoiceProductItem, Double> column = new TableColumn<>();
-            column.setText("Price");
+            TableColumn<RawInvoiceProductItem, Double> column = new TableColumn<>("Price");
             column.setMinWidth(60);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<RawInvoiceProductItem, Double>, ObservableValue<Double>>() {
                 @Override
@@ -95,8 +91,7 @@ public class RawInvoiceTableView extends TableView<RawInvoiceProductItem> {
         }
 
         {
-            TableColumn<RawInvoiceProductItem, String> column = new TableColumn<>();
-            column.setText("Wat");
+            TableColumn<RawInvoiceProductItem, String> column = new TableColumn<>("Wat");
             column.setMinWidth(60);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<RawInvoiceProductItem, String>, ObservableValue<String>>() {
                 @Override
@@ -109,8 +104,7 @@ public class RawInvoiceTableView extends TableView<RawInvoiceProductItem> {
         }
 
         {
-            TableColumn<RawInvoiceProductItem, Double> column = new TableColumn<>();
-            column.setText("T Price");
+            TableColumn<RawInvoiceProductItem, Double> column = new TableColumn<>("T Price");
             column.setMinWidth(60);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<RawInvoiceProductItem, Double>, ObservableValue<Double>>() {
                 @Override

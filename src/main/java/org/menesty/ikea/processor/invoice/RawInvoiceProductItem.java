@@ -67,7 +67,7 @@ public class RawInvoiceProductItem {
     }
 
     public String getWat() {
-        return wat + "%";
+        return wat;
     }
 
     public int getIntWat() {

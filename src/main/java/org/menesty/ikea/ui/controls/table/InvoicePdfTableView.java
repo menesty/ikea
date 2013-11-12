@@ -33,9 +33,7 @@ public abstract class InvoicePdfTableView extends TableView<InvoicePdfTableView.
             }
         });
 
-        TableColumn<InvoicePdfTableItem, String> name = new TableColumn<>();
-
-        name.setText("Name");
+        TableColumn<InvoicePdfTableItem, String> name = new TableColumn<>("Name");
         name.setMinWidth(200);
         name.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<InvoicePdfTableItem, String>, ObservableValue<String>>() {
             @Override

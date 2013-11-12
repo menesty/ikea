@@ -33,7 +33,8 @@ public class TextField extends javafx.scene.control.TextField {
                     delayAction.handle(actionEvent);
             }
         }));
-        textProperty().removeListener(invalidationListener);
+        if (invalidationListener != null)
+            textProperty().removeListener(invalidationListener);
         invalidationListener = new InvalidationListener() {
             @Override
             public void invalidated(Observable observable) {

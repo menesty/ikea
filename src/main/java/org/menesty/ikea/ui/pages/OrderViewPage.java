@@ -2,30 +2,26 @@ package org.menesty.ikea.ui.pages;
 
 import javafx.application.Platform;
 import javafx.concurrent.Task;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
-import javafx.stage.FileChooser;
 import org.menesty.ikea.domain.InvoicePdf;
 import org.menesty.ikea.domain.Order;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.order.OrderItem;
+import org.menesty.ikea.processor.invoice.InvoiceItem;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.service.*;
 import org.menesty.ikea.ui.TaskProgress;
 import org.menesty.ikea.ui.controls.InvoicePdfViewComponent;
 import org.menesty.ikea.ui.controls.OrderItemViewComponent;
+import org.menesty.ikea.ui.controls.RawInvoiceItemViewComponent;
+import org.menesty.ikea.ui.controls.dialog.EppDialog;
 import org.menesty.ikea.ui.controls.dialog.IkeaUserFillProgressDialog;
 import org.menesty.ikea.ui.controls.dialog.ProductDialog;
-import org.menesty.ikea.ui.controls.search.OrderItemSearchForm;
-import org.menesty.ikea.ui.controls.table.RawInvoiceTableView;
+import org.menesty.ikea.ui.controls.search.OrderItemSearchData;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -48,8 +44,6 @@ public class OrderViewPage extends BasePage {
 
     private Order currentOrder;
 
-    private RawInvoiceTableView rawInvoiceItemTableView;
-
     private InvoicePdfViewComponent invoicePdfViewComponent;
 
     private ProductDialog productEditDialog;
@@ -57,6 +51,8 @@ public class OrderViewPage extends BasePage {
     private ProductService productService;
 
     private IkeaUserService ikeaUserService;
+
+    private RawInvoiceItemViewComponent rawInvoiceItemViewComponent;
 
     public OrderViewPage() {
         super("Order");
@@ -95,7 +91,7 @@ public class OrderViewPage extends BasePage {
             }
 
             @Override
-            public List<OrderItem> filter(OrderItemSearchForm orderItemSearchForm) {
+            public List<OrderItem> filter(OrderItemSearchData orderItemSearchForm) {
                 return currentOrder.filterOrderItems(orderItemSearchForm);
             }
 
@@ -171,29 +167,7 @@ public class OrderViewPage extends BasePage {
         splitPane.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         splitPane.setOrientation(Orientation.VERTICAL);
 
-        BorderPane rawInvoicePane = new BorderPane();
-        ToolBar rawInvoiceControl = new ToolBar();
-        ImageView imageView = new ImageView(new javafx.scene.image.Image("/styles/images/icon/epp-32x32.png"));
-        Button exportEppButton = new Button("", imageView);
-        exportEppButton.setContentDisplay(ContentDisplay.RIGHT);
-        exportEppButton.setTooltip(new Tooltip("Export to EPP"));
-        exportEppButton.setOnAction(new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent event) {
-
-                FileChooser fileChooser = new FileChooser();
-                fileChooser.setTitle("Epp location");
-                FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("Epp file (*.epp)", "*.epp");
-                fileChooser.getExtensionFilters().add(extFilter);
-                File selectedFile = fileChooser.showSaveDialog(getStage());
-
-                if (selectedFile != null)
-                    invoiceService.exportToEpp(rawInvoiceItemTableView.getItems(), selectedFile.getAbsolutePath());
-
-            }
-        });
-        rawInvoiceControl.getItems().add(exportEppButton);
-
-        rawInvoiceItemTableView = new RawInvoiceTableView() {
+        rawInvoiceItemViewComponent = new RawInvoiceItemViewComponent(getStage()) {
             @Override
             public void onRowDoubleClick(final TableRow<RawInvoiceProductItem> row) {
                 showPopupDialog(productEditDialog);
@@ -212,12 +186,29 @@ public class OrderViewPage extends BasePage {
                     }
                 });
             }
+
+            @Override
+            public void exportToEpp(List<InvoiceItem> items) {
+                EppDialog dialog = new EppDialog(getStage()) {
+                    @Override
+                    public void export(List<InvoiceItem> items, String path) {
+                        invoiceService.exportToEpp(items, path);
+                        hidePopupDialog();
+                    }
+
+                    @Override
+                    public void onCancel() {
+                        hidePopupDialog();
+                    }
+                };
+                dialog.setItems(items);
+                showPopupDialog(dialog);
+
+            }
         };
 
-        rawInvoicePane.setTop(rawInvoiceControl);
-        rawInvoicePane.setCenter(rawInvoiceItemTableView);
 
-        splitPane.getItems().addAll(invoicePdfViewComponent, rawInvoicePane);
+        splitPane.getItems().addAll(invoicePdfViewComponent, rawInvoiceItemViewComponent);
         splitPane.setDividerPosition(0, 0.40);
 
         sourceTab.setContent(splitPane);
@@ -312,8 +303,6 @@ public class OrderViewPage extends BasePage {
         for (InvoicePdf invoicePdf : selected)
             forDisplay.addAll(invoicePdf.getProducts());
 
-        rawInvoiceItemTableView.getItems().clear();
-        rawInvoiceItemTableView.getItems().addAll(forDisplay);
-
+        rawInvoiceItemViewComponent.setItems(forDisplay);
     }
 }
