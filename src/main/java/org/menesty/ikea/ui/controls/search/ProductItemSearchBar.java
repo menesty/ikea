@@ -39,6 +39,7 @@ public class ProductItemSearchBar extends ToolBar {
         productGroup.getItems().add(null);
         productGroup.getItems().addAll(ProductInfo.Group.values());
 
+        getItems().addAll(artNumber, productGroup);
     }
 
     private void applyFilter() {

@@ -28,7 +28,8 @@ public abstract class RawInvoiceItemViewComponent extends BorderPane {
         exportEppButton.setTooltip(new Tooltip("Export to EPP"));
         exportEppButton.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
-                exportToEpp(prepareData(rawInvoiceItemTableView.getItems()));
+                List<RawInvoiceProductItem> items = rawInvoiceItemTableView.getItems();
+                exportToEpp(prepareData(items), getTotalPrice(items));
             }
         });
         rawInvoiceControl.getItems().add(exportEppButton);
@@ -45,13 +46,23 @@ public abstract class RawInvoiceItemViewComponent extends BorderPane {
         setCenter(rawInvoiceItemTableView);
     }
 
+    private double getTotalPrice(List<RawInvoiceProductItem> items) {
+        double price = 0;
+
+        for (RawInvoiceProductItem item : items)
+            price += NumberUtil.round(item.getPrice() * item.getCount());
+
+        return NumberUtil.round(price);
+
+    }
+
     public void setItems(List<RawInvoiceProductItem> items) {
         rawInvoiceItemTableView.setItems(FXCollections.observableArrayList(items));
     }
 
     public abstract void onRowDoubleClick(final TableRow<RawInvoiceProductItem> row);
 
-    public abstract void exportToEpp(List<InvoiceItem> items);
+    public abstract void exportToEpp(List<InvoiceItem> items, double price);
 
     private List<InvoiceItem> prepareData(List<RawInvoiceProductItem> items) {
         List<InvoiceItem> result = new ArrayList<>();
@@ -65,13 +76,14 @@ public abstract class RawInvoiceItemViewComponent extends BorderPane {
 
         //create zestavs
         double price = 0;
-        int index = 0;
+        int index = 1;
         double count = 0;
         for (RawInvoiceProductItem item : filtered) {
             double artPrice = NumberUtil.round(item.getPrice() * item.getCount());
             if ((price + artPrice) > 460) {
                 //create zestav
-                result.add(InvoiceItem.get("zestav " + index, "zestav " + index, "zestav " + index, price, 23, NumberUtil.round(count), 1, 1));
+                result.add(createZestav(index, price, count));
+                //result.add(InvoiceItem.get("zestav " + index, String.format("zestav %1$s parts %2$s", index, count), String.format("zestav %1$s parts %2$s", index, count), price, 23, 1, 1, 1));
                 index++;
                 price = artPrice;
                 count = item.getCount();
@@ -81,11 +93,16 @@ public abstract class RawInvoiceItemViewComponent extends BorderPane {
             }
 
         }
-        index = 0;
-        for (InvoiceItem invoiceItem : result)
-            invoiceItem.setIndex(++index);
+        if (price != 0)
+            result.add(createZestav(index, price, count));
+
         return result;
 
+    }
+
+    private InvoiceItem createZestav(int index, double price, double count) {
+        String name = String.format("zestav %1$s parts %2$s", index, (int) count);
+        return InvoiceItem.get("zestav " + index, name, name, price, 23, 1, 1, 1);
     }
 
 }

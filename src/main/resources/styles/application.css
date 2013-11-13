@@ -282,13 +282,7 @@
     -fx-border-color: transparent -fx-focus-color transparent transparent;
     -fx-border-width: 1.4;
 }
-#page-tree-toolbar {
-    -fx-padding: 3 4 4 4;
-    -fx-border-image-source: url("images/mid-bar-left.png");
-    -fx-border-image-slice: 1 0 1 0 fill;
-    -fx-border-image-width: 1 0 1 0;
-    -fx-border-image-repeat: stretch;
-}
+
 #page-tree-toolbar .toggle-button .text {
     -fx-effect: dropshadow( three-pass-box , rgba(255,255,255,0.6) , 0, 0.0 , 0 , 1 );
 }
@@ -324,37 +318,7 @@
         linear-gradient(to left, rgba(0,0,0,0.3), rgba(0,0,0,0) 10%, rgba(0,0,0,0) 90%, rgba(0,0,0,0.3));
     -fx-background-insets: -1, 0, 1, 1;
 }
-#page-tree .tree-cell {
-    -fx-indent: 10;
-    -fx-background-color: transparent;
-}
-#page-tree .tree-cell:odd {
-    -fx-background-color: transparent;
-}
-#page-tree .tree-cell:filled:selected:focused, #page-tree .tree-cell:filled:selected {
-    -fx-background: #666666;
-    -fx-background-color: -fx-selection-bar;
-    -fx-text-fill: -fx-selection-bar-text;
-}
-#page-tree:focused .tree-cell:filled:selected {
-    -fx-background: -fx-accent;
-}
-#page-tree {
-    -fx-background-color: #d1dee3;
-    -fx-border-image-source: url("images/tree-background.png");
-    -fx-border-image-slice: 30 30 30 30 fill;
-    -fx-border-image-width: 30 30 30 30;
-    -fx-border-image-repeat: stretch;
-    -fx-background-insets: 0;
-    -fx-background-radius: 0;
-    -fx-padding: -30; /* counter the 30px added by border image to give 0 overall */
-}
-#page-tree:focused {
-    /* -fx-background-color: #d1dee3; */
-    -fx-background-color: -fx-focus-color;
-    -fx-background-insets: 0;
-    -fx-background-radius: 0;
-}
+
 /* Window Button Styles */
 .window-button {
     -fx-skin: "com.sun.javafx.scene.control.skin.ButtonSkin";

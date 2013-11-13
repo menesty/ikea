@@ -188,7 +188,7 @@ public class OrderViewPage extends BasePage {
             }
 
             @Override
-            public void exportToEpp(List<InvoiceItem> items) {
+            public void exportToEpp(List<InvoiceItem> items, double price) {
                 EppDialog dialog = new EppDialog(getStage()) {
                     @Override
                     public void export(List<InvoiceItem> items, String path) {
@@ -201,7 +201,7 @@ public class OrderViewPage extends BasePage {
                         hidePopupDialog();
                     }
                 };
-                dialog.setItems(items);
+                dialog.setItems(items, price);
                 showPopupDialog(dialog);
 
             }
