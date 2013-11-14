@@ -8,8 +8,8 @@ import org.menesty.ikea.domain.InvoicePdf;
 import org.menesty.ikea.domain.Order;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.exception.ProductFetchException;
+import org.menesty.ikea.domain.RawOrderItem;
 import org.menesty.ikea.order.OrderItem;
-import org.menesty.ikea.order.RawOrderItem;
 import org.menesty.ikea.ui.TaskProgress;
 import org.menesty.ikea.util.NumberUtil;
 

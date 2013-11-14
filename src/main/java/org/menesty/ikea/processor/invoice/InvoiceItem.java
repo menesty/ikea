@@ -1,11 +1,10 @@
 package org.menesty.ikea.processor.invoice;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
+import org.menesty.ikea.domain.ProductInfo;
+import org.menesty.ikea.util.NumberUtil;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import org.menesty.ikea.domain.ProductInfo;
 
 public class InvoiceItem {
 
@@ -88,7 +87,7 @@ public class InvoiceItem {
     }
 
     private static double round(double value) {
-        return BigDecimal.valueOf(value).setScale(2, RoundingMode.CEILING).doubleValue();
+        return NumberUtil.round(value);
     }
 
     public static String format(double value) {

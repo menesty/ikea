@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <workbook>
     <worksheet idx="0">
-        <loop startRow="0" endRow="0" items="rawOrderItems" var="item" varType="org.menesty.ikea.order.RawOrderItem">
+        <loop startRow="0" endRow="0" items="rawOrderItems" var="item" varType="org.menesty.ikea.domain.RawOrderItem">
             <section startRow="0" endRow="0">
                 <mapping row="0" col="1">item.count</mapping>
                 <mapping row="0" col="2">item.artNumber</mapping>

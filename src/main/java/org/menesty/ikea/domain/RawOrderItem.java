@@ -1,4 +1,4 @@
-package org.menesty.ikea.order;
+package org.menesty.ikea.domain;
 
 /**
  * User: Menesty

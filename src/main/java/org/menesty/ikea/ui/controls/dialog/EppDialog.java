@@ -12,11 +12,15 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import org.menesty.ikea.processor.invoice.InvoiceItem;
 import org.menesty.ikea.ui.controls.PathProperty;
+import org.menesty.ikea.ui.table.DoubleEditableTableCell;
 import org.menesty.ikea.util.NumberUtil;
 
 import java.io.File;
@@ -45,7 +49,11 @@ public abstract class EppDialog extends BaseDialog {
         addBtn.setTooltip(new Tooltip("Add Row"));
         addBtn.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
-                tableView.getItems().add(new InvoiceItem());
+                InvoiceItem item = new InvoiceItem();
+                item.setArtNumber("New");
+                item.setName("New");
+                item.setShortName("New");
+                tableView.getItems().add(item);
             }
         });
         toolBar.getItems().add(addBtn);
@@ -119,6 +127,13 @@ public abstract class EppDialog extends BaseDialog {
             tableView.getColumns().add(column);
         }
 
+        Callback<TableColumn<InvoiceItem, Double>, TableCell<InvoiceItem, Double>> doubleFactory = new Callback<TableColumn<InvoiceItem, Double>, TableCell<InvoiceItem, Double>>() {
+            @Override
+            public TableCell<InvoiceItem, Double> call(TableColumn p) {
+                return new DoubleEditableTableCell<>();
+            }
+        };
+
         {
             TableColumn<InvoiceItem, String> column = new TableColumn<>("Count");
             column.setMinWidth(60);
@@ -128,7 +143,6 @@ public abstract class EppDialog extends BaseDialog {
                     return new SimpleStringProperty(NumberUtil.toString(item.getValue().getCount()));
                 }
             });
-
             tableView.getColumns().add(column);
         }
 
@@ -139,10 +153,18 @@ public abstract class EppDialog extends BaseDialog {
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<InvoiceItem, Double>, ObservableValue<Double>>() {
                 @Override
                 public ObservableValue<Double> call(TableColumn.CellDataFeatures<InvoiceItem, Double> item) {
-                    return new PathProperty<>(item.getValue(), "price");
+                    return new PathProperty<>(item.getValue(), "priceWat");
                 }
             });
+            column.setCellFactory(doubleFactory);
+            column.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<InvoiceItem, Double>>() {
+                @Override
+                public void handle(TableColumn.CellEditEvent<InvoiceItem, Double> t) {
+                    InvoiceItem item = t.getTableView().getItems().get(t.getTablePosition().getRow());
+                    item.setPrice(t.getNewValue());
 
+                }
+            });
             tableView.getColumns().add(column);
         }
 
@@ -154,18 +176,21 @@ public abstract class EppDialog extends BaseDialog {
             }
         });
 
-        tableView.itemsProperty().addListener(new InvalidationListener() {
+        InvalidationListener invalidationListener = new InvalidationListener() {
             @Override
             public void invalidated(Observable observable) {
                 double price = 0;
 
                 for (InvoiceItem item : tableView.getItems())
-                    price += NumberUtil.round(item.getPrice() * item.getCount());
+                    price = price + NumberUtil.round(item.getPriceWat() * item.getCount());
 
                 statusPanel.setCurrentTotal(NumberUtil.round(price));
 
             }
-        });
+        };
+        tableView.itemsProperty().addListener(invalidationListener);
+
+        tableView.editingCellProperty().addListener(invalidationListener);
 
         BorderPane container = new BorderPane();
         container.setTop(toolBar);
@@ -212,6 +237,10 @@ public abstract class EppDialog extends BaseDialog {
         public StatusPanel() {
             getItems().add(new Label("Total :"));
             getItems().add(totalLabel = new Label());
+            Region spacer = new Region();
+            HBox.setHgrow(spacer, Priority.ALWAYS);
+            getItems().add(spacer);
+            getItems().add(new Label("Current  :"));
             getItems().add(currentTotal = new Label());
         }
 

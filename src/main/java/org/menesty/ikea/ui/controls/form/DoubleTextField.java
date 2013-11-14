@@ -20,11 +20,13 @@ public class DoubleTextField extends TextField {
     private SimpleDoubleProperty number = new SimpleDoubleProperty(0);
 
     public final Double getNumber() {
+        parseAndFormatInput();
         return number.get();
     }
 
     public final void setNumber(Double value) {
         number.set(value);
+        setText(value + "");
     }
 
     public SimpleDoubleProperty numberProperty() {
@@ -86,9 +88,9 @@ public class DoubleTextField extends TextField {
      */
     private void parseAndFormatInput() {
         String input = getText();
-        if (input == null || input.length() == 0) {
+        if (input == null || input.length() == 0)
             return;
-        }
+
         setNumber(NumberUtil.parse(input));
         selectAll();
     }
