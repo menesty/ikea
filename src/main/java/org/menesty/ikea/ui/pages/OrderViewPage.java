@@ -2,6 +2,9 @@ package org.menesty.ikea.ui.pages;
 
 import javafx.application.Platform;
 import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
+import javafx.event.Event;
+import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -56,6 +59,7 @@ public class OrderViewPage extends BasePage {
 
     public OrderViewPage() {
         super("Order");
+
         orderService = new OrderService();
         invoicePdfService = new InvoicePdfService();
         invoiceService = new InvoiceService();
@@ -76,32 +80,44 @@ public class OrderViewPage extends BasePage {
 
         orderItemViewComponent = new OrderItemViewComponent(getStage()) {
             @Override
-            public void save(ProductInfo productInfo) {
+            protected void reloadProduct(OrderItem orderItem, final EventHandler<Event> onSucceeded) {
+                Task<Void> task = new ProductFetch(orderItem);
+                task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+                    @Override
+                    public void handle(WorkerStateEvent workerStateEvent) {
+                        onSucceeded.handle(workerStateEvent);
+                    }
+                });
+                runTask(task);
+            }
+
+            @Override
+            protected void save(ProductInfo productInfo) {
                 productService.save(productInfo);
             }
 
             @Override
-            public void hidePopupDialog() {
+            protected void hidePopupDialog() {
                 OrderViewPage.this.hidePopupDialog();
             }
 
             @Override
-            public void showPopupDialog(ProductDialog productEditDialog) {
+            protected void showPopupDialog(ProductDialog productEditDialog) {
                 OrderViewPage.this.showPopupDialog(productEditDialog);
             }
 
             @Override
-            public List<OrderItem> filter(OrderItemSearchData orderItemSearchForm) {
+            protected List<OrderItem> filter(OrderItemSearchData orderItemSearchForm) {
                 return currentOrder.filterOrderItems(orderItemSearchForm);
             }
 
             @Override
-            public void onExport(String filePath) {
+            protected void onExport(String filePath) {
                 runTask(new ExportOrderItemsTask(currentOrder, filePath));
             }
 
             @Override
-            public void onExportToIkea() {
+            protected void onExportToIkea() {
                 final IkeaUserFillProgressDialog logDialog = new IkeaUserFillProgressDialog() {
                     @Override
                     public void onOk() {
@@ -229,7 +245,7 @@ public class OrderViewPage extends BasePage {
     }
 
 
-    private class CreateInvoicePdfTask extends Task<Void> {
+    class CreateInvoicePdfTask extends Task<Void> {
 
         private String orderName;
 
@@ -262,7 +278,28 @@ public class OrderViewPage extends BasePage {
         }
     }
 
-    private class ExportOrderItemsTask extends Task<Void> {
+    class ProductFetch extends Task<Void> {
+
+        private final OrderItem orderItem;
+
+        public ProductFetch(OrderItem orderItem) {
+            this.orderItem = orderItem;
+        }
+
+        @Override
+        protected Void call() throws Exception {
+            ProductInfo productInfo = productService.loadOrCreate(orderItem.getArtNumber());
+            if (productInfo == null)
+                orderItem.incraseTryCount();
+            else {
+                orderItem.setProductInfo(productInfo);
+                orderItem.setInvalidFetch(false);
+            }
+            return null;
+        }
+    }
+
+    class ExportOrderItemsTask extends Task<Void> {
 
         private Order order;
 

@@ -71,6 +71,18 @@ public abstract class EppDialog extends BaseDialog {
         toolBar.getItems().add(delBtn);
 
 
+        imageView = new ImageView(new javafx.scene.image.Image("/styles/images/icon/balance-32x32.png"));
+        Button balanceBtn = new Button("", imageView);
+        delBtn.setContentDisplay(ContentDisplay.RIGHT);
+        delBtn.setTooltip(new Tooltip("Auto balance Price"));
+        delBtn.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent event) {
+
+            }
+        });
+        toolBar.getItems().add(balanceBtn);
+
+
         tableView = new TableView<>();
         {
             TableColumn<InvoiceItem, Number> column = new TableColumn<>();

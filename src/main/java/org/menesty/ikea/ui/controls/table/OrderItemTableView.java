@@ -4,10 +4,9 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableRow;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.util.Callback;
 import org.menesty.ikea.domain.ProductInfo;
@@ -151,12 +150,27 @@ public class OrderItemTableView extends TableView<OrderItem> {
                     @Override
                     public void changed(ObservableValue<? extends OrderItem> observableValue, OrderItem oldValue, OrderItem newValue) {
                         row.getStyleClass().removeAll("productNotVerified", "productFetchFailed");
+                        row.setContextMenu(null);
                         if (newValue != null) {
                             if (OrderItem.Type.Na != newValue.getType() && !row.getItem().isInvalidFetch()
                                     && !newValue.getProductInfo().isVerified())
                                 row.getStyleClass().add("productNotVerified");
-                            if(row.getItem().isInvalidFetch())
+
+                            if (row.getItem().isInvalidFetch()) {
                                 row.getStyleClass().add("productFetchFailed");
+
+                                ContextMenu contextMenu = new ContextMenu();
+                                MenuItem fetchMenuItem = new MenuItem("Fetch");
+                                fetchMenuItem.setOnAction(new EventHandler<ActionEvent>() {
+                                    @Override
+                                    public void handle(ActionEvent actionEvent) {
+                                        onFetchAction(row);
+                                    }
+                                });
+                                contextMenu.getItems().add(fetchMenuItem);
+
+                                row.setContextMenu(contextMenu);
+                            }
 
                         }
                     }
@@ -165,6 +179,10 @@ public class OrderItemTableView extends TableView<OrderItem> {
                 return row;
             }
         });
+    }
+
+    public void onFetchAction(TableRow<OrderItem> row) {
+
     }
 
     public void onRowDoubleClick(TableRow<OrderItem> row) {

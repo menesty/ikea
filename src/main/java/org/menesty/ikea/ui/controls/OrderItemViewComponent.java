@@ -2,6 +2,7 @@ package org.menesty.ikea.ui.controls;
 
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -65,6 +66,15 @@ public abstract class OrderItemViewComponent extends BorderPane {
                     }
                 });
             }
+
+            public void onFetchAction(final TableRow<OrderItem> row) {
+                reloadProduct(row.getItem(), new EventHandler<Event>() {
+                    @Override
+                    public void handle(Event event) {
+                        row.setItem(null);
+                    }
+                });
+            }
         };
 
         setCenter(orderItemTableView);
@@ -117,17 +127,19 @@ public abstract class OrderItemViewComponent extends BorderPane {
 
     }
 
-    public abstract void save(ProductInfo productInfo);
+    protected abstract void reloadProduct(OrderItem orderItem, EventHandler<Event> onSucceeded);
 
-    public abstract void hidePopupDialog();
+    protected abstract void save(ProductInfo productInfo);
 
-    public abstract void showPopupDialog(ProductDialog productEditDialog);
+    protected abstract void hidePopupDialog();
 
-    public abstract List<OrderItem> filter(OrderItemSearchData orderItemSearchForm);
+    protected abstract void showPopupDialog(ProductDialog productEditDialog);
 
-    public abstract void onExport(String filePath);
+    protected abstract List<OrderItem> filter(OrderItemSearchData orderItemSearchForm);
 
-    public abstract void onExportToIkea();
+    protected abstract void onExport(String filePath);
+
+    protected abstract void onExportToIkea();
 
     public void setItems(List<OrderItem> items) {
         orderItemTableView.setItems(FXCollections.observableArrayList(items));

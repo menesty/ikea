@@ -3,7 +3,15 @@ package org.menesty.ikea.ui.controls.dialog;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.scene.control.*;
+import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.util.Callback;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.domain.ProductPart;
@@ -11,6 +19,12 @@ import org.menesty.ikea.ui.controls.PathProperty;
 import org.menesty.ikea.ui.controls.form.DoubleTextField;
 import org.menesty.ikea.ui.controls.form.IntegerTextField;
 import org.menesty.ikea.ui.pages.EntityDialogCallback;
+
+import java.awt.*;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+
 
 /**
  * User: Menesty
@@ -125,7 +139,28 @@ public class ProductDialog extends BaseDialog {
 
     private class ProductForm extends FormPanel {
         public ProductForm() {
-            addRow("Art Number", artNumber = new TextField());
+
+            ImageView imageView = new ImageView(new Image("/styles/images/icon/web-22x22.png"));
+            imageView.setOnMouseClicked(new EventHandler<MouseEvent>() {
+                @Override
+                public void handle(MouseEvent mouseEvent) {
+                    try {
+                        URI uri = new URI("http://www.ikea.com/pl/pl/catalog/products/" + currentProductInfo.getOriginalArtNum());
+                        Desktop.getDesktop().browse(uri);
+                    } catch (URISyntaxException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            });
+            HBox.setMargin(imageView, new Insets(2, 2, 2, 2));
+
+            artNumber = new TextField();
+            HBox.setHgrow(artNumber, Priority.ALWAYS);
+
+            addRow("Art Number", new HBox(artNumber, imageView));
             addRow("Original art Number", originalArtNumber = new TextField());
             addRow("Name", name = new TextField());
             addRow("Short name", shortName = new TextField());

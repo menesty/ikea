@@ -42,6 +42,10 @@ public class OrderItem {
         this.tryCount = tryCount;
     }
 
+    public void incraseTryCount() {
+        tryCount++;
+    }
+
     public void setCount(double count) {
         this.count = count;
     }
@@ -134,6 +138,11 @@ public class OrderItem {
 
     public String getGroup() {
         return group;
+    }
+
+    /*used in xls export*/
+    public int getArtNumberAsInteger() {
+        return Integer.valueOf(artNumber.replaceAll("\\D+", ""));
     }
 
 }

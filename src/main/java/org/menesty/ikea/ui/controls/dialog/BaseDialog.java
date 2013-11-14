@@ -6,8 +6,8 @@ import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
@@ -111,7 +111,7 @@ class FormPanel extends GridPane {
         setPrefWidth(USE_PREF_SIZE);
     }
 
-    public void addRow(String labelText, Control field) {
+    public void addRow(String labelText, Node field) {
         Label label = new Label(labelText);
         label.setId("proxy-dialog-label");
         GridPane.setConstraints(label, 0, getCurrentRow());
@@ -129,7 +129,7 @@ class FormPanel extends GridPane {
         nextRow();
     }
 
-    public void addRow(Control field) {
+    public void addRow(Node field) {
         GridPane.setConstraints(field, 0, getCurrentRow(), 1, 1, HPos.LEFT, VPos.CENTER, Priority.ALWAYS, Priority.NEVER);
         getChildren().add(field);
         nextRow();
