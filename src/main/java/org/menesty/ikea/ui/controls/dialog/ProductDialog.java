@@ -55,7 +55,7 @@ public class ProductDialog extends BaseDialog {
     private IntegerTextField width;
     private IntegerTextField length;
     private ProductInfo currentProductInfo;
-    private EntityDialogCallback callback;
+    private EntityDialogCallback<ProductInfo> callback;
 
 
     public ProductDialog() {
@@ -159,8 +159,9 @@ public class ProductDialog extends BaseDialog {
 
             artNumber = new TextField();
             HBox.setHgrow(artNumber, Priority.ALWAYS);
-
-            addRow("Art Number", new HBox(artNumber, imageView));
+            HBox hbox = new HBox();
+            hbox.getChildren().addAll(artNumber, imageView);
+            addRow("Art Number", hbox);
             addRow("Original art Number", originalArtNumber = new TextField());
             addRow("Name", name = new TextField());
             addRow("Short name", shortName = new TextField());
@@ -187,7 +188,7 @@ public class ProductDialog extends BaseDialog {
         }
     }
 
-    public void bind(ProductInfo productInfo, EntityDialogCallback callback) {
+    public void bind(ProductInfo productInfo, EntityDialogCallback<ProductInfo> callback) {
         this.callback = callback;
         currentProductInfo = productInfo;
         bindProperties();
