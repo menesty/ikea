@@ -1,13 +1,14 @@
 package org.menesty.ikea.ui.pages;
 
 import javafx.application.Platform;
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -159,21 +160,21 @@ public class OrderListPage extends BasePage {
         });
 
         imageView = new ImageView(new Image("/styles/images/icon/edit-48x48.png"));
+
         final Button editOrder = new Button("", imageView);
         editOrder.setContentDisplay(ContentDisplay.RIGHT);
         editOrder.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
-                IkeaApplication.getPageManager().goToPageByName("Order", tableView.getSelectionModel().selectedItemProperty().getValue().getOrder());
+                IkeaApplication.getPageManager().goToPageByName("Order", tableView.getSelectionModel().getSelectedItem().getOrder());
             }
         });
         editOrder.setDisable(true);
 
-        tableView.getSelectionModel().getSelectedIndices().addListener(new ListChangeListener<Integer>() {
+        tableView.getSelectionModel().selectedItemProperty().addListener(new InvalidationListener() {
             @Override
-            public void onChanged(Change<? extends Integer> change) {
-                editOrder.setDisable(change.getList().size() == 0);
+            public void invalidated(Observable observable) {
+                editOrder.setDisable(tableView.getSelectionModel().getSelectedItem() == null);
             }
-
         });
 
         control.getItems().add(addOrder);

@@ -7,11 +7,14 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.util.Callback;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.order.OrderItem;
 import org.menesty.ikea.ui.controls.PathProperty;
+import org.menesty.ikea.ui.controls.dialog.ProductDialog;
 import org.menesty.ikea.util.NumberUtil;
 
 public class OrderItemTableView extends TableView<OrderItem> {
@@ -42,7 +45,7 @@ public class OrderItemTableView extends TableView<OrderItem> {
         }
         {
             TableColumn<OrderItem, String> column = new TableColumn<>("Name");
-            column.setMinWidth(200);
+            column.setMinWidth(150);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderItem, String>, ObservableValue<String>>() {
                 @Override
                 public ObservableValue<String> call(TableColumn.CellDataFeatures<OrderItem, String> item) {
@@ -156,18 +159,45 @@ public class OrderItemTableView extends TableView<OrderItem> {
                                     && !newValue.getProductInfo().isVerified())
                                 row.getStyleClass().add("productNotVerified");
 
-                            if (row.getItem().isInvalidFetch()) {
+                            else if (OrderItem.Type.Na != newValue.getType() && row.getItem().isInvalidFetch()) {
                                 row.getStyleClass().add("productFetchFailed");
 
                                 ContextMenu contextMenu = new ContextMenu();
-                                MenuItem fetchMenuItem = new MenuItem("Fetch");
-                                fetchMenuItem.setOnAction(new EventHandler<ActionEvent>() {
-                                    @Override
-                                    public void handle(ActionEvent actionEvent) {
-                                        onFetchAction(row);
-                                    }
-                                });
-                                contextMenu.getItems().add(fetchMenuItem);
+                                {
+                                    MenuItem menuItem = new MenuItem("Fetch", new ImageView(new Image("/styles/images/icon/refresh-16x16.png")));
+                                    menuItem.setOnAction(new EventHandler<ActionEvent>() {
+                                        @Override
+                                        public void handle(ActionEvent actionEvent) {
+                                            onFetchAction(row);
+                                        }
+                                    });
+                                    contextMenu.getItems().add(menuItem);
+                                }
+
+                                Menu statusMenu = new Menu("Status");
+                                {
+                                    MenuItem menuItem = new MenuItem("NA");
+                                    menuItem.setOnAction(new EventHandler<ActionEvent>() {
+                                        @Override
+                                        public void handle(ActionEvent actionEvent) {
+                                            row.getItem().setType(OrderItem.Type.Na);
+                                            row.setItem(null);
+                                        }
+                                    });
+                                    statusMenu.getItems().add(menuItem);
+                                }
+                                contextMenu.getItems().add(statusMenu);
+
+                                {
+                                    MenuItem menuItem = new MenuItem("Browse", new ImageView(new Image("/styles/images/icon/web-16x16.png")));
+                                    menuItem.setOnAction(new EventHandler<ActionEvent>() {
+                                        @Override
+                                        public void handle(ActionEvent actionEvent) {
+                                            ProductDialog.browse(row.getItem().getArtNumber());
+                                        }
+                                    });
+                                    contextMenu.getItems().add(menuItem);
+                                }
 
                                 row.setContextMenu(contextMenu);
                             }

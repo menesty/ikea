@@ -1,4 +1,4 @@
-package org.menesty.ikea.ui.controls;
+package org.menesty.ikea.ui.controls.component;
 
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;

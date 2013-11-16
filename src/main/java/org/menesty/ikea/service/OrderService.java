@@ -4,12 +4,10 @@ import net.sf.jxls.reader.*;
 import net.sf.jxls.transformer.XLSTransformer;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.menesty.ikea.domain.InvoicePdf;
-import org.menesty.ikea.domain.Order;
-import org.menesty.ikea.domain.ProductInfo;
+import org.menesty.ikea.domain.*;
 import org.menesty.ikea.exception.ProductFetchException;
-import org.menesty.ikea.domain.RawOrderItem;
 import org.menesty.ikea.order.OrderItem;
+import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.ui.TaskProgress;
 import org.menesty.ikea.util.NumberUtil;
 
@@ -268,6 +266,59 @@ public class OrderService {
             total += item.getTotal();
         }
         return total;
+    }
+
+    public List<StorageLack> calculateOrderInvoiceDiff(Order order) {
+        List<RawInvoiceProductItem> rawItems = new ArrayList<>();
+
+        for (InvoicePdf invoicePdf : order.getInvoicePdfs())
+            rawItems.addAll(invoicePdf.getProducts());
+
+        rawItems = InvoicePdfService.reduce(rawItems);
+
+        Map<String, Double> orderData = new HashMap<>();
+        Map<String, ProductInfo> infoData = new HashMap<>();
+
+
+        for (OrderItem orderItem : order.getOrderItems()) {
+            if (OrderItem.Type.Na != orderItem.getType() && !orderItem.isInvalidFetch())
+                if (OrderItem.Type.Combo == orderItem.getType())
+                    for (ProductPart part : orderItem.getProductInfo().getParts()) {
+                        increaseData(orderData, part.getProductInfo().getOriginalArtNum(), NumberUtil.round(orderItem.getCount() * part.getCount()));
+                        infoData.put(part.getProductInfo().getOriginalArtNum(), part.getProductInfo());
+                    }
+                else
+                    increaseData(orderData, orderItem.getProductInfo().getOriginalArtNum(), orderItem.getCount());
+
+            if (!orderItem.isInvalidFetch())
+                infoData.put(orderItem.getProductInfo().getOriginalArtNum(), orderItem.getProductInfo());
+        }
+
+        List<StorageLack> result = new ArrayList<>();
+
+        for (RawInvoiceProductItem item : rawItems) {
+            Double count = orderData.get(item.getOriginalArtNumber());
+            if (count == null)
+                result.add(new StorageLack(item.getProductInfo(), item.getCount(), false));
+            else {
+                if (NumberUtil.round(count - item.getCount()) == 0)
+                    orderData.remove(item.getOriginalArtNumber());
+                else
+                    orderData.put(item.getOriginalArtNumber(), NumberUtil.round(count - item.getCount()));
+            }
+
+        }
+
+        for (Map.Entry<String, Double> entry : orderData.entrySet())
+            result.add(new StorageLack(infoData.get(entry.getKey()), entry.getValue()));
+
+        return result;
+    }
+
+    private void increaseData(Map<String, Double> data, String key, double value) {
+        Double currentValue = data.get(key);
+        currentValue = currentValue == null ? value : NumberUtil.round(currentValue + value);
+        data.put(key, currentValue);
     }
 
 }

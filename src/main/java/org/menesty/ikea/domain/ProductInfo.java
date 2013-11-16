@@ -151,4 +151,5 @@ public class ProductInfo {
     public String toString() {
         return artNumber + " | " + originalArtNum + " | " + name + " | " + shortName + " | " + (packageInfo != null ? packageInfo.getBoxCount() : "0") + " | " + parts;
     }
+
 }

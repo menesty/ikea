@@ -144,14 +144,7 @@ public class ProductDialog extends BaseDialog {
             imageView.setOnMouseClicked(new EventHandler<MouseEvent>() {
                 @Override
                 public void handle(MouseEvent mouseEvent) {
-                    try {
-                        URI uri = new URI("http://www.ikea.com/pl/pl/catalog/products/" + currentProductInfo.getOriginalArtNum());
-                        Desktop.getDesktop().browse(uri);
-                    } catch (URISyntaxException e) {
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    ProductDialog.browse(currentProductInfo.getOriginalArtNum());
 
                 }
             });
@@ -242,5 +235,16 @@ public class ProductDialog extends BaseDialog {
     public void onSave(ProductInfo productInfo, boolean isCombo) {
         if (callback != null)
             callback.onSave(productInfo, isCombo);
+    }
+
+    public static void browse(String artNumber) {
+        try {
+            URI uri = new URI("http://www.ikea.com/pl/pl/catalog/products/" + artNumber);
+            Desktop.getDesktop().browse(uri);
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

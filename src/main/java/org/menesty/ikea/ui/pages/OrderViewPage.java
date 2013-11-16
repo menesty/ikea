@@ -17,9 +17,10 @@ import org.menesty.ikea.processor.invoice.InvoiceItem;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.service.*;
 import org.menesty.ikea.ui.TaskProgress;
-import org.menesty.ikea.ui.controls.InvoicePdfViewComponent;
-import org.menesty.ikea.ui.controls.OrderItemViewComponent;
-import org.menesty.ikea.ui.controls.RawInvoiceItemViewComponent;
+import org.menesty.ikea.ui.controls.component.InvoicePdfViewComponent;
+import org.menesty.ikea.ui.controls.component.OrderItemViewComponent;
+import org.menesty.ikea.ui.controls.component.RawInvoiceItemViewComponent;
+import org.menesty.ikea.ui.controls.component.StorageLackItemViewComponent;
 import org.menesty.ikea.ui.controls.dialog.EppDialog;
 import org.menesty.ikea.ui.controls.dialog.IkeaUserFillProgressDialog;
 import org.menesty.ikea.ui.controls.dialog.ProductDialog;
@@ -57,6 +58,8 @@ public class OrderViewPage extends BasePage {
 
     private RawInvoiceItemViewComponent rawInvoiceItemViewComponent;
 
+    private StorageLackItemViewComponent storageLackItemViewComponent;
+
     public OrderViewPage() {
         super("Order");
 
@@ -74,6 +77,23 @@ public class OrderViewPage extends BasePage {
         pane.getChildren().add(0, createInvoiceView());
         productEditDialog = new ProductDialog();
         return pane;
+    }
+
+    private Tab createStorageTab() {
+        storageLackItemViewComponent = new StorageLackItemViewComponent();
+        final Tab tab = new Tab();
+        tab.setText("Storage Lack");
+        tab.setContent(storageLackItemViewComponent);
+        tab.setClosable(false);
+        tab.setOnSelectionChanged(new EventHandler<Event>() {
+            @Override
+            public void handle(Event event) {
+                if (tab.isSelected())
+                    storageLackItemViewComponent.setItems(orderService.calculateOrderInvoiceDiff(currentOrder));
+
+            }
+        });
+        return tab;
     }
 
     private Tab createOrderItemTab() {
@@ -150,12 +170,8 @@ public class OrderViewPage extends BasePage {
 
     private TabPane createInvoiceView() {
         final TabPane tabPane = new TabPane();
-        tabPane.setId("source-tabs");
-        final Tab sourceTab = new Tab();
-        sourceTab.setText("Invoice");
 
-        sourceTab.setClosable(false);
-        tabPane.getTabs().addAll(createOrderItemTab(), sourceTab);
+        Tab invoiceTab = new Tab("Invoice");
 
         invoicePdfViewComponent = new InvoicePdfViewComponent(getStage()) {
             @Override
@@ -227,9 +243,10 @@ public class OrderViewPage extends BasePage {
         splitPane.getItems().addAll(invoicePdfViewComponent, rawInvoiceItemViewComponent);
         splitPane.setDividerPosition(0, 0.40);
 
-        sourceTab.setContent(splitPane);
+        invoiceTab.setClosable(false);
+        invoiceTab.setContent(splitPane);
 
-
+        tabPane.getTabs().addAll(createOrderItemTab(), invoiceTab, createStorageTab());
         return tabPane;
     }
 

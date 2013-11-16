@@ -103,7 +103,7 @@ public class InvoicePdfService {
 
     }
 
-    private List<RawInvoiceProductItem> reduce(List<RawInvoiceProductItem> items) {
+    public static List<RawInvoiceProductItem> reduce(List<RawInvoiceProductItem> items) {
         Map<String, RawInvoiceProductItem> filtered = new HashMap<>();
 
         for (RawInvoiceProductItem item : items) {
