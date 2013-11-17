@@ -4,15 +4,17 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableRow;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.util.Callback;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.service.ProductService;
@@ -21,6 +23,7 @@ import org.menesty.ikea.ui.controls.dialog.ProductDialog;
 import org.menesty.ikea.ui.controls.search.ProductItemSearchBar;
 import org.menesty.ikea.ui.controls.search.ProductItemSearchData;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
@@ -227,12 +230,10 @@ public class ProductPage extends BasePage {
                 row.itemProperty().addListener(new ChangeListener<ProductInfo>() {
                     @Override
                     public void changed(ObservableValue<? extends ProductInfo> observableValue, ProductInfo oldValue, ProductInfo newValue) {
-                        if (newValue != null)
-                            if (!newValue.isVerified()) {
-                                row.getStyleClass().add("productNotVerified");
-                                return;
-                            }
                         row.getStyleClass().remove("productNotVerified");
+                        if (newValue != null && !newValue.isVerified())
+                            row.getStyleClass().add("productNotVerified");
+
                     }
                 });
                 return row;
@@ -248,9 +249,50 @@ public class ProductPage extends BasePage {
             }
         };
 
+
+        VBox toolBarBox = new VBox();
+        ToolBar toolBar = new ToolBar();
+
+        ImageView imageView = new ImageView(new Image("/styles/images/icon/csv-32x32.png"));
+        Button export = new Button(null, imageView);
+        export.setContentDisplay(ContentDisplay.RIGHT);
+        export.setTooltip(new Tooltip("Export Filled products"));
+        export.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                FileChooser fileChooser = new FileChooser();
+                FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("Csv file (*.csv)", "*.csv");
+                fileChooser.getExtensionFilters().add(extFilter);
+                File file = fileChooser.showSaveDialog(getStage());
+
+                if (file != null)
+                    productService.export(file.getAbsolutePath());
+            }
+        });
+
+        imageView = new ImageView(new Image("/styles/images/icon/import-32x32.png"));
+        Button importBtn = new Button(null, imageView);
+        importBtn.setContentDisplay(ContentDisplay.RIGHT);
+        importBtn.setTooltip(new Tooltip("Import/Update Products"));
+        importBtn.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                FileChooser fileChooser = new FileChooser();
+                FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("Csv file (*.csv)", "*.csv");
+                fileChooser.getExtensionFilters().add(extFilter);
+                File file = fileChooser.showOpenDialog(getStage());
+
+                if (file != null)
+                    productService.importProduct(file.getAbsolutePath());
+            }
+        });
+
+        toolBar.getItems().addAll(export,importBtn);
+
+        toolBarBox.getChildren().addAll(toolBar, searchBar);
         BorderPane container = new BorderPane();
 
-        container.setTop(searchBar);
+        container.setTop(toolBarBox);
         container.setCenter(tableView);
 
         StackPane pane = createRoot();

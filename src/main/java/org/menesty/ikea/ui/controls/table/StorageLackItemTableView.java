@@ -66,6 +66,20 @@ public class StorageLackItemTableView extends TableView<StorageLack> {
 
             getColumns().add(column);
         }
+
+        {
+            TableColumn<StorageLack, Double> column = new TableColumn<>();
+            column.setText("Price");
+            column.setMinWidth(60);
+            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<StorageLack, Double>, ObservableValue<Double>>() {
+                @Override
+                public ObservableValue<Double> call(TableColumn.CellDataFeatures<StorageLack, Double> item) {
+                    return new PathProperty<>(item.getValue(), "productInfo.price");
+                }
+            });
+
+            getColumns().add(column);
+        }
         setRowFactory(new Callback<TableView<StorageLack>, TableRow<StorageLack>>() {
             @Override
             public TableRow<StorageLack> call(TableView<StorageLack> storageLackTableView) {
@@ -76,7 +90,7 @@ public class StorageLackItemTableView extends TableView<StorageLack> {
                         row.getStyleClass().remove("productError");
                         row.setTooltip(null);
 
-                        if(row.getItem() != null && !row.getItem().isExist()){
+                        if (row.getItem() != null && !row.getItem().isExist()) {
                             row.getStyleClass().add("productError");
                             row.setTooltip(new Tooltip("This product not exist in order"));
                         }

@@ -14,9 +14,17 @@ import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.ui.controls.search.ProductItemSearchData;
 import org.menesty.ikea.util.NumberUtil;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
+import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -228,16 +236,6 @@ public class ProductService {
         return ProductInfo.Group.Unknown;
     }
 
-    public static void main(String... arg) throws IOException {
-        //ProductInfo productInfo = new ProductService().loadComboProduct("S39002041");
-        //System.out.println(productInfo);
-        //System.out.println(productInfo.getParts());
-        //ProductInfo productInfo = new ProductService().loadComboProduct("S39002041");
-        // System.out.println(ProductService.resolveGroup("70238169"));
-
-        System.out.println("34      9,99 PLN ".replaceAll("[a-zA-z ]", "") + " ====");
-    }
-
     public static String generateShortName(String name, String artNumber, int boxCount) {
         int shortNameLength = 28;
         String shortName = " " + artNumber;
@@ -363,5 +361,94 @@ public class ProductService {
                 return true;
             }
         });
+    }
+
+    public void export(String path) {
+        export(load(new ProductItemSearchData()), path);
+    }
+
+    public void export(List<ProductInfo> items, String path) {
+        StringBuffer text = new StringBuffer();
+        String NL = System.getProperty("line.separator");
+        char delimiter = '\t';
+        for (ProductInfo item : items)
+            if (item.isVerified() && item.getPackageInfo().hasAllSize()) {
+                text.append(item.getArtNumber()).append(delimiter);
+                text.append(item.getOriginalArtNum()).append(delimiter);
+                text.append(item.getName()).append(delimiter);
+                text.append(item.getShortName()).append(delimiter);
+                text.append(item.getGroup()).append(delimiter);
+                text.append(item.getPrice()).append(delimiter);
+                text.append(item.getWat()).append(delimiter);
+
+                text.append(item.getPackageInfo().getBoxCount()).append(delimiter);
+                text.append(item.getPackageInfo().getWeight()).append(delimiter);
+                text.append(item.getPackageInfo().getHeight()).append(delimiter);
+                text.append(item.getPackageInfo().getLength()).append(delimiter);
+                text.append(item.getPackageInfo().getWidth()).append(NL);
+            }
+        try (OutputStream os = Files.newOutputStream(FileSystems.getDefault().getPath(path), StandardOpenOption.CREATE_NEW)) {
+            os.write(text.toString().getBytes("utf8"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void importProduct(String path) {
+        try (Scanner scanner = new Scanner(Files.newInputStream(FileSystems.getDefault().getPath(path), StandardOpenOption.READ), "utf8")) {
+
+            while (scanner.hasNextLine()) {
+                StringTokenizer tokenizer = new StringTokenizer(scanner.nextLine(), "\t");
+                if (tokenizer.countTokens() != 12)
+                    continue;
+                String artNumber = tokenizer.nextToken().trim();
+                String originalArtNum = tokenizer.nextToken().trim();
+                String name = tokenizer.nextToken().trim();
+                String shortName = tokenizer.nextToken().trim();
+                ProductInfo.Group group = ProductInfo.Group.valueOf(tokenizer.nextToken().trim());
+                double price = getDouble(tokenizer.nextToken());
+                int wat = getInt(tokenizer.nextToken());
+
+                int boxCount = getInt(tokenizer.nextToken());
+                int weight = getInt(tokenizer.nextToken());
+
+                int height = getInt(tokenizer.nextToken());
+                int length = getInt(tokenizer.nextToken());
+                int width = getInt(tokenizer.nextToken());
+
+                ProductInfo productInfo = findByArtNumber(artNumber);
+
+                if (productInfo == null) {
+                    productInfo = new ProductInfo();
+                    productInfo.setArtNumber(artNumber);
+                    productInfo.setOriginalArtNum(originalArtNum);
+                }
+
+                productInfo.setName(name);
+                productInfo.setShortName(shortName);
+                productInfo.setGroup(group);
+                productInfo.setPrice(price);
+                productInfo.setWat(wat);
+                productInfo.getPackageInfo().setBoxCount(boxCount);
+                productInfo.getPackageInfo().setWeight(weight);
+                productInfo.getPackageInfo().setHeight(height);
+                productInfo.getPackageInfo().setWidth(width);
+                productInfo.getPackageInfo().setLength(length);
+
+                save(productInfo);
+
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private int getInt(String value) {
+        return (int) getDouble(value);
+    }
+
+    private double getDouble(String value) {
+        return NumberUtil.parse(value.trim());
     }
 }

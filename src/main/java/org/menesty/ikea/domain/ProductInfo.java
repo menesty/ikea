@@ -54,6 +54,8 @@ public class ProductInfo {
 
     private String shortName;
 
+    private String uaName;
+
     private Group group = Group.Unknown;
 
     private List<ProductPart> parts;
@@ -61,6 +63,14 @@ public class ProductInfo {
     private PackageInfo packageInfo = new PackageInfo();
 
     private boolean verified;
+
+    public String getUaName() {
+        return uaName;
+    }
+
+    public void setUaName(String uaName) {
+        this.uaName = uaName;
+    }
 
     public boolean isVerified() {
         return verified;

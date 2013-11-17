@@ -1,11 +1,15 @@
 package org.menesty.ikea.ui.controls.dialog;
 
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -125,6 +129,9 @@ public class ProductDialog extends BaseDialog {
     }
 
     private class ProductForm extends FormPanel {
+
+        private Label shorNameCount;
+
         private TextField artNumber;
 
         private TextField originalArtNumber;
@@ -136,6 +143,8 @@ public class ProductDialog extends BaseDialog {
         private DoubleTextField price;
 
         private ComboBox<ProductInfo.Group> group;
+
+        private TextField uaName;
 
         public ProductForm() {
 
@@ -150,15 +159,34 @@ public class ProductDialog extends BaseDialog {
             HBox.setMargin(imageView, new Insets(2, 2, 2, 2));
 
             artNumber = new TextField();
-            artNumber.setEditable(false);
             HBox.setHgrow(artNumber, Priority.ALWAYS);
             HBox hbox = new HBox();
             hbox.getChildren().addAll(artNumber, imageView);
             addRow("Art Number", hbox);
-            addRow("Original art Number", originalArtNumber = new TextField());
+            addRow("O Art Number", originalArtNumber = new TextField());
+
             originalArtNumber.setEditable(false);
+            artNumber.setEditable(false);
+
             addRow("Name", name = new TextField());
-            addRow("Short name", shortName = new TextField());
+
+            hbox = new HBox();
+            hbox.setAlignment(Pos.BASELINE_CENTER);
+            shortName = new TextField();
+            shortName.textProperty().addListener(new InvalidationListener() {
+                @Override
+                public void invalidated(Observable observable) {
+                    shorNameCount.setText(shortName.getText().length() + "");
+                }
+            });
+            HBox.setHgrow(shortName, Priority.ALWAYS);
+            hbox.getChildren().addAll(shortName, shorNameCount = new Label());
+            shorNameCount.setMaxWidth(20);
+            HBox.setMargin(shorNameCount, new Insets(0, 0, 0, 2));
+
+
+            addRow("Short name", hbox);
+            addRow("UA name", uaName = new TextField());
             addRow("Price", price = new DoubleTextField());
 
 
@@ -189,6 +217,7 @@ public class ProductDialog extends BaseDialog {
 
         public void setShortName(String shortName) {
             this.shortName.setText(shortName);
+            shorNameCount.setText(shortName.length() + "");
         }
 
         public String getShortName() {
@@ -211,6 +240,14 @@ public class ProductDialog extends BaseDialog {
             return group.getSelectionModel().getSelectedItem();
         }
 
+        public void setUaName(String uaName) {
+            this.uaName.setText(uaName);
+        }
+
+        public String getUaName() {
+            return uaName.getText();
+        }
+
     }
 
     private class PackageInfoForm {
@@ -224,10 +261,10 @@ public class ProductDialog extends BaseDialog {
         public PackageInfoForm() {
             formPanel = new FormPanel();
             formPanel.addRow("Box Count", boxCount = new IntegerTextField());
-            formPanel.addRow("Weight", weight = new IntegerTextField());
-            formPanel.addRow("Height", height = new IntegerTextField());
-            formPanel.addRow("Width", width = new IntegerTextField());
-            formPanel.addRow("Length", length = new IntegerTextField());
+            formPanel.addRow("Weight (gr)", weight = new IntegerTextField());
+            formPanel.addRow("Height (mm)", height = new IntegerTextField());
+            formPanel.addRow("Width (mm)", width = new IntegerTextField());
+            formPanel.addRow("Length (mm)", length = new IntegerTextField());
         }
 
         public FormPanel getForm() {
@@ -295,6 +332,11 @@ public class ProductDialog extends BaseDialog {
         productForm.setPrice(currentProductInfo.getPrice());
         productForm.setGroup(currentProductInfo.getGroup());
 
+        if (currentProductInfo.getUaName() == null || currentProductInfo.getUaName().trim().length() == 0)
+            productForm.setUaName(currentProductInfo.getArtNumber());
+        else
+            productForm.setUaName(currentProductInfo.getUaName());
+
         packageInfoForm.setWeight(currentProductInfo.getPackageInfo().getWeight());
         packageInfoForm.setBoxCount(currentProductInfo.getPackageInfo().getBoxCount());
         packageInfoForm.setHeight(currentProductInfo.getPackageInfo().getHeight());
@@ -315,6 +357,7 @@ public class ProductDialog extends BaseDialog {
         currentProductInfo.setName(productForm.getName());
         currentProductInfo.setShortName(productForm.getShortName());
         currentProductInfo.setPrice(productForm.getPrice());
+        currentProductInfo.setUaName(productForm.getUaName());
 
         currentProductInfo.getPackageInfo().setWeight(packageInfoForm.getWeight());
         currentProductInfo.getPackageInfo().setBoxCount(packageInfoForm.getBoxCount());
