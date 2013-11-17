@@ -34,26 +34,12 @@ import java.net.URISyntaxException;
 public class ProductDialog extends BaseDialog {
 
     private final ProductForm productForm;
+
+    private final PackageInfoForm packageInfoForm;
+
     private final TableView<ProductPart> subProductTableView;
 
-    private TextField artNumber;
 
-    private TextField originalArtNumber;
-
-    private TextField name;
-
-    private TextField shortName;
-
-    private DoubleTextField price;
-
-    private ComboBox<ProductInfo.Group> group;
-
-    private IntegerTextField weight;
-
-    private IntegerTextField boxCount;
-    private IntegerTextField height;
-    private IntegerTextField width;
-    private IntegerTextField length;
     private ProductInfo currentProductInfo;
     private EntityDialogCallback<ProductInfo> callback;
 
@@ -74,7 +60,8 @@ public class ProductDialog extends BaseDialog {
 
         Tab packageInfoTab = new Tab();
         packageInfoTab.setText("Package Information");
-        packageInfoTab.setContent(new PackageInfoForm());
+        packageInfoForm = new PackageInfoForm();
+        packageInfoTab.setContent(packageInfoForm.getForm());
         options.getTabs().addAll(productMain, packageInfoTab);
 
 
@@ -138,6 +125,18 @@ public class ProductDialog extends BaseDialog {
     }
 
     private class ProductForm extends FormPanel {
+        private TextField artNumber;
+
+        private TextField originalArtNumber;
+
+        private TextField name;
+
+        private TextField shortName;
+
+        private DoubleTextField price;
+
+        private ComboBox<ProductInfo.Group> group;
+
         public ProductForm() {
 
             ImageView imageView = new ImageView(new Image("/styles/images/icon/web-22x22.png"));
@@ -151,11 +150,13 @@ public class ProductDialog extends BaseDialog {
             HBox.setMargin(imageView, new Insets(2, 2, 2, 2));
 
             artNumber = new TextField();
+            artNumber.setEditable(false);
             HBox.setHgrow(artNumber, Priority.ALWAYS);
             HBox hbox = new HBox();
             hbox.getChildren().addAll(artNumber, imageView);
             addRow("Art Number", hbox);
             addRow("Original art Number", originalArtNumber = new TextField());
+            originalArtNumber.setEditable(false);
             addRow("Name", name = new TextField());
             addRow("Short name", shortName = new TextField());
             addRow("Price", price = new DoubleTextField());
@@ -169,15 +170,108 @@ public class ProductDialog extends BaseDialog {
             addRow("Group", group);
 
         }
+
+        public String getName() {
+            return name.getText();
+        }
+
+        public void setName(String name) {
+            this.name.setText(name);
+        }
+
+        public void setArtNumber(String artNumber) {
+            this.artNumber.setText(artNumber);
+        }
+
+        public void setOriginalArtNumber(String originalArtNumber) {
+            this.originalArtNumber.setText(originalArtNumber);
+        }
+
+        public void setShortName(String shortName) {
+            this.shortName.setText(shortName);
+        }
+
+        public String getShortName() {
+            return shortName.getText();
+        }
+
+        public void setPrice(double price) {
+            this.price.setNumber(price);
+        }
+
+        public double getPrice() {
+            return price.getNumber();
+        }
+
+        public void setGroup(ProductInfo.Group group) {
+            this.group.getSelectionModel().select(group);
+        }
+
+        public ProductInfo.Group getGroup() {
+            return group.getSelectionModel().getSelectedItem();
+        }
+
     }
 
-    private class PackageInfoForm extends FormPanel {
+    private class PackageInfoForm {
+        private FormPanel formPanel;
+        private IntegerTextField weight;
+        private IntegerTextField boxCount;
+        private IntegerTextField height;
+        private IntegerTextField width;
+        private IntegerTextField length;
+
         public PackageInfoForm() {
-            addRow("Box Count", boxCount = new IntegerTextField());
-            addRow("Weight", weight = new IntegerTextField());
-            addRow("Height", height = new IntegerTextField());
-            addRow("Width", width = new IntegerTextField());
-            addRow("Length", length = new IntegerTextField());
+            formPanel = new FormPanel();
+            formPanel.addRow("Box Count", boxCount = new IntegerTextField());
+            formPanel.addRow("Weight", weight = new IntegerTextField());
+            formPanel.addRow("Height", height = new IntegerTextField());
+            formPanel.addRow("Width", width = new IntegerTextField());
+            formPanel.addRow("Length", length = new IntegerTextField());
+        }
+
+        public FormPanel getForm() {
+            return formPanel;
+        }
+
+        public void setWeight(int weight) {
+            this.weight.setNumber(weight);
+        }
+
+        public int getWeight() {
+            return weight.getNumber();
+        }
+
+        public void setBoxCount(int boxCount) {
+            this.boxCount.setNumber(boxCount);
+        }
+
+        public int getBoxCount() {
+            return boxCount.getNumber();
+        }
+
+        public void setHeight(int height) {
+            this.height.setNumber(height);
+        }
+
+        public int getHeight() {
+            return height.getNumber();
+        }
+
+        public void setWidth(int width) {
+            this.width.setNumber(width);
+        }
+
+        public int getWidth() {
+            return width.getNumber();
+        }
+
+        public void setLength(int length) {
+            this.length.setNumber(length);
+        }
+
+        public int getLength() {
+            return length.getNumber();
         }
     }
 
@@ -194,17 +288,18 @@ public class ProductDialog extends BaseDialog {
     }
 
     private void bindProperties() {
-        artNumber.setText(currentProductInfo.getArtNumber());
-        originalArtNumber.setText(currentProductInfo.getOriginalArtNum());
-        name.setText(currentProductInfo.getName());
-        shortName.setText(currentProductInfo.getShortName());
-        price.setNumber(currentProductInfo.getPrice());
-        group.getSelectionModel().select(currentProductInfo.getGroup());
-        weight.setNumber(currentProductInfo.getPackageInfo().getWeight());
-        boxCount.setNumber(currentProductInfo.getPackageInfo().getBoxCount());
-        height.setNumber(currentProductInfo.getPackageInfo().getHeight());
-        width.setNumber(currentProductInfo.getPackageInfo().getWidth());
-        length.setNumber(currentProductInfo.getPackageInfo().getLength());
+        productForm.setArtNumber(currentProductInfo.getArtNumber());
+        productForm.setOriginalArtNumber(currentProductInfo.getOriginalArtNum());
+        productForm.setName(currentProductInfo.getName());
+        productForm.setShortName(currentProductInfo.getShortName());
+        productForm.setPrice(currentProductInfo.getPrice());
+        productForm.setGroup(currentProductInfo.getGroup());
+
+        packageInfoForm.setWeight(currentProductInfo.getPackageInfo().getWeight());
+        packageInfoForm.setBoxCount(currentProductInfo.getPackageInfo().getBoxCount());
+        packageInfoForm.setHeight(currentProductInfo.getPackageInfo().getHeight());
+        packageInfoForm.setWidth(currentProductInfo.getPackageInfo().getWidth());
+        packageInfoForm.setLength(currentProductInfo.getPackageInfo().getLength());
     }
 
     @Override
@@ -215,19 +310,17 @@ public class ProductDialog extends BaseDialog {
 
     @Override
     public void onOk() {
-        currentProductInfo.setGroup(group.getSelectionModel().getSelectedItem());
+        currentProductInfo.setGroup(productForm.getGroup());
         currentProductInfo.setVerified(true);
-        currentProductInfo.setArtNumber(artNumber.getText());
-        currentProductInfo.setOriginalArtNum(originalArtNumber.getText());
-        currentProductInfo.setName(name.getText());
-        currentProductInfo.setShortName(shortName.getText());
-        currentProductInfo.setPrice(price.getNumber());
+        currentProductInfo.setName(productForm.getName());
+        currentProductInfo.setShortName(productForm.getShortName());
+        currentProductInfo.setPrice(productForm.getPrice());
 
-        currentProductInfo.getPackageInfo().setWeight(weight.getNumber());
-        currentProductInfo.getPackageInfo().setBoxCount(boxCount.getNumber());
-        currentProductInfo.getPackageInfo().setHeight(height.getNumber());
-        currentProductInfo.getPackageInfo().setWidth(width.getNumber());
-        currentProductInfo.getPackageInfo().setLength(length.getNumber());
+        currentProductInfo.getPackageInfo().setWeight(packageInfoForm.getWeight());
+        currentProductInfo.getPackageInfo().setBoxCount(packageInfoForm.getBoxCount());
+        currentProductInfo.getPackageInfo().setHeight(packageInfoForm.getHeight());
+        currentProductInfo.getPackageInfo().setWidth(packageInfoForm.getWidth());
+        currentProductInfo.getPackageInfo().setLength(packageInfoForm.getLength());
 
         onSave(currentProductInfo, subProductTableView.isVisible());
     }
@@ -241,9 +334,7 @@ public class ProductDialog extends BaseDialog {
         try {
             URI uri = new URI("http://www.ikea.com/pl/pl/catalog/products/" + artNumber);
             Desktop.getDesktop().browse(uri);
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        } catch (URISyntaxException | IOException e) {
             e.printStackTrace();
         }
     }
