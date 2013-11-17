@@ -1,10 +1,14 @@
 package org.menesty.ikea.ui.controls.table;
 
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
+import javafx.scene.control.Tooltip;
 import javafx.util.Callback;
 import org.menesty.ikea.domain.StorageLack;
 import org.menesty.ikea.ui.controls.PathProperty;
@@ -62,7 +66,24 @@ public class StorageLackItemTableView extends TableView<StorageLack> {
 
             getColumns().add(column);
         }
+        setRowFactory(new Callback<TableView<StorageLack>, TableRow<StorageLack>>() {
+            @Override
+            public TableRow<StorageLack> call(TableView<StorageLack> storageLackTableView) {
+                final TableRow<StorageLack> row = new TableRow<>();
+                row.itemProperty().addListener(new InvalidationListener() {
+                    @Override
+                    public void invalidated(Observable observable) {
+                        row.getStyleClass().remove("productError");
+                        row.setTooltip(null);
+
+                        if(row.getItem() != null && !row.getItem().isExist()){
+                            row.getStyleClass().add("productError");
+                            row.setTooltip(new Tooltip("This product not exist in order"));
+                        }
+                    }
+                });
+                return row;
+            }
+        });
     }
-
-
 }

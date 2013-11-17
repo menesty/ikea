@@ -1,13 +1,25 @@
 package org.menesty.ikea.service;
 
+import net.sf.jxls.transformer.XLSTransformer;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.menesty.ikea.processor.invoice.InvoiceItem;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.templates.TemplateRuntime;
 
-import java.io.*;
-import java.util.*;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
 
 public class InvoiceService {
 
@@ -34,6 +46,26 @@ public class InvoiceService {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void exportToXls(List<RawInvoiceProductItem> items, String path) {
+        XLSTransformer transformer = new XLSTransformer();
+        Map<String, Object> bean = new HashMap<>();
+        bean.put("items", items);
+
+        if (!path.endsWith(".xlsx"))
+            path = path.concat(".xlsx");
+
+        try {
+            Workbook workbook = transformer.transformXLS(getClass().getResourceAsStream("/config/invoice.xlsx"), bean);
+
+            workbook.write(Files.newOutputStream(FileSystems.getDefault().getPath(path), StandardOpenOption.CREATE_NEW));
+
+        } catch (InvalidFormatException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();

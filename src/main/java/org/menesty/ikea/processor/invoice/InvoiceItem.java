@@ -3,6 +3,7 @@ package org.menesty.ikea.processor.invoice;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.util.NumberUtil;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,6 +22,18 @@ public class InvoiceItem {
     private int wat;
 
     private double count;
+
+    private double weight;
+
+    private boolean zestav;
+
+    public double getWeight() {
+        return weight;
+    }
+
+    public void setWeight(double weight) {
+        this.weight = weight;
+    }
 
     public int getIndex() {
         return index;
@@ -46,8 +59,21 @@ public class InvoiceItem {
         this.name = name;
     }
 
+    public boolean isZestav() {
+        return zestav;
+    }
+
+    public InvoiceItem setZestav(boolean zestav) {
+        this.zestav = zestav;
+        return this;
+    }
+
     public double getPriceWat() {
         return round(price);
+    }
+
+    public BigDecimal getTotalWatPrice() {
+        return BigDecimal.valueOf(price).setScale(2, BigDecimal.ROUND_DOWN).multiply(BigDecimal.valueOf(count).setScale(2, BigDecimal.ROUND_DOWN)).setScale(2, BigDecimal.ROUND_DOWN);
     }
 
     public double getPriceWatTotal() {
@@ -96,18 +122,6 @@ public class InvoiceItem {
         for (int i = 4 - pos; i > 0; i--)
             valueStr += "0";
         return valueStr;
-    }
-
-    public static void main(String... arg) {
-        format(23d);
-
-        InvoiceItem invoiceItem = new InvoiceItem();
-        invoiceItem.setWat(23);
-        invoiceItem.setPrice(115d);
-
-        System.out.print("Price :" + invoiceItem.getPrice());
-        System.out.print("Price Wat :" + invoiceItem.getPriceWat());
-
     }
 
     public void setPrice(double price) {
@@ -166,15 +180,16 @@ public class InvoiceItem {
 
 
     public static InvoiceItem get(ProductInfo productInfo, double count, int box, int boxes) {
-        return get(productInfo.getOriginalArtNum(), productInfo.getName(), productInfo.getShortName(), productInfo.getPrice(), productInfo.getWat(), count, box, boxes);
+        return get(productInfo.getOriginalArtNum(), productInfo.getName(), productInfo.getShortName(), productInfo.getPrice(), productInfo.getWat(), productInfo.getPackageInfo().getWeight(), count, box, boxes);
     }
 
-    public static InvoiceItem get(String artNumber, String name, String shortName, double price, int wat, double count, int box, int boxes) {
+    public static InvoiceItem get(String artNumber, String name, String shortName, double price, int wat, double weight, double count, int box, int boxes) {
         InvoiceItem invoiceItem = new InvoiceItem();
 
         invoiceItem.name = name;
         invoiceItem.artNumber = "IKEA_" + artNumber;
         invoiceItem.shortName = shortName;
+        invoiceItem.weight = weight;
         if (boxes > 1) {
             invoiceItem.artNumber += "(" + box + ")";
             invoiceItem.shortName += " " + box + "/" + boxes;

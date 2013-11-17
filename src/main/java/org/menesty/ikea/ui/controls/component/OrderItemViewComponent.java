@@ -13,15 +13,15 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.order.OrderItem;
+import org.menesty.ikea.ui.controls.TotalStatusPanel;
 import org.menesty.ikea.ui.controls.dialog.ProductDialog;
 import org.menesty.ikea.ui.controls.search.OrderItemSearchBar;
 import org.menesty.ikea.ui.controls.search.OrderItemSearchData;
 import org.menesty.ikea.ui.controls.table.OrderItemTableView;
 import org.menesty.ikea.ui.pages.EntityDialogCallback;
-import org.menesty.ikea.util.NumberUtil;
 
 import java.io.File;
-import java.text.NumberFormat;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -144,47 +144,38 @@ public abstract class OrderItemViewComponent extends BorderPane {
     public void setItems(List<OrderItem> items) {
         orderItemTableView.setItems(FXCollections.observableArrayList(items));
 
-        double orderTotal = 0d;
-        double orderNaTotal = 0d;
-        double productTotal = 0d;
+        BigDecimal orderTotal = BigDecimal.ZERO;
+        BigDecimal orderNaTotal = BigDecimal.ZERO;
+        BigDecimal productTotal = BigDecimal.ZERO;
 
         for (OrderItem item : items) {
-            orderTotal += item.getTotal();
+            orderTotal = orderTotal.add(item.getTotal());
 
             if (OrderItem.Type.Na == item.getType())
-                orderNaTotal += item.getTotal();
+                orderNaTotal = orderNaTotal.add(item.getTotal());
             else if (item.getProductInfo() != null)
-                productTotal += NumberUtil.round(item.getProductInfo().getPrice() * item.getCount());
+                productTotal = productTotal.add(BigDecimal.valueOf(item.getProductInfo().getPrice()).multiply(BigDecimal.valueOf(item.getCount())).setScale(2));
 
         }
 
-        orderTotal = NumberUtil.round(orderTotal);
-        productTotal = NumberUtil.round(productTotal);
-        double diff = NumberUtil.round(orderTotal - orderNaTotal, 2);
+        BigDecimal diff = orderTotal.subtract(orderNaTotal);
 
-        statusPanel.setTotal(orderTotal);
-        statusPanel.showPriceWarning(diff != productTotal);
+        statusPanel.setTotal(orderTotal.doubleValue());
+        statusPanel.showPriceWarning(diff.compareTo(productTotal) != 0);
     }
 
     public void disableIkeaExport(boolean disable) {
         exportToIkeaBtn.setDisable(disable);
     }
 
-    class StatusPanel extends ToolBar {
-        private Label totalLabel;
+    class StatusPanel extends TotalStatusPanel {
         private Label warningLabel;
 
         public StatusPanel() {
-            getItems().add(new Label("Total :"));
-            getItems().add(totalLabel = new Label());
             getItems().add(warningLabel = new Label());
             warningLabel.setGraphic(new ImageView(new Image("/styles/images/icon/warning-16x16.png")));
             warningLabel.setVisible(false);
-            warningLabel.setTooltip(new Tooltip("Total Order price is different then total IKEA site product"));
-        }
-
-        public void setTotal(double total) {
-            totalLabel.setText(NumberFormat.getNumberInstance().format(total));
+            warningLabel.setTooltip(new Tooltip("Total Order price is different then IKEA site product"));
         }
 
         public void showPriceWarning(boolean show) {

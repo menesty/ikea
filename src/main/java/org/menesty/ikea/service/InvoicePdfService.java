@@ -30,33 +30,6 @@ public class InvoicePdfService {
         productService = new ProductService();
     }
 
-    public static void main(String... arg) throws IOException {
-
-        System.out.print(Integer.valueOf("s001".replaceAll("\\D+", "")));
-        /*InvoicePdfService pdfService = new InvoicePdfService();
-
-        String[] files = new String[]{"306-S-12021.pdf", "306-S-12022.pdf", "306-S-12023.pdf", "599 self.pdf", "600 tekstylia.pdf", "601 kuchnia.pdf", "602 kuchnia.pdf", "603 dekoracje.pdf", "604 famili.pdf", "606 full.pdf", "607 self.pdf", "608 oswitlenie.pdf",
-                "610 self.pdf", "613 lazienka.pdf"};
-
-        FileOutputStream fos = new FileOutputStream("D:\\113faktur/result.csv");
-        for (String fileName : files) {
-            InvoicePdf invoicePdf = pdfService.parseInvoice(fileName, new FileInputStream("D:\\113faktur/" + fileName));
-
-            for (RawInvoiceProductItem item : invoicePdf.getProducts()) {
-                fos.write(item.toString().getBytes());
-                fos.write(';');
-                fos.write(fileName.getBytes());
-                fos.write('\n');
-            }
-
-        }
-        fos.close();
-
-*/
-        new InvoicePdfService().createInvoicePdf("test", new FileInputStream("/Users/Menesty/Downloads/600tekstylia.pdf"));
-    }
-
-
     private InvoicePdf parseInvoice(String name, InputStream stream) throws IOException {
         InvoicePdf result = new InvoicePdf(name);
 

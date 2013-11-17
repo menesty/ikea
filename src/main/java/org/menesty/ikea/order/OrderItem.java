@@ -1,7 +1,8 @@
 package org.menesty.ikea.order;
 
 import org.menesty.ikea.domain.ProductInfo;
-import org.menesty.ikea.util.NumberUtil;
+
+import java.math.BigDecimal;
 
 /**
  * User: Menesty
@@ -27,8 +28,6 @@ public class OrderItem {
     private Double price;
 
     private String comment;
-
-    private String group;
 
     private ProductInfo productInfo;
 
@@ -94,8 +93,8 @@ public class OrderItem {
         this.name = name;
     }
 
-    public Double getTotal() {
-        return NumberUtil.round(count * price);
+    public BigDecimal getTotal() {
+        return BigDecimal.valueOf(count).multiply(BigDecimal.valueOf(price)).setScale(2);
     }
 
     public Double getPrice() {
@@ -130,14 +129,6 @@ public class OrderItem {
     @Override
     public int hashCode() {
         return artNumber.hashCode();
-    }
-
-    public void setGroup(String group) {
-        this.group = group;
-    }
-
-    public String getGroup() {
-        return group;
     }
 
     /*used in xls export*/

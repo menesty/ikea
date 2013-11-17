@@ -50,7 +50,7 @@ public class IkeaApplication extends Application {
         StackPane layerPane = new StackPane();
         stage.initStyle(StageStyle.UNDECORATED);
         // create window resize button
-        windowResizeButton = new WindowResizeButton(stage, 1020, 700);
+        windowResizeButton = new WindowResizeButton(stage, 1020, 650);
         // create root
         BorderPane root = new BorderPane() {
             @Override
@@ -68,7 +68,7 @@ public class IkeaApplication extends Application {
         layerPane.getChildren().add(root);
         // create scene
         boolean is3dSupported = Platform.isSupported(ConditionalFeature.SCENE3D);
-        Scene scene = new Scene(layerPane, 1020, 700, is3dSupported);
+        Scene scene = new Scene(layerPane, 1020, 650, is3dSupported);
         if (is3dSupported) {
             //RT-13234
             scene.setCamera(new PerspectiveCamera());

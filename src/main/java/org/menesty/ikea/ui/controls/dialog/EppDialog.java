@@ -20,11 +20,16 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 import org.menesty.ikea.processor.invoice.InvoiceItem;
 import org.menesty.ikea.ui.controls.PathProperty;
+import org.menesty.ikea.ui.controls.TotalStatusPanel;
 import org.menesty.ikea.ui.table.DoubleEditableTableCell;
 import org.menesty.ikea.util.NumberUtil;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public abstract class EppDialog extends BaseDialog {
@@ -37,11 +42,20 @@ public abstract class EppDialog extends BaseDialog {
 
     private Stage stage;
 
+    private BigDecimal invoicePrice;
+
+    private List<TableRow<InvoiceItem>> rows = new ArrayList<>();
+
     public EppDialog(Stage stage) {
         this.stage = stage;
         setMaxSize(500, USE_PREF_SIZE);
         ToolBar toolBar = new ToolBar();
-
+        final InvalidationListener invalidationListener = new InvalidationListener() {
+            @Override
+            public void invalidated(Observable observable) {
+                statusPanel.setCurrentTotal(calculatePrice(tableView.getItems()).doubleValue());
+            }
+        };
         ImageView imageView = new ImageView(new javafx.scene.image.Image("/styles/images/icon/plus-32x32.png"));
 
         Button addBtn = new Button("", imageView);
@@ -65,6 +79,7 @@ public abstract class EppDialog extends BaseDialog {
         delBtn.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
                 tableView.getItems().remove(tableView.getSelectionModel().getSelectedItem());
+                invalidationListener.invalidated(null);
             }
         });
         delBtn.setDisable(true);
@@ -72,16 +87,49 @@ public abstract class EppDialog extends BaseDialog {
 
 
         imageView = new ImageView(new javafx.scene.image.Image("/styles/images/icon/balance-32x32.png"));
-        Button balanceBtn = new Button("", imageView);
-        delBtn.setContentDisplay(ContentDisplay.RIGHT);
-        delBtn.setTooltip(new Tooltip("Auto balance Price"));
-        delBtn.setOnAction(new EventHandler<ActionEvent>() {
+        Button balanceBtn = new Button(null, imageView);
+        balanceBtn.setContentDisplay(ContentDisplay.RIGHT);
+        balanceBtn.setTooltip(new Tooltip("Auto balance Price"));
+        balanceBtn.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
+                List<InvoiceItem> items = new ArrayList<>(tableView.getItems());
+                //filter
+
+                Collections.sort(items, Collections.reverseOrder(new Comparator<InvoiceItem>() {
+                    @Override
+                    public int compare(InvoiceItem o1, InvoiceItem o2) {
+                        Double cof1 = o1.getPrice() / o1.getWeight();
+                        Double cof2 = o2.getPrice() / o2.getWeight();
+                        return cof1.compareTo(cof2);
+                    }
+                }));
+
+                BigDecimal currentPrice = calculatePrice(items);
+                BigDecimal diff = invoicePrice.subtract(currentPrice);
+
+                BigDecimal addToEach = BigDecimal.valueOf(NumberUtil.round(diff.doubleValue() / items.size()));
+
+                for (InvoiceItem item : items) {
+                    BigDecimal addToOne = BigDecimal.valueOf(NumberUtil.round(addToEach.doubleValue() / item.getCount()));
+                    item.setPrice(BigDecimal.valueOf(item.getPriceWat()).add(addToOne).doubleValue());
+                }
+
+
+                currentPrice = calculatePrice(items);
+                diff = invoicePrice.subtract(currentPrice);
+                if (diff.doubleValue() != 0) {
+                    InvoiceItem lastItem = items.get(items.size() - 1);
+                    lastItem.setPrice(BigDecimal.valueOf(lastItem.getPriceWat()).add(diff).doubleValue());
+                }
+
+                for (TableRow<InvoiceItem> row : rows)
+                    row.setItem(null);
+
+                invalidationListener.invalidated(null);
 
             }
         });
         toolBar.getItems().add(balanceBtn);
-
 
         tableView = new TableView<>();
         {
@@ -188,18 +236,14 @@ public abstract class EppDialog extends BaseDialog {
             }
         });
 
-        InvalidationListener invalidationListener = new InvalidationListener() {
+        tableView.setRowFactory(new Callback<TableView<InvoiceItem>, TableRow<InvoiceItem>>() {
             @Override
-            public void invalidated(Observable observable) {
-                double price = 0;
-
-                for (InvoiceItem item : tableView.getItems())
-                    price = price + NumberUtil.round(item.getPriceWat() * item.getCount());
-
-                statusPanel.setCurrentTotal(NumberUtil.round(price));
-
+            public TableRow<InvoiceItem> call(TableView<InvoiceItem> invoiceItemTableView) {
+                TableRow<InvoiceItem> row = new TableRow<>();
+                rows.add(row);
+                return row;
             }
-        };
+        });
         tableView.itemsProperty().addListener(invalidationListener);
 
         tableView.editingCellProperty().addListener(invalidationListener);
@@ -214,9 +258,20 @@ public abstract class EppDialog extends BaseDialog {
         okBtn.setText("Export");
     }
 
-    public void setItems(List<InvoiceItem> items, double invoicePrice) {
+    private BigDecimal calculatePrice(List<InvoiceItem> items) {
+        BigDecimal price = BigDecimal.ZERO;
+
+        for (InvoiceItem item : items)
+            price = price.add(item.getTotalWatPrice());
+
+        return price;
+
+    }
+
+    public void setItems(List<InvoiceItem> items, BigDecimal invoicePrice) {
         tableView.setItems(FXCollections.observableArrayList(items));
-        statusPanel.setTotal(invoicePrice);
+        statusPanel.setTotal(invoicePrice.doubleValue());
+        this.invoicePrice = invoicePrice;
     }
 
     @Override
@@ -242,22 +297,15 @@ public abstract class EppDialog extends BaseDialog {
     public abstract void export(List<InvoiceItem> items, String path);
 
 
-    class StatusPanel extends ToolBar {
-        private Label totalLabel;
+    class StatusPanel extends TotalStatusPanel {
         private Label currentTotal;
 
         public StatusPanel() {
-            getItems().add(new Label("Total :"));
-            getItems().add(totalLabel = new Label());
             Region spacer = new Region();
             HBox.setHgrow(spacer, Priority.ALWAYS);
             getItems().add(spacer);
             getItems().add(new Label("Current  :"));
             getItems().add(currentTotal = new Label());
-        }
-
-        public void setTotal(double total) {
-            totalLabel.setText(NumberFormat.getNumberInstance().format(total));
         }
 
         public void setCurrentTotal(double total) {

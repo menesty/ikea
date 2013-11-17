@@ -249,6 +249,7 @@ public class ProductPage extends BasePage {
         };
 
         BorderPane container = new BorderPane();
+
         container.setTop(searchBar);
         container.setCenter(tableView);
 

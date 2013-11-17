@@ -51,7 +51,7 @@ public class RawInvoiceProductItem {
     }
 
     public double getTotal() {
-        return BigDecimal.valueOf(getPrice() * count).setScale(2, RoundingMode.CEILING).doubleValue();
+        return BigDecimal.valueOf(getPrice()).multiply(BigDecimal.valueOf(count)).setScale(2, RoundingMode.CEILING).doubleValue();
     }
 
     public String getComment() {

@@ -70,7 +70,7 @@
     -fx-cell-hover-color: derive(-fx-control-inner-background, -20%);
 }
 
-.productFetchFailed {
+.productError {
     -fx-control-inner-background: #ff9492;
     -fx-accent: derive(-fx-control-inner-background, -30%);
     -fx-cell-hover-color: derive(-fx-control-inner-background, -20%);

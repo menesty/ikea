@@ -29,6 +29,7 @@ import org.menesty.ikea.ui.controls.search.OrderItemSearchData;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -201,6 +202,11 @@ public class OrderViewPage extends BasePage {
 
         rawInvoiceItemViewComponent = new RawInvoiceItemViewComponent(getStage()) {
             @Override
+            public void onExport(List<RawInvoiceProductItem> items, String path) {
+                invoiceService.exportToXls(items, path);
+            }
+
+            @Override
             public void onRowDoubleClick(final TableRow<RawInvoiceProductItem> row) {
                 showPopupDialog(productEditDialog);
                 productEditDialog.bind(row.getItem().getProductInfo(), new EntityDialogCallback<ProductInfo>() {
@@ -220,7 +226,7 @@ public class OrderViewPage extends BasePage {
             }
 
             @Override
-            public void exportToEpp(List<InvoiceItem> items, double price) {
+            public void exportToEpp(List<InvoiceItem> items, BigDecimal price) {
                 EppDialog dialog = new EppDialog(getStage()) {
                     @Override
                     public void export(List<InvoiceItem> items, String path) {

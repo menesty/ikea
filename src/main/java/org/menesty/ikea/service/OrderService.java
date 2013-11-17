@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.FileSystem;
@@ -260,12 +261,12 @@ public class OrderService {
     }
 
     private double getTotal(List<OrderItem> orderItems) {
-        double total = 0d;
+        BigDecimal total = BigDecimal.ZERO;
 
         for (OrderItem item : orderItems) {
-            total += item.getTotal();
+            total = total.add(item.getTotal());
         }
-        return total;
+        return total.doubleValue();
     }
 
     public List<StorageLack> calculateOrderInvoiceDiff(Order order) {
@@ -281,7 +282,7 @@ public class OrderService {
 
 
         for (OrderItem orderItem : order.getOrderItems()) {
-            if (OrderItem.Type.Na != orderItem.getType() && !orderItem.isInvalidFetch())
+            if (OrderItem.Type.Na != orderItem.getType() && !orderItem.isInvalidFetch() && OrderItem.Type.Specials != orderItem.getType())
                 if (OrderItem.Type.Combo == orderItem.getType())
                     for (ProductPart part : orderItem.getProductInfo().getParts()) {
                         increaseData(orderData, part.getProductInfo().getOriginalArtNum(), NumberUtil.round(orderItem.getCount() * part.getCount()));

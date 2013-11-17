@@ -12,14 +12,12 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.menesty.ikea.domain.InvoicePdf;
+import org.menesty.ikea.ui.controls.TotalStatusPanel;
 import org.menesty.ikea.ui.controls.dialog.Dialog;
 import org.menesty.ikea.ui.controls.table.InvoicePdfTableView;
 import org.menesty.ikea.ui.pages.DialogCallback;
 
 import java.io.File;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +27,7 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
 
     private InvoicePdfTableView invoicePdfTableView;
 
-    private StatusPanel statusPanel;
+    private TotalStatusPanel statusPanel;
 
     public InvoicePdfViewComponent(final Stage stage) {
 
@@ -97,7 +95,7 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
 
         setTop(pdfToolBar);
         setCenter(invoicePdfTableView);
-        setBottom(statusPanel = new StatusPanel());
+        setBottom(statusPanel = new TotalStatusPanel());
     }
 
     public abstract void onSave(InvoicePdf invoicePdf);
@@ -154,18 +152,4 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
         return revertTransform(selected);
     }
 
-    class StatusPanel extends ToolBar {
-        private Label totalLabel;
-
-        public StatusPanel() {
-            getItems().add(new Label("Total :"));
-            getItems().add(totalLabel = new Label());
-
-        }
-
-        public void setTotal(double total) {
-            double totalPrice = BigDecimal.valueOf(total).setScale(2, RoundingMode.CEILING).doubleValue();
-            totalLabel.setText(NumberFormat.getNumberInstance().format(totalPrice));
-        }
-    }
 }

@@ -34,7 +34,7 @@ public class OrderItemTableView extends TableView<OrderItem> {
 
         {
             TableColumn<OrderItem, String> column = new TableColumn<>("Art # ");
-            column.setMinWidth(100);
+            column.setMinWidth(80);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderItem, String>, ObservableValue<String>>() {
                 @Override
                 public ObservableValue<String> call(TableColumn.CellDataFeatures<OrderItem, String> item) {
@@ -45,7 +45,7 @@ public class OrderItemTableView extends TableView<OrderItem> {
         }
         {
             TableColumn<OrderItem, String> column = new TableColumn<>("Name");
-            column.setMinWidth(150);
+            column.setPrefWidth(450);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderItem, String>, ObservableValue<String>>() {
                 @Override
                 public ObservableValue<String> call(TableColumn.CellDataFeatures<OrderItem, String> item) {
@@ -144,15 +144,15 @@ public class OrderItemTableView extends TableView<OrderItem> {
                 row.setOnMouseClicked(new EventHandler<MouseEvent>() {
                     @Override
                     public void handle(MouseEvent mouseEvent) {
-                        if (mouseEvent.getClickCount() == 2) {
+                        if (mouseEvent.getClickCount() == 2)
                             onRowDoubleClick(row);
-                        }
+
                     }
                 });
                 row.itemProperty().addListener(new ChangeListener<OrderItem>() {
                     @Override
                     public void changed(ObservableValue<? extends OrderItem> observableValue, OrderItem oldValue, OrderItem newValue) {
-                        row.getStyleClass().removeAll("productNotVerified", "productFetchFailed");
+                        row.getStyleClass().removeAll("productNotVerified", "productError");
                         row.setContextMenu(null);
                         if (newValue != null) {
                             if (OrderItem.Type.Na != newValue.getType() && !row.getItem().isInvalidFetch()
@@ -160,7 +160,7 @@ public class OrderItemTableView extends TableView<OrderItem> {
                                 row.getStyleClass().add("productNotVerified");
 
                             else if (OrderItem.Type.Na != newValue.getType() && row.getItem().isInvalidFetch()) {
-                                row.getStyleClass().add("productFetchFailed");
+                                row.getStyleClass().add("productError");
 
                                 ContextMenu contextMenu = new ContextMenu();
                                 {
