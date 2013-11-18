@@ -5,9 +5,10 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableRow;
-import javafx.scene.control.TableView;
+import javafx.geometry.Pos;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.util.Callback;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
@@ -114,6 +115,35 @@ public class RawInvoiceTableView extends TableView<RawInvoiceProductItem> {
             });
 
             getColumns().add(column);
+        }
+
+        {
+            TableColumn<RawInvoiceProductItem, String> column = new TableColumn<>();
+            column.setMinWidth(40);
+            column.setCellFactory(new Callback<TableColumn<RawInvoiceProductItem, String>, TableCell<RawInvoiceProductItem, String>>() {
+                @Override
+                public TableCell<RawInvoiceProductItem, String> call(final TableColumn<RawInvoiceProductItem, String> column) {
+                    TableCell<RawInvoiceProductItem, String> cell = new TableCell<RawInvoiceProductItem, String>() {
+                        @Override
+                        protected void updateItem(String o, boolean empty) {
+                            if (getTableRow() != null) {
+                                RawInvoiceProductItem item = (RawInvoiceProductItem) getTableRow().getItem();
+
+                                if (item != null && item.isSeparate()) {
+                                    setGraphic(new ImageView(new Image("/styles/images/icon/wheelbarrow-16x16.png")));
+                                    return;
+                                }
+                            }
+
+                            setGraphic(new Label());
+                        }
+                    };
+                    cell.setAlignment(Pos.CENTER);
+                    return cell;
+                }
+            });
+            getColumns().add(column);
+            //  wheelbarrow-16x16.png
         }
 
         setRowFactory(new Callback<TableView<RawInvoiceProductItem>, TableRow<RawInvoiceProductItem>>() {

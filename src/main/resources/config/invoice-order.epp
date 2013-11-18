@@ -1,8 +1,8 @@
 [INFO]
-"1.05",3,1250,"Subiekt GT","#29","13-05-05","Orijana Trading Poland sp. z o.o.","Warszawa","01-207","Grzybowska 85c","795-248-80-01","MAG","G³ówny","Magazyn g³ówny",,1,20130922183544,20130922183544,"Szef",20130922183544,"Polska","PL",,0
+"1.05",3,1250,"Subiekt GT","#29","13-05-05","Orijana Trading Poland sp. z o.o.","Warszawa","01-207","Grzybowska 85c","795-248-80-01","MAG","G³ówny","Magazyn g³ówny",,1,@{createDate},@{createDate},"Szef",@{createDate},"Polska","PL",,0
 
 [NAGLOWEK]
-"FZ",1,0,363,"#1",,"363/09",,,,,"IKEA RET","IKEA Retail (KRK)","IKEA RetaIl Sp. z o.o.","Kraków","31-357","Josepha Conrada 66","5270103385","Zakup","Zakup towarów lub us³ug","Kraków",20130922000000,20130922000000,20130922000000,1,1,"Cena ostatniej dost.",1223.3700,51.3800,274.7500,1223.3700,,0.0000,,20130922000000,274.7500,274.7500,0,0,1,3,,"Szef",,0.0000,0.0000,"PLN",1.0000,,,,,0,0,0,,0.0000,,0.0000,"Polska","PL",0
+"FZ",1,0,363,"#1",,"363/09",,,,,"IKEA RET","IKEA Retail (KRK)","IKEA RetaIl Sp. z o.o.","Kraków","31-357","Josepha Conrada 66","5270103385","Zakup","Zakup towarów lub us³ug","Kraków",@{createDate},@{createDate},@{createDate},1,1,"Cena ostatniej dost.",1223.3700,51.3800,274.7500,1223.3700,,0.0000,,@{createDate},274.7500,274.7500,0,0,1,3,,"Szef",,0.0000,0.0000,"PLN",1.0000,,,,,0,0,0,,0.0000,,0.0000,"Polska","PL",0
 
 [ZAWARTOSC]
 @foreach{item : invoiceItems}@{item.index},1,"@{item.artNumber}",1,0,0,1,0.0000,0.0000,"szt.",@{item.count},@{item.count},0.0000,@{item.format(item.price)},@{item.format(item.priceWat)},23.0000,@{item.format(item.priceWatTotal)},@{item.format(item.taxPay)},@{item.format(item.priceTotal)},@{item.format(item.priceWatTotal)},,

@@ -27,10 +27,7 @@ import org.menesty.ikea.util.NumberUtil;
 import java.io.File;
 import java.math.BigDecimal;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 public abstract class EppDialog extends BaseDialog {
 
@@ -93,7 +90,12 @@ public abstract class EppDialog extends BaseDialog {
         balanceBtn.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
                 List<InvoiceItem> items = new ArrayList<>(tableView.getItems());
-                //filter
+                Iterator<InvoiceItem> iterator =  items.iterator();
+
+                while(iterator.hasNext()){
+                    if(iterator.next().isZestav())
+                        iterator.remove();
+                }
 
                 Collections.sort(items, Collections.reverseOrder(new Comparator<InvoiceItem>() {
                     @Override

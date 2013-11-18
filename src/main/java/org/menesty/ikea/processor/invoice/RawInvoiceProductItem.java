@@ -1,6 +1,7 @@
 package org.menesty.ikea.processor.invoice;
 
 import org.apache.commons.lang.StringUtils;
+import org.menesty.ikea.domain.PackageInfo;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.util.NumberUtil;
 
@@ -111,6 +112,15 @@ public class RawInvoiceProductItem {
 
     public double getPrice() {
         return NumberUtil.round(price, 2);
+    }
+
+    public boolean isSeparate() {
+        PackageInfo packageInfo = getProductInfo().getPackageInfo();
+        if (packageInfo.getWeight() > 3000 || getPrice() * getCount() > 200 || (
+                packageInfo.getLength() > 450 || packageInfo.getWidth() > 450 || packageInfo.getHeight() > 450
+        ))
+            return true;
+        return false;
     }
 
     @Override

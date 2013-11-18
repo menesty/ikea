@@ -9,7 +9,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import org.menesty.ikea.domain.PackageInfo;
 import org.menesty.ikea.processor.invoice.InvoiceItem;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.ui.controls.TotalStatusPanel;
@@ -99,15 +98,12 @@ public abstract class RawInvoiceItemViewComponent extends BorderPane {
         List<InvoiceItem> result = new ArrayList<>();
         List<RawInvoiceProductItem> filtered = new ArrayList<>();
 
-        for (RawInvoiceProductItem item : items) {
-            PackageInfo packageInfo = item.getProductInfo().getPackageInfo();
-            if (packageInfo.getWeight() > 3000 || item.getPrice() * item.getCount() > 200 || (
-                    packageInfo.getLength() > 450 || packageInfo.getWidth() > 450 || packageInfo.getHeight() > 450
-            ))
+        for (RawInvoiceProductItem item : items)
+            if (item.isSeparate())
                 result.addAll(InvoiceItem.get(item.getProductInfo(), item.getCount()));
             else
                 filtered.add(item);
-        }
+
 
         BigDecimal price = BigDecimal.ZERO;
         int index = 1;

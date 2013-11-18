@@ -25,28 +25,17 @@ public class OrderItemSearchBar extends ToolBar {
 
     private CheckBox pum;
 
+    private CheckBox gei;
+
+    private CheckBox ufd;
+
     public OrderItemSearchBar() {
-
-
         InvalidationListener invalidationListener = new InvalidationListener() {
             @Override
             public void invalidated(Observable observable) {
                 applyFilter();
             }
         };
-
-        type = new ComboBox<>();
-        type.setPromptText("Type");
-        type.getSelectionModel().selectedItemProperty().addListener(invalidationListener);
-        type.getItems().add(null);
-        type.getItems().addAll(OrderItem.Type.values());
-
-        productGroup = new ComboBox<>();
-        productGroup.getSelectionModel().selectedItemProperty().addListener(invalidationListener);
-        productGroup.setPromptText("Product group");
-        productGroup.getItems().add(null);
-        productGroup.getItems().addAll(ProductInfo.Group.values());
-
 
         artNumber = new TextField();
         artNumber.setDelay(1);
@@ -57,13 +46,44 @@ public class OrderItemSearchBar extends ToolBar {
             }
         });
         artNumber.setPromptText("Product ID #");
+        getItems().add(artNumber);
+
+        type = new ComboBox<>();
+        type.setPromptText("Type");
+        type.getSelectionModel().selectedItemProperty().addListener(invalidationListener);
+        type.getItems().add(null);
+        type.getItems().addAll(OrderItem.Type.values());
+        getItems().add(type);
+
+        productGroup = new ComboBox<>();
+        productGroup.getSelectionModel().selectedItemProperty().addListener(invalidationListener);
+        productGroup.setPromptText("Product group");
+        productGroup.getItems().add(null);
+        productGroup.getItems().addAll(ProductInfo.Group.values());
+        getItems().add(productGroup);
 
 
-
-        Label pumLable = new Label("PUM");
-        pumLable.setTooltip(new Tooltip("Price unmatched"));
-        pum = new CheckBox();
-        pum.selectedProperty().addListener(invalidationListener);
+        {
+            Label label = new Label("PUM");
+            label.setTooltip(new Tooltip("Price unmatched"));
+            pum = new CheckBox();
+            pum.selectedProperty().addListener(invalidationListener);
+            getItems().addAll(label, pum);
+        }
+        {
+            Label label = new Label("GEI");
+            label.setTooltip(new Tooltip("Gabarit epp items"));
+            gei = new CheckBox();
+            gei.selectedProperty().addListener(invalidationListener);
+            getItems().addAll(label, gei);
+        }
+        {
+            Label label = new Label("UFD");
+            label.setTooltip(new Tooltip("Unfilled dimensions"));
+            ufd = new CheckBox();
+            ufd.selectedProperty().addListener(invalidationListener);
+            getItems().addAll(label, ufd);
+        }
 
         Button clearButton = new Button("reset");
         clearButton.setOnAction(new EventHandler<ActionEvent>() {
@@ -73,11 +93,13 @@ public class OrderItemSearchBar extends ToolBar {
                 type.getSelectionModel().select(null);
                 productGroup.getSelectionModel().select(null);
                 pum.setSelected(false);
+                gei.setSelected(false);
+                ufd.setSelected(false);
                 onSearch(new OrderItemSearchData());
             }
         });
 
-        getItems().addAll(artNumber, type, productGroup, pumLable, pum, clearButton);
+        getItems().add(clearButton);
     }
 
     private void applyFilter() {
@@ -90,6 +112,8 @@ public class OrderItemSearchBar extends ToolBar {
         orderItemSearchForm.artNumber = artNumber.getText();
         orderItemSearchForm.productGroup = productGroup.getSelectionModel().getSelectedItem();
         orderItemSearchForm.pum = pum.isSelected();
+        orderItemSearchForm.gei = gei.isSelected();
+        orderItemSearchForm.ufd = ufd.isSelected();
         return orderItemSearchForm;
     }
 

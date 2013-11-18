@@ -111,18 +111,28 @@ public class Order {
 
         for (OrderItem orderItem : orderItems) {
 
+            ProductInfo productInfo = orderItem.getProductInfo();
+
             if (orderItemSearchForm.type != null && orderItemSearchForm.type != orderItem.getType())
                 continue;
             if (StringUtils.isNotBlank(orderItemSearchForm.artNumber) && !orderItem.getArtNumber().contains(orderItemSearchForm.artNumber))
                 continue;
             if (orderItemSearchForm.productGroup != null &&
-                    (orderItem.getProductInfo() == null || !orderItemSearchForm.productGroup.equals(orderItem.getProductInfo().getGroup())))
+                    (productInfo == null || !orderItemSearchForm.productGroup.equals(productInfo.getGroup())))
                 continue;
 
             if (orderItemSearchForm.pum &&
                     (OrderItem.Type.Na == orderItem.getType() ||
-                            (orderItem.getProductInfo() !=null && orderItem.getPrice() == orderItem.getProductInfo().getPrice())
+                            (productInfo != null && orderItem.getPrice() == productInfo.getPrice())
                     ))
+                continue;
+
+            if (orderItemSearchForm.gei && !(productInfo.getPackageInfo().getWeight() > 3000 ||
+                    productInfo.getPackageInfo().getLength() > 450 || productInfo.getPackageInfo().getWidth() > 450 || productInfo.getPackageInfo().getHeight() > 450
+            ))
+                continue;
+
+            if (orderItemSearchForm.ufd && productInfo.getPackageInfo().hasAllSize())
                 continue;
 
             result.add(orderItem);

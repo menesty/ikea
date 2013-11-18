@@ -9,10 +9,8 @@ import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.templates.TemplateRuntime;
 
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
@@ -20,7 +18,9 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class InvoiceService {
+
     private final static SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+
     public void exportToEpp(List<InvoiceItem> items, String fileName) {
         String templateFile = "/config/invoice-order.epp";
 
@@ -60,9 +60,7 @@ public class InvoiceService {
 
             workbook.write(Files.newOutputStream(FileSystems.getDefault().getPath(path), StandardOpenOption.CREATE_NEW));
 
-        } catch (InvalidFormatException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        } catch (InvalidFormatException | IOException e) {
             e.printStackTrace();
         }
     }

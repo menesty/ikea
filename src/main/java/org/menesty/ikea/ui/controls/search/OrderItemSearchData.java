@@ -17,4 +17,8 @@ public class OrderItemSearchData {
     public ProductInfo.Group productGroup;
 
     public boolean pum;
+
+    public boolean gei;
+
+    public boolean ufd;
 }
