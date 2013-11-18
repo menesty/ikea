@@ -61,6 +61,8 @@ public class OrderViewPage extends BasePage {
 
     private StorageLackItemViewComponent storageLackItemViewComponent;
 
+    private Tab orderItemTab;
+
     public OrderViewPage() {
         super("Order");
 
@@ -162,8 +164,7 @@ public class OrderViewPage extends BasePage {
         };
 
 
-        Tab tab = new Tab();
-        tab.setText("Order Items");
+        Tab tab = new Tab("Order Items");
         tab.setContent(orderItemViewComponent);
         tab.setClosable(false);
         return tab;
@@ -252,7 +253,7 @@ public class OrderViewPage extends BasePage {
         invoiceTab.setClosable(false);
         invoiceTab.setContent(splitPane);
 
-        tabPane.getTabs().addAll(createOrderItemTab(), invoiceTab, createStorageTab());
+        tabPane.getTabs().addAll(orderItemTab = createOrderItemTab(), invoiceTab, createStorageTab());
         return tabPane;
     }
 
@@ -265,6 +266,8 @@ public class OrderViewPage extends BasePage {
         updateRawInvoiceTableView();
 
         orderItemViewComponent.disableIkeaExport(currentOrder.getGeneralUser() == null || currentOrder.getComboUser() == null);
+
+        orderItemTab.setText(currentOrder.getName() + " - " + orderItemTab.getText());
     }
 
 

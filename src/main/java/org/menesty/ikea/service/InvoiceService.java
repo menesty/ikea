@@ -16,13 +16,11 @@ import java.io.UnsupportedEncodingException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class InvoiceService {
-
+    private final static SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
     public void exportToEpp(List<InvoiceItem> items, String fileName) {
         String templateFile = "/config/invoice-order.epp";
 
@@ -36,6 +34,7 @@ public class InvoiceService {
 
             Map<String, Object> map = new HashMap<>();
             map.put("invoiceItems", items);
+            map.put("createDate", sdf.format(new Date()));
             VariableResolverFactory vrf = new MapVariableResolverFactory(map);
             String result = (String) TemplateRuntime.eval(template, null, vrf, null);
 
@@ -43,10 +42,6 @@ public class InvoiceService {
                 fileName += ".epp";
             new FileOutputStream(fileName).write(result.getBytes("ISO-8859-2"));
 
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
