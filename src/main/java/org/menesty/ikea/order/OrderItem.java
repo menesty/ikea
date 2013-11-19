@@ -1,6 +1,7 @@
 package org.menesty.ikea.order;
 
 import org.menesty.ikea.domain.ProductInfo;
+import org.menesty.ikea.domain.UserProductInfo;
 
 import java.math.BigDecimal;
 
@@ -9,7 +10,7 @@ import java.math.BigDecimal;
  * Date: 9/22/13
  * Time: 11:24 AM
  */
-public class OrderItem {
+public class OrderItem implements UserProductInfo {
 
     public enum Type {
         General, Na, Specials, Combo

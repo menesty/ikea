@@ -1,12 +1,12 @@
 package org.menesty.ikea.domain;
 
-public class StorageLack {
+public class StorageLack implements UserProductInfo {
 
     private double count;
 
     private boolean exist = true;
 
-    private ProductInfo productInfo;
+    private final ProductInfo productInfo;
 
 
     public StorageLack(ProductInfo productInfo, double count) {
@@ -14,9 +14,14 @@ public class StorageLack {
     }
 
     public StorageLack(ProductInfo productInfo, double count, boolean exist) {
-        setProductInfo(productInfo);
+        this.productInfo = productInfo;
         setCount(count);
         setExist(exist);
+    }
+
+    @Override
+    public String getArtNumber() {
+        return productInfo.getOriginalArtNum();
     }
 
     public double getCount() {
@@ -39,7 +44,4 @@ public class StorageLack {
         return productInfo;
     }
 
-    public void setProductInfo(ProductInfo productInfo) {
-        this.productInfo = productInfo;
-    }
 }

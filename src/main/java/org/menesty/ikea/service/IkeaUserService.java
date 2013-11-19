@@ -19,6 +19,7 @@ import org.jsoup.select.Elements;
 import org.menesty.ikea.domain.Order;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.domain.User;
+import org.menesty.ikea.domain.UserProductInfo;
 import org.menesty.ikea.exception.LoginIkeaException;
 import org.menesty.ikea.order.OrderItem;
 import org.menesty.ikea.ui.TaskProgressLog;
@@ -41,64 +42,62 @@ public class IkeaUserService {
         httpClient = HttpClients.custom().setDefaultCookieStore(cookieStore).build();
     }
 
+    public <T extends UserProductInfo> void fillUser(final User user, final Collection<ProductInfo.Group> groups, final Map<ProductInfo.Group, List<T>> groupMap, final TaskProgressLog taskProgressLog) throws IOException {
+        fillUser(user, groups, groupMap, null, taskProgressLog);
+    }
+
+    public <T extends UserProductInfo> void fillUser(final User user, final Collection<ProductInfo.Group> groups, final Map<ProductInfo.Group, List<T>> groupMap, final Map<ProductInfo.Group, List<T>> subGroupMap, final TaskProgressLog taskProgressLog) throws IOException {
+        prepareUserWorkSpace(user, taskProgressLog);
+        prepareUserWorkSpace(user, taskProgressLog);
+
+        taskProgressLog.addLog("Create list of categories ...");
+        List<Category> categories = createList(groups);
+        taskProgressLog.updateLog("Finish creating  list of categories");
+
+        for (final Category category : categories) {
+            List<T> list = groupMap.get(category.group);
+            List<T> subList = fillListWithProduct(category, list, taskProgressLog);
+
+            if (subList != null && subGroupMap != null)
+                subGroupMap.put(category.group, subList);
+
+        }
+
+        taskProgressLog.addLog("logout ....");
+        logout();
+    }
 
     public void fillOrder(Order order, TaskProgressLog taskProgressLog) {
         try {
-            prepareUserWorkSpace(order.getGeneralUser(), taskProgressLog);
 
             Map<ProductInfo.Group, List<OrderItem>> groupMap = groupItems(order.getByType(OrderItem.Type.General));
-
             Map<ProductInfo.Group, List<OrderItem>> subGroupMap = new HashMap<>();
 
-            taskProgressLog.addLog("Create list of categories ...");
-            List<Category> categories = createList(ProductInfo.Group.general());
-            taskProgressLog.updateLog("Finish creating  list of categories");
-
-            for (final Category category : categories) {
-                List<OrderItem> list = groupMap.get(category.group);
-                List<OrderItem> subList = fillListWithProduct(category, list, taskProgressLog);
-                if (subList != null)
-                    subGroupMap.put(category.group, subList);
-
-            }
-            taskProgressLog.addLog("logout ....");
-            logout();
-
-            prepareUserWorkSpace(order.getComboUser(), taskProgressLog);
+            fillUser(order.getGeneralUser(), ProductInfo.Group.general(), groupMap, subGroupMap, taskProgressLog);
 
             subGroupMap.put(ProductInfo.Group.Combo, order.getByType(OrderItem.Type.Combo));
 
-            taskProgressLog.addLog("Create list of categories ...");
-            categories = createList(subGroupMap.keySet());
+            fillUser(order.getComboUser(), subGroupMap.keySet(), subGroupMap, taskProgressLog);
 
-            for (final Category category : categories) {
-                List<OrderItem> list = subGroupMap.get(category.group);
-                fillListWithProduct(category, list, taskProgressLog);
-            }
-
-            taskProgressLog.addLog("logout ....");
-            logout();
             taskProgressLog.addLog("Finish");
             closeSession();
         } catch (LoginIkeaException e) {
             taskProgressLog.addLog(e.getMessage());
         } catch (IOException e) {
             taskProgressLog.addLog("Error happened during connection to IKEA site");
-        } catch (Exception e) {
-            e.printStackTrace();
         }
 
         taskProgressLog.done();
     }
 
-    private List<OrderItem> fillListWithProduct(final Category category, final List<OrderItem> list, final TaskProgressLog taskProgressLog) throws IOException {
+    private <T extends UserProductInfo> List<T> fillListWithProduct(final Category category, final List<T> list, final TaskProgressLog taskProgressLog) throws IOException {
         if (list == null) return null;
 
         int index = 0;
-        List<OrderItem> workList = list.size() > 99 ? list.subList(0, 99) : list;
+        List<T> workList = list.size() > 99 ? list.subList(0, 99) : list;
         taskProgressLog.addLog("Next group");
 
-        for (OrderItem item : workList) {
+        for (UserProductInfo item : workList) {
             index++;
             taskProgressLog.updateLog(String.format("Group %1$s - product : %2$s  %3$s/%4$s", category.group, item.getArtNumber(), index, list.size()));
             addProductToList(category.id, prepareArtNumber(item.getArtNumber()), item.getCount());
@@ -146,13 +145,13 @@ public class IkeaUserService {
 
     }
 
-    private Map<ProductInfo.Group, List<OrderItem>> groupItems(List<OrderItem> orderItems) {
-        Map<ProductInfo.Group, List<OrderItem>> groupMap = new HashMap<>();
-        for (OrderItem item : orderItems) {
+    public <T extends UserProductInfo> Map<ProductInfo.Group, List<T>> groupItems(List<T> orderItems) {
+        Map<ProductInfo.Group, List<T>> groupMap = new HashMap<>();
+        for (T item : orderItems) {
 
-            if(item.getProductInfo() == null) continue;
+            if (item.getProductInfo() == null) continue;
 
-            List<OrderItem> list = groupMap.get(item.getProductInfo().getGroup());
+            List<T> list = groupMap.get(item.getProductInfo().getGroup());
 
             if (list == null) groupMap.put(item.getProductInfo().getGroup(), list = new ArrayList<>());
 

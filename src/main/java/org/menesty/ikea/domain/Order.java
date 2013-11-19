@@ -24,6 +24,16 @@ public class Order {
 
     private User comboUser;
 
+    private User lackUser;
+
+    public User getLackUser() {
+        return lackUser;
+    }
+
+    public void setLackUser(User lackUser) {
+        this.lackUser = lackUser;
+    }
+
     public List<String> getParseWarnings() {
         return parseWarnings;
     }
@@ -127,13 +137,15 @@ public class Order {
                     ))
                 continue;
 
-            if (orderItemSearchForm.gei && !(productInfo.getPackageInfo().getWeight() > 3000 ||
-                    productInfo.getPackageInfo().getLength() > 450 || productInfo.getPackageInfo().getWidth() > 450 || productInfo.getPackageInfo().getHeight() > 450
-            ))
-                continue;
+            if (productInfo != null) {
+                if (orderItemSearchForm.gei && !(productInfo.getPackageInfo().getWeight() > 3000 ||
+                        productInfo.getPackageInfo().getLength() > 450 || productInfo.getPackageInfo().getWidth() > 450 || productInfo.getPackageInfo().getHeight() > 450
+                ))
+                    continue;
 
-            if (orderItemSearchForm.ufd && productInfo.getPackageInfo().hasAllSize())
-                continue;
+                if (orderItemSearchForm.ufd && productInfo.getPackageInfo().hasAllSize())
+                    continue;
+            }
 
             result.add(orderItem);
         }

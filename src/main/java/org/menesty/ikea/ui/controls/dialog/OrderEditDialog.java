@@ -1,5 +1,7 @@
 package org.menesty.ikea.ui.controls.dialog;
 
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -60,6 +62,7 @@ public class OrderEditDialog extends BaseDialog {
     public void onShow() {
         form.setGeneralUsers(userService.getGeneral());
         form.setComboUsers(userService.getCombos());
+        form.setLackUsers(userService.getGeneral());
     }
 
     private void onSave(Order currentEntity) {
@@ -70,6 +73,8 @@ public class OrderEditDialog extends BaseDialog {
     private class OrderForm extends FormPanel {
         private final ComboBox<User> generalUsers;
         private final ComboBox<User> comboUsers;
+        private final ComboBox<User> lackUsers;
+
         TextField orderName;
 
 
@@ -79,6 +84,10 @@ public class OrderEditDialog extends BaseDialog {
 
         public void setComboUsers(List<User> list) {
             comboUsers.setItems(FXCollections.observableArrayList(list));
+        }
+
+        public void setLackUsers(List<User> list) {
+            lackUsers.setItems(FXCollections.observableArrayList(list));
         }
 
         public String getOrderName() {
@@ -100,15 +109,19 @@ public class OrderEditDialog extends BaseDialog {
             comboUsers.setPromptText("Select user");
             comboUsers.setPrefWidth(200);
 
+            addRow("Lack User", lackUsers = new ComboBox<>());
+            lackUsers.setId("uneditable-combobox");
+            lackUsers.setPromptText("Select user");
+            lackUsers.setPrefWidth(200);
 
-            ChangeListener<String> textListener = new ChangeListener<String>() {
-                public void changed(ObservableValue<? extends String> ov, String t, String t1) {
+            orderName.textProperty().addListener(new InvalidationListener() {
+                @Override
+                public void invalidated(Observable observable) {
                     okBtn.setDisable(
                             orderName.getText() == null || orderName.getText().isEmpty()
                     );
                 }
-            };
-            orderName.textProperty().addListener(textListener);
+            });
 
         }
 
@@ -131,6 +144,8 @@ public class OrderEditDialog extends BaseDialog {
         public void setGeneralUser(User user) {
             this.generalUsers.getSelectionModel().select(user);
         }
+
+
     }
 
 }

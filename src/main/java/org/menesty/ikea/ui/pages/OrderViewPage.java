@@ -12,6 +12,8 @@ import javafx.scene.layout.StackPane;
 import org.menesty.ikea.domain.InvoicePdf;
 import org.menesty.ikea.domain.Order;
 import org.menesty.ikea.domain.ProductInfo;
+import org.menesty.ikea.domain.StorageLack;
+import org.menesty.ikea.exception.LoginIkeaException;
 import org.menesty.ikea.order.OrderItem;
 import org.menesty.ikea.processor.invoice.InvoiceItem;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
@@ -28,9 +30,11 @@ import org.menesty.ikea.ui.controls.search.OrderItemSearchData;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -83,7 +87,42 @@ public class OrderViewPage extends BasePage {
     }
 
     private Tab createStorageTab() {
-        storageLackItemViewComponent = new StorageLackItemViewComponent();
+        storageLackItemViewComponent = new StorageLackItemViewComponent() {
+
+            @Override
+            protected void onExportToIkea() {
+                final List<StorageLack> storageLacks = new ArrayList<>(getItems());
+                Iterator<StorageLack> iterator = storageLacks.iterator();
+                while (iterator.hasNext()) {
+                    if (!iterator.next().isExist())
+                        iterator.remove();
+                }
+
+                final IkeaUserFillProgressDialog logDialog = new IkeaUserFillProgressDialog() {
+                    @Override
+                    public void onOk() {
+                        hidePopupDialog();
+                    }
+                };
+                OrderViewPage.this.showPopupDialog(logDialog);
+                new Thread(new Task<Void>() {
+                    @Override
+                    protected Void call() throws Exception {
+                        try {
+                            ikeaUserService.fillUser(currentOrder.getLackUser(), ProductInfo.Group.general(), ikeaUserService.groupItems(storageLacks), logDialog);
+                        } catch (LoginIkeaException e) {
+                            logDialog.addLog(e.getMessage());
+                        } catch (IOException e) {
+                            logDialog.addLog("Error happened during connection to IKEA site");
+                        }
+
+                        logDialog.done();
+                        return null;
+                    }
+                }).start();
+
+            }
+        };
         final Tab tab = new Tab();
         tab.setText("Storage Lack");
         tab.setContent(storageLackItemViewComponent);
@@ -266,6 +305,7 @@ public class OrderViewPage extends BasePage {
         updateRawInvoiceTableView();
 
         orderItemViewComponent.disableIkeaExport(currentOrder.getGeneralUser() == null || currentOrder.getComboUser() == null);
+        storageLackItemViewComponent.disableIkeaExport(currentOrder.getLackUser() == null);
 
         orderItemTab.setText(currentOrder.getName() + " - " + orderItemTab.getText());
     }
