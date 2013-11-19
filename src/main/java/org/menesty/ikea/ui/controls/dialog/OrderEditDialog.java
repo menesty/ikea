@@ -54,6 +54,7 @@ public class OrderEditDialog extends BaseDialog {
         form.setOrderName(entity.getName());
         form.setComboUser(entity.getComboUser());
         form.setGeneralUser(entity.getGeneralUser());
+        form.setLackUser(entity.getLackUser());
         this.callback = callback;
     }
 
@@ -146,6 +147,10 @@ public class OrderEditDialog extends BaseDialog {
 
         public void setGeneralUser(User user) {
             this.generalUsers.getSelectionModel().select(user);
+        }
+
+        public void setLackUser(User user){
+            this.lackUsers.getSelectionModel().select(user);
         }
 
 
