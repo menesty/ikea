@@ -90,11 +90,17 @@ public abstract class EppDialog extends BaseDialog {
         balanceBtn.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
                 List<InvoiceItem> items = new ArrayList<>(tableView.getItems());
-                Iterator<InvoiceItem> iterator =  items.iterator();
+                Iterator<InvoiceItem> iterator = items.iterator();
 
-                while(iterator.hasNext()){
-                    if(iterator.next().isZestav())
+                BigDecimal zestavPrice = BigDecimal.ZERO;
+
+                while (iterator.hasNext()) {
+                    InvoiceItem item = iterator.next();
+
+                    if (item.isZestav()) {
                         iterator.remove();
+                        zestavPrice = zestavPrice.add(item.getTotalWatPrice());
+                    }
                 }
 
                 Collections.sort(items, Collections.reverseOrder(new Comparator<InvoiceItem>() {
@@ -107,7 +113,7 @@ public abstract class EppDialog extends BaseDialog {
                 }));
 
                 BigDecimal currentPrice = calculatePrice(items);
-                BigDecimal diff = invoicePrice.subtract(currentPrice);
+                BigDecimal diff = invoicePrice.subtract(currentPrice.add(zestavPrice));
 
                 BigDecimal addToEach = BigDecimal.valueOf(NumberUtil.round(diff.doubleValue() / items.size()));
 
@@ -117,7 +123,7 @@ public abstract class EppDialog extends BaseDialog {
                 }
 
 
-                currentPrice = calculatePrice(items);
+                currentPrice = calculatePrice(items).add(zestavPrice);
                 diff = invoicePrice.subtract(currentPrice);
                 if (diff.doubleValue() != 0) {
                     InvoiceItem lastItem = items.get(items.size() - 1);
