@@ -86,6 +86,7 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
 
                     @Override
                     public void onYes() {
+                        onDelete(getChecked());
                     }
                 });
             }
@@ -97,6 +98,8 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
         setCenter(invoicePdfTableView);
         setBottom(statusPanel = new TotalStatusPanel());
     }
+
+    public abstract  void onDelete(List<InvoicePdf> items);
 
     public abstract void onSave(InvoicePdf invoicePdf);
 

@@ -2,8 +2,6 @@ package org.menesty.ikea.ui.controls.dialog;
 
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
@@ -41,6 +39,7 @@ public class OrderEditDialog extends BaseDialog {
         currentEntity.setName(form.getOrderName());
         currentEntity.setGeneralUser(form.getGeneralUser());
         currentEntity.setComboUser(form.getComboUser());
+        currentEntity.setLackUser(form.getLackUser());
         onSave(currentEntity);
     }
 
@@ -131,6 +130,10 @@ public class OrderEditDialog extends BaseDialog {
 
         public User getGeneralUser() {
             return generalUsers.getSelectionModel().getSelectedItem();
+        }
+
+        public User getLackUser() {
+            return lackUsers.getSelectionModel().getSelectedItem();
         }
 
         public void setOrderName(String orderName) {

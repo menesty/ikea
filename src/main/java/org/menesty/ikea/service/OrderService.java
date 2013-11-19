@@ -322,4 +322,21 @@ public class OrderService {
         data.put(key, currentValue);
     }
 
+    public void remove(final Order order, InvoicePdf invoicePdf, boolean withProducts) {
+        order.getInvoicePdfs().remove(invoicePdf);
+
+        if (!withProducts) {
+            List<RawInvoiceProductItem> items = invoicePdf.getProducts();
+            for (RawInvoiceProductItem item : items)
+                item.setProductInfo(null);
+        }
+
+        DatabaseService.get().delete(invoicePdf);
+        DatabaseService.get().store(order);
+    }
+
+    public void remove(Order order, List<InvoicePdf> items, boolean withProducts) {
+        for (InvoicePdf item : items)
+            remove(order, item, withProducts);
+    }
 }

@@ -9,6 +9,7 @@ import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.util.NumberUtil;
 
 import java.io.*;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,7 +21,7 @@ import java.util.regex.Pattern;
  */
 public class InvoicePdfService {
 
-    private final static Pattern linePattern = Pattern.compile("(\\d+) (\\d{3}-\\d{3}-\\d{2}) (.*) (SZT\\.) (\\d{0,},{0,}\\d+) (\\S+) (\\d+,\\d+%) (\\S+,\\d{2})");
+    private final static Pattern linePattern = Pattern.compile("(\\d+) (\\d{3}-\\d{3}-\\d{2}) (.*) (SZT\\.|CM\\.) (\\d{0,},{0,}\\d+) (\\S+) (\\d+,\\d+%) (\\S+,\\d{2})");
 
     private final static Pattern totalPattern = Pattern.compile("DO ZAPŁATY:(.*)");
 
@@ -53,13 +54,19 @@ public class InvoicePdfService {
                 product.setArtNumber(m.group(2));
                 product.setOriginalArtNumber(m.group(2).replace("-", ""));
                 product.setName(m.group(3));
-                product.setCount(NumberUtil.parse(m.group(5)));
+
+                BigDecimal count = BigDecimal.valueOf(NumberUtil.parse(m.group(5)));
+
+                if ("CM.".equals(m.group(4)))
+                    count = count.divide(BigDecimal.valueOf(100));
+
+                product.setCount(count.doubleValue());
                 product.setPriceStr(m.group(6));
                 product.setWat(m.group(7));
                 product.setProductInfo(loadProductInfo(product));
                 products.add(product);
             } else {
-                System.out.println(line);
+                System.out.println("!!!!!" + line);
             }
         }
 
@@ -95,6 +102,7 @@ public class InvoicePdfService {
         try {
             productInfo = productService.loadOrCreate(product.getArtNumber());
         } catch (ProductFetchException e) {
+            System.out.println("Problem with open product : " + product.getArtNumber());
         }
         if (productInfo == null) {
             productInfo = new ProductInfo();

@@ -14,10 +14,8 @@ import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.ui.controls.search.ProductItemSearchData;
 import org.menesty.ikea.util.NumberUtil;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
@@ -58,7 +56,6 @@ public class ProductService {
             DatabaseService.get().store(product);
             return product;
         } catch (IOException e) {
-            System.out.println("Problem with open product : " + artNumber);
             throw new ProductFetchException();
         }
     }

@@ -216,6 +216,13 @@ public class OrderViewPage extends BasePage {
 
         invoicePdfViewComponent = new InvoicePdfViewComponent(getStage()) {
             @Override
+            public void onDelete(List<InvoicePdf> items) {
+                orderService.remove(currentOrder, items, false);
+                invoicePdfViewComponent.setItems(currentOrder.getInvoicePdfs());
+                updateRawInvoiceTableView();
+            }
+
+            @Override
             public void onSave(InvoicePdf invoicePdf) {
                 orderService.save(invoicePdf);
             }
