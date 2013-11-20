@@ -2,13 +2,16 @@ package org.menesty.ikea.ui.controls.search;
 
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
-import javafx.scene.control.ComboBox;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ToolBar;
 import org.menesty.ikea.domain.ProductInfo;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class StorageLackSearchBar extends ToolBar {
 
-    private ComboBox<ProductInfo.Group> productGroup;
+    private List<CheckBox> productGroups;
 
     public StorageLackSearchBar() {
         InvalidationListener invalidationListener = new InvalidationListener() {
@@ -18,13 +21,15 @@ public class StorageLackSearchBar extends ToolBar {
             }
         };
 
-        productGroup = new ComboBox<>();
-        productGroup.getSelectionModel().selectedItemProperty().addListener(invalidationListener);
-        productGroup.setPromptText("Product group");
-        productGroup.getItems().add(null);
-        productGroup.getItems().addAll(ProductInfo.Group.values());
+        productGroups = new ArrayList<>();
 
-        getItems().addAll(productGroup);
+        for (ProductInfo.Group group : ProductInfo.Group.values()) {
+            CheckBox checkBox = new CheckBox(group.name());
+            checkBox.selectedProperty().addListener(invalidationListener);
+            checkBox.setUserData(group);
+            productGroups.add(checkBox);
+            getItems().add(checkBox);
+        }
     }
 
     private void applyFilter() {
@@ -33,7 +38,13 @@ public class StorageLackSearchBar extends ToolBar {
 
     private StorageLackSearchData collectData() {
         StorageLackSearchData data = new StorageLackSearchData();
-        data.productGroup = productGroup.getSelectionModel().getSelectedItem();
+        List<ProductInfo.Group> groups = new ArrayList<>();
+
+        for (CheckBox checkBox : productGroups)
+            if (checkBox.isSelected())
+                groups.add((ProductInfo.Group) checkBox.getUserData());
+
+        data.productGroup = groups;
         return data;
     }
 

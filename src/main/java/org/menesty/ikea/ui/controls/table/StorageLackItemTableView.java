@@ -10,6 +10,7 @@ import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.Tooltip;
 import javafx.util.Callback;
+import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.domain.StorageLack;
 import org.menesty.ikea.ui.controls.PathProperty;
 import org.menesty.ikea.util.NumberUtil;
@@ -75,6 +76,20 @@ public class StorageLackItemTableView extends TableView<StorageLack> {
                 @Override
                 public ObservableValue<Double> call(TableColumn.CellDataFeatures<StorageLack, Double> item) {
                     return new PathProperty<>(item.getValue(), "productInfo.price");
+                }
+            });
+
+            getColumns().add(column);
+        }
+
+        {
+            TableColumn<StorageLack, ProductInfo.Group> column = new TableColumn<>();
+            column.setText("Group");
+            column.setMinWidth(60);
+            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<StorageLack, ProductInfo.Group>, ObservableValue<ProductInfo.Group>>() {
+                @Override
+                public ObservableValue<ProductInfo.Group> call(TableColumn.CellDataFeatures<StorageLack, ProductInfo.Group> item) {
+                    return new PathProperty<>(item.getValue(), "productInfo.group");
                 }
             });
 

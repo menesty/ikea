@@ -71,13 +71,13 @@ public abstract class StorageLackItemViewComponent extends BorderPane {
 
 
     private List<StorageLack> filter(List<StorageLack> items, StorageLackSearchData data) {
-        if (data.productGroup == null)
+        if (data.productGroup == null || data.productGroup.size() == 0)
             return new ArrayList<>(items);
 
         List<StorageLack> result = new ArrayList<>();
 
         for (StorageLack item : items)
-            if (data.productGroup == item.getProductInfo().getGroup())
+            if (data.productGroup.contains(item.getProductInfo().getGroup()))
                 result.add(item);
 
         return result;
