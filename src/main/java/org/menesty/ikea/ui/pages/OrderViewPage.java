@@ -90,8 +90,8 @@ public class OrderViewPage extends BasePage {
         storageLackItemViewComponent = new StorageLackItemViewComponent() {
 
             @Override
-            protected void onExportToIkea() {
-                final List<StorageLack> storageLacks = new ArrayList<>(getItems());
+            protected void onExportToIkea(List<StorageLack> items) {
+                final List<StorageLack> storageLacks = new ArrayList<>(items);
                 Iterator<StorageLack> iterator = storageLacks.iterator();
                 while (iterator.hasNext()) {
                     if (!iterator.next().isExist())

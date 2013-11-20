@@ -8,9 +8,13 @@ import javafx.scene.control.ToolBar;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
 import org.menesty.ikea.domain.StorageLack;
+import org.menesty.ikea.ui.controls.search.StorageLackSearchBar;
+import org.menesty.ikea.ui.controls.search.StorageLackSearchData;
 import org.menesty.ikea.ui.controls.table.StorageLackItemTableView;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -20,6 +24,8 @@ public abstract class StorageLackItemViewComponent extends BorderPane {
 
     private StorageLackItemTableView storageLackItemTableView;
 
+    private List<StorageLack> items;
+
     public StorageLackItemViewComponent() {
         ToolBar toolBar = new ToolBar();
 
@@ -28,16 +34,29 @@ public abstract class StorageLackItemViewComponent extends BorderPane {
         exportToIkeaBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-                onExportToIkea();
+                onExportToIkea(storageLackItemTableView.getItems());
             }
         });
         toolBar.getItems().add(exportToIkeaBtn);
-        setTop(toolBar);
+
+
+        StorageLackSearchBar searchBar = new StorageLackSearchBar() {
+            public void onSearch(StorageLackSearchData data) {
+                storageLackItemTableView.setItems(FXCollections.observableArrayList(filter(items, data)));
+            }
+        };
+
+        VBox toolBarBox = new VBox();
+
+        toolBarBox.getChildren().addAll(toolBar, searchBar);
+
+        setTop(toolBarBox);
         setCenter(storageLackItemTableView = new StorageLackItemTableView());
     }
 
     public void setItems(List<StorageLack> items) {
         storageLackItemTableView.setItems(FXCollections.observableArrayList(items));
+        this.items = Collections.unmodifiableList(items);
     }
 
     public void disableIkeaExport(boolean disable) {
@@ -48,5 +67,19 @@ public abstract class StorageLackItemViewComponent extends BorderPane {
         return Collections.unmodifiableList(storageLackItemTableView.getItems());
     }
 
-    protected abstract void onExportToIkea();
+    protected abstract void onExportToIkea(List<StorageLack> items);
+
+
+    private List<StorageLack> filter(List<StorageLack> items, StorageLackSearchData data) {
+        if (data.productGroup == null)
+            return new ArrayList<>(items);
+
+        List<StorageLack> result = new ArrayList<>();
+
+        for (StorageLack item : items)
+            if (data.productGroup == item.getProductInfo().getGroup())
+                result.add(item);
+
+        return result;
+    }
 }
