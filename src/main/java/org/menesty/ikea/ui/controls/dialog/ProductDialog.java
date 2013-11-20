@@ -26,6 +26,7 @@ import org.menesty.ikea.ui.pages.EntityDialogCallback;
 
 import java.awt.*;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -45,29 +46,30 @@ public class ProductDialog extends BaseDialog {
 
 
     private ProductInfo currentProductInfo;
+
     private EntityDialogCallback<ProductInfo> callback;
+
+
+    private final TabPane options;
 
 
     public ProductDialog() {
         getChildren().add(createTitle("Create new order from customer"));
         okBtn.setText("Save");
 
-        TabPane options = new TabPane();
+        options = new TabPane();
         options.getStyleClass().add(TabPane.STYLE_CLASS_FLOATING);
         options.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
-
 
         Tab productMain = new Tab();
         productMain.setText("Product Info");
         productMain.setContent(productForm = new ProductForm());
-
 
         Tab packageInfoTab = new Tab();
         packageInfoTab.setText("Package Information");
         packageInfoForm = new PackageInfoForm();
         packageInfoTab.setContent(packageInfoForm.getForm());
         options.getTabs().addAll(productMain, packageInfoTab);
-
 
         subProductTableView = new TableView<>();
         subProductTableView.setMaxHeight(150);
@@ -251,20 +253,22 @@ public class ProductDialog extends BaseDialog {
     }
 
     private class PackageInfoForm {
+
+
         private FormPanel formPanel;
-        private IntegerTextField weight;
+        private DoubleTextField weight;
         private IntegerTextField boxCount;
-        private IntegerTextField height;
-        private IntegerTextField width;
-        private IntegerTextField length;
+        private DoubleTextField height;
+        private DoubleTextField width;
+        private DoubleTextField length;
 
         public PackageInfoForm() {
             formPanel = new FormPanel();
             formPanel.addRow("Box Count", boxCount = new IntegerTextField());
-            formPanel.addRow("Weight (gr)", weight = new IntegerTextField());
-            formPanel.addRow("Height (mm)", height = new IntegerTextField());
-            formPanel.addRow("Width (mm)", width = new IntegerTextField());
-            formPanel.addRow("Length (mm)", length = new IntegerTextField());
+            formPanel.addRow("Weight (kg)", weight = new DoubleTextField());
+            formPanel.addRow("Height (cm)", height = new DoubleTextField());
+            formPanel.addRow("Width (cm)", width = new DoubleTextField());
+            formPanel.addRow("Length (cm)", length = new DoubleTextField());
         }
 
         public FormPanel getForm() {
@@ -272,11 +276,11 @@ public class ProductDialog extends BaseDialog {
         }
 
         public void setWeight(int weight) {
-            this.weight.setNumber(weight);
+            this.weight.setNumber(convertToKg(weight));
         }
 
         public int getWeight() {
-            return weight.getNumber();
+            return convertToGr(weight.getNumber());
         }
 
         public void setBoxCount(int boxCount) {
@@ -288,29 +292,46 @@ public class ProductDialog extends BaseDialog {
         }
 
         public void setHeight(int height) {
-            this.height.setNumber(height);
+            this.height.setNumber(convertToCm(height));
         }
 
         public int getHeight() {
-            return height.getNumber();
+            return convertToMm(height.getNumber());
         }
 
         public void setWidth(int width) {
-            this.width.setNumber(width);
+            this.width.setNumber(convertToCm(width));
         }
 
         public int getWidth() {
-            return width.getNumber();
+            return convertToMm(width.getNumber());
         }
 
         public void setLength(int length) {
-            this.length.setNumber(length);
+            this.length.setNumber(convertToCm(length));
         }
 
         public int getLength() {
-            return length.getNumber();
+            return convertToMm(length.getNumber());
         }
     }
+
+    private double convertToCm(int value) {
+        return BigDecimal.valueOf(value).divide(BigDecimal.TEN).setScale(2).doubleValue();
+    }
+
+    private int convertToMm(double value) {
+        return BigDecimal.valueOf(value).multiply(BigDecimal.TEN).intValue();
+    }
+
+    private double convertToKg(int value) {
+        return BigDecimal.valueOf(value).divide(BigDecimal.valueOf(1000)).setScale(3).doubleValue();
+    }
+
+    private int convertToGr(double value) {
+        return BigDecimal.valueOf(value).multiply(BigDecimal.valueOf(1000)).intValue();
+    }
+
 
     public void bind(ProductInfo productInfo, EntityDialogCallback<ProductInfo> callback) {
         this.callback = callback;
@@ -322,6 +343,7 @@ public class ProductDialog extends BaseDialog {
             subProductTableView.getItems().add(0, new ProductPart(0, currentProductInfo));
         }
         subProductTableView.setVisible(productInfo.getParts() != null);
+        options.getSelectionModel().select(options.getTabs().get(0));
     }
 
     private void bindProperties() {
