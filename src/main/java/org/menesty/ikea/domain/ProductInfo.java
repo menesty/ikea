@@ -22,16 +22,23 @@ public class ProductInfo {
 
     public enum Group {
 
-        Regal, Decor, Lights, Kitchen, Bathroom, Textile, Full, Storing, Family, Kids, Combo(false), Unknown(false);
+        Regal(), Decor("Dekoracja"), Lights("Oświetlenie"), Kitchen("Kuchnia"), Bathroom("Łazienka"), Textile("Tekstylia"), Full(), Storing("Przechowywanie"), Family("Family"), Kids("dla Dzieci"), Combo("", false), Unknown("", false);
 
         private final boolean defaults;
 
+        private final String title;
+
         Group() {
-            defaults = true;
+            this("", true);
         }
 
-        Group(boolean defaults) {
+        Group(String title) {
+            this(title, true);
+        }
+
+        Group(String title, boolean defaults) {
             this.defaults = defaults;
+            this.title = title;
         }
 
         public static List<Group> general() {
@@ -41,6 +48,10 @@ public class ProductInfo {
                 if (value.defaults) groups.add(value);
 
             return groups;
+        }
+
+        public String getTitel() {
+            return title;
         }
     }
 

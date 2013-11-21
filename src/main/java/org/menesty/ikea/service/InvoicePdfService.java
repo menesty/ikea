@@ -49,7 +49,6 @@ public class InvoicePdfService {
             String line = scanner.nextLine();
             Matcher m = linePattern.matcher(line);
             if (m.find()) {
-                System.out.println(m.group());
                 RawInvoiceProductItem product = new RawInvoiceProductItem();
                 product.setArtNumber(m.group(2));
                 product.setOriginalArtNumber(m.group(2).replace("-", ""));

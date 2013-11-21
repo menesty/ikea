@@ -9,6 +9,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.processor.invoice.InvoiceItem;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.ui.controls.TotalStatusPanel;
@@ -17,7 +18,9 @@ import org.menesty.ikea.ui.controls.table.RawInvoiceTableView;
 import java.io.File;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public abstract class RawInvoiceItemViewComponent extends BorderPane {
 
@@ -106,34 +109,54 @@ public abstract class RawInvoiceItemViewComponent extends BorderPane {
 
 
         BigDecimal price = BigDecimal.ZERO;
-        int index = 1;
         BigDecimal count = BigDecimal.ZERO;
+
+        Map<ProductInfo.Group, Integer> groupMap = new HashMap<>();
 
         for (RawInvoiceProductItem item : filtered) {
             BigDecimal artPrice = BigDecimal.valueOf(item.getTotal());
 
             if ((price.add(artPrice).doubleValue()) > 460) {
-                result.add(createZestav(index, price.doubleValue(), count.doubleValue()));
+                result.add(createZestav(groupMap, price.doubleValue()));
 
-                index++;
                 price = artPrice;
                 count = BigDecimal.valueOf(item.getCount());
+                groupMap = new HashMap<>();
+                groupMap.put(item.getProductInfo().getGroup(), 1);
+
             } else {
                 price = price.add(artPrice);
                 count = count.add(BigDecimal.valueOf(item.getCount()));
+
+                Integer groupCount = groupMap.get(item.getProductInfo().getGroup());
+                if (groupCount == null)
+                    groupCount = 1;
+                else
+                    groupCount++;
+
+                groupMap.put(item.getProductInfo().getGroup(), groupCount);
             }
         }
 
         if (price.doubleValue() != 0)
-            result.add(createZestav(index, price.doubleValue(), count.doubleValue()));
+            result.add(createZestav(groupMap, price.doubleValue()));
 
         return result;
 
     }
 
-    private InvoiceItem createZestav(int index, double price, double count) {
-        String name = String.format("zestav %1$s parts %2$s", index, (int) count);
-        return InvoiceItem.get("zestav " + index, name, name, price, 23, 1, 1, 1, 1).setZestav(true);
+    private InvoiceItem createZestav(Map<ProductInfo.Group, Integer> groupMap, double price) {
+        String subName = "";
+        int maxIndex = 0;
+        for (Map.Entry<ProductInfo.Group, Integer> entry : groupMap.entrySet())
+            if (entry.getValue() > maxIndex) {
+                maxIndex = entry.getValue();
+                subName = entry.getKey().name();
+            }
+
+
+        String name = String.format("Zestaw IKEA %1$s", subName);
+        return InvoiceItem.get(name, name, name, price, 23, 1, 1, 1, 1).setZestav(true);
     }
 
 }
