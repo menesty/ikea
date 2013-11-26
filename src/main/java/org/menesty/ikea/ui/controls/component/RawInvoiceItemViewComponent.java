@@ -112,12 +112,13 @@ public abstract class RawInvoiceItemViewComponent extends BorderPane {
         BigDecimal count = BigDecimal.ZERO;
 
         Map<ProductInfo.Group, Integer> groupMap = new HashMap<>();
-
+        int index = 1;
         for (RawInvoiceProductItem item : filtered) {
             BigDecimal artPrice = BigDecimal.valueOf(item.getTotal());
 
             if ((price.add(artPrice).doubleValue()) > 460) {
-                result.add(createZestav(groupMap, price.doubleValue()));
+                result.add(createZestav(groupMap, index, price.doubleValue()));
+                index++;
 
                 price = artPrice;
                 count = BigDecimal.valueOf(item.getCount());
@@ -139,13 +140,13 @@ public abstract class RawInvoiceItemViewComponent extends BorderPane {
         }
 
         if (price.doubleValue() != 0)
-            result.add(createZestav(groupMap, price.doubleValue()));
+            result.add(createZestav(groupMap, index, price.doubleValue()));
 
         return result;
 
     }
 
-    private InvoiceItem createZestav(Map<ProductInfo.Group, Integer> groupMap, double price) {
+    private InvoiceItem createZestav(Map<ProductInfo.Group, Integer> groupMap, int index, double price) {
         String subName = "";
         int maxIndex = 0;
         for (Map.Entry<ProductInfo.Group, Integer> entry : groupMap.entrySet())
@@ -154,9 +155,10 @@ public abstract class RawInvoiceItemViewComponent extends BorderPane {
                 subName = entry.getKey().getTitel();
             }
 
+        String name = String.format("Zestaw %1$s", subName);
+        String artNumber = subName.substring(0,2)+"_"+index;
 
-        String name = String.format("Zestaw IKEA %1$s", subName);
-        return InvoiceItem.get(name, name, name, price, 23, 1, 1, 1, 1).setZestav(true);
+        return InvoiceItem.get(artNumber, name, name, price, 23, 1, 1, 1, 1).setZestav(true);
     }
 
 }
