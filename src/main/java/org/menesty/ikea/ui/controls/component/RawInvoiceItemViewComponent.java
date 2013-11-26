@@ -151,7 +151,7 @@ public abstract class RawInvoiceItemViewComponent extends BorderPane {
         for (Map.Entry<ProductInfo.Group, Integer> entry : groupMap.entrySet())
             if (entry.getValue() > maxIndex) {
                 maxIndex = entry.getValue();
-                subName = entry.getKey().name();
+                subName = entry.getKey().getTitel();
             }
 
 

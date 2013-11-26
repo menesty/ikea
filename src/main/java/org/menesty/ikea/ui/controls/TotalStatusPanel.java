@@ -10,8 +10,12 @@ public class TotalStatusPanel extends ToolBar {
     private Label totalLabel;
 
     public TotalStatusPanel() {
-        getItems().add(new Label("Total :"));
-        getItems().add(totalLabel = new Label());
+        this("Total");
+    }
+
+    public TotalStatusPanel(String totalLabel) {
+        getItems().add(new Label(totalLabel + " :"));
+        getItems().add(this.totalLabel = new Label());
     }
 
     public void setTotal(double total) {
