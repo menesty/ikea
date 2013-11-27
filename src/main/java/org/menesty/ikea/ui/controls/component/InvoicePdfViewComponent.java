@@ -19,6 +19,7 @@ import org.menesty.ikea.ui.pages.DialogCallback;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public abstract class InvoicePdfViewComponent extends BorderPane {
@@ -43,8 +44,6 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
             }
         };
 
-        invoicePdfTableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-
         invoicePdfTableView.getSelectionModel().selectedIndexProperty().addListener(new InvalidationListener() {
             @Override
             public void invalidated(Observable observable) {
@@ -63,10 +62,10 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
                 fileChooser.setTitle("Invoice PDF location");
                 FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("Pdf files (*.pdf)", "*.pdf");
                 fileChooser.getExtensionFilters().add(extFilter);
-                File selectedFile = fileChooser.showOpenDialog(stage);
+                List<File> selectedFile = fileChooser.showOpenMultipleDialog(stage);
 
-                if (selectedFile != null)
-                    onExport(selectedFile.getName(), selectedFile.getPath());
+                if (selectedFile != null && selectedFile.size() > 0)
+                    onExport(filter(selectedFile));
 
             }
         });
@@ -99,15 +98,28 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
         setBottom(statusPanel = new TotalStatusPanel());
     }
 
-    public abstract  void onDelete(List<InvoicePdf> items);
+    private List<File> filter(List<File> files) {
+        Iterator<File> iter = files.iterator();
+
+        while (iter.hasNext()) {
+            File file = iter.next();
+
+            for (InvoicePdfTableView.InvoicePdfTableItem item : invoicePdfTableView.getItems())
+                if (item.getInvoicePdf().getName().equals(file.getName()))
+                    iter.remove();
+        }
+        return files;
+    }
+
+    public abstract void onDelete(List<InvoicePdf> items);
 
     public abstract void onSave(InvoicePdf invoicePdf);
 
-    public abstract void onExport(String fileName, String filePath);
+    public abstract void onExport(List<File> files);
 
     // public abstract void onCheck(InvoicePdf invoicePdf);
 
-    public abstract void onSelect(List<InvoicePdf> invoicePdfs);
+    public abstract void onSelect(InvoicePdf invoicePdf);
 
     public void setItems(List<InvoicePdf> items) {
         invoicePdfTableView.setItems(transform(items));
@@ -117,15 +129,6 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
             total += item.getPrice();
 
         statusPanel.setTotal(total);
-    }
-
-    private List<InvoicePdf> revertTransform(List<InvoicePdfTableView.InvoicePdfTableItem> entities) {
-        List<InvoicePdf> result = new ArrayList<>();
-
-        for (InvoicePdfTableView.InvoicePdfTableItem item : entities)
-            result.add(item.getInvoicePdf());
-
-        return result;
     }
 
     private ObservableList<InvoicePdfTableView.InvoicePdfTableItem> transform(List<InvoicePdf> entities) {
@@ -150,9 +153,8 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
         return checked;
     }
 
-    public List<InvoicePdf> getSelected() {
-        List<InvoicePdfTableView.InvoicePdfTableItem> selected = invoicePdfTableView.getSelectionModel().getSelectedItems();
-        return revertTransform(selected);
+    public InvoicePdf getSelected() {
+        return invoicePdfTableView.getSelectionModel().getSelectedItem() != null ? invoicePdfTableView.getSelectionModel().getSelectedItem().getInvoicePdf() : null;
     }
 
 }

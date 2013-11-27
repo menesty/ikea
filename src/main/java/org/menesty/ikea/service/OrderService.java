@@ -339,4 +339,9 @@ public class OrderService {
         for (InvoicePdf item : items)
             remove(order, item, withProducts);
     }
+
+    public void save(List<InvoicePdf> entities) {
+        for (InvoicePdf item : entities)
+            save(item);
+    }
 }

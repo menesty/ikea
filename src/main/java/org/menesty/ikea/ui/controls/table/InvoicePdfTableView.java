@@ -2,6 +2,7 @@ package org.menesty.ikea.ui.controls.table;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -21,6 +22,19 @@ import org.menesty.ikea.ui.pages.OrderListPage;
 public abstract class InvoicePdfTableView extends TableView<InvoicePdfTableView.InvoicePdfTableItem> {
 
     public InvoicePdfTableView() {
+        {
+            TableColumn<InvoicePdfTableItem, Number> column = new TableColumn<>();
+            column.setMaxWidth(45);
+            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<InvoicePdfTableItem, Number>, ObservableValue<Number>>() {
+                @Override
+                public ObservableValue<Number> call(TableColumn.CellDataFeatures<InvoicePdfTableItem, Number> item) {
+                    return new SimpleIntegerProperty(item.getTableView().getItems().indexOf(item.getValue()) + 1);
+                }
+            });
+            getColumns().add(column);
+        }
+
+
         TableColumn<InvoicePdfTableItem, Boolean> checked = new TableColumn<>();
         checked.setMaxWidth(40);
         checked.setResizable(false);
