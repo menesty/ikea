@@ -156,7 +156,7 @@ public abstract class RawInvoiceItemViewComponent extends BorderPane {
             }
 
         String name = String.format("Zestaw %1$s", subName);
-        String artNumber = subName.substring(0,2)+"_"+index;
+        String artNumber = subName.substring(0, 2) + "_" + index;
 
         return InvoiceItem.get(artNumber, name, name, price, 23, 1, 1, 1, 1).setZestav(true);
     }

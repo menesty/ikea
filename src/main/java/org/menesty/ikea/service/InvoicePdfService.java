@@ -10,6 +10,7 @@ import org.menesty.ikea.util.NumberUtil;
 
 import java.io.*;
 import java.math.BigDecimal;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -123,6 +124,17 @@ public class InvoicePdfService {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public List<InvoicePdf> createInvoicePdf(List<File> files) {
+        List<InvoicePdf> result = new ArrayList<>();
+        for (File file : files)
+            try {
+                result.add(createInvoicePdf(file.getName(), Files.newInputStream(file.toPath())));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        return result;
     }
 }
 

@@ -28,10 +28,7 @@ import org.menesty.ikea.ui.controls.dialog.IkeaUserFillProgressDialog;
 import org.menesty.ikea.ui.controls.dialog.ProductDialog;
 import org.menesty.ikea.ui.controls.search.OrderItemSearchData;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -228,17 +225,13 @@ public class OrderViewPage extends BasePage {
             }
 
             @Override
-            public void onExport(String fileName, String filePath) {
-                try {
-                    runTask(new CreateInvoicePdfTask(fileName, new FileInputStream(filePath)));
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
+            public void onExport(List<File> files) {
+                runTask(new CreateInvoicePdfTask(files));
             }
 
             @Override
-            public void onSelect(List<InvoicePdf> invoicePdfs) {
-                updateRawInvoiceTableView(invoicePdfs);
+            public void onSelect(InvoicePdf invoicePdf) {
+                updateRawInvoiceTableView(invoicePdf);
             }
         };
 
@@ -320,21 +313,19 @@ public class OrderViewPage extends BasePage {
 
     class CreateInvoicePdfTask extends Task<Void> {
 
-        private String orderName;
+        private final List<File> files;
 
-        private InputStream is;
 
-        public CreateInvoicePdfTask(String orderName, InputStream is) {
-            this.orderName = orderName;
-            this.is = is;
+        public CreateInvoicePdfTask(List<File> files) {
+            this.files = files;
         }
 
         @Override
         protected Void call() throws Exception {
             try {
-                InvoicePdf entity = invoicePdfService.createInvoicePdf(orderName, is);
-                orderService.save(entity);
-                currentOrder.getInvoicePdfs().add(entity);
+                List<InvoicePdf> entities = invoicePdfService.createInvoicePdf(files);
+                orderService.save(entities);
+                currentOrder.getInvoicePdfs().addAll(entities);
                 orderService.save(currentOrder);
 
                 Platform.runLater(new Runnable() {
@@ -403,14 +394,16 @@ public class OrderViewPage extends BasePage {
         updateRawInvoiceTableView(invoicePdfViewComponent.getSelected());
     }
 
-    private void updateRawInvoiceTableView(List<InvoicePdf> selected) {
-
+    private void updateRawInvoiceTableView(InvoicePdf selected) {
+        List<InvoicePdf> selectedItems = new ArrayList<>();
         List<RawInvoiceProductItem> forDisplay = new ArrayList<>();
 
-        if (selected.isEmpty() && currentOrder.getInvoicePdfs() != null)
-            selected.addAll(currentOrder.getInvoicePdfs());
+        if (selected == null && currentOrder.getInvoicePdfs() != null)
+            selectedItems.addAll(currentOrder.getInvoicePdfs());
+        else
+            selectedItems.add(selected);
 
-        for (InvoicePdf invoicePdf : selected)
+        for (InvoicePdf invoicePdf : selectedItems)
             forDisplay.addAll(invoicePdf.getProducts());
 
         rawInvoiceItemViewComponent.setItems(forDisplay);
