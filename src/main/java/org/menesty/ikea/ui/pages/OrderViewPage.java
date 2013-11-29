@@ -27,6 +27,7 @@ import org.menesty.ikea.ui.controls.dialog.EppDialog;
 import org.menesty.ikea.ui.controls.dialog.IkeaUserFillProgressDialog;
 import org.menesty.ikea.ui.controls.dialog.ProductDialog;
 import org.menesty.ikea.ui.controls.search.OrderItemSearchData;
+import org.menesty.ikea.util.NumberUtil;
 
 import java.io.*;
 import java.math.BigDecimal;
@@ -308,6 +309,7 @@ public class OrderViewPage extends BasePage {
         storageLackItemViewComponent.disableIkeaExport(currentOrder.getLackUser() == null);
 
         orderItemTab.setText(currentOrder.getName() + " - " + orderItemTab.getText());
+        rawInvoiceItemViewComponent.setEppPrefix(((int) NumberUtil.parse(currentOrder.getName())) + "");
     }
 
 

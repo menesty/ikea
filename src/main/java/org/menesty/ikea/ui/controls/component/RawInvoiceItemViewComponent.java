@@ -27,6 +27,8 @@ public abstract class RawInvoiceItemViewComponent extends BorderPane {
     private final RawInvoiceTableView rawInvoiceItemTableView;
     private final TotalStatusPanel totalStatusPanel;
 
+    private String artPrefix = "";
+
     public RawInvoiceItemViewComponent(final Stage stage) {
         ToolBar rawInvoiceControl = new ToolBar();
 
@@ -108,42 +110,33 @@ public abstract class RawInvoiceItemViewComponent extends BorderPane {
                 filtered.add(item);
 
 
-        BigDecimal price = BigDecimal.ZERO;
-        BigDecimal count = BigDecimal.ZERO;
+        BigDecimal totalPrice = BigDecimal.ZERO;
 
         Map<ProductInfo.Group, Integer> groupMap = new HashMap<>();
-        int index = 1;
         for (RawInvoiceProductItem item : filtered) {
-            BigDecimal artPrice = BigDecimal.valueOf(item.getTotal());
+            totalPrice = totalPrice.add(BigDecimal.valueOf(item.getTotal()));
 
-            if ((price.add(artPrice).doubleValue()) > 460) {
-                result.add(createZestav(groupMap, index, price.doubleValue()));
-                index++;
+            Integer groupCount = groupMap.get(item.getProductInfo().getGroup());
+            if (groupCount == null)
+                groupCount = 1;
+            else
+                groupCount++;
 
-                price = artPrice;
-                count = BigDecimal.valueOf(item.getCount());
-                groupMap = new HashMap<>();
-                groupMap.put(item.getProductInfo().getGroup(), 1);
+            groupMap.put(item.getProductInfo().getGroup(), groupCount);
 
-            } else {
-                price = price.add(artPrice);
-                count = count.add(BigDecimal.valueOf(item.getCount()));
-
-                Integer groupCount = groupMap.get(item.getProductInfo().getGroup());
-                if (groupCount == null)
-                    groupCount = 1;
-                else
-                    groupCount++;
-
-                groupMap.put(item.getProductInfo().getGroup(), groupCount);
-            }
         }
 
-        if (price.doubleValue() != 0)
-            result.add(createZestav(groupMap, index, price.doubleValue()));
+        int zestavCount = (int) (totalPrice.doubleValue() / 460);
+
+        for (int i = 0; i < zestavCount; i++)
+            result.add(createZestav(groupMap, i, 460));
+
+        BigDecimal diff = totalPrice.subtract(BigDecimal.valueOf(zestavCount * 460));
+
+        if (diff.doubleValue() > 0)
+            result.add(createZestav(groupMap, zestavCount, diff.doubleValue()));
 
         return result;
-
     }
 
     private InvoiceItem createZestav(Map<ProductInfo.Group, Integer> groupMap, int index, double price) {
@@ -152,13 +145,17 @@ public abstract class RawInvoiceItemViewComponent extends BorderPane {
         for (Map.Entry<ProductInfo.Group, Integer> entry : groupMap.entrySet())
             if (entry.getValue() > maxIndex) {
                 maxIndex = entry.getValue();
-                subName = entry.getKey().getTitel();
+                subName = entry.getKey().getTitel().equals("") ? entry.getKey().name() : entry.getKey().getTitel();
             }
 
         String name = String.format("Zestaw %1$s", subName);
-        String artNumber = subName.substring(0, 2) + "_" + index;
+        String artNumber = artPrefix + "_" + subName.substring(0, 2) + "_" + (index + 1);
 
         return InvoiceItem.get(artNumber, name, name, price, 23, 1, 1, 1, 1).setZestav(true);
+    }
+
+    public void setEppPrefix(String artPrefix) {
+        this.artPrefix = artPrefix;
     }
 
 }

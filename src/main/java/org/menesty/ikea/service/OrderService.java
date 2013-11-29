@@ -291,7 +291,7 @@ public class OrderService {
                 else
                     increaseData(orderData, orderItem.getProductInfo().getOriginalArtNum(), orderItem.getCount());
 
-            if (!orderItem.isInvalidFetch())
+            if (!orderItem.isInvalidFetch() && OrderItem.Type.Na != orderItem.getType())
                 infoData.put(orderItem.getProductInfo().getOriginalArtNum(), orderItem.getProductInfo());
         }
 

@@ -22,7 +22,7 @@ public class ProductInfo {
 
     public enum Group {
 
-        Regal(), Decor("Dekoracja"), Lights("Oświetlenie"), Kitchen("Kuchnia"), Bathroom("Łazienka"), Textile("Tekstylia"), Full(), Storing("Przechowywanie"), Family("Family"), Kids("dla Dzieci"), Combo("", false), Unknown("", false);
+        Regal("Regal"), Decor("Dekoracja"), Lights("Oświetlenie"), Kitchen("Kuchnia"), Bathroom("Łazienka"), Textile("Tekstylia"), Full(), Storing("Przechowywanie"), Family("Family"), Kids("dla Dzieci"), Combo("", false), Unknown("Unknown", false);
 
         private final boolean defaults;
 

@@ -10,7 +10,7 @@ public class NumberUtil {
 
     public static double parse(String value, double defaultValue) {
         try {
-            return Double.valueOf(value.replaceAll("[a-zA-z\\u00A0\\s]", "").replace(",", "."));
+            return Double.valueOf(value.replaceAll("[a-zA-z\\u00A0\\s#]", "").replace(",", "."));
         } catch (NumberFormatException e) {
             return defaultValue;
         }
