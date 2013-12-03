@@ -1,6 +1,9 @@
 package org.menesty.ikea.util;
 
+import javafx.beans.property.SimpleStringProperty;
+
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 public class NumberUtil {
 
@@ -31,5 +34,9 @@ public class NumberUtil {
             return (int) value + "";
 
         return value + "";
+    }
+
+    public static SimpleStringProperty preparePackInfo(int value, int dive, String prefix) {
+        return new SimpleStringProperty((value != 0 ? BigDecimal.valueOf((double) value / dive).setScale(2, RoundingMode.CEILING).doubleValue() + "" : "0") + " " + prefix);
     }
 }

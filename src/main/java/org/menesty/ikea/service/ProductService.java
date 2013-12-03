@@ -66,11 +66,19 @@ public class ProductService {
         productInfo.setPrice(NumberUtil.parse(doc.select("#price1").text()));
     }
 
-    public ProductInfo findByArtNumber(String artNumber) {
-        ProductInfo product = new ProductInfo();
-        product.setOriginalArtNum(artNumber.replace(".", "").replace("-", ""));
+    public ProductInfo findByArtNumber(final String artNumber) {
 
-        ObjectSet<ProductInfo> result = DatabaseService.get().queryByExample(product);
+        ProductInfo product = new ProductInfo();
+        product.setOriginalArtNum(artNumber.replaceAll("\\D", ""));
+
+        ObjectSet<ProductInfo> result = DatabaseService.get().query(new Predicate<ProductInfo>() {
+            @Override
+            public boolean match(ProductInfo productInfo) {
+                if (artNumber.equals(productInfo.getArtNumber()) || artNumber.equals(productInfo.getOriginalArtNum()))
+                    return true;
+                return false;
+            }
+        });
 
         if (!result.isEmpty())
             return result.get(0);

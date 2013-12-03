@@ -72,7 +72,6 @@ public abstract class RawInvoiceItemViewComponent extends BorderPane {
             }
         };
 
-
         setTop(rawInvoiceControl);
         setCenter(rawInvoiceItemTableView);
         setBottom(totalStatusPanel = new TotalStatusPanel());
@@ -148,7 +147,7 @@ public abstract class RawInvoiceItemViewComponent extends BorderPane {
                 subName = entry.getKey().getTitel().equals("") ? entry.getKey().name() : entry.getKey().getTitel();
             }
 
-        String name = String.format("Zestaw %1$s", subName);
+        String name = String.format("Zestaw IKEA %1$s", subName);
         String artNumber = artPrefix + "_" + subName.substring(0, 2) + "_" + (index + 1);
 
         return InvoiceItem.get(artNumber, name, name, price, 23, 1, 1, 1, 1).setZestav(true);

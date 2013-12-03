@@ -1,6 +1,5 @@
 package org.menesty.ikea.ui.pages;
 
-import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -22,10 +21,9 @@ import org.menesty.ikea.ui.controls.PathProperty;
 import org.menesty.ikea.ui.controls.dialog.ProductDialog;
 import org.menesty.ikea.ui.controls.search.ProductItemSearchBar;
 import org.menesty.ikea.ui.controls.search.ProductItemSearchData;
+import org.menesty.ikea.util.NumberUtil;
 
 import java.io.File;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 /**
  * User: Menesty
@@ -153,7 +151,7 @@ public class ProductPage extends BasePage {
                 @Override
                 public ObservableValue<String> call(TableColumn.CellDataFeatures<ProductInfo, String> item) {
                     int value = item.getValue().getPackageInfo().getWeight();
-                    return preparePackInfo(value, 1000, "kg");
+                    return NumberUtil.preparePackInfo(value, 1000, "kg");
                 }
             });
 
@@ -167,7 +165,7 @@ public class ProductPage extends BasePage {
                 @Override
                 public ObservableValue<String> call(TableColumn.CellDataFeatures<ProductInfo, String> item) {
                     int value = item.getValue().getPackageInfo().getHeight();
-                    return preparePackInfo(value, 10, "cm");
+                    return NumberUtil.preparePackInfo(value, 10, "cm");
                 }
             });
 
@@ -181,7 +179,7 @@ public class ProductPage extends BasePage {
                 @Override
                 public ObservableValue<String> call(TableColumn.CellDataFeatures<ProductInfo, String> item) {
                     int value = item.getValue().getPackageInfo().getWidth();
-                    return preparePackInfo(value, 10, "cm");
+                    return NumberUtil.preparePackInfo(value, 10, "cm");
                 }
             });
 
@@ -195,7 +193,7 @@ public class ProductPage extends BasePage {
                 @Override
                 public ObservableValue<String> call(TableColumn.CellDataFeatures<ProductInfo, String> item) {
                     int value = item.getValue().getPackageInfo().getLength();
-                    return preparePackInfo(value, 10, "cm");
+                    return NumberUtil.preparePackInfo(value, 10, "cm");
                 }
             });
 
@@ -305,9 +303,7 @@ public class ProductPage extends BasePage {
         tableView.setItems(FXCollections.observableArrayList(productService.load(data)));
     }
 
-    private SimpleStringProperty preparePackInfo(int value, int dive, String prefix) {
-        return new SimpleStringProperty((value != 0 ? BigDecimal.valueOf((double) value / dive).setScale(2, RoundingMode.CEILING).doubleValue() + "" : "0") + " " + prefix);
-    }
+
 
     @Override
     protected Node createIconContent() {
