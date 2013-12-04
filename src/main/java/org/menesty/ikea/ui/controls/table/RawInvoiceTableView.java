@@ -57,37 +57,7 @@ public class RawInvoiceTableView extends TableView<RawInvoiceProductItem> {
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<RawInvoiceProductItem, String>, ObservableValue<String>>() {
                 @Override
                 public ObservableValue<String> call(TableColumn.CellDataFeatures<RawInvoiceProductItem, String> item) {
-                    return new PathProperty<>(item.getValue(), "productInfo.shortName");
-                }
-            });
-
-            getColumns().add(column);
-        }
-
-        {
-            TableColumn<RawInvoiceProductItem, Integer> column = new TableColumn<>();
-            column.setText("B count");
-            column.setMinWidth(60);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<RawInvoiceProductItem, Integer>, ObservableValue<Integer>>() {
-                @Override
-                public ObservableValue<Integer> call(TableColumn.CellDataFeatures<RawInvoiceProductItem, Integer> item) {
-                    return new PathProperty<>(item.getValue(), "productInfo.packageInfo.boxCount");
-                }
-            });
-
-            getColumns().add(column);
-        }
-
-        //==============================================
-        {
-            TableColumn<RawInvoiceProductItem, String> column = new TableColumn<>();
-            column.setText("Weight");
-            column.setMinWidth(60);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<RawInvoiceProductItem, String>, ObservableValue<String>>() {
-                @Override
-                public ObservableValue<String> call(TableColumn.CellDataFeatures<RawInvoiceProductItem, String> item) {
-                    int value = item.getValue().getProductInfo().getPackageInfo().getWeight();
-                    return NumberUtil.preparePackInfo(value, 1000, "kg");
+                    return new PathProperty<>(item.getValue(), "name");
                 }
             });
 

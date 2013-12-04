@@ -1,6 +1,7 @@
 package org.menesty.ikea.ui.controls.table;
 
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -49,7 +50,12 @@ public class OrderItemTableView extends TableView<OrderItem> {
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderItem, String>, ObservableValue<String>>() {
                 @Override
                 public ObservableValue<String> call(TableColumn.CellDataFeatures<OrderItem, String> item) {
-                    return new PathProperty<>(item.getValue(), "name");
+                    String field = "name";
+
+                    if (item.getValue().getProductInfo() != null && item.getValue().getProductInfo().getShortName() != null)
+                        field = "productInfo.shortName";
+
+                    return new PathProperty<>(item.getValue(), field);
                 }
             });
 
@@ -68,7 +74,6 @@ public class OrderItemTableView extends TableView<OrderItem> {
 
             getColumns().add(column);
         }
-
 
         {
             TableColumn<OrderItem, Double> column = new TableColumn<>("Price");
@@ -115,7 +120,9 @@ public class OrderItemTableView extends TableView<OrderItem> {
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderItem, ProductInfo.Group>, ObservableValue<ProductInfo.Group>>() {
                 @Override
                 public ObservableValue<ProductInfo.Group> call(TableColumn.CellDataFeatures<OrderItem, ProductInfo.Group> item) {
-                    return new PathProperty<>(item.getValue(), "productInfo.group");
+                    if (item.getValue().getProductInfo() != null)
+                        return new PathProperty<>(item.getValue(), "productInfo.group");
+                    return new SimpleObjectProperty<>(null);
                 }
             });
 
