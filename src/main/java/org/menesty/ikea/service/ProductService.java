@@ -10,6 +10,7 @@ import org.menesty.ikea.domain.PackageInfo;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.domain.ProductPart;
 import org.menesty.ikea.exception.ProductFetchException;
+import org.menesty.ikea.order.OrderItem;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.ui.controls.search.ProductItemSearchData;
 import org.menesty.ikea.util.NumberUtil;
@@ -455,5 +456,9 @@ public class ProductService {
 
     private double getDouble(String value) {
         return NumberUtil.parse(value.trim());
+    }
+
+    public void save(OrderItem orderItem) {
+        DatabaseService.get().store(orderItem);
     }
 }

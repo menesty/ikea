@@ -360,6 +360,7 @@ public class OrderViewPage extends BasePage {
             else {
                 orderItem.setProductInfo(productInfo);
                 orderItem.setInvalidFetch(false);
+                productService.save(orderItem);
             }
             return null;
         }
