@@ -3,7 +3,6 @@ package org.menesty.ikea.ui.controls.dialog;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
@@ -203,14 +202,15 @@ public abstract class EppDialog extends BaseDialog {
         };
 
         {
-            TableColumn<InvoiceItem, String> column = new TableColumn<>("Count");
+            TableColumn<InvoiceItem, Double> column = new TableColumn<>("Count");
             column.setMinWidth(60);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<InvoiceItem, String>, ObservableValue<String>>() {
+            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<InvoiceItem, Double>, ObservableValue<Double>>() {
                 @Override
-                public ObservableValue<String> call(TableColumn.CellDataFeatures<InvoiceItem, String> item) {
-                    return new SimpleStringProperty(NumberUtil.toString(item.getValue().getCount()));
+                public ObservableValue<Double> call(TableColumn.CellDataFeatures<InvoiceItem, Double> item) {
+                    return new PathProperty<>(item.getValue(), "count");
                 }
             });
+            column.setCellFactory(doubleFactory);
             tableView.getColumns().add(column);
         }
 
