@@ -116,6 +116,11 @@ public class RawInvoiceProductItem {
 
     public boolean isSeparate() {
         PackageInfo packageInfo = getProductInfo().getPackageInfo();
+        if (ProductInfo.Group.Textile == getProductInfo().getGroup()) {
+            if (packageInfo.getWeight() > 3500 || packageInfo.getLength() > 2050 || packageInfo.getWidth() > 2050 || packageInfo.getHeight() > 2050)
+                return true;
+            return false;
+        }
         if (packageInfo.getWeight() > 3000 || getPrice() * getCount() > 200 || (
                 packageInfo.getLength() > 450 || packageInfo.getWidth() > 450 || packageInfo.getHeight() > 450
         ))
