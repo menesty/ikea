@@ -23,7 +23,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.util.Callback;
 import org.menesty.ikea.IkeaApplication;
-import org.menesty.ikea.domain.Order;
+import org.menesty.ikea.domain.CustomerOrder;
 import org.menesty.ikea.service.OrderService;
 import org.menesty.ikea.ui.TaskProgress;
 import org.menesty.ikea.ui.controls.PathProperty;
@@ -50,7 +50,7 @@ public class OrderListPage extends BasePage {
     private OrderEditDialog editDialog;
 
     public OrderListPage() {
-        super("Order list");
+        super("CustomerOrder list");
         orderService = new OrderService();
         editDialog = new OrderEditDialog();
 
@@ -121,9 +121,9 @@ public class OrderListPage extends BasePage {
                     public void handle(MouseEvent mouseEvent) {
                         if (mouseEvent.getClickCount() == 2 && row.getItem() != null) {
                             showPopupDialog(editDialog);
-                            editDialog.bind(row.getItem().getOrder(), new EntityDialogCallback<Order>() {
+                            editDialog.bind(row.getItem().getOrder(), new EntityDialogCallback<CustomerOrder>() {
                                 @Override
-                                public void onSave(Order user, Object... params) {
+                                public void onSave(CustomerOrder user, Object... params) {
                                     orderService.save(user);
                                     hidePopupDialog();
                                     row.setItem(null);
@@ -165,7 +165,7 @@ public class OrderListPage extends BasePage {
         editOrder.setContentDisplay(ContentDisplay.RIGHT);
         editOrder.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
-                IkeaApplication.getPageManager().goToPageByName("Order", tableView.getSelectionModel().getSelectedItem().getOrder());
+                IkeaApplication.getPageManager().goToPageByName("CustomerOrder", tableView.getSelectionModel().getSelectedItem().getOrder());
             }
         });
         editOrder.setDisable(true);
@@ -205,14 +205,14 @@ public class OrderListPage extends BasePage {
 
         private BooleanProperty checked;
 
-        private Order order;
+        private CustomerOrder order;
 
 
         public BooleanProperty checkedProperty() {
             return checked;
         }
 
-        private OrderTableItem(boolean checked, Order order) {
+        private OrderTableItem(boolean checked, CustomerOrder order) {
             this.order = order;
             this.checked = new SimpleBooleanProperty(checked);
 
@@ -223,11 +223,11 @@ public class OrderListPage extends BasePage {
             });
         }
 
-        public void setOrder(Order order) {
+        public void setOrder(CustomerOrder order) {
             this.order = order;
         }
 
-        public Order getOrder() {
+        public CustomerOrder getOrder() {
             return order;
         }
 
@@ -252,7 +252,7 @@ public class OrderListPage extends BasePage {
         @Override
         protected Void call() throws InterruptedException {
             try {
-                Order order = orderService.createOrder(orderName, is, new TaskProgress() {
+                CustomerOrder order = orderService.createOrder(orderName, is, new TaskProgress() {
                     @Override
                     public void updateProgress(long l, long l1) {
                         CreateOrderTask.this.updateProgress(l, l1);
@@ -274,9 +274,9 @@ public class OrderListPage extends BasePage {
         }
     }
 
-    private List<OrderTableItem> transform(List<Order> orders) {
+    private List<OrderTableItem> transform(List<CustomerOrder> orders) {
         List<OrderTableItem> result = new ArrayList<>();
-        for (Order order : orders)
+        for (CustomerOrder order : orders)
             result.add(new OrderTableItem(false, order));
         return result;
 

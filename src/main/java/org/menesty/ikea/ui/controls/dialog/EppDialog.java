@@ -21,7 +21,6 @@ import org.menesty.ikea.processor.invoice.InvoiceItem;
 import org.menesty.ikea.ui.controls.PathProperty;
 import org.menesty.ikea.ui.controls.TotalStatusPanel;
 import org.menesty.ikea.ui.table.DoubleEditableTableCell;
-import org.menesty.ikea.util.NumberUtil;
 
 import java.io.File;
 import java.math.BigDecimal;
@@ -111,22 +110,32 @@ public abstract class EppDialog extends BaseDialog {
                     }
                 }));
 
-                BigDecimal currentPrice = calculatePrice(items);
-                BigDecimal diff = invoicePrice.subtract(currentPrice.add(zestavPrice));
+                BigDecimal currentItemsPrice = calculatePrice(items);
+                BigDecimal diff = invoicePrice.subtract(zestavPrice);
 
-                BigDecimal addToEach = BigDecimal.valueOf(NumberUtil.round(diff.doubleValue() / items.size()));
-
-                for (InvoiceItem item : items) {
-                    BigDecimal addToOne = BigDecimal.valueOf(NumberUtil.round(addToEach.doubleValue() / item.getCount()));
-                    item.setPrice(BigDecimal.valueOf(item.getPriceWat()).add(addToOne).doubleValue());
-                }
+                BigDecimal cof = BigDecimal.valueOf(diff.doubleValue() / currentItemsPrice.doubleValue());
 
 
-                currentPrice = calculatePrice(items).add(zestavPrice);
+                for (InvoiceItem item : items)
+                    item.setPrice(BigDecimal.valueOf(item.getPriceWat()).multiply(cof).setScale(2, BigDecimal.ROUND_CEILING).doubleValue());
+
+
+                BigDecimal currentPrice = calculatePrice(items).add(zestavPrice);
                 diff = invoicePrice.subtract(currentPrice);
                 if (diff.doubleValue() != 0) {
-                    InvoiceItem lastItem = items.get(items.size() - 1);
-                    lastItem.setPrice(BigDecimal.valueOf(lastItem.getPriceWat()).add(diff).doubleValue());
+                    //search with 1 element
+                    InvoiceItem updateItem = null;
+                    for (InvoiceItem item : items)
+                        if (item.getCount() > 1)
+                            continue;
+                        else {
+                            updateItem = item;
+                            break;
+                        }
+
+                    if (updateItem != null)
+                        updateItem.setPrice(BigDecimal.valueOf(updateItem.getPriceWat()).add(diff).doubleValue());
+
                 }
 
                 for (TableRow<InvoiceItem> row : rows)
@@ -263,7 +272,7 @@ public abstract class EppDialog extends BaseDialog {
 
         getChildren().addAll(container, bottomBar);
 
-        okBtn.setText("Export");
+        okBtn.setText("Export / Save");
     }
 
     private BigDecimal calculatePrice(List<InvoiceItem> items) {

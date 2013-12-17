@@ -1,11 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module org.jetbrains.idea.maven.project.MavenProjectsManager.isMavenModule="true" type="JAVA_MODULE" version="4">
+  <component name="FacetManager">
+    <facet type="jpa" name="JPA">
+      <configuration>
+        <setting name="validation-enabled" value="true" />
+        <setting name="provider-name" value="" />
+        <datasource-mapping>
+          <factory-entry name="pu" />
+        </datasource-mapping>
+        <deploymentDescriptor name="persistence.xml" url="file://$MODULE_DIR$/src/main/resources/META-INF/persistence.xml" />
+      </configuration>
+    </facet>
+  </component>
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_7" inherit-compiler-output="false">
     <output url="file://$MODULE_DIR$/target/classes" />
     <output-test url="file://$MODULE_DIR$/target/test-classes" />
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/main/resources" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />
@@ -40,6 +52,17 @@
     <orderEntry type="library" name="Maven: org.apache.pdfbox:pdfbox:1.8.2" level="project" />
     <orderEntry type="library" name="Maven: org.apache.pdfbox:fontbox:1.8.2" level="project" />
     <orderEntry type="library" name="Maven: org.apache.pdfbox:jempbox:1.8.2" level="project" />
+    <orderEntry type="library" name="Maven: com.h2database:h2:1.3.174" level="project" />
+    <orderEntry type="library" name="Maven: org.batoo.jpa:batoo-jpa:2.0.1.2" level="project" />
+    <orderEntry type="library" name="Maven: org.antlr:antlr-runtime:3.4" level="project" />
+    <orderEntry type="library" name="Maven: asm:asm:3.3.1" level="project" />
+    <orderEntry type="library" name="Maven: com.google.guava:guava:14.0.1" level="project" />
+    <orderEntry type="library" name="Maven: commons-dbutils:commons-dbutils:1.4" level="project" />
+    <orderEntry type="library" name="Maven: commons-io:commons-io:2.1" level="project" />
+    <orderEntry type="library" name="Maven: org.batoo.jpa:batoo-annotations:2.0.1.1" level="project" />
+    <orderEntry type="library" name="Maven: org.batoo.jpa:persistence-api:2.0" level="project" />
+    <orderEntry type="library" name="Maven: javax.validation:validation-api:1.0.0.GA" level="project" />
+    <orderEntry type="library" name="Maven: com.jolbox:bonecp:0.7.1.RELEASE" level="project" />
   </component>
 </module>
 

@@ -1,5 +1,8 @@
 package org.menesty.ikea.domain;
 
+import javax.persistence.Embeddable;
+
+@Embeddable
 public class PackageInfo {
     private int weight;
 

@@ -1,14 +1,19 @@
 package org.menesty.ikea.domain;
 
+import javax.persistence.Entity;
+import javax.persistence.ManyToOne;
+
 /**
  * User: Menesty
  * Date: 10/12/13
  * Time: 8:59 PM
  */
-public class ProductPart {
+@Entity
+public class ProductPart extends Identifiable {
 
     private int count;
 
+    @ManyToOne
     private ProductInfo productInfo;
 
     public ProductPart() {

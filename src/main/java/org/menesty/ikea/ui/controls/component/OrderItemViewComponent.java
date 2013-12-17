@@ -103,7 +103,7 @@ public abstract class OrderItemViewComponent extends BorderPane {
         imageView = new ImageView(new Image("/styles/images/icon/ikea-32x32.png"));
         exportToIkeaBtn = new Button("", imageView);
         exportToIkeaBtn.setContentDisplay(ContentDisplay.RIGHT);
-        exportToIkeaBtn.setTooltip(new Tooltip("Export Order to IKEA"));
+        exportToIkeaBtn.setTooltip(new Tooltip("Export CustomerOrder to IKEA"));
         exportToIkeaBtn.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
                 onExportToIkea();
@@ -175,7 +175,7 @@ public abstract class OrderItemViewComponent extends BorderPane {
             getItems().add(warningLabel = new Label());
             warningLabel.setGraphic(new ImageView(new Image("/styles/images/icon/warning-16x16.png")));
             warningLabel.setVisible(false);
-            warningLabel.setTooltip(new Tooltip("Total Order price is different then IKEA site product"));
+            warningLabel.setTooltip(new Tooltip("Total CustomerOrder price is different then IKEA site product"));
         }
 
         public void showPriceWarning(boolean show) {

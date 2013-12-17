@@ -4,26 +4,34 @@ import org.apache.commons.lang.StringUtils;
 import org.menesty.ikea.order.OrderItem;
 import org.menesty.ikea.ui.controls.search.OrderItemSearchData;
 
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class Order {
+@Entity
+public class CustomerOrder extends Identifiable {
 
     private String name;
 
+    @OneToMany
     private List<OrderItem> orderItems;
 
     private Date createdDate;
-
+    @ElementCollection
     private List<String> parseWarnings;
 
+    @OneToMany
     private List<InvoicePdf> invoicePdfs;
 
+    @ManyToOne
     private User generalUser;
-
+    @ManyToOne
     private User comboUser;
-
+    @ManyToOne
     private User lackUser;
 
     public User getLackUser() {
@@ -50,7 +58,7 @@ public class Order {
         this.invoicePdfs = invoicePdfs;
     }
 
-    public Order() {
+    public CustomerOrder() {
         parseWarnings = new ArrayList<>();
         orderItems = new ArrayList<>();
         invoicePdfs = new ArrayList<>();
@@ -60,7 +68,7 @@ public class Order {
         parseWarnings.add(message);
     }
 
-    public Order(String name, Date createdDate) {
+    public CustomerOrder(String name, Date createdDate) {
         setName(name);
         setCreatedDate(createdDate);
     }

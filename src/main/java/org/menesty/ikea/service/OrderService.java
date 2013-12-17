@@ -35,10 +35,10 @@ public class OrderService {
         this.productService = new ProductService();
     }
 
-    public Order createOrder(String name, InputStream is, TaskProgress taskProgress) {
+    public CustomerOrder createOrder(String name, InputStream is, TaskProgress taskProgress) {
 
         try {
-            Order order = new Order();
+            CustomerOrder order = new CustomerOrder();
             order.setName(name);
             order.setCreatedDate(new Date());
 
@@ -151,11 +151,11 @@ public class OrderService {
         return "";
     }
 
-    public List<Order> load() {
-        return DatabaseService.get().query(Order.class);
+    public List<CustomerOrder> load() {
+        return DatabaseService.get().query(CustomerOrder.class);
     }
 
-    public void save(Order order) {
+    public void save(CustomerOrder order) {
         DatabaseService.get().store(order);
     }
 
@@ -163,7 +163,7 @@ public class OrderService {
         DatabaseService.get().store(invoicePdf);
     }
 
-    public void exportToXls(Order order, String filePath, TaskProgress taskProgress) throws URISyntaxException {
+    public void exportToXls(CustomerOrder order, String filePath, TaskProgress taskProgress) throws URISyntaxException {
         Map<OrderItem.Type, List<OrderItem>> typeFilterMap = new HashMap<>();
 
         for (OrderItem orderItem : order.getOrderItems()) {
@@ -269,7 +269,7 @@ public class OrderService {
         return total.doubleValue();
     }
 
-    public List<StorageLack> calculateOrderInvoiceDiff(Order order) {
+    public List<StorageLack> calculateOrderInvoiceDiff(CustomerOrder order) {
         List<RawInvoiceProductItem> rawItems = new ArrayList<>();
 
         for (InvoicePdf invoicePdf : order.getInvoicePdfs())
@@ -322,7 +322,7 @@ public class OrderService {
         data.put(key, currentValue);
     }
 
-    public void remove(final Order order, InvoicePdf invoicePdf, boolean withProducts) {
+    public void remove(final CustomerOrder order, InvoicePdf invoicePdf, boolean withProducts) {
         order.getInvoicePdfs().remove(invoicePdf);
 
         if (!withProducts) {
@@ -335,7 +335,7 @@ public class OrderService {
         DatabaseService.get().store(order);
     }
 
-    public void remove(Order order, List<InvoicePdf> items, boolean withProducts) {
+    public void remove(CustomerOrder order, List<InvoicePdf> items, boolean withProducts) {
         for (InvoicePdf item : items)
             remove(order, item, withProducts);
     }
