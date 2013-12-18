@@ -44,9 +44,10 @@ public class OrderItemTableView extends TableView<OrderItem> {
             });
             getColumns().add(column);
         }
+
         {
             TableColumn<OrderItem, String> column = new TableColumn<>("Name");
-            column.setPrefWidth(450);
+            column.setPrefWidth(300);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderItem, String>, ObservableValue<String>>() {
                 @Override
                 public ObservableValue<String> call(TableColumn.CellDataFeatures<OrderItem, String> item) {
@@ -61,7 +62,20 @@ public class OrderItemTableView extends TableView<OrderItem> {
 
             getColumns().add(column);
         }
+        {
+            TableColumn<OrderItem, String> column = new TableColumn<>("Ua Name");
+            column.setPrefWidth(200);
+            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderItem, String>, ObservableValue<String>>() {
+                @Override
+                public ObservableValue<String> call(TableColumn.CellDataFeatures<OrderItem, String> item) {
+                    if (item.getValue().getProductInfo() != null && item.getValue().getProductInfo().getUaName() != null)
+                        return new PathProperty<>(item.getValue(), "productInfo.uaName");
+                    return new SimpleStringProperty("");
+                }
+            });
 
+            getColumns().add(column);
+        }
         {
             TableColumn<OrderItem, String> column = new TableColumn<>("Count");
             column.setMinWidth(60);
