@@ -3,6 +3,8 @@ package org.menesty.ikea;
 import javafx.application.Application;
 import javafx.application.ConditionalFeature;
 import javafx.application.Platform;
+import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.DepthTest;
@@ -15,8 +17,10 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import org.menesty.ikea.db.DatabaseService;
 import org.menesty.ikea.ui.controls.*;
 import org.menesty.ikea.ui.controls.dialog.BaseDialog;
+import org.menesty.ikea.ui.controls.pane.LoadingPane;
 import org.menesty.ikea.ui.pages.*;
 
 /**
@@ -32,6 +36,8 @@ public class IkeaApplication extends Application {
     private static PageManager pageManager;
     private static IkeaApplication instance;
     private Stage stage;
+
+    private LoadingPane loadingPane;
 
     public static PageManager getPageManager() {
         return pageManager;
@@ -65,7 +71,8 @@ public class IkeaApplication extends Application {
 
         root.setId("root");
         layerPane.setDepthTest(DepthTest.DISABLE);
-        layerPane.getChildren().add(root);
+        loadingPane = new LoadingPane();
+        layerPane.getChildren().addAll(root, loadingPane);
         // create scene
         boolean is3dSupported = Platform.isSupported(ConditionalFeature.SCENE3D);
         Scene scene = new Scene(layerPane, 1020, 650, is3dSupported);
@@ -136,7 +143,22 @@ public class IkeaApplication extends Application {
         OrderViewPage orderViewPage = new OrderViewPage();
         orderViewPage.setBreadCrumbPath(orderListPage.getBreadCrumb());
         pageManager.register(orderViewPage);
-        pageManager.goToPage("IKEA/CustomerOrder list");
+        // pageManager.goToPage("IKEA/CustomerOrder list");
+
+        Task<Void> initDbTask = DatabaseService.init();
+        loadingPane.bindTask(initDbTask);
+        initDbTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+            @Override
+            public void handle(WorkerStateEvent workerStateEvent) {
+                pageManager.goToPage("IKEA/CustomerOrder list");
+            }
+        });
+    }
+
+    @Override
+    public void stop() throws Exception {
+        super.stop();
+        DatabaseService.close();
     }
 
     public void showPopupDialog(BaseDialog node) {

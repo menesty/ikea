@@ -58,11 +58,6 @@ public class PageManager {
             if (view == null) view = new Region(); // todo temp workaround
             // replace view in pageArea if new
             if (force || view != currentPageView) {
-                /*for (Node child:pageArea.getChildren()){
-                    if (child instanceof SamplePage.SamplePageView) {
-                        ((SamplePage.SamplePageView)child).stop();
-                    }
-                }*/
                 pageArea.getChildren().setAll(view);
                 currentPageView = view;
             }

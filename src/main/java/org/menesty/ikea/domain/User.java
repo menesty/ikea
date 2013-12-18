@@ -3,7 +3,6 @@ package org.menesty.ikea.domain;
 import javax.persistence.*;
 
 @Entity
-
 public class User extends Identifiable{
 
 

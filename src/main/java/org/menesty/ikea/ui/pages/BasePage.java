@@ -10,12 +10,10 @@ import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContentDisplay;
-import javafx.scene.control.ProgressIndicator;
 import javafx.scene.effect.BlendMode;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -27,26 +25,18 @@ import javafx.stage.Stage;
 import org.apache.commons.lang.StringUtils;
 import org.menesty.ikea.IkeaApplication;
 import org.menesty.ikea.ui.controls.dialog.BaseDialog;
+import org.menesty.ikea.ui.controls.pane.LoadingPane;
 
 public abstract class BasePage {
 
-    private Region maskRegion;
-
-    private ProgressIndicator progressIndicator;
-
+    private LoadingPane loadingPane;
     String breadCrumbPath;
 
     String name;
 
     public BasePage(String name) {
         this.name = name;
-
-        maskRegion = new Region();
-        maskRegion.setVisible(false);
-        maskRegion.setStyle("-fx-background-color: rgba(0, 0, 0, 0.4)");
-        progressIndicator = new ProgressIndicator();
-        progressIndicator.setMaxSize(150, 150);
-        progressIndicator.setVisible(false);
+        loadingPane = new LoadingPane();
     }
 
     public String getName() {
@@ -89,14 +79,12 @@ public abstract class BasePage {
         pane.setMaxHeight(Double.MAX_VALUE);
 
         StackPane stack = new StackPane();
-        stack.getChildren().addAll(maskRegion, progressIndicator);
+        stack.getChildren().addAll(loadingPane);
         return stack;
     }
 
     protected <T> void runTask(Task<T> task) {
-        progressIndicator.progressProperty().bind(task.progressProperty());
-        maskRegion.visibleProperty().bind(task.runningProperty());
-        progressIndicator.visibleProperty().bind(task.runningProperty());
+        loadingPane.bindTask(task);
 
         new Thread(task).start();
     }
