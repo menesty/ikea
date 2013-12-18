@@ -1,8 +1,11 @@
 package org.menesty.ikea.order;
 
+import org.menesty.ikea.domain.Identifiable;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.domain.UserProductInfo;
 
+import javax.persistence.Entity;
+import javax.persistence.ManyToOne;
 import java.math.BigDecimal;
 
 /**
@@ -10,7 +13,8 @@ import java.math.BigDecimal;
  * Date: 9/22/13
  * Time: 11:24 AM
  */
-public class OrderItem implements UserProductInfo {
+@Entity
+public class OrderItem extends Identifiable implements UserProductInfo {
 
     public enum Type {
         General, Na, Specials, Combo
@@ -30,6 +34,7 @@ public class OrderItem implements UserProductInfo {
 
     private String comment;
 
+    @ManyToOne
     private ProductInfo productInfo;
 
     private Type type;

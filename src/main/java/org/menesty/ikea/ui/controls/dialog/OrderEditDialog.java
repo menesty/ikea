@@ -5,7 +5,7 @@ import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
-import org.menesty.ikea.domain.Order;
+import org.menesty.ikea.domain.CustomerOrder;
 import org.menesty.ikea.domain.User;
 import org.menesty.ikea.service.UserService;
 import org.menesty.ikea.ui.pages.EntityDialogCallback;
@@ -18,9 +18,9 @@ public class OrderEditDialog extends BaseDialog {
 
     private UserService userService;
 
-    private Order currentEntity;
+    private CustomerOrder currentEntity;
 
-    private EntityDialogCallback<Order> callback;
+    private EntityDialogCallback<CustomerOrder> callback;
 
 
     public OrderEditDialog() {
@@ -49,7 +49,7 @@ public class OrderEditDialog extends BaseDialog {
             callback.onCancel();
     }
 
-    public void bind(Order entity, EntityDialogCallback<Order> callback) {
+    public void bind(CustomerOrder entity, EntityDialogCallback<CustomerOrder> callback) {
         currentEntity = entity;
         form.setOrderName(entity.getName());
         form.setComboUser(entity.getComboUser());
@@ -65,7 +65,7 @@ public class OrderEditDialog extends BaseDialog {
         form.setLackUsers(userService.getGeneral());
     }
 
-    private void onSave(Order currentEntity) {
+    private void onSave(CustomerOrder currentEntity) {
         if (callback != null)
             callback.onSave(currentEntity);
     }

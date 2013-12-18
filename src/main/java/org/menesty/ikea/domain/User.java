@@ -1,6 +1,11 @@
 package org.menesty.ikea.domain;
 
-public class User {
+import javax.persistence.*;
+
+@Entity
+
+public class User extends Identifiable{
+
 
     private String login;
 

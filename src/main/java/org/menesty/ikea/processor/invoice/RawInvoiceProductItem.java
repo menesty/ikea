@@ -1,10 +1,13 @@
 package org.menesty.ikea.processor.invoice;
 
 import org.apache.commons.lang.StringUtils;
+import org.menesty.ikea.domain.Identifiable;
 import org.menesty.ikea.domain.PackageInfo;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.util.NumberUtil;
 
+import javax.persistence.Entity;
+import javax.persistence.ManyToOne;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
@@ -13,7 +16,8 @@ import java.math.RoundingMode;
  * Date: 9/23/13
  * Time: 11:03 PM
  */
-public class RawInvoiceProductItem {
+@Entity
+public class RawInvoiceProductItem extends Identifiable {
 
     private String originalArtNumber;
 
@@ -29,6 +33,7 @@ public class RawInvoiceProductItem {
 
     private String wat;
 
+    @ManyToOne
     private ProductInfo productInfo;
 
     public ProductInfo getProductInfo() {
@@ -121,7 +126,7 @@ public class RawInvoiceProductItem {
                 return true;
             return false;
         }
-        if (packageInfo.getWeight() > 3000 || getPrice() * getCount() > 200 || (
+        if (packageInfo.getWeight() > 3000 || getPrice() * getCount() > 150 || (
                 packageInfo.getLength() > 450 || packageInfo.getWidth() > 450 || packageInfo.getHeight() > 450
         ))
             return true;

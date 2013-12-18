@@ -115,7 +115,7 @@ public class OrderCreateDialog extends BaseDialog {
                 @Override
                 public void handle(ActionEvent actionEvent) {
                     FileChooser fileChooser = new FileChooser();
-                    fileChooser.setTitle("Order Exel location");
+                    fileChooser.setTitle("CustomerOrder Exel location");
                     FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("Exel files (*.xls,*.xlsx)", Arrays.asList("*.xls", "*.xlsx"));
                     fileChooser.getExtensionFilters().add(extFilter);
                     File selectedFile = fileChooser.showOpenDialog(owner);

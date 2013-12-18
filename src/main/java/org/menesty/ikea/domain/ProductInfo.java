@@ -1,5 +1,8 @@
 package org.menesty.ikea.domain;
 
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.OneToMany;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,7 +11,9 @@ import java.util.List;
  * Date: 9/23/13
  * Time: 10:55 PM
  */
-public class ProductInfo {
+
+@Entity
+public class ProductInfo extends Identifiable {
 
     private int wat;
 
@@ -69,8 +74,10 @@ public class ProductInfo {
 
     private Group group = Group.Unknown;
 
+    @OneToMany
     private List<ProductPart> parts;
 
+    @Embedded
     private PackageInfo packageInfo = new PackageInfo();
 
     private boolean verified;

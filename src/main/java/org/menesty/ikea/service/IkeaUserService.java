@@ -16,7 +16,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.menesty.ikea.domain.Order;
+import org.menesty.ikea.domain.CustomerOrder;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.domain.User;
 import org.menesty.ikea.domain.UserProductInfo;
@@ -67,7 +67,7 @@ public class IkeaUserService {
         logout();
     }
 
-    public void fillOrder(Order order, TaskProgressLog taskProgressLog) {
+    public void fillOrder(CustomerOrder order, TaskProgressLog taskProgressLog) {
         try {
 
             Map<ProductInfo.Group, List<OrderItem>> groupMap = groupItems(order.getByType(OrderItem.Type.General));

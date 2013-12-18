@@ -2,6 +2,8 @@ package org.menesty.ikea.domain;
 
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 
+import javax.persistence.Entity;
+import javax.persistence.OneToMany;
 import java.util.Date;
 import java.util.List;
 
@@ -10,7 +12,12 @@ import java.util.List;
  * Date: 10/13/13
  * Time: 12:05 AM
  */
-public class InvoicePdf {
+@Entity
+public class InvoicePdf extends Identifiable {
+
+    public InvoicePdf(){
+
+    }
 
     public InvoicePdf(String name) {
         setName(name);
@@ -27,6 +34,7 @@ public class InvoicePdf {
         return createdDate;
     }
 
+    @OneToMany
     private List<RawInvoiceProductItem> products;
 
     public double getPrice() {

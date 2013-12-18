@@ -9,8 +9,8 @@ import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.StackPane;
+import org.menesty.ikea.domain.CustomerOrder;
 import org.menesty.ikea.domain.InvoicePdf;
-import org.menesty.ikea.domain.Order;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.domain.StorageLack;
 import org.menesty.ikea.exception.LoginIkeaException;
@@ -49,7 +49,7 @@ public class OrderViewPage extends BasePage {
 
     private InvoiceService invoiceService;
 
-    private Order currentOrder;
+    private CustomerOrder currentOrder;
 
     private InvoicePdfViewComponent invoicePdfViewComponent;
 
@@ -66,7 +66,7 @@ public class OrderViewPage extends BasePage {
     private Tab orderItemTab;
 
     public OrderViewPage() {
-        super("Order");
+        super("CustomerOrder");
 
         orderService = new OrderService();
         invoicePdfService = new InvoicePdfService();
@@ -201,7 +201,7 @@ public class OrderViewPage extends BasePage {
         };
 
 
-        Tab tab = new Tab("Order Items");
+        Tab tab = new Tab("CustomerOrder Items");
         tab.setContent(orderItemViewComponent);
         tab.setClosable(false);
         return tab;
@@ -300,7 +300,7 @@ public class OrderViewPage extends BasePage {
 
     @Override
     public void onActive(Object... params) {
-        currentOrder = (Order) params[0];
+        currentOrder = (CustomerOrder) params[0];
         orderItemViewComponent.setItems(currentOrder.getOrderItems());
         invoicePdfViewComponent.setItems(currentOrder.getInvoicePdfs());
         updateRawInvoiceTableView();
@@ -368,11 +368,11 @@ public class OrderViewPage extends BasePage {
 
     class ExportOrderItemsTask extends Task<Void> {
 
-        private Order order;
+        private CustomerOrder order;
 
         private String fileName;
 
-        public ExportOrderItemsTask(Order order, String fileName) {
+        public ExportOrderItemsTask(CustomerOrder order, String fileName) {
             this.order = order;
             this.fileName = fileName;
         }
