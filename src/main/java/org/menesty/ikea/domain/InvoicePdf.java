@@ -2,8 +2,7 @@ package org.menesty.ikea.domain;
 
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 
-import javax.persistence.Entity;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
 
@@ -29,6 +28,9 @@ public class InvoicePdf extends Identifiable {
     private String name;
 
     private Date createdDate;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    public CustomerOrder customerOrder;
 
     public Date getCreatedDate() {
         return createdDate;

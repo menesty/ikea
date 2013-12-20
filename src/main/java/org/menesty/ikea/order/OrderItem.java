@@ -5,6 +5,8 @@ import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.domain.UserProductInfo;
 
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.ManyToOne;
 import java.math.BigDecimal;
 
@@ -36,7 +38,7 @@ public class OrderItem extends Identifiable implements UserProductInfo {
 
     @ManyToOne
     private ProductInfo productInfo;
-
+    @Enumerated(EnumType.STRING)
     private Type type;
 
     public int getTryCount() {
@@ -47,7 +49,7 @@ public class OrderItem extends Identifiable implements UserProductInfo {
         this.tryCount = tryCount;
     }
 
-    public void incraseTryCount() {
+    public void increaseTryCount() {
         tryCount++;
     }
 

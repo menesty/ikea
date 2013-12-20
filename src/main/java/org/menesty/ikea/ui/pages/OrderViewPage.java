@@ -356,7 +356,7 @@ public class OrderViewPage extends BasePage {
         protected Void call() throws Exception {
             ProductInfo productInfo = productService.loadOrCreate(orderItem.getArtNumber());
             if (productInfo == null)
-                orderItem.incraseTryCount();
+                orderItem.increaseTryCount();
             else {
                 orderItem.setProductInfo(productInfo);
                 orderItem.setInvalidFetch(false);

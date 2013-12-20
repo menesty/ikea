@@ -1,8 +1,6 @@
 package org.menesty.ikea.domain;
 
-import javax.persistence.Embedded;
-import javax.persistence.Entity;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,9 +70,10 @@ public class ProductInfo extends Identifiable {
 
     private String uaName;
 
+    @Enumerated(EnumType.STRING)
     private Group group = Group.Unknown;
 
-    @OneToMany
+    @OneToMany(mappedBy = "parent")
     private List<ProductPart> parts;
 
     @Embedded

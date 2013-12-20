@@ -4,10 +4,7 @@ import org.apache.commons.lang.StringUtils;
 import org.menesty.ikea.order.OrderItem;
 import org.menesty.ikea.ui.controls.search.OrderItemSearchData;
 
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -24,7 +21,7 @@ public class CustomerOrder extends Identifiable {
     @ElementCollection
     private List<String> parseWarnings;
 
-    @OneToMany
+    @OneToMany(mappedBy = "customerOrder", cascade = CascadeType.ALL)
     private List<InvoicePdf> invoicePdfs;
 
     @ManyToOne
