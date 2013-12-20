@@ -1,6 +1,6 @@
 package org.menesty.ikea.ui.controls.pane;
 
-import javafx.concurrent.Task;
+import javafx.concurrent.Worker;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
@@ -25,7 +25,7 @@ public class LoadingPane extends StackPane {
         setVisible(false);
     }
 
-    public void bindTask(Task<?> task) {
+    public void bindTask(Worker<?> task) {
         progressIndicator.progressProperty().bind(task.progressProperty());
         maskRegion.visibleProperty().bind(task.runningProperty());
         visibleProperty().bind(task.runningProperty());

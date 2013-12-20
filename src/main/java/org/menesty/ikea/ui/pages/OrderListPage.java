@@ -9,7 +9,9 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.concurrent.Service;
 import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
@@ -24,7 +26,7 @@ import javafx.scene.layout.StackPane;
 import javafx.util.Callback;
 import org.menesty.ikea.IkeaApplication;
 import org.menesty.ikea.domain.CustomerOrder;
-import org.menesty.ikea.service.OrderService;
+import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.ui.TaskProgress;
 import org.menesty.ikea.ui.controls.PathProperty;
 import org.menesty.ikea.ui.controls.dialog.OrderCreateDialog;
@@ -45,15 +47,22 @@ public class OrderListPage extends BasePage {
 
     private TableView<OrderTableItem> tableView;
 
-    private OrderService orderService;
-
     private OrderEditDialog editDialog;
+
+    private LoadService loadService;
 
     public OrderListPage() {
         super("CustomerOrder list");
-        orderService = new OrderService();
         editDialog = new OrderEditDialog();
-
+        loadService = new LoadService();
+        loadService.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+            @Override
+            public void handle(WorkerStateEvent workerStateEvent) {
+                tableView.getItems().clear();
+                workerStateEvent.getSource().getValue();
+                //tableView.getItems().addAll(transform(orderService.load()));
+            }
+        });
     }
 
     @Override
@@ -69,6 +78,7 @@ public class OrderListPage extends BasePage {
         StackPane pane = createRoot();
         pane.getChildren().add(0, borderPane);
 
+        loadService.start();
         return pane;
     }
 
@@ -110,7 +120,6 @@ public class OrderListPage extends BasePage {
                 });
 
         TableView<OrderTableItem> tableView = new TableView<>();
-        tableView.setItems(FXCollections.observableArrayList(transform(orderService.load())));
 
         tableView.setRowFactory(new Callback<TableView<OrderTableItem>, TableRow<OrderTableItem>>() {
             @Override
@@ -124,7 +133,7 @@ public class OrderListPage extends BasePage {
                             editDialog.bind(row.getItem().getOrder(), new EntityDialogCallback<CustomerOrder>() {
                                 @Override
                                 public void onSave(CustomerOrder user, Object... params) {
-                                    orderService.save(user);
+                                    ServiceFacade.getOrderService().save(user);
                                     hidePopupDialog();
                                     row.setItem(null);
                                 }
@@ -252,20 +261,20 @@ public class OrderListPage extends BasePage {
         @Override
         protected Void call() throws InterruptedException {
             try {
-                CustomerOrder order = orderService.createOrder(orderName, is, new TaskProgress() {
+                CustomerOrder order = ServiceFacade.getOrderService().createOrder(orderName, is, new TaskProgress() {
                     @Override
                     public void updateProgress(long l, long l1) {
                         CreateOrderTask.this.updateProgress(l, l1);
                     }
                 });
-                orderService.save(order);
-                Platform.runLater(new Runnable() {
+                ServiceFacade.getOrderService().save(order);
+                /*Platform.runLater(new Runnable() {
                     @Override
                     public void run() {
                         tableView.getItems().clear();
                         tableView.getItems().addAll(transform(orderService.load()));
                     }
-                });
+                });*/
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -285,5 +294,20 @@ public class OrderListPage extends BasePage {
     @Override
     protected Node createIconContent() {
         return new ImageView(new javafx.scene.image.Image("/styles/images/icon/orders-72x72.png"));
+    }
+
+
+}
+
+class LoadService extends Service<List<CustomerOrder>> {
+
+    @Override
+    protected Task<List<CustomerOrder>> createTask() {
+        return new Task<List<CustomerOrder>>() {
+            @Override
+            protected List<CustomerOrder> call() throws Exception {
+                return ServiceFacade.getOrderService().load();
+            }
+        };
     }
 }
