@@ -73,10 +73,10 @@ public class ProductInfo extends Identifiable {
     @Enumerated(EnumType.STRING)
     private Group group = Group.Unknown;
 
-    @OneToMany(mappedBy = "parent")
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
     private List<ProductPart> parts;
 
-    @Embedded
+    @Embedded()
     private PackageInfo packageInfo = new PackageInfo();
 
     private boolean verified;
@@ -102,6 +102,8 @@ public class ProductInfo extends Identifiable {
     }
 
     public void setParts(List<ProductPart> parts) {
+        for (ProductPart item : parts)
+            item.parent = this;
         this.parts = parts;
     }
 

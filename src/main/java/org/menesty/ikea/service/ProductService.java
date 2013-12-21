@@ -1,7 +1,5 @@
 package org.menesty.ikea.service;
 
-import com.db4o.ObjectSet;
-import com.db4o.query.Predicate;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -10,11 +8,16 @@ import org.menesty.ikea.domain.PackageInfo;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.domain.ProductPart;
 import org.menesty.ikea.exception.ProductFetchException;
-import org.menesty.ikea.order.OrderItem;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.ui.controls.search.ProductItemSearchData;
 import org.menesty.ikea.util.NumberUtil;
 
+import javax.persistence.NoResultException;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.FileSystems;
@@ -24,17 +27,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ProductService {
+public class ProductService extends Repository<ProductInfo> {
+
+    private static final Logger logger = Logger.getLogger(ProductService.class.getName());
 
     private static final String PRODUCT_DETAIL_URL = "http://www.ikea.com/pl/pl/catalog/products/";
 
     private static final String PRODUCT_AVAILABLE_URL = "http://www.ikea.com/pl/pl/iows/catalog/availability/";
 
     private static final String KATOWICE = "306";
-
 
     public ProductService() {
 
@@ -45,16 +51,19 @@ public class ProductService {
             ProductInfo product = findByArtNumber(artNumber);
 
             if (product == null) {
+
                 if (Character.isDigit(artNumber.charAt(0)))
                     product = loadFromIkea(artNumber);
                 else
                     product = loadComboProduct(artNumber);
+
                 if (product == null)
                     return null;
+
             } else
                 updateProductPrice(product);
 
-            DatabaseService.get().store(product);
+            save(product);
             return product;
         } catch (IOException e) {
             throw new ProductFetchException();
@@ -68,23 +77,17 @@ public class ProductService {
     }
 
     public ProductInfo findByArtNumber(final String artNumber) {
-
-        ProductInfo product = new ProductInfo();
-        product.setOriginalArtNum(artNumber.replaceAll("\\D", ""));
-
-        ObjectSet<ProductInfo> result = DatabaseService.get().query(new Predicate<ProductInfo>() {
-            @Override
-            public boolean match(ProductInfo productInfo) {
-                if (artNumber.equals(productInfo.getArtNumber()) || artNumber.equals(productInfo.getOriginalArtNum()))
-                    return true;
-                return false;
-            }
-        });
-
-        if (!result.isEmpty())
-            return result.get(0);
-
-        return null;
+        try {
+            begin();
+            TypedQuery<ProductInfo> query = getEm().createQuery("select entity from " + entityClass.getName() + " entity where entity.artNumber = ?1 or entity.originalArtNum = ?1", entityClass);
+            query.setParameter(1, artNumber);
+            query.setMaxResults(1);
+            return query.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        } finally {
+            commit();
+        }
     }
 
     public ProductInfo getProductInfo(final RawInvoiceProductItem invoiceItem) {
@@ -97,8 +100,7 @@ public class ProductService {
             }
 
             product.setPrice(invoiceItem.getPrice());
-            DatabaseService.get().store(product);
-            return product;
+            return save(product);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -160,8 +162,10 @@ public class ProductService {
     private String getProductName(Document doc) {
         Elements nameEl = doc.select("#type");
         String name = null;
+
         if (!nameEl.isEmpty())
             name = nameEl.get(0).textNodes().get(0).text().trim();
+
         return name;
     }
 
@@ -246,10 +250,13 @@ public class ProductService {
         int shortNameLength = 28;
         String shortName = " " + artNumber;
         shortNameLength -= artNumber.length() + 1;
+
         if (boxCount > 1)
             shortNameLength -= 4;
+
         if (name.length() < shortNameLength)
             shortNameLength = name.length();
+
         shortName = shortNameLength != 0 ? name.substring(0, shortNameLength - 1) + shortName : shortName;
         return shortName;
     }
@@ -349,24 +356,21 @@ public class ProductService {
         return packageInfo;
     }
 
-    public void save(ProductInfo productInfo) {
-        DatabaseService.get().store(productInfo);
-    }
-
     public List<ProductInfo> load(final ProductItemSearchData data) {
-        return DatabaseService.get().query(new Predicate<ProductInfo>() {
+        CriteriaBuilder cb = getEm().getCriteriaBuilder();
+        CriteriaQuery<ProductInfo> cq = cb.createQuery(entityClass);
+        Root<ProductInfo> root = cq.from(entityClass);
 
-            @Override
-            public boolean match(ProductInfo productInfo) {
-                if (data.artNumber != null && !productInfo.getArtNumber().contains(data.artNumber))
-                    return false;
+        Predicate where = cb.conjunction();
+        if (data.artNumber != null)
+            where = cb.and(where, cb.like(root.<String>get("artNumber"), "%" + data.artNumber + "%"));
 
-                if (data.productGroup != null && data.productGroup != productInfo.getGroup())
-                    return false;
+        if (data.productGroup != null)
+            where = cb.and(where, cb.equal(root.<ProductInfo.Group>get("group"), data.productGroup));
 
-                return true;
-            }
-        });
+        cq.select(root).where(where);
+        return getEm().createQuery(cq).getResultList();
+
     }
 
     public void export(String path) {
@@ -396,7 +400,7 @@ public class ProductService {
         try (OutputStream os = Files.newOutputStream(FileSystems.getDefault().getPath(path), StandardOpenOption.CREATE_NEW)) {
             os.write(text.toString().getBytes("utf8"));
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Export problem", e);
         }
     }
 
@@ -456,9 +460,5 @@ public class ProductService {
 
     private double getDouble(String value) {
         return NumberUtil.parse(value.trim());
-    }
-
-    public void save(OrderItem orderItem) {
-        DatabaseService.get().store(orderItem);
     }
 }

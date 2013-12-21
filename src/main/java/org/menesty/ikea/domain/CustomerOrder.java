@@ -14,7 +14,7 @@ public class CustomerOrder extends Identifiable {
 
     private String name;
 
-    @OneToMany
+    @OneToMany(mappedBy = "customerOrder", fetch = FetchType.LAZY)
     private List<OrderItem> orderItems;
 
     private Date createdDate;
@@ -157,5 +157,12 @@ public class CustomerOrder extends Identifiable {
 
 
         return result;
+    }
+
+    public void addInvoicePdfs(final List<InvoicePdf> entities) {
+        for (InvoicePdf item : entities)
+            item.customerOrder = this;
+
+        invoicePdfs.addAll(entities);
     }
 }

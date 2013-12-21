@@ -1,13 +1,11 @@
 package org.menesty.ikea.order;
 
+import org.menesty.ikea.domain.CustomerOrder;
 import org.menesty.ikea.domain.Identifiable;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.domain.UserProductInfo;
 
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 import java.math.BigDecimal;
 
 /**
@@ -35,6 +33,8 @@ public class OrderItem extends Identifiable implements UserProductInfo {
     private Double price;
 
     private String comment;
+    @ManyToOne(fetch = FetchType.LAZY)
+    public CustomerOrder customerOrder;
 
     @ManyToOne
     private ProductInfo productInfo;

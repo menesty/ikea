@@ -143,7 +143,7 @@ public class IkeaApplication extends Application {
         OrderViewPage orderViewPage = new OrderViewPage();
         orderViewPage.setBreadCrumbPath(orderListPage.getBreadCrumb());
         pageManager.register(orderViewPage);
-        // pageManager.goToPage("IKEA/CustomerOrder list");
+        pageManager.goToPage("IKEA");
 
         Task<Void> initDbTask = DatabaseService.init();
         loadingPane.bindTask(initDbTask);

@@ -29,7 +29,7 @@ import org.menesty.ikea.ui.controls.pane.LoadingPane;
 
 public abstract class BasePage {
 
-    private LoadingPane loadingPane;
+    protected LoadingPane loadingPane;
     String breadCrumbPath;
 
     String name;
@@ -85,7 +85,6 @@ public abstract class BasePage {
 
     protected <T> void runTask(Task<T> task) {
         loadingPane.bindTask(task);
-
         new Thread(task).start();
     }
 
@@ -160,4 +159,5 @@ public abstract class BasePage {
     public void onActive(Object... params) {
 
     }
+
 }

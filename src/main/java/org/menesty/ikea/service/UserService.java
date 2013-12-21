@@ -2,26 +2,20 @@ package org.menesty.ikea.service;
 
 import org.menesty.ikea.domain.User;
 
+import javax.persistence.TypedQuery;
 import java.util.List;
 
-public class UserService {
+public class UserService extends Repository<User> {
 
+    public List<User> load(boolean comboUser) {
+        try {
+            begin();
+            TypedQuery<User> query = getEm().createQuery("select entity from " + entityClass.getName() + " entity where entity.comboUser = ?1", entityClass);
+            query.setParameter(1, comboUser);
+            return query.getResultList();
+        } finally {
+            commit();
+        }
 
-    public List<User> load() {
-        return DatabaseService.get().query(User.class);
-    }
-
-    public void save(User entity) {
-        DatabaseService.get().store(entity);
-    }
-
-    public List<User> getGeneral() {
-        return DatabaseService.get().queryByExample(new User());
-    }
-
-    public List<User> getCombos() {
-        User example = new User();
-        example.setComboUser(true);
-        return DatabaseService.get().queryByExample(example);
     }
 }

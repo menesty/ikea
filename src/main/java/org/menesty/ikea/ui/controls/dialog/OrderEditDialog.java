@@ -60,9 +60,9 @@ public class OrderEditDialog extends BaseDialog {
 
     @Override
     public void onShow() {
-        form.setGeneralUsers(userService.getGeneral());
-        form.setComboUsers(userService.getCombos());
-        form.setLackUsers(userService.getGeneral());
+        form.setGeneralUsers(userService.load(false));
+        form.setComboUsers(userService.load(true));
+        form.setLackUsers(userService.load(false));
     }
 
     private void onSave(CustomerOrder currentEntity) {

@@ -14,7 +14,7 @@ import java.util.List;
 @Entity
 public class InvoicePdf extends Identifiable {
 
-    public InvoicePdf(){
+    public InvoicePdf() {
 
     }
 
@@ -36,7 +36,7 @@ public class InvoicePdf extends Identifiable {
         return createdDate;
     }
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.MERGE, mappedBy = "invoicePdf")
     private List<RawInvoiceProductItem> products;
 
     public double getPrice() {
@@ -59,7 +59,10 @@ public class InvoicePdf extends Identifiable {
         return products;
     }
 
-    public void setProducts(List<RawInvoiceProductItem> products) {
-        this.products = products;
+    public void setProducts(List<RawInvoiceProductItem> items) {
+        for (RawInvoiceProductItem item : items)
+            item.invoicePdf = this;
+
+        this.products = items;
     }
 }

@@ -49,8 +49,8 @@ public class OrderCreateDialog extends BaseDialog {
 
     @Override
     public void onShow() {
-        orderForm.setGeneralUsers(userService.getGeneral());
-        orderForm.setComboUsers(userService.getCombos());
+        orderForm.setGeneralUsers(userService.load(false));
+        orderForm.setComboUsers(userService.load(true));
     }
 
     public void onCreate(String orderName, String filePath) {

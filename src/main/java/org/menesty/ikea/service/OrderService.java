@@ -10,6 +10,7 @@ import org.menesty.ikea.order.OrderItem;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.ui.TaskProgress;
 import org.menesty.ikea.util.NumberUtil;
+import org.menesty.ikea.db.DatabaseService;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,7 +27,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class OrderService {
+public class OrderService extends Repository<CustomerOrder> {
     private static final Pattern artNumberPattern = Pattern.compile("\\w{0,}\\d+");
 
     private ProductService productService;
@@ -57,7 +58,8 @@ public class OrderService {
             for (XLSReadMessage message : (List<XLSReadMessage>) readStatus.getReadMessages())
                 order.addWarning(message.getMessage());
 
-            order.setOrderItems(reduce(rawOrderItems, taskProgress));
+            order = ServiceFacade.getOrderService().save(order);
+            order.setOrderItems(ServiceFacade.getOrderService().save(reduce(order, rawOrderItems, taskProgress)));
 
             return order;
         } catch (Exception e) {
@@ -66,7 +68,7 @@ public class OrderService {
         return null;
     }
 
-    private List<OrderItem> reduce(List<RawOrderItem> list, TaskProgress taskProgress) {
+    private List<OrderItem> reduce(CustomerOrder order, List<RawOrderItem> list, TaskProgress taskProgress) {
         Map<String, OrderItem> reduceMap = new HashMap<>();
         int itemIndex = 0;
 
@@ -82,6 +84,7 @@ public class OrderService {
 
                 if (orderItem == null) {
                     orderItem = new OrderItem();
+                    orderItem.customerOrder = order;
                     orderItem.setArtNumber(artNumber);
                     orderItem.setComment(rawOrderItem.getComment());
                     orderItem.setCount(rawOrderItem.getCount());
@@ -148,19 +151,8 @@ public class OrderService {
         Matcher m = artNumberPattern.matcher(artNumber);
         if (m.find())
             return m.group().trim();
+
         return "";
-    }
-
-    public List<CustomerOrder> load() {
-        return DatabaseService.get().query(CustomerOrder.class);
-    }
-
-    public void save(CustomerOrder order) {
-        DatabaseService.get().store(order);
-    }
-
-    public void save(InvoicePdf invoicePdf) {
-        DatabaseService.get().store(invoicePdf);
     }
 
     public void exportToXls(CustomerOrder order, String filePath, TaskProgress taskProgress) throws URISyntaxException {
@@ -330,18 +322,11 @@ public class OrderService {
             for (RawInvoiceProductItem item : items)
                 item.setProductInfo(null);
         }
-
-        DatabaseService.get().delete(invoicePdf);
-        DatabaseService.get().store(order);
+        remove(invoicePdf);
     }
 
     public void remove(CustomerOrder order, List<InvoicePdf> items, boolean withProducts) {
         for (InvoicePdf item : items)
             remove(order, item, withProducts);
-    }
-
-    public void save(List<InvoicePdf> entities) {
-        for (InvoicePdf item : entities)
-            save(item);
     }
 }

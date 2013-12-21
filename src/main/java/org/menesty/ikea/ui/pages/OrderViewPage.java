@@ -326,8 +326,7 @@ public class OrderViewPage extends BasePage {
         protected Void call() throws Exception {
             try {
                 List<InvoicePdf> entities = invoicePdfService.createInvoicePdf(files);
-                orderService.save(entities);
-                currentOrder.getInvoicePdfs().addAll(entities);
+                currentOrder.addInvoicePdfs(entities);
                 orderService.save(currentOrder);
 
                 Platform.runLater(new Runnable() {

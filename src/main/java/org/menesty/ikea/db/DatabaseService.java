@@ -10,6 +10,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class DatabaseService {
@@ -24,8 +25,6 @@ public class DatabaseService {
 
     private static EntityManager entityManager;
 
-    private static DatabaseService instance;
-
     public static Task<Void> init() {
         if (initialized >= 0)
             throw new RuntimeException("Already initialized or initialization in progress");
@@ -35,6 +34,18 @@ public class DatabaseService {
         final DBSetupTask setupTask = new DBSetupTask();
         databaseExecutor.submit(setupTask);
         return setupTask;
+    }
+
+    public static void begin() {
+        entityManager.getTransaction().begin();
+    }
+
+    public static void commit() {
+        entityManager.getTransaction().commit();
+    }
+
+    public static EntityManager getEntityManager() {
+        return entityManager;
     }
 
     public static void close() {
@@ -69,10 +80,14 @@ public class DatabaseService {
         @Override
         protected Void call() throws Exception {
             logger.info("start initialize EntityManagerFactory ...");
-            entityManagerFactory = Persistence.createEntityManagerFactory("ikea");
-            entityManager = entityManagerFactory.createEntityManager();
-            initialized = 1;
-            logger.info("finish initialization EntityManagerFactory.");
+            try {
+                entityManagerFactory = Persistence.createEntityManagerFactory("ikea");
+                entityManager = entityManagerFactory.createEntityManager();
+                initialized = 1;
+                logger.info("finish initialization EntityManagerFactory.");
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "db initialization problem", e);
+            }
             return null;
         }
     }

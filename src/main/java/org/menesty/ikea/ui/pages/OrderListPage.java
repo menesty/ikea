@@ -8,24 +8,22 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.concurrent.Service;
 import javafx.concurrent.Task;
-import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.util.Callback;
 import org.menesty.ikea.IkeaApplication;
 import org.menesty.ikea.domain.CustomerOrder;
+import org.menesty.ikea.factory.ImageFactory;
+import org.menesty.ikea.service.AbstractAsyncService;
+import org.menesty.ikea.service.AbstractAsyncService.SucceededListener;
 import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.ui.TaskProgress;
 import org.menesty.ikea.ui.controls.PathProperty;
@@ -55,12 +53,16 @@ public class OrderListPage extends BasePage {
         super("CustomerOrder list");
         editDialog = new OrderEditDialog();
         loadService = new LoadService();
-        loadService.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+        loadService.setOnSucceededListener(new SucceededListener<List<CustomerOrder>>() {
             @Override
-            public void handle(WorkerStateEvent workerStateEvent) {
-                tableView.getItems().clear();
-                workerStateEvent.getSource().getValue();
-                //tableView.getItems().addAll(transform(orderService.load()));
+            public void onSucceeded(final List<CustomerOrder> value) {
+                Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        tableView.getItems().clear();
+                        tableView.getItems().addAll(transform((value)));
+                    }
+                });
             }
         });
     }
@@ -78,7 +80,8 @@ public class OrderListPage extends BasePage {
         StackPane pane = createRoot();
         pane.getChildren().add(0, borderPane);
 
-        loadService.start();
+        loadingPane.bindTask(loadService);
+        loadService.restart();
         return pane;
     }
 
@@ -158,9 +161,7 @@ public class OrderListPage extends BasePage {
 
     private ToolBar createToolBar() {
         ToolBar control = new ToolBar();
-        ImageView imageView = new ImageView(new Image("/styles/images/icon/add1-48x48.png"));
-        Button addOrder = new Button("", imageView);
-        addOrder.setContentDisplay(ContentDisplay.RIGHT);
+        Button addOrder = new Button(null, ImageFactory.createAdd48Img());
 
         addOrder.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
@@ -168,10 +169,7 @@ public class OrderListPage extends BasePage {
             }
         });
 
-        imageView = new ImageView(new Image("/styles/images/icon/edit-48x48.png"));
-
-        final Button editOrder = new Button("", imageView);
-        editOrder.setContentDisplay(ContentDisplay.RIGHT);
+        final Button editOrder = new Button(null, ImageFactory.creteEdit48Img());
         editOrder.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
                 IkeaApplication.getPageManager().goToPageByName("CustomerOrder", tableView.getSelectionModel().getSelectedItem().getOrder());
@@ -243,8 +241,6 @@ public class OrderListPage extends BasePage {
         public void setName(String name) {
             order.setName(name);
         }
-
-
     }
 
     private class CreateOrderTask extends Task<Void> {
@@ -261,20 +257,20 @@ public class OrderListPage extends BasePage {
         @Override
         protected Void call() throws InterruptedException {
             try {
-                CustomerOrder order = ServiceFacade.getOrderService().createOrder(orderName, is, new TaskProgress() {
+                ServiceFacade.getOrderService().createOrder(orderName, is, new TaskProgress() {
                     @Override
                     public void updateProgress(long l, long l1) {
                         CreateOrderTask.this.updateProgress(l, l1);
                     }
                 });
-                ServiceFacade.getOrderService().save(order);
-                /*Platform.runLater(new Runnable() {
+
+                Platform.runLater(new Runnable() {
                     @Override
                     public void run() {
-                        tableView.getItems().clear();
-                        tableView.getItems().addAll(transform(orderService.load()));
+                        loadService.restart();
                     }
-                });*/
+                });
+
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -287,19 +283,19 @@ public class OrderListPage extends BasePage {
         List<OrderTableItem> result = new ArrayList<>();
         for (CustomerOrder order : orders)
             result.add(new OrderTableItem(false, order));
+
         return result;
 
     }
 
     @Override
     protected Node createIconContent() {
-        return new ImageView(new javafx.scene.image.Image("/styles/images/icon/orders-72x72.png"));
+        return ImageFactory.createOrders72Img();
     }
-
 
 }
 
-class LoadService extends Service<List<CustomerOrder>> {
+class LoadService extends AbstractAsyncService<List<CustomerOrder>> {
 
     @Override
     protected Task<List<CustomerOrder>> createTask() {
@@ -311,3 +307,4 @@ class LoadService extends Service<List<CustomerOrder>> {
         };
     }
 }
+

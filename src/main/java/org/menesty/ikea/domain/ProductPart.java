@@ -1,5 +1,6 @@
 package org.menesty.ikea.domain;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
@@ -16,7 +17,7 @@ public class ProductPart extends Identifiable {
     @ManyToOne(fetch = FetchType.LAZY)
     public ProductInfo parent;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     private ProductInfo productInfo;
 
     public ProductPart() {

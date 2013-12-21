@@ -5,11 +5,20 @@
     <persistence-unit name="ikea" transaction-type="RESOURCE_LOCAL">
         <provider>org.batoo.jpa.core.BatooPersistenceProvider</provider>
         <class>org.menesty.ikea.domain.User</class>
+        <class>org.menesty.ikea.domain.PackageInfo</class>
+        <class>org.menesty.ikea.domain.ProductPart</class>
+        <class>org.menesty.ikea.domain.ProductInfo</class>
+        <class>org.menesty.ikea.domain.CustomerOrder</class>
+        <class>org.menesty.ikea.order.OrderItem</class>
+        <class>org.menesty.ikea.domain.InvoicePdf</class>
+        <class>org.menesty.ikea.processor.invoice.RawInvoiceProductItem</class>
+
         <properties>
             <property name="org.batoo.jpa.ddl" value="UPDATE"/>
             <property name="javax.persistence.jdbc.driver" value="org.h2.Driver"/>
             <property name="javax.persistence.jdbc.url" value="jdbc:h2:data/db/ikea"/>
             <property name="javax.persistence.jdbc.user" value="menesty"/>
+            <property name="org.batoo.jpa.sql_logging" value="STDOUT" />
             <property name="javax.persistence.jdbc.password" value="ikea-desktop-1"/>
         </properties>
     </persistence-unit>

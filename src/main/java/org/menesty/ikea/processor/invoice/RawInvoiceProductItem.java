@@ -2,11 +2,13 @@ package org.menesty.ikea.processor.invoice;
 
 import org.apache.commons.lang.StringUtils;
 import org.menesty.ikea.domain.Identifiable;
+import org.menesty.ikea.domain.InvoicePdf;
 import org.menesty.ikea.domain.PackageInfo;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.util.NumberUtil;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -32,6 +34,8 @@ public class RawInvoiceProductItem extends Identifiable {
     private double price;
 
     private String wat;
+    @ManyToOne(fetch = FetchType.LAZY)
+    public InvoicePdf invoicePdf;
 
     @ManyToOne
     private ProductInfo productInfo;
