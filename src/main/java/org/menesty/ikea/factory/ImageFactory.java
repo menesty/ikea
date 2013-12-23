@@ -8,15 +8,31 @@ import javafx.scene.image.ImageView;
  */
 public class ImageFactory {
 
-    public static ImageView createAdd48Img() {
+    public static ImageView createAdd48Icon() {
         return new ImageView(new Image("/styles/images/icon/add1-48x48.png"));
     }
 
-    public static ImageView creteEdit48Img() {
+    public static ImageView creteEdit48Icon() {
         return new ImageView(new Image("/styles/images/icon/edit-48x48.png"));
     }
 
-    public static ImageView createOrders72Img(){
+    public static ImageView createOrders72Icon() {
         return new ImageView(new Image("/styles/images/icon/orders-72x72.png"));
+    }
+
+    public static ImageView createPlus32Icon() {
+        return new ImageView(new Image("/styles/images/icon/plus-32x32.png"));
+    }
+
+    public static ImageView createMinus32Icon() {
+        return new ImageView(new Image("/styles/images/icon/minus-32x32.png"));
+    }
+
+    public static ImageView createBalance32Icon() {
+        return new ImageView(new Image("/styles/images/icon/balance-32x32.png"));
+    }
+
+    public static ImageView createReload32Icon() {
+        return new ImageView(new Image("/styles/images/icon/reload-32x32.png"));
     }
 }

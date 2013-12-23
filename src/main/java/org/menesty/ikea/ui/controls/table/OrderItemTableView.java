@@ -144,12 +144,15 @@ public class OrderItemTableView extends TableView<OrderItem> {
         }
 
         {
-            TableColumn<OrderItem, ProductInfo.Group> column = new TableColumn<>("P Price");
+            TableColumn<OrderItem, Double> column = new TableColumn<>("P Price");
             column.setMinWidth(60);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderItem, ProductInfo.Group>, ObservableValue<ProductInfo.Group>>() {
+            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderItem, Double>, ObservableValue<Double>>() {
                 @Override
-                public ObservableValue<ProductInfo.Group> call(TableColumn.CellDataFeatures<OrderItem, ProductInfo.Group> item) {
-                    return new PathProperty<>(item.getValue(), "productInfo.price");
+                public ObservableValue<Double> call(TableColumn.CellDataFeatures<OrderItem, Double> item) {
+                    if (item.getValue().getProductInfo() != null)
+                        return new PathProperty<>(item.getValue(), "productInfo.price");
+
+                    return new SimpleObjectProperty<>(null);
                 }
             });
 

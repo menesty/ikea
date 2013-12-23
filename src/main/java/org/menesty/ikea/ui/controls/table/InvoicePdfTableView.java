@@ -48,7 +48,7 @@ public abstract class InvoicePdfTableView extends TableView<InvoicePdfTableView.
         });
 
         TableColumn<InvoicePdfTableItem, String> name = new TableColumn<>("Name");
-        name.setMinWidth(200);
+        name.setMinWidth(160);
         name.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<InvoicePdfTableItem, String>, ObservableValue<String>>() {
             @Override
             public ObservableValue<String> call(TableColumn.CellDataFeatures<InvoicePdfTableItem, String> item) {
@@ -79,7 +79,7 @@ public abstract class InvoicePdfTableView extends TableView<InvoicePdfTableView.
         TableColumn<InvoicePdfTableItem, String> createdDate = new TableColumn<>();
 
         createdDate.setText("Upload Date");
-        createdDate.setMinWidth(200);
+        createdDate.setMinWidth(90);
         createdDate.setCellValueFactory(
                 new Callback<TableColumn.CellDataFeatures<InvoicePdfTableItem, String>, ObservableValue<String>>() {
                     @Override
@@ -89,7 +89,16 @@ public abstract class InvoicePdfTableView extends TableView<InvoicePdfTableView.
                 });
 
         setEditable(true);
-        getColumns().addAll(checked, name, priceColumn, createdDate);
+
+        TableColumn<InvoicePdfTableItem, String> invoiceNumber = new TableColumn<>("Number");
+        invoiceNumber.setMinWidth(100);
+        invoiceNumber.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<InvoicePdfTableItem, String>, ObservableValue<String>>() {
+            @Override
+            public ObservableValue<String> call(TableColumn.CellDataFeatures<InvoicePdfTableItem, String> item) {
+                return new PathProperty<>(item.getValue(), "invoicePdf.invoiceNumber");
+            }
+        });
+        getColumns().addAll(checked, name, priceColumn, invoiceNumber, createdDate);
     }
 
     public abstract void onSave(InvoicePdf invoicePdf);

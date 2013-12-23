@@ -161,7 +161,7 @@ public class OrderListPage extends BasePage {
 
     private ToolBar createToolBar() {
         ToolBar control = new ToolBar();
-        Button addOrder = new Button(null, ImageFactory.createAdd48Img());
+        Button addOrder = new Button(null, ImageFactory.createAdd48Icon());
 
         addOrder.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
@@ -169,7 +169,7 @@ public class OrderListPage extends BasePage {
             }
         });
 
-        final Button editOrder = new Button(null, ImageFactory.creteEdit48Img());
+        final Button editOrder = new Button(null, ImageFactory.creteEdit48Icon());
         editOrder.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
                 IkeaApplication.getPageManager().goToPageByName("CustomerOrder", tableView.getSelectionModel().getSelectedItem().getOrder());
@@ -290,7 +290,7 @@ public class OrderListPage extends BasePage {
 
     @Override
     protected Node createIconContent() {
-        return ImageFactory.createOrders72Img();
+        return ImageFactory.createOrders72Icon();
     }
 
 }

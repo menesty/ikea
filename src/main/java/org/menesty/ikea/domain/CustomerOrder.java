@@ -21,7 +21,7 @@ public class CustomerOrder extends Identifiable {
     @ElementCollection
     private List<String> parseWarnings;
 
-    @OneToMany(mappedBy = "customerOrder", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "customerOrder")
     private List<InvoicePdf> invoicePdfs;
 
     @ManyToOne
@@ -155,14 +155,10 @@ public class CustomerOrder extends Identifiable {
             result.add(orderItem);
         }
 
-
         return result;
     }
 
     public void addInvoicePdfs(final List<InvoicePdf> entities) {
-        for (InvoicePdf item : entities)
-            item.customerOrder = this;
-
         invoicePdfs.addAll(entities);
     }
 }

@@ -19,10 +19,7 @@ import org.menesty.ikea.processor.invoice.InvoiceItem;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.service.*;
 import org.menesty.ikea.ui.TaskProgress;
-import org.menesty.ikea.ui.controls.component.InvoicePdfViewComponent;
-import org.menesty.ikea.ui.controls.component.OrderItemViewComponent;
-import org.menesty.ikea.ui.controls.component.RawInvoiceItemViewComponent;
-import org.menesty.ikea.ui.controls.component.StorageLackItemViewComponent;
+import org.menesty.ikea.ui.controls.component.*;
 import org.menesty.ikea.ui.controls.dialog.EppDialog;
 import org.menesty.ikea.ui.controls.dialog.IkeaUserFillProgressDialog;
 import org.menesty.ikea.ui.controls.dialog.ProductDialog;
@@ -31,9 +28,7 @@ import org.menesty.ikea.util.NumberUtil;
 
 import java.io.*;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * User: Menesty
@@ -64,6 +59,8 @@ public class OrderViewPage extends BasePage {
     private StorageLackItemViewComponent storageLackItemViewComponent;
 
     private Tab orderItemTab;
+
+    private EppViewComponent eppViewComponent;
 
     public OrderViewPage() {
         super("CustomerOrder");
@@ -211,6 +208,7 @@ public class OrderViewPage extends BasePage {
         final TabPane tabPane = new TabPane();
 
         Tab invoiceTab = new Tab("Invoice");
+        invoiceTab.setClosable(false);
 
         invoicePdfViewComponent = new InvoicePdfViewComponent(getStage()) {
             @Override
@@ -226,7 +224,7 @@ public class OrderViewPage extends BasePage {
             }
 
             @Override
-            public void onExport(List<File> files) {
+            public void onImport(List<File> files) {
                 runTask(new CreateInvoicePdfTask(files));
             }
 
@@ -238,7 +236,7 @@ public class OrderViewPage extends BasePage {
 
         SplitPane splitPane = new SplitPane();
         splitPane.setId("page-splitpane");
-        splitPane.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        //splitPane.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         splitPane.setOrientation(Orientation.VERTICAL);
 
         rawInvoiceItemViewComponent = new RawInvoiceItemViewComponent(getStage()) {
@@ -286,11 +284,17 @@ public class OrderViewPage extends BasePage {
             }
         };
 
+        eppViewComponent = new EppViewComponent();
 
-        splitPane.getItems().addAll(invoicePdfViewComponent, rawInvoiceItemViewComponent);
-        splitPane.setDividerPosition(0, 0.40);
+        SplitPane top = new SplitPane();
+        top.setDividerPosition(1, 0.40);
+        top.setOrientation(Orientation.HORIZONTAL);
+        top.getItems().addAll(invoicePdfViewComponent, rawInvoiceItemViewComponent);
 
-        invoiceTab.setClosable(false);
+        splitPane.setDividerPosition(1, 0.40);
+        splitPane.getItems().addAll(top, eppViewComponent);
+        ///splitPane.setDividerPosition(0, 0.40);
+
         invoiceTab.setContent(splitPane);
 
         tabPane.getTabs().addAll(orderItemTab = createOrderItemTab(), invoiceTab, createStorageTab());
@@ -325,7 +329,7 @@ public class OrderViewPage extends BasePage {
         @Override
         protected Void call() throws Exception {
             try {
-                List<InvoicePdf> entities = invoicePdfService.createInvoicePdf(files);
+                List<InvoicePdf> entities = invoicePdfService.createInvoicePdf(currentOrder, files);
                 currentOrder.addInvoicePdfs(entities);
                 orderService.save(currentOrder);
 
@@ -397,17 +401,11 @@ public class OrderViewPage extends BasePage {
     }
 
     private void updateRawInvoiceTableView(InvoicePdf selected) {
-        List<InvoicePdf> selectedItems = new ArrayList<>();
-        List<RawInvoiceProductItem> forDisplay = new ArrayList<>();
+        if (selected != null) {
+            rawInvoiceItemViewComponent.setItems(selected.getProducts());
+        } else
+            rawInvoiceItemViewComponent.setItems(Collections.<RawInvoiceProductItem>emptyList());
 
-        if (selected == null && currentOrder.getInvoicePdfs() != null)
-            selectedItems.addAll(currentOrder.getInvoicePdfs());
-        else
-            selectedItems.add(selected);
-
-        for (InvoicePdf invoicePdf : selectedItems)
-            forDisplay.addAll(invoicePdf.getProducts());
-
-        rawInvoiceItemViewComponent.setItems(forDisplay);
+        eppViewComponent.setActive(selected);
     }
 }

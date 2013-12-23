@@ -37,14 +37,17 @@ public abstract class Repository<T extends Identifiable> {
     }
 
     public <E extends Identifiable> E save(E entity) {
-        begin();
+        boolean alreadyStarted = isActive();
+        if (!alreadyStarted)
+            begin();
 
         if (entity.getId() == null)
             getEm().persist(entity);
         else
             entity = getEm().merge(entity);
 
-        commit();
+        if (!alreadyStarted)
+            commit();
         return entity;
     }
 
@@ -68,7 +71,15 @@ public abstract class Repository<T extends Identifiable> {
         DatabaseService.begin();
     }
 
+    protected boolean isActive() {
+        return DatabaseService.isActive();
+    }
+
     protected void commit() {
         DatabaseService.commit();
+    }
+
+    protected void rollback() {
+        DatabaseService.rollback();
     }
 }

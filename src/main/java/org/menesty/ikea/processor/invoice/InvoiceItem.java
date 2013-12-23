@@ -1,19 +1,30 @@
 package org.menesty.ikea.processor.invoice;
 
+import org.menesty.ikea.domain.Identifiable;
+import org.menesty.ikea.domain.InvoicePdf;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.util.NumberUtil;
 
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.ManyToOne;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-public class InvoiceItem {
+@Entity
+public class InvoiceItem extends Identifiable {
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    public InvoicePdf invoicePdf;
 
     private int index;
 
     private String artNumber;
 
     private String name;
+
+    public double basePrice;
 
     private double price;
 
@@ -25,7 +36,27 @@ public class InvoiceItem {
 
     private double weight;
 
+    private String size;
+
     private boolean zestav;
+
+    private boolean visible;
+
+    public String getSize() {
+        return size;
+    }
+
+    public void setSize(String size) {
+        this.size = size;
+    }
+
+    public boolean isVisible() {
+        return visible;
+    }
+
+    public void setVisible(boolean visible) {
+        this.visible = visible;
+    }
 
     public double getWeight() {
         return weight;
@@ -185,7 +216,7 @@ public class InvoiceItem {
 
     public static InvoiceItem get(String artNumber, String name, String shortName, double price, int wat, double weight, double count, int box, int boxes) {
         InvoiceItem invoiceItem = new InvoiceItem();
-
+        invoiceItem.setVisible(true);
         invoiceItem.name = name;
         invoiceItem.artNumber = "IKEA_" + artNumber;
         invoiceItem.shortName = shortName;
@@ -194,6 +225,7 @@ public class InvoiceItem {
             invoiceItem.artNumber += "(" + box + ")";
             invoiceItem.shortName += " " + box + "/" + boxes;
         }
+        invoiceItem.basePrice = price;
         invoiceItem.price = price;
         invoiceItem.wat = wat;
         invoiceItem.count = count;

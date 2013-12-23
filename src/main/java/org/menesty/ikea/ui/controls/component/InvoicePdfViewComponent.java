@@ -65,7 +65,7 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
                 List<File> selectedFile = fileChooser.showOpenMultipleDialog(stage);
 
                 if (selectedFile != null && selectedFile.size() > 0)
-                    onExport(filter(selectedFile));
+                    onImport(filter(selectedFile));
 
             }
         });
@@ -115,7 +115,7 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
 
     public abstract void onSave(InvoicePdf invoicePdf);
 
-    public abstract void onExport(List<File> files);
+    public abstract void onImport(List<File> files);
 
     // public abstract void onCheck(InvoicePdf invoicePdf);
 

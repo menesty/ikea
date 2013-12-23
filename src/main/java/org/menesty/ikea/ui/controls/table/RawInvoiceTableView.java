@@ -66,7 +66,7 @@ public class RawInvoiceTableView extends TableView<RawInvoiceProductItem> {
 
         {
             TableColumn<RawInvoiceProductItem, String> column = new TableColumn<>("Count");
-            column.setMinWidth(60);
+            column.setMaxWidth(50);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<RawInvoiceProductItem, String>, ObservableValue<String>>() {
                 @Override
                 public ObservableValue<String> call(TableColumn.CellDataFeatures<RawInvoiceProductItem, String> item) {
@@ -85,19 +85,6 @@ public class RawInvoiceTableView extends TableView<RawInvoiceProductItem> {
                 @Override
                 public ObservableValue<Double> call(TableColumn.CellDataFeatures<RawInvoiceProductItem, Double> item) {
                     return new PathProperty<>(item.getValue(), "price");
-                }
-            });
-
-            getColumns().add(column);
-        }
-
-        {
-            TableColumn<RawInvoiceProductItem, String> column = new TableColumn<>("Wat");
-            column.setMinWidth(60);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<RawInvoiceProductItem, String>, ObservableValue<String>>() {
-                @Override
-                public ObservableValue<String> call(TableColumn.CellDataFeatures<RawInvoiceProductItem, String> item) {
-                    return new PathProperty<>(item.getValue(), "wat");
                 }
             });
 
@@ -143,7 +130,6 @@ public class RawInvoiceTableView extends TableView<RawInvoiceProductItem> {
                 }
             });
             getColumns().add(column);
-            //  wheelbarrow-16x16.png
         }
 
         setRowFactory(new Callback<TableView<RawInvoiceProductItem>, TableRow<RawInvoiceProductItem>>() {

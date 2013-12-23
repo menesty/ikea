@@ -44,6 +44,10 @@ public class DatabaseService {
         entityManager.getTransaction().commit();
     }
 
+    public static void rollback() {
+        entityManager.getTransaction().rollback();
+    }
+
     public static EntityManager getEntityManager() {
         return entityManager;
     }
@@ -60,6 +64,10 @@ public class DatabaseService {
 
     public static boolean isInitialized() {
         return initialized == 1;
+    }
+
+    public static boolean isActive() {
+        return entityManager.getTransaction().isActive();
     }
 
 

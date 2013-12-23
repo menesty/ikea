@@ -77,8 +77,11 @@ public class ProductService extends Repository<ProductInfo> {
     }
 
     public ProductInfo findByArtNumber(final String artNumber) {
+        boolean started = isActive();
         try {
-            begin();
+            if (!started)
+                begin();
+
             TypedQuery<ProductInfo> query = getEm().createQuery("select entity from " + entityClass.getName() + " entity where entity.artNumber = ?1 or entity.originalArtNum = ?1", entityClass);
             query.setParameter(1, artNumber);
             query.setMaxResults(1);
@@ -86,7 +89,8 @@ public class ProductService extends Repository<ProductInfo> {
         } catch (NoResultException e) {
             return null;
         } finally {
-            commit();
+            if (!started)
+                commit();
         }
     }
 

@@ -3,6 +3,7 @@ package org.menesty.ikea.domain;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -29,6 +30,8 @@ public class InvoicePdf extends Identifiable {
 
     private Date createdDate;
 
+    private String invoiceNumber;
+
     @ManyToOne(fetch = FetchType.LAZY)
     public CustomerOrder customerOrder;
 
@@ -36,8 +39,16 @@ public class InvoicePdf extends Identifiable {
         return createdDate;
     }
 
-    @OneToMany(cascade = CascadeType.MERGE, mappedBy = "invoicePdf")
+    @OneToMany(mappedBy = "invoicePdf")
     private List<RawInvoiceProductItem> products;
+
+    public String getInvoiceNumber() {
+        return invoiceNumber;
+    }
+
+    public void setInvoiceNumber(String invoiceNumber) {
+        this.invoiceNumber = invoiceNumber;
+    }
 
     public double getPrice() {
         return price;
@@ -60,9 +71,17 @@ public class InvoicePdf extends Identifiable {
     }
 
     public void setProducts(List<RawInvoiceProductItem> items) {
-        for (RawInvoiceProductItem item : items)
-            item.invoicePdf = this;
-
         this.products = items;
     }
+
+    public static BigDecimal getTotalPrice(List<RawInvoiceProductItem> items) {
+        BigDecimal price = BigDecimal.ZERO;
+
+        for (RawInvoiceProductItem item : items)
+            price = price.add(BigDecimal.valueOf(item.getTotal()));
+
+        return price;
+
+    }
+
 }

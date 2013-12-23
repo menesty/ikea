@@ -108,7 +108,6 @@ public abstract class RawInvoiceItemViewComponent extends BorderPane {
             else
                 filtered.add(item);
 
-
         BigDecimal totalPrice = BigDecimal.ZERO;
 
         Map<ProductInfo.Group, Integer> groupMap = new HashMap<>();
