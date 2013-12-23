@@ -154,7 +154,7 @@ public abstract class OrderItemViewComponent extends BorderPane {
             if (OrderItem.Type.Na == item.getType())
                 orderNaTotal = orderNaTotal.add(item.getTotal());
             else if (item.getProductInfo() != null)
-                productTotal = productTotal.add(BigDecimal.valueOf(item.getProductInfo().getPrice()).multiply(BigDecimal.valueOf(item.getCount())).setScale(2));
+                productTotal = productTotal.add(BigDecimal.valueOf(item.getProductInfo().getPrice()).multiply(BigDecimal.valueOf(item.getCount())).setScale(2, BigDecimal.ROUND_CEILING));
 
         }
 

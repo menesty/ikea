@@ -57,4 +57,8 @@ public class PackageInfo {
     public void setLength(int length) {
         this.length = length;
     }
+
+    public String size() {
+        return width + "x" + height + "x" + length;
+    }
 }

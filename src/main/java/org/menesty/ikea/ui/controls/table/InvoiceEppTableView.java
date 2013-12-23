@@ -15,7 +15,7 @@ import org.menesty.ikea.ui.table.DoubleEditableTableCell;
 /**
  * Created by Menesty on 12/22/13.
  */
-public class InvoiceEppTableView extends TableView<InvoiceItem> {
+public abstract class InvoiceEppTableView extends TableView<InvoiceItem> {
 
     public InvoiceEppTableView() {
         {
@@ -44,7 +44,10 @@ public class InvoiceEppTableView extends TableView<InvoiceItem> {
                 @Override
                 public void handle(TableColumn.CellEditEvent<InvoiceItem, String> t) {
                     InvoiceItem item = t.getTableView().getItems().get(t.getTablePosition().getRow());
-                    item.setArtNumber(t.getNewValue());
+                    if (!item.getArtNumber().equals(t.getNewValue())) {
+                        item.setArtNumber(t.getNewValue());
+                        onEdit(item);
+                    }
 
                 }
             });
@@ -66,7 +69,10 @@ public class InvoiceEppTableView extends TableView<InvoiceItem> {
                 @Override
                 public void handle(TableColumn.CellEditEvent<InvoiceItem, String> t) {
                     InvoiceItem item = t.getTableView().getItems().get(t.getTablePosition().getRow());
-                    item.setShortName(t.getNewValue());
+                    if (!item.getShortName().equals(t.getNewValue())) {
+                        item.setShortName(t.getNewValue());
+                        onEdit(item);
+                    }
 
                 }
             });
@@ -90,7 +96,7 @@ public class InvoiceEppTableView extends TableView<InvoiceItem> {
                     return new PathProperty<>(item.getValue(), "count");
                 }
             });
-            column.setCellFactory(doubleFactory);
+            //column.setCellFactory(doubleFactory);
             getColumns().add(column);
         }
 
@@ -109,7 +115,10 @@ public class InvoiceEppTableView extends TableView<InvoiceItem> {
                 @Override
                 public void handle(TableColumn.CellEditEvent<InvoiceItem, Double> t) {
                     InvoiceItem item = t.getTableView().getItems().get(t.getTablePosition().getRow());
-                    item.setPrice(t.getNewValue());
+                    if (item.getPriceWat() != t.getNewValue()) {
+                        item.setPrice(t.getNewValue());
+                        onEdit(item);
+                    }
 
                 }
             });
@@ -118,4 +127,6 @@ public class InvoiceEppTableView extends TableView<InvoiceItem> {
 
         setEditable(true);
     }
+
+    public abstract void onEdit(InvoiceItem item);
 }

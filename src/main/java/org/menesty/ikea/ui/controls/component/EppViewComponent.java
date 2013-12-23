@@ -11,6 +11,8 @@ import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import javafx.util.Callback;
 import org.menesty.ikea.domain.InvoicePdf;
 import org.menesty.ikea.domain.ProductInfo;
@@ -20,11 +22,14 @@ import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.ui.controls.TotalStatusPanel;
+import org.menesty.ikea.ui.controls.dialog.Dialog;
 import org.menesty.ikea.ui.controls.pane.LoadingPane;
 import org.menesty.ikea.ui.controls.table.InvoiceEppInvisibleTableView;
 import org.menesty.ikea.ui.controls.table.InvoiceEppTableView;
+import org.menesty.ikea.ui.pages.DialogCallback;
 import org.menesty.ikea.util.NumberUtil;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.util.*;
@@ -32,7 +37,7 @@ import java.util.*;
 /**
  * Created by Menesty on 12/22/13.
  */
-public class EppViewComponent extends StackPane {
+public abstract class EppViewComponent extends StackPane {
 
     private InvoiceEppTableView invoiceEppTableView;
 
@@ -48,6 +53,8 @@ public class EppViewComponent extends StackPane {
 
     private Button delBtn;
 
+    private Button saveBtn;
+
     private List<TableRow<InvoiceItem>> rows;
 
     private StatusPanel eppStatusPanel;
@@ -55,8 +62,9 @@ public class EppViewComponent extends StackPane {
     private BigDecimal invoicePrice;
 
     private String artPrefix = "";
+    private Button exportEppBtn;
 
-    public EppViewComponent() {
+    public EppViewComponent(final Stage stage) {
         loadingPane = new LoadingPane();
         loadService = new LoadService();
 
@@ -78,13 +86,18 @@ public class EppViewComponent extends StackPane {
         splitPane.setOrientation(Orientation.HORIZONTAL);
         splitPane.setDividerPosition(1, 0.40);
 
-        splitPane.getItems().addAll(initInvoiceEppTableView(), invoiceEppInvisibleTableView = new InvoiceEppInvisibleTableView());
+        splitPane.getItems().addAll(initInvoiceEppTableView(stage), invoiceEppInvisibleTableView = new InvoiceEppInvisibleTableView());
 
         getChildren().addAll(splitPane, loadingPane);
     }
 
-    private BorderPane initInvoiceEppTableView() {
-        invoiceEppTableView = new InvoiceEppTableView();
+    private BorderPane initInvoiceEppTableView(final Stage stage) {
+        invoiceEppTableView = new InvoiceEppTableView() {
+            @Override
+            public void onEdit(InvoiceItem item) {
+                saveBtn.setDisable(false);
+            }
+        };
         rows = new ArrayList<>();
 
         final InvalidationListener invalidationListener = new InvalidationListener() {
@@ -95,15 +108,43 @@ public class EppViewComponent extends StackPane {
         };
 
         eppToolBar = new ToolBar();
-
-        Button reloadBtn = new Button(null, ImageFactory.createReload32Icon());
-        reloadBtn.setOnAction(new EventHandler<ActionEvent>() {
+        saveBtn = new Button(null, ImageFactory.createSave32Icon());
+        saveBtn.setDisable(true);
+        saveBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-                updateViews(prepareData(currentInvoicePdf.getProducts()));
+                ServiceFacade.getInvoiceItemService().save(invoiceEppTableView.getItems());
+                ServiceFacade.getInvoiceItemService().save(invoiceEppInvisibleTableView.getItems());
+                saveBtn.setDisable(true);
             }
         });
-        eppToolBar.getItems().add(reloadBtn);
+
+        exportEppBtn = new Button(null, ImageFactory.createEppExport32Icon());
+        exportEppBtn.setContentDisplay(ContentDisplay.RIGHT);
+        exportEppBtn.setTooltip(new Tooltip("Export to EPP"));
+        exportEppBtn.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent event) {
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle("Epp location");
+                FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("Epp file (*.epp)", "*.epp");
+                fileChooser.getExtensionFilters().add(extFilter);
+                File selectedFile = fileChooser.showSaveDialog(stage);
+
+                if (selectedFile != null) {
+                    List<InvoiceItem> list = invoiceEppTableView.getItems();
+                    int index = 0;
+
+                    for (InvoiceItem invoiceItem : list)
+                        invoiceItem.setIndex(++index);
+
+                    export(list, selectedFile.getAbsolutePath());
+                }
+
+            }
+        });
+
+
+        eppToolBar.getItems().addAll(saveBtn, exportEppBtn, new Separator());
 
         Button addBtn = new Button(null, ImageFactory.createPlus32Icon());
         addBtn.setTooltip(new Tooltip("Add Row"));
@@ -188,6 +229,31 @@ public class EppViewComponent extends StackPane {
         });
         eppToolBar.getItems().add(balanceBtn);
 
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        eppToolBar.getItems().add(spacer);
+
+        Button reloadBtn = new Button(null, ImageFactory.createReload32Icon());
+        reloadBtn.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                Dialog.confirm("All balanced items will be deleted", new DialogCallback() {
+                    @Override
+                    public void onCancel() {
+                    }
+
+                    @Override
+                    public void onYes() {
+                        ServiceFacade.getInvoiceItemService().deleteBy(currentInvoicePdf);
+                        updateViews(prepareData(currentInvoicePdf.getProducts()));
+                        saveBtn.setDisable(false);
+                    }
+                });
+
+            }
+        });
+        eppToolBar.getItems().add(reloadBtn);
+
 
         invoiceEppTableView.getSelectionModel().selectedItemProperty().addListener(new InvalidationListener() {
             @Override
@@ -216,6 +282,9 @@ public class EppViewComponent extends StackPane {
         return pane;
     }
 
+
+    public abstract void export(List<InvoiceItem> items, String path);
+
     private BigDecimal calculatePrice(List<InvoiceItem> items) {
         BigDecimal price = BigDecimal.ZERO;
 
@@ -229,6 +298,7 @@ public class EppViewComponent extends StackPane {
     private void updateViews(List<InvoiceItem> items) {
         List<InvoiceItem> visible = new ArrayList<>();
         List<InvoiceItem> invisible = new ArrayList<>();
+        rows = new ArrayList<>();
 
         for (InvoiceItem item : items)
             if (item.isVisible())
@@ -238,6 +308,7 @@ public class EppViewComponent extends StackPane {
 
         invoiceEppTableView.setItems(FXCollections.observableList(visible));
         invoiceEppInvisibleTableView.setItems(FXCollections.observableList(invisible));
+        exportEppBtn.setDisable(items.isEmpty());
     }
 
     public void setActive(InvoicePdf invoicePdf) {
@@ -293,6 +364,9 @@ public class EppViewComponent extends StackPane {
         if (diff.doubleValue() > 0)
             result.add(createZestav(groupMap, zestavCount, diff.doubleValue()));
 
+        for (InvoiceItem item : result)
+            item.invoicePdf = currentInvoicePdf;
+
         return result;
     }
 
@@ -308,7 +382,7 @@ public class EppViewComponent extends StackPane {
         String name = String.format("Zestaw IKEA %1$s", subName);
         String artNumber = artPrefix + "_" + subName.substring(0, 2) + "_" + (index + 1);
 
-        return InvoiceItem.get(artNumber, name, name, price, 23, 1, 1, 1, 1).setZestav(true);
+        return InvoiceItem.get(artNumber, name, name, price, 23, "", 1, 1, 1, 1).setZestav(true);
     }
 
     class LoadService extends AbstractAsyncService<List<InvoiceItem>> {

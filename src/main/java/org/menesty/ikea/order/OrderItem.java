@@ -102,7 +102,7 @@ public class OrderItem extends Identifiable implements UserProductInfo {
     }
 
     public BigDecimal getTotal() {
-        return BigDecimal.valueOf(count).multiply(BigDecimal.valueOf(price)).setScale(2);
+        return BigDecimal.valueOf(count).multiply(BigDecimal.valueOf(price)).setScale(2, BigDecimal.ROUND_CEILING);
     }
 
     public Double getPrice() {

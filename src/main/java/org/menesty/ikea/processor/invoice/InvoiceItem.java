@@ -211,10 +211,10 @@ public class InvoiceItem extends Identifiable {
 
 
     public static InvoiceItem get(ProductInfo productInfo, double count, int box, int boxes) {
-        return get(productInfo.getOriginalArtNum(), productInfo.getName(), productInfo.getShortName(), productInfo.getPrice(), productInfo.getWat(), productInfo.getPackageInfo().getWeight(), count, box, boxes);
+        return get(productInfo.getOriginalArtNum(), productInfo.getName(), productInfo.getShortName(), productInfo.getPrice(), productInfo.getWat(), productInfo.getPackageInfo().size(), productInfo.getPackageInfo().getWeight(), count, box, boxes);
     }
 
-    public static InvoiceItem get(String artNumber, String name, String shortName, double price, int wat, double weight, double count, int box, int boxes) {
+    public static InvoiceItem get(String artNumber, String name, String shortName, double price, int wat, String size, double weight, double count, int box, int boxes) {
         InvoiceItem invoiceItem = new InvoiceItem();
         invoiceItem.setVisible(true);
         invoiceItem.name = name;
@@ -229,6 +229,7 @@ public class InvoiceItem extends Identifiable {
         invoiceItem.price = price;
         invoiceItem.wat = wat;
         invoiceItem.count = count;
+        invoiceItem.size = size;
 
         return invoiceItem;
     }

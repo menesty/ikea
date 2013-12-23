@@ -20,14 +20,12 @@ import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.service.*;
 import org.menesty.ikea.ui.TaskProgress;
 import org.menesty.ikea.ui.controls.component.*;
-import org.menesty.ikea.ui.controls.dialog.EppDialog;
 import org.menesty.ikea.ui.controls.dialog.IkeaUserFillProgressDialog;
 import org.menesty.ikea.ui.controls.dialog.ProductDialog;
 import org.menesty.ikea.ui.controls.search.OrderItemSearchData;
 import org.menesty.ikea.util.NumberUtil;
 
 import java.io.*;
-import java.math.BigDecimal;
 import java.util.*;
 
 /**
@@ -264,27 +262,15 @@ public class OrderViewPage extends BasePage {
                 });
             }
 
-            @Override
-            public void exportToEpp(List<InvoiceItem> items, BigDecimal price) {
-                EppDialog dialog = new EppDialog(getStage()) {
-                    @Override
-                    public void export(List<InvoiceItem> items, String path) {
-                        invoiceService.exportToEpp(items, path);
-                        hidePopupDialog();
-                    }
-
-                    @Override
-                    public void onCancel() {
-                        hidePopupDialog();
-                    }
-                };
-                dialog.setItems(items, price);
-                showPopupDialog(dialog);
-
-            }
         };
 
-        eppViewComponent = new EppViewComponent();
+        eppViewComponent = new EppViewComponent(getStage()) {
+
+            @Override
+            public void export(List<InvoiceItem> items, String path) {
+                invoiceService.exportToEpp(items, path);
+            }
+        };
 
         SplitPane top = new SplitPane();
         top.setDividerPosition(1, 0.40);
