@@ -2,8 +2,11 @@ package org.menesty.ikea.ui.controls.table;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
+import javafx.event.EventHandler;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
+import javafx.scene.input.MouseEvent;
 import javafx.util.Callback;
 import org.menesty.ikea.processor.invoice.InvoiceItem;
 import org.menesty.ikea.ui.controls.PathProperty;
@@ -87,7 +90,25 @@ public class InvoiceEppInvisibleTableView extends TableView<InvoiceItem> {
             getColumns().add(column);
         }
 
-        setEditable(true);
+        setRowFactory(new Callback<TableView<InvoiceItem>, TableRow<InvoiceItem>>() {
+            @Override
+            public TableRow<InvoiceItem> call(final TableView<InvoiceItem> tableView) {
+                final TableRow<InvoiceItem> row = new TableRow<>();
+
+                row.setOnMouseClicked(new EventHandler<MouseEvent>() {
+                    @Override
+                    public void handle(MouseEvent mouseEvent) {
+                        if (mouseEvent.getClickCount() == 2)
+                            onRowDoubleClick(row);
+
+                    }
+                });
+                return row;
+            }
+        });
+    }
+
+    public void onRowDoubleClick(TableRow<InvoiceItem> row) {
 
     }
 }

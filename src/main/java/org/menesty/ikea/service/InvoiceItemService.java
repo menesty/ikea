@@ -3,7 +3,6 @@ package org.menesty.ikea.service;
 import org.menesty.ikea.domain.InvoicePdf;
 import org.menesty.ikea.processor.invoice.InvoiceItem;
 
-import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import java.util.List;
 
@@ -25,13 +24,17 @@ public class InvoiceItemService extends Repository<InvoiceItem> {
     }
 
     public void deleteBy(InvoicePdf currentInvoicePdf) {
-        try {
+        remove(load(currentInvoicePdf));
+        /*try {
+            remove(load(currentInvoicePdf));
             begin();
-            Query query = getEm().createQuery("delete from " + entityClass.getName() + " entity where entity.invoicePdf.id=?1");
-            query.setParameter(1, currentInvoicePdf.getId());
+            Query query = getEm().createQuery("delete from " + entityClass.getName() + " entity where entity.invoicePdf=?1");
+            query.setParameter(1, currentInvoicePdf);
             query.executeUpdate();
+        } catch (Exception e) {
+            rollback();
         } finally {
             commit();
-        }
+        }*/
     }
 }

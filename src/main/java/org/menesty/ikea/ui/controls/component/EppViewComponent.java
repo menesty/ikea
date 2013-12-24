@@ -64,6 +64,8 @@ public abstract class EppViewComponent extends StackPane {
     private String artPrefix = "";
     private Button exportEppBtn;
 
+    private InvalidationListener saveBtnUpdater;
+
     public EppViewComponent(final Stage stage) {
         loadingPane = new LoadingPane();
         loadService = new LoadService();
@@ -86,7 +88,16 @@ public abstract class EppViewComponent extends StackPane {
         splitPane.setOrientation(Orientation.HORIZONTAL);
         splitPane.setDividerPosition(1, 0.40);
 
-        splitPane.getItems().addAll(initInvoiceEppTableView(stage), invoiceEppInvisibleTableView = new InvoiceEppInvisibleTableView());
+        splitPane.getItems().addAll(initInvoiceEppTableView(stage), invoiceEppInvisibleTableView = new InvoiceEppInvisibleTableView() {
+            public void onRowDoubleClick(TableRow<InvoiceItem> row) {
+                InvoiceItem item = row.getItem();
+                item.setVisible(true);
+                item.setPrice(item.basePrice);
+
+                invoiceEppInvisibleTableView.getItems().remove(item);
+                invoiceEppTableView.getItems().add(item);
+            }
+        });
 
         getChildren().addAll(splitPane, loadingPane);
     }
@@ -167,8 +178,12 @@ public abstract class EppViewComponent extends StackPane {
         delBtn.setTooltip(new Tooltip("Delete Row"));
         delBtn.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
-                invoiceEppTableView.getItems().remove(invoiceEppTableView.getSelectionModel().getSelectedItem());
-                invalidationListener.invalidated(null);
+                InvoiceItem item = invoiceEppTableView.getSelectionModel().getSelectedItem();
+                if (!item.isZestav()) {
+                    item.setVisible(false);
+                    invoiceEppInvisibleTableView.getItems().add(item);
+                }
+                invoiceEppTableView.getItems().remove(item);
             }
         });
         delBtn.setDisable(true);
@@ -279,6 +294,14 @@ public abstract class EppViewComponent extends StackPane {
         pane.setCenter(invoiceEppTableView);
         pane.setBottom(eppStatusPanel = new StatusPanel());
 
+        saveBtnUpdater = new InvalidationListener() {
+            @Override
+            public void invalidated(Observable observable) {
+                saveBtn.setDisable(false);
+                eppStatusPanel.setCurrentTotal(calculatePrice(invoiceEppTableView.getItems()).doubleValue());
+            }
+        };
+
         return pane;
     }
 
@@ -308,6 +331,8 @@ public abstract class EppViewComponent extends StackPane {
 
         invoiceEppTableView.setItems(FXCollections.observableList(visible));
         invoiceEppInvisibleTableView.setItems(FXCollections.observableList(invisible));
+
+        invoiceEppTableView.getItems().addListener(saveBtnUpdater);
         exportEppBtn.setDisable(items.isEmpty());
     }
 

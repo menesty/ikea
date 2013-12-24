@@ -5,6 +5,7 @@ import org.menesty.ikea.domain.InvoicePdf;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.util.NumberUtil;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
@@ -24,14 +25,17 @@ public class InvoiceItem extends Identifiable {
 
     private String name;
 
+    @Column(scale = 8, precision = 2)
     public double basePrice;
 
+    @Column(scale = 8, precision = 2)
     private double price;
 
     private String shortName;
 
     private int wat;
 
+    @Column(scale = 8, precision = 2)
     private double count;
 
     private double weight;

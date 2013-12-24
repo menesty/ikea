@@ -12,6 +12,7 @@ public abstract class AbstractAsyncService<T> extends Service<T> {
         void onSucceeded(T value);
     }
 
+    @SuppressWarnings("unchecked")
     public void setOnSucceededListener(final SucceededListener<T> listener) {
         if (listener != null)
             setOnSucceeded(new EventHandler<WorkerStateEvent>() {
@@ -21,5 +22,4 @@ public abstract class AbstractAsyncService<T> extends Service<T> {
                 }
             });
     }
-
 }

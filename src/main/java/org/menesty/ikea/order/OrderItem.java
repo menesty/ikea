@@ -29,7 +29,7 @@ public class OrderItem extends Identifiable implements UserProductInfo {
     private String artNumber;
 
     private String name;
-
+    @Column(scale = 8, precision = 2)
     private Double price;
 
     private String comment;

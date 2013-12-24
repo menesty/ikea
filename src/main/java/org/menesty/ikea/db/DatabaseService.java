@@ -40,7 +40,7 @@ public class DatabaseService {
         entityManager.getTransaction().begin();
     }
 
-    public static void commit() {
+    public static synchronized void commit() {
         entityManager.getTransaction().commit();
     }
 
