@@ -27,6 +27,7 @@ import org.menesty.ikea.service.AbstractAsyncService.SucceededListener;
 import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.ui.TaskProgress;
 import org.menesty.ikea.ui.controls.PathProperty;
+import org.menesty.ikea.ui.controls.dialog.Dialog;
 import org.menesty.ikea.ui.controls.dialog.OrderCreateDialog;
 import org.menesty.ikea.ui.controls.dialog.OrderEditDialog;
 
@@ -176,6 +177,26 @@ public class OrderListPage extends BasePage {
             }
         });
         editOrder.setDisable(true);
+
+        final Button deleteBtn = new Button(null, ImageFactory.createDelete72Icon());
+        deleteBtn.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                Dialog.confirm("Are you sure want delete selected Order", new DialogCallback() {
+                    @Override
+                    public void onCancel() {
+
+                    }
+
+                    @Override
+                    public void onYes() {
+                        OrderTableItem item = tableView.getSelectionModel().getSelectedItem();
+                        ServiceFacade.getOrderService().remove(item.getOrder());
+                        tableView.getItems().remove(item);
+                    }
+                });
+            }
+        });
 
         tableView.getSelectionModel().selectedItemProperty().addListener(new InvalidationListener() {
             @Override

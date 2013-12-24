@@ -31,6 +31,8 @@ public class CustomerOrder extends Identifiable {
     @ManyToOne
     private User lackUser;
 
+    public boolean isOnline;
+
     public User getLackUser() {
         return lackUser;
     }

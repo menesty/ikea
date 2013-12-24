@@ -10,7 +10,6 @@ import org.menesty.ikea.order.OrderItem;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.ui.TaskProgress;
 import org.menesty.ikea.util.NumberUtil;
-import org.menesty.ikea.db.DatabaseService;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -314,19 +313,25 @@ public class OrderService extends Repository<CustomerOrder> {
         data.put(key, currentValue);
     }
 
-    public void remove(final CustomerOrder order, InvoicePdf invoicePdf, boolean withProducts) {
+    public void remove(final CustomerOrder order, InvoicePdf invoicePdf) {
         order.getInvoicePdfs().remove(invoicePdf);
-
-        if (!withProducts) {
-            List<RawInvoiceProductItem> items = invoicePdf.getProducts();
-            for (RawInvoiceProductItem item : items)
-                item.setProductInfo(null);
-        }
-        remove(invoicePdf);
+        ServiceFacade.getInvoicePdfService().remove(invoicePdf);
     }
 
-    public void remove(CustomerOrder order, List<InvoicePdf> items, boolean withProducts) {
+    public void remove(CustomerOrder order, List<InvoicePdf> items) {
         for (InvoicePdf item : items)
-            remove(order, item, withProducts);
+            remove(order, item);
+    }
+
+    public void remove(CustomerOrder item) {
+        try {
+            begin();
+            remove(item, item.getInvoicePdfs());
+            remove(item.getOrderItems());
+            remove(item);
+            commit();
+        } catch (Exception e) {
+            rollback();
+        }
     }
 }

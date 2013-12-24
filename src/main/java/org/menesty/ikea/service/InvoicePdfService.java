@@ -9,7 +9,9 @@ import org.menesty.ikea.exception.ProductFetchException;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.util.NumberUtil;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.util.*;
@@ -160,6 +162,18 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
                 e.printStackTrace();
             }
         return result;
+    }
+
+    public void remove(InvoicePdf entity) {
+        try {
+            begin();
+            ServiceFacade.getInvoiceItemService().deleteBy(entity);
+            super.remove(entity.getProducts());
+            super.remove(entity);
+            commit();
+        } catch (Exception e) {
+            rollback();
+        }
     }
 }
 

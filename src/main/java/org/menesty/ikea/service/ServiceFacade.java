@@ -6,10 +6,14 @@ public class ServiceFacade {
 
     private static InvoiceItemService invoiceItemService;
 
+    private static InvoicePdfService invoicePdfService;
+
     static {
         orderService = new OrderService();
         invoiceItemService = new InvoiceItemService();
+        invoicePdfService = new InvoicePdfService();
     }
+
 
     public static OrderService getOrderService() {
         return orderService;
@@ -17,5 +21,9 @@ public class ServiceFacade {
 
     public static InvoiceItemService getInvoiceItemService() {
         return invoiceItemService;
+    }
+
+    public static InvoicePdfService getInvoicePdfService() {
+        return invoicePdfService;
     }
 }

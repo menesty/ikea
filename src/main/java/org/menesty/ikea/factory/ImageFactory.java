@@ -47,4 +47,8 @@ public class ImageFactory {
     public static ImageView createXlsExportIcon() {
         return new ImageView(new Image("/styles/images/icon/xls-32x32.png"));
     }
+
+    public static ImageView createDelete72Icon() {
+        return new ImageView(new Image("/styles/images/icon/delete-72x72.png"));
+    }
 }

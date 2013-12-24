@@ -61,15 +61,19 @@ public abstract class Repository<T extends Identifiable> {
     }
 
     public <E extends Identifiable> void remove(List<E> list) {
+        boolean started = isActive();
         try {
-            begin();
+            if (!started)
+                begin();
+
             for (E item : list)
                 remove(item);
 
+            if (!started)
+                commit();
+
         } catch (Exception e) {
             rollback();
-        } finally {
-            commit();
         }
     }
 
