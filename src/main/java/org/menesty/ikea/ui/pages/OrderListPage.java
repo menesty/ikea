@@ -201,12 +201,13 @@ public class OrderListPage extends BasePage {
         tableView.getSelectionModel().selectedItemProperty().addListener(new InvalidationListener() {
             @Override
             public void invalidated(Observable observable) {
-                editOrder.setDisable(tableView.getSelectionModel().getSelectedItem() == null);
+                boolean selected = tableView.getSelectionModel().getSelectedItem() == null;
+                editOrder.setDisable(selected);
+                deleteBtn.setDisable(selected);
             }
         });
 
-        control.getItems().add(addOrder);
-        control.getItems().add(editOrder);
+        control.getItems().addAll(addOrder, editOrder, deleteBtn);
         return control;
     }
 
