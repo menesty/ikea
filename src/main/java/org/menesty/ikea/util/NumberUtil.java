@@ -39,4 +39,21 @@ public class NumberUtil {
     public static SimpleStringProperty preparePackInfo(int value, int dive, String prefix) {
         return new SimpleStringProperty((value != 0 ? BigDecimal.valueOf((double) value / dive).setScale(2, RoundingMode.CEILING).doubleValue() + "" : "0") + " " + prefix);
     }
+
+
+    public static double convertToCm(int value) {
+        return BigDecimal.valueOf(value).divide(BigDecimal.TEN).setScale(2).doubleValue();
+    }
+
+    public static int convertToMm(double value) {
+        return BigDecimal.valueOf(value).multiply(BigDecimal.TEN).intValue();
+    }
+
+    public static double convertToKg(int value) {
+        return BigDecimal.valueOf(value).divide(BigDecimal.valueOf(1000)).setScale(3).doubleValue();
+    }
+
+    public static int convertToGr(double value) {
+        return BigDecimal.valueOf(value).multiply(BigDecimal.valueOf(1000)).intValue();
+    }
 }

@@ -99,7 +99,8 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
     }
 
     private List<File> filter(List<File> files) {
-        Iterator<File> iter = files.iterator();
+        List<File> result = new ArrayList<>(files);
+        Iterator<File> iter = result.iterator();
 
         while (iter.hasNext()) {
             File file = iter.next();
@@ -108,7 +109,7 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
                 if (item.getInvoicePdf().getName().equals(file.getName()))
                     iter.remove();
         }
-        return files;
+        return result;
     }
 
     public abstract void onDelete(List<InvoicePdf> items);

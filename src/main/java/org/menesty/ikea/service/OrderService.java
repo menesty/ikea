@@ -328,7 +328,7 @@ public class OrderService extends Repository<CustomerOrder> {
             begin();
             remove(item, item.getInvoicePdfs());
             remove(item.getOrderItems());
-            remove(item);
+            super.remove(item);
             commit();
         } catch (Exception e) {
             rollback();

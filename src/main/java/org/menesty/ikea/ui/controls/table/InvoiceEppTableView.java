@@ -1,6 +1,7 @@
 package org.menesty.ikea.ui.controls.table;
 
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.scene.control.TableCell;
@@ -11,6 +12,7 @@ import javafx.util.Callback;
 import org.menesty.ikea.processor.invoice.InvoiceItem;
 import org.menesty.ikea.ui.controls.PathProperty;
 import org.menesty.ikea.ui.table.DoubleEditableTableCell;
+import org.menesty.ikea.util.NumberUtil;
 
 /**
  * Created by Menesty on 12/22/13.
@@ -20,7 +22,7 @@ public abstract class InvoiceEppTableView extends TableView<InvoiceItem> {
     public InvoiceEppTableView() {
         {
             TableColumn<InvoiceItem, Number> column = new TableColumn<>();
-            column.setMaxWidth(40);
+            column.setMaxWidth(35);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<InvoiceItem, Number>, ObservableValue<Number>>() {
                 @Override
                 public ObservableValue<Number> call(TableColumn.CellDataFeatures<InvoiceItem, Number> item) {
@@ -88,12 +90,12 @@ public abstract class InvoiceEppTableView extends TableView<InvoiceItem> {
         };
 
         {
-            TableColumn<InvoiceItem, Double> column = new TableColumn<>("Count");
-            column.setMaxWidth(40);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<InvoiceItem, Double>, ObservableValue<Double>>() {
+            TableColumn<InvoiceItem, String> column = new TableColumn<>("Count");
+            column.setMaxWidth(50);
+            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<InvoiceItem, String>, ObservableValue<String>>() {
                 @Override
-                public ObservableValue<Double> call(TableColumn.CellDataFeatures<InvoiceItem, Double> item) {
-                    return new PathProperty<>(item.getValue(), "count");
+                public ObservableValue<String> call(TableColumn.CellDataFeatures<InvoiceItem, String> item) {
+                    return new SimpleStringProperty(NumberUtil.toString(item.getValue().getCount()));
                 }
             });
             //column.setCellFactory(doubleFactory);
@@ -103,7 +105,7 @@ public abstract class InvoiceEppTableView extends TableView<InvoiceItem> {
 
         {
             TableColumn<InvoiceItem, Double> column = new TableColumn<>("Price");
-            column.setMaxWidth(50);
+            column.setMaxWidth(70);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<InvoiceItem, Double>, ObservableValue<Double>>() {
                 @Override
                 public ObservableValue<Double> call(TableColumn.CellDataFeatures<InvoiceItem, Double> item) {

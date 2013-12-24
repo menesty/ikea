@@ -178,7 +178,7 @@ public class OrderListPage extends BasePage {
         });
         editOrder.setDisable(true);
 
-        final Button deleteBtn = new Button(null, ImageFactory.createDelete72Icon());
+        final Button deleteBtn = new Button(null, ImageFactory.createDelete48Icon());
         deleteBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
@@ -197,6 +197,7 @@ public class OrderListPage extends BasePage {
                 });
             }
         });
+        deleteBtn.setDisable(true);
 
         tableView.getSelectionModel().selectedItemProperty().addListener(new InvalidationListener() {
             @Override

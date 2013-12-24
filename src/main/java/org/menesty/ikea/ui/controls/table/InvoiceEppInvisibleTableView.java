@@ -20,7 +20,7 @@ public class InvoiceEppInvisibleTableView extends TableView<InvoiceItem> {
     public InvoiceEppInvisibleTableView() {
         {
             TableColumn<InvoiceItem, String> column = new TableColumn<>("Art # ");
-            column.setMinWidth(100);
+            column.setMinWidth(105);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<InvoiceItem, String>, ObservableValue<String>>() {
                 @Override
                 public ObservableValue<String> call(TableColumn.CellDataFeatures<InvoiceItem, String> item) {
@@ -54,21 +54,10 @@ public class InvoiceEppInvisibleTableView extends TableView<InvoiceItem> {
             getColumns().add(column);
         }
 
-        {
-            TableColumn<InvoiceItem, String> column = new TableColumn<>("Size");
-            column.setMinWidth(60);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<InvoiceItem, String>, ObservableValue<String>>() {
-                @Override
-                public ObservableValue<String> call(TableColumn.CellDataFeatures<InvoiceItem, String> item) {
-                    return new PathProperty<>(item.getValue(), "size");
-                }
-            });
-            getColumns().add(column);
-        }
 
         {
             TableColumn<InvoiceItem, Double> column = new TableColumn<>("Weight");
-            column.setMaxWidth(50);
+            column.setMaxWidth(55);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<InvoiceItem, Double>, ObservableValue<Double>>() {
                 @Override
                 public ObservableValue<Double> call(TableColumn.CellDataFeatures<InvoiceItem, Double> item) {
@@ -80,11 +69,23 @@ public class InvoiceEppInvisibleTableView extends TableView<InvoiceItem> {
 
         {
             TableColumn<InvoiceItem, Double> column = new TableColumn<>("Total");
-            column.setMaxWidth(45);
+            column.setMaxWidth(55);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<InvoiceItem, Double>, ObservableValue<Double>>() {
                 @Override
                 public ObservableValue<Double> call(TableColumn.CellDataFeatures<InvoiceItem, Double> item) {
                     return new PathProperty<>(item.getValue(), "priceWatTotal");
+                }
+            });
+            getColumns().add(column);
+        }
+
+        {
+            TableColumn<InvoiceItem, String> column = new TableColumn<>("Size");
+            column.setMinWidth(75);
+            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<InvoiceItem, String>, ObservableValue<String>>() {
+                @Override
+                public ObservableValue<String> call(TableColumn.CellDataFeatures<InvoiceItem, String> item) {
+                    return new PathProperty<>(item.getValue(), "size");
                 }
             });
             getColumns().add(column);

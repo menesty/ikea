@@ -344,8 +344,14 @@ public abstract class EppViewComponent extends StackPane {
             loadService.restart();
             invoicePrice = InvoicePdf.getTotalPrice(currentInvoicePdf.getProducts());
             eppStatusPanel.setTotal(invoicePrice.doubleValue());
+        } else {
+            updateViews(new ArrayList<InvoiceItem>());
         }
         eppToolBar.setDisable(invoicePdf == null);
+    }
+
+    public InvoicePdf getActive() {
+        return currentInvoicePdf;
     }
 
 

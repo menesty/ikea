@@ -30,6 +30,8 @@ import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import static org.menesty.ikea.util.NumberUtil.*;
+
 
 /**
  * User: Menesty
@@ -315,23 +317,6 @@ public class ProductDialog extends BaseDialog {
             return convertToMm(length.getNumber());
         }
     }
-
-    private double convertToCm(int value) {
-        return BigDecimal.valueOf(value).divide(BigDecimal.TEN).setScale(2).doubleValue();
-    }
-
-    private int convertToMm(double value) {
-        return BigDecimal.valueOf(value).multiply(BigDecimal.TEN).intValue();
-    }
-
-    private double convertToKg(int value) {
-        return BigDecimal.valueOf(value).divide(BigDecimal.valueOf(1000)).setScale(3).doubleValue();
-    }
-
-    private int convertToGr(double value) {
-        return BigDecimal.valueOf(value).multiply(BigDecimal.valueOf(1000)).intValue();
-    }
-
 
     public void bind(ProductInfo productInfo, EntityDialogCallback<ProductInfo> callback) {
         this.callback = callback;

@@ -40,62 +40,67 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
         productService = new ProductService();
     }
 
-    private InvoicePdf parseInvoice(CustomerOrder order, String name, InputStream stream) throws IOException {
+    private List<RawInvoiceProductItem> parseInvoiceItems(final InvoicePdf invoicePdf, final InputStream stream) throws IOException {
+
+        PDDocument p = PDDocument.load(stream);
+
+        PDFTextStripper t = new PDFTextStripper();
+        String content = t.getText(p);
+        p.close();
+
+        Scanner scanner = new Scanner(content);
+
+        List<RawInvoiceProductItem> products = new ArrayList<>();
+
+
+        while (scanner.hasNextLine()) {
+            String line = scanner.nextLine();
+            Matcher m = linePattern.matcher(line);
+            if (m.find()) {
+                RawInvoiceProductItem product = new RawInvoiceProductItem();
+                product.setArtNumber(m.group(2));
+                product.setOriginalArtNumber(m.group(2).replace("-", ""));
+                product.setName(m.group(3));
+
+                BigDecimal count = BigDecimal.valueOf(NumberUtil.parse(m.group(5)));
+
+                if ("CM.".equals(m.group(4)))
+                    count = count.divide(BigDecimal.valueOf(100));
+
+                product.setCount(count.doubleValue());
+                product.setPriceStr(m.group(6));
+                product.setWat(m.group(7));
+                product.setProductInfo(loadProductInfo(product));
+                product.invoicePdf = invoicePdf;
+                products.add(product);
+            } else {
+                if (line.matches(INVOICE_NAME_PATTERN))
+                    invoicePdf.setInvoiceNumber(line.replaceAll(INVOICE_NAME_PATTERN, "$1/$3/$2"));
+                else
+                    System.out.println("!!!!!" + line);
+            }
+        }
+
+        Matcher m = totalPattern.matcher(content);
+
+        if (m.find()) {
+            double price = Double.valueOf(m.group(1).trim().replaceAll("[\\s\\u00A0]+", "").replace(",", "."));
+            invoicePdf.setPrice(price);
+        }
+        return  products;
+    }
+
+    private InvoicePdf parseInvoice(final CustomerOrder order, final String name, final InputStream stream) throws IOException {
         try {
             begin();
             InvoicePdf result = new InvoicePdf(name);
             result.customerOrder = order;
 
-            PDDocument p = PDDocument.load(stream);
-
-            PDFTextStripper t = new PDFTextStripper();
-            String content = t.getText(p);
-            p.close();
-
-            Scanner scanner = new Scanner(content);
-
-            List<RawInvoiceProductItem> products = new ArrayList<>();
-
-
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                Matcher m = linePattern.matcher(line);
-                if (m.find()) {
-                    RawInvoiceProductItem product = new RawInvoiceProductItem();
-                    product.setArtNumber(m.group(2));
-                    product.setOriginalArtNumber(m.group(2).replace("-", ""));
-                    product.setName(m.group(3));
-
-                    BigDecimal count = BigDecimal.valueOf(NumberUtil.parse(m.group(5)));
-
-                    if ("CM.".equals(m.group(4)))
-                        count = count.divide(BigDecimal.valueOf(100));
-
-                    product.setCount(count.doubleValue());
-                    product.setPriceStr(m.group(6));
-                    product.setWat(m.group(7));
-                    product.setProductInfo(loadProductInfo(product));
-                    products.add(product);
-                } else {
-                    if (line.matches(INVOICE_NAME_PATTERN))
-                        result.setInvoiceNumber(line.replaceAll(INVOICE_NAME_PATTERN, "$1/$3/$2"));
-                    else
-                        System.out.println("!!!!!" + line);
-                }
-            }
-
-            Matcher m = totalPattern.matcher(content);
-
-            if (m.find()) {
-                double price = Double.valueOf(m.group(1).trim().replaceAll("[\\s\\u00A0]+", "").replace(",", "."));
-                result.setPrice(price);
-            }
+            List<RawInvoiceProductItem> products = parseInvoiceItems(result, stream);
 
             result = save(result);
 
             List<RawInvoiceProductItem> items = reduce(products);
-            for (RawInvoiceProductItem item : items)
-                item.invoicePdf = result;
 
             result.setProducts(save(items));
 
@@ -138,6 +143,7 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
             productInfo.setName(product.getName());
             productInfo.setShortName(ProductService.generateShortName(product.getName(), product.getArtNumber(), 1));
             productInfo.getPackageInfo().setBoxCount(1);
+            productInfo = save(productInfo);
         }
         productInfo.setWat(product.getIntWat());
         productInfo.setPrice(product.getPrice());

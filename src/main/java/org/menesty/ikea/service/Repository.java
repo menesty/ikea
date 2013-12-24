@@ -38,24 +38,42 @@ public abstract class Repository<T extends Identifiable> {
 
     public <E extends Identifiable> E save(E entity) {
         boolean alreadyStarted = isActive();
-        if (!alreadyStarted)
-            begin();
+        try {
+            if (!alreadyStarted)
+                begin();
 
-        if (entity.getId() == null)
-            getEm().persist(entity);
-        else
-            entity = getEm().merge(entity);
+            if (entity.getId() == null)
+                getEm().persist(entity);
+            else
+                entity = getEm().merge(entity);
 
-        if (!alreadyStarted)
-            commit();
+            if (!alreadyStarted)
+                commit();
+        } catch (Exception e) {
+            if (!alreadyStarted)
+                rollback();
+            throw new RuntimeException(e);
+        }
         return entity;
     }
 
     public <E extends Identifiable> List<E> save(List<E> entities) {
+        boolean started = isActive();
         List<E> result = new ArrayList<>();
-        for (E entity : entities)
-            result.add(save(entity));
+        try {
+            if (!started)
+                begin();
 
+            for (E entity : entities)
+                result.add(save(entity));
+
+            if (!started)
+                commit();
+        } catch (Exception e) {
+            if (!started)
+                rollback();
+            throw new RuntimeException(e);
+        }
         return result;
 
     }

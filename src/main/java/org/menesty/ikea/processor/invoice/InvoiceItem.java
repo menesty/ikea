@@ -13,6 +13,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.menesty.ikea.util.NumberUtil.convertToKg;
+
 @Entity
 public class InvoiceItem extends Identifiable {
 
@@ -37,7 +39,7 @@ public class InvoiceItem extends Identifiable {
 
     @Column(scale = 8, precision = 2)
     private double count;
-
+    @Column(scale = 8, precision = 3)
     private double weight;
 
     private String size;
@@ -215,7 +217,7 @@ public class InvoiceItem extends Identifiable {
 
 
     public static InvoiceItem get(ProductInfo productInfo, double count, int box, int boxes) {
-        return get(productInfo.getOriginalArtNum(), productInfo.getName(), productInfo.getShortName(), productInfo.getPrice(), productInfo.getWat(), productInfo.getPackageInfo().size(), productInfo.getPackageInfo().getWeight(), count, box, boxes);
+        return get(productInfo.getOriginalArtNum(), productInfo.getName(), productInfo.getShortName(), productInfo.getPrice(), productInfo.getWat(), productInfo.getPackageInfo().size(), convertToKg(productInfo.getPackageInfo().getWeight()), count, box, boxes);
     }
 
     public static InvoiceItem get(String artNumber, String name, String shortName, double price, int wat, String size, double weight, double count, int box, int boxes) {
