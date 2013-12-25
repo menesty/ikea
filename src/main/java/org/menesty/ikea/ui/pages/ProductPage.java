@@ -17,6 +17,7 @@ import javafx.stage.FileChooser;
 import javafx.util.Callback;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.service.ProductService;
+import org.menesty.ikea.ui.controls.MToolBar;
 import org.menesty.ikea.ui.controls.PathProperty;
 import org.menesty.ikea.ui.controls.dialog.ProductDialog;
 import org.menesty.ikea.ui.controls.search.ProductItemSearchBar;
@@ -249,7 +250,7 @@ public class ProductPage extends BasePage {
 
 
         VBox toolBarBox = new VBox();
-        ToolBar toolBar = new ToolBar();
+        ToolBar toolBar = new MToolBar();
 
         ImageView imageView = new ImageView(new Image("/styles/images/icon/csv-32x32.png"));
         Button export = new Button(null, imageView);

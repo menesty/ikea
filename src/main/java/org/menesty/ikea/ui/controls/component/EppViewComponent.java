@@ -127,6 +127,10 @@ public abstract class EppViewComponent extends StackPane {
                 ServiceFacade.getInvoiceItemService().save(invoiceEppTableView.getItems());
                 ServiceFacade.getInvoiceItemService().save(invoiceEppInvisibleTableView.getItems());
                 saveBtn.setDisable(true);
+                if (!currentInvoicePdf.hasEpp) {
+                    currentInvoicePdf.hasEpp = true;
+                    ServiceFacade.getInvoicePdfService().save(currentInvoicePdf);
+                }
             }
         });
 
@@ -261,6 +265,8 @@ public abstract class EppViewComponent extends StackPane {
                     public void onYes() {
                         ServiceFacade.getInvoiceItemService().deleteBy(currentInvoicePdf);
                         updateViews(prepareData(currentInvoicePdf.getProducts()));
+                        currentInvoicePdf.hasEpp = false;
+                        ServiceFacade.getInvoicePdfService().save(currentInvoicePdf);
                         saveBtn.setDisable(false);
                     }
                 });
@@ -336,7 +342,7 @@ public abstract class EppViewComponent extends StackPane {
         exportEppBtn.setDisable(items.isEmpty());
     }
 
-    public void setActive(InvoicePdf invoicePdf) {
+    public void setActive(final InvoicePdf invoicePdf) {
         currentInvoicePdf = invoicePdf;
         if (invoicePdf != null) {
             artPrefix = ((int) NumberUtil.parse(invoicePdf.customerOrder.getName())) + "";
@@ -349,11 +355,6 @@ public abstract class EppViewComponent extends StackPane {
         }
         eppToolBar.setDisable(invoicePdf == null);
     }
-
-    public InvoicePdf getActive() {
-        return currentInvoicePdf;
-    }
-
 
     private List<InvoiceItem> prepareData(List<RawInvoiceProductItem> items) {
         List<InvoiceItem> result = new ArrayList<>();

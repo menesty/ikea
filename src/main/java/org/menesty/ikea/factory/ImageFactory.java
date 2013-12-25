@@ -1,5 +1,6 @@
 package org.menesty.ikea.factory;
 
+import javafx.scene.Node;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
@@ -33,7 +34,7 @@ public class ImageFactory {
     }
 
     public static ImageView createReload32Icon() {
-        return new ImageView(new Image("/styles/images/icon/reload-32x32.png"));
+        return new ImageView(new Image("/styles/images/icon/refresh-table-32x32.png"));
     }
 
     public static ImageView createSave32Icon() {
@@ -50,5 +51,17 @@ public class ImageFactory {
 
     public static ImageView createDelete48Icon() {
         return new ImageView(new Image("/styles/images/icon/delete-48x48.png"));
+    }
+
+    public static ImageView createSync32Icon() {
+        return new ImageView(new Image("/styles/images/icon/sync-32x32.png"));
+    }
+
+    public static ImageView createDelete32Icon() {
+        return new ImageView(new Image("/styles/images/icon/delete-32x32.png"));
+    }
+
+    public static ImageView createPdf32Icon() {
+        return new ImageView(new Image("/styles/images/icon/pdf-32x32.png"));
     }
 }

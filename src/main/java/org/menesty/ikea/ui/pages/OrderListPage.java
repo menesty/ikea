@@ -26,6 +26,7 @@ import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.service.AbstractAsyncService.SucceededListener;
 import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.ui.TaskProgress;
+import org.menesty.ikea.ui.controls.MToolBar;
 import org.menesty.ikea.ui.controls.PathProperty;
 import org.menesty.ikea.ui.controls.dialog.Dialog;
 import org.menesty.ikea.ui.controls.dialog.OrderCreateDialog;
@@ -161,7 +162,7 @@ public class OrderListPage extends BasePage {
     }
 
     private ToolBar createToolBar() {
-        ToolBar control = new ToolBar();
+        ToolBar control = new MToolBar();
         Button addOrder = new Button(null, ImageFactory.createAdd48Icon());
 
         addOrder.setOnAction(new EventHandler<ActionEvent>() {

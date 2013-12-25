@@ -9,9 +9,13 @@ import javafx.event.EventHandler;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.menesty.ikea.domain.InvoicePdf;
+import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.ui.controls.TotalStatusPanel;
 import org.menesty.ikea.ui.controls.dialog.Dialog;
 import org.menesty.ikea.ui.controls.table.InvoicePdfTableView;
@@ -29,6 +33,8 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
     private InvoicePdfTableView invoicePdfTableView;
 
     private TotalStatusPanel statusPanel;
+
+    private Button syncBtn;
 
     public InvoicePdfViewComponent(final Stage stage) {
 
@@ -52,9 +58,7 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
         });
 
         ToolBar pdfToolBar = new ToolBar();
-        ImageView imageView = new ImageView(new javafx.scene.image.Image("/styles/images/icon/pdf-32x32.png"));
-        Button uploadInvoice = new Button("", imageView);
-        uploadInvoice.setContentDisplay(ContentDisplay.RIGHT);
+        Button uploadInvoice = new Button(null, ImageFactory.createPdf32Icon());
         uploadInvoice.setTooltip(new Tooltip("Upload Invoice PDF"));
         uploadInvoice.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
@@ -70,9 +74,7 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
             }
         });
 
-        imageView = new ImageView(new javafx.scene.image.Image("/styles/images/icon/delete-32x32.png"));
-        deleteBtn = new Button(null, imageView);
-        deleteBtn.setContentDisplay(ContentDisplay.RIGHT);
+        deleteBtn = new Button(null, ImageFactory.createDelete32Icon());
         deleteBtn.setTooltip(new Tooltip("Delete invoice"));
         deleteBtn.setDisable(true);
         deleteBtn.setOnAction(new EventHandler<ActionEvent>() {
@@ -91,7 +93,19 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
             }
         });
 
-        pdfToolBar.getItems().addAll(uploadInvoice, deleteBtn);
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        syncBtn = new Button(null, ImageFactory.createSync32Icon());
+        syncBtn.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+
+            }
+        });
+        syncBtn.setDisable(true);
+
+        pdfToolBar.getItems().addAll(uploadInvoice, deleteBtn, spacer, syncBtn);
 
         setTop(pdfToolBar);
         setCenter(invoicePdfTableView);
@@ -124,11 +138,16 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
 
     public void setItems(List<InvoicePdf> items) {
         invoicePdfTableView.setItems(transform(items));
-
+        boolean allowSync = true;
         double total = 0d;
-        for (InvoicePdf item : items)
-            total += item.getPrice();
 
+        for (InvoicePdf item : items) {
+            total += item.getPrice();
+            if (!item.hasEpp)
+                allowSync = false;
+        }
+
+        syncBtn.setDisable(!allowSync);
         statusPanel.setTotal(total);
     }
 

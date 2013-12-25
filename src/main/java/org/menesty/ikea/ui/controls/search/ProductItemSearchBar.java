@@ -6,16 +6,19 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ToolBar;
+import javafx.scene.layout.HBox;
 import org.menesty.ikea.domain.ProductInfo;
+import org.menesty.ikea.ui.controls.MToolBar;
 import org.menesty.ikea.ui.controls.form.TextField;
 
-public class ProductItemSearchBar extends ToolBar {
+public class ProductItemSearchBar extends MToolBar {
 
     private TextField artNumber;
 
     private ComboBox<ProductInfo.Group> productGroup;
 
     public ProductItemSearchBar() {
+        getStyleClass().add("app-tool-bar");
         InvalidationListener invalidationListener = new InvalidationListener() {
             @Override
             public void invalidated(Observable observable) {
