@@ -1,7 +1,7 @@
 package org.menesty.ikea.ui.controls.search;
 
 import org.menesty.ikea.domain.ProductInfo;
-import org.menesty.ikea.order.OrderItem;
+import org.menesty.ikea.domain.OrderItem;
 
 /**
  * User: Menesty

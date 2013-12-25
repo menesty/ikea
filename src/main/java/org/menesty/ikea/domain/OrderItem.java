@@ -1,9 +1,4 @@
-package org.menesty.ikea.order;
-
-import org.menesty.ikea.domain.CustomerOrder;
-import org.menesty.ikea.domain.Identifiable;
-import org.menesty.ikea.domain.ProductInfo;
-import org.menesty.ikea.domain.UserProductInfo;
+package org.menesty.ikea.domain;
 
 import javax.persistence.*;
 import java.math.BigDecimal;

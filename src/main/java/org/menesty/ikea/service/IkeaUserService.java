@@ -21,7 +21,7 @@ import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.domain.User;
 import org.menesty.ikea.domain.UserProductInfo;
 import org.menesty.ikea.exception.LoginIkeaException;
-import org.menesty.ikea.order.OrderItem;
+import org.menesty.ikea.domain.OrderItem;
 import org.menesty.ikea.ui.TaskProgressLog;
 import org.menesty.ikea.util.NumberUtil;
 

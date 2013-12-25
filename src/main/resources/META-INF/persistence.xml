@@ -9,7 +9,7 @@
         <class>org.menesty.ikea.domain.ProductPart</class>
         <class>org.menesty.ikea.domain.ProductInfo</class>
         <class>org.menesty.ikea.domain.CustomerOrder</class>
-        <class>org.menesty.ikea.order.OrderItem</class>
+        <class>org.menesty.ikea.domain.OrderItem</class>
         <class>org.menesty.ikea.domain.InvoicePdf</class>
         <class>org.menesty.ikea.processor.invoice.RawInvoiceProductItem</class>
         <class>org.menesty.ikea.processor.invoice.InvoiceItem</class>

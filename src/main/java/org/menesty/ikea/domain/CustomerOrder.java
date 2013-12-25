@@ -1,7 +1,6 @@
 package org.menesty.ikea.domain;
 
 import org.apache.commons.lang.StringUtils;
-import org.menesty.ikea.order.OrderItem;
 import org.menesty.ikea.ui.controls.search.OrderItemSearchData;
 
 import javax.persistence.*;

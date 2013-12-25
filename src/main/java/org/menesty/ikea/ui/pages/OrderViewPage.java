@@ -14,7 +14,7 @@ import org.menesty.ikea.domain.InvoicePdf;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.domain.StorageLack;
 import org.menesty.ikea.exception.LoginIkeaException;
-import org.menesty.ikea.order.OrderItem;
+import org.menesty.ikea.domain.OrderItem;
 import org.menesty.ikea.processor.invoice.InvoiceItem;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.service.*;

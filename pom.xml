@@ -125,12 +125,8 @@
             <artifactId>jxls-core</artifactId>
             <version>1.0.2</version>
         </dependency>
-        <dependency>
-            <groupId>com.db4o</groupId>
-            <artifactId>db4o-full-java5</artifactId>
-            <version>8.1-SNAPSHOT</version>
-        </dependency>
 
+        <!-- Html parser -->
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
@@ -142,12 +138,25 @@
             <artifactId>mvel</artifactId>
             <version>2.0M2</version>
         </dependency>
+
+        <!-- PDF -->
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>
             <version>1.8.2</version>
         </dependency>
 
+        <!-- JPA -->
+        <dependency>
+            <groupId>com.jolbox</groupId>
+            <artifactId>bonecp</artifactId>
+            <version>0.7.1.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+            <version>1.0.0.GA</version>
+        </dependency>
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
@@ -171,15 +180,12 @@
             <artifactId>persistence-api</artifactId>
             <version>2.0</version>
         </dependency>
+
+        <!-- Json -->
         <dependency>
-            <groupId>javax.validation</groupId>
-            <artifactId>validation-api</artifactId>
-            <version>1.0.0.GA</version>
-        </dependency>
-        <dependency>
-            <groupId>com.jolbox</groupId>
-            <artifactId>bonecp</artifactId>
-            <version>0.7.1.RELEASE</version>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.2.4</version>
         </dependency>
     </dependencies>
 

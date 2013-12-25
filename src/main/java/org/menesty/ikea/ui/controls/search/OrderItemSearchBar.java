@@ -6,7 +6,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.*;
 import org.menesty.ikea.domain.ProductInfo;
-import org.menesty.ikea.order.OrderItem;
+import org.menesty.ikea.domain.OrderItem;
 import org.menesty.ikea.ui.controls.form.TextField;
 
 

@@ -13,7 +13,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.util.Callback;
 import org.menesty.ikea.domain.ProductInfo;
-import org.menesty.ikea.order.OrderItem;
+import org.menesty.ikea.domain.OrderItem;
 import org.menesty.ikea.ui.controls.PathProperty;
 import org.menesty.ikea.ui.controls.dialog.ProductDialog;
 import org.menesty.ikea.util.NumberUtil;
