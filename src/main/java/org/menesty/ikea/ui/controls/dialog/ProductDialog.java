@@ -122,9 +122,7 @@ public class ProductDialog extends BaseDialog {
             }
         });
 
-
-        subProductTableView.setVisible(false);
-        getChildren().addAll(options, subProductTableView, bottomBar);
+        getChildren().addAll(options, bottomBar);
     }
 
     private void bind(ProductPart productPart) {
@@ -322,12 +320,16 @@ public class ProductDialog extends BaseDialog {
         this.callback = callback;
         currentProductInfo = productInfo;
         bindProperties();
+        boolean hasParts = productInfo.getParts() != null && !productInfo.getParts().isEmpty();
 
-        if (productInfo.getParts() != null) {
+        if (hasParts) {
             subProductTableView.setItems(FXCollections.observableArrayList(productInfo.getParts()));
             subProductTableView.getItems().add(0, new ProductPart(0, currentProductInfo));
+            getChildren().add(getChildren().size() - 1, subProductTableView);
+        } else {
+            getChildren().remove(subProductTableView);
         }
-        subProductTableView.setVisible(productInfo.getParts() != null);
+        subProductTableView.setVisible(hasParts);
         options.getSelectionModel().select(options.getTabs().get(0));
     }
 
