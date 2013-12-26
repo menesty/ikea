@@ -2,16 +2,16 @@ package org.menesty.ikea.service.task;
 
 import com.google.gson.Gson;
 import javafx.concurrent.Task;
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.AuthCache;
 import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.auth.DigestScheme;
 import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.BasicCredentialsProvider;
@@ -41,61 +41,44 @@ public class InvoiceSyncTask extends Task<Void> {
 
         }
 
-        Gson gson = new Gson();
-        String json = gson.toJson(result);
-
-        HttpClient httpClient = HttpClients.createDefault();
+        try {
+            sendData(new Gson().toJson(result));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         return null;
     }
 
-    private void sendData() throws IOException {
-        HttpHost targetHost = new HttpHost("localhost", 80, "http");
+    private void sendData(String data) throws IOException {
+        HttpHost targetHost = new HttpHost(ServiceFacade.getApplicationPreference().getWarehouseHost());
         CredentialsProvider credsProvider = new BasicCredentialsProvider();
         credsProvider.setCredentials(
                 new AuthScope(targetHost.getHostName(), targetHost.getPort()),
-                new UsernamePasswordCredentials("username", "password"));
-        CloseableHttpClient httpclient = HttpClients.custom()
-                .setDefaultCredentialsProvider(credsProvider).build();
-        try {
+                new UsernamePasswordCredentials(
+                        ServiceFacade.getApplicationPreference().getWarehouseUser(),
+                        ServiceFacade.getApplicationPreference().getWarehousePassword()
+                )
+        );
 
+        try (CloseableHttpClient httpClient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build()) {
             // Create AuthCache instance
             AuthCache authCache = new BasicAuthCache();
-            // Generate DIGEST scheme object, initialize it and add it to the local
-            // auth cache
             DigestScheme digestAuth = new DigestScheme();
-            // Suppose we already know the realm name
-            digestAuth.overrideParamter("realm", "some realm");
-            // Suppose we already know the expected nonce value
-            digestAuth.overrideParamter("nonce", "whatever");
             authCache.put(targetHost, digestAuth);
 
             // Add AuthCache to the execution context
             HttpClientContext localContext = HttpClientContext.create();
             localContext.setAuthCache(authCache);
 
-            HttpGet httpget = new HttpGet("/");
 
-            System.out.println("executing request: " + httpget.getRequestLine());
-            System.out.println("to target: " + targetHost);
+            HttpPost httpPost = new HttpPost("/sync");
+            httpPost.setEntity(new StringEntity(data, ContentType.APPLICATION_JSON));
 
-            for (int i = 0; i < 3; i++) {
-                CloseableHttpResponse response = httpclient.execute(targetHost, httpget, localContext);
-                try {
-                    HttpEntity entity = response.getEntity();
 
-                    System.out.println("----------------------------------------");
-                    System.out.println(response.getStatusLine());
-                    if (entity != null) {
-                        System.out.println("Response content length: " + entity.getContentLength());
-                    }
-                    EntityUtils.consume(entity);
-                } finally {
-                    response.close();
-                }
+            try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
+                EntityUtils.consume(response.getEntity());
             }
-        } finally {
-            httpclient.close();
         }
     }
 

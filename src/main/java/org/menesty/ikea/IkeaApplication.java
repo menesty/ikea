@@ -19,6 +19,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.menesty.ikea.db.DatabaseService;
 import org.menesty.ikea.ui.controls.*;
+import org.menesty.ikea.ui.controls.dialog.ApplicationPreferenceDialog;
 import org.menesty.ikea.ui.controls.dialog.BaseDialog;
 import org.menesty.ikea.ui.controls.pane.LoadingPane;
 import org.menesty.ikea.ui.pages.*;
@@ -37,7 +38,9 @@ public class IkeaApplication extends Application {
     private static IkeaApplication instance;
     private Stage stage;
 
-    private LoadingPane loadingPane;
+
+    private ApplicationPreferenceDialog preferenceDialog;
+
 
     public static PageManager getPageManager() {
         return pageManager;
@@ -51,7 +54,9 @@ public class IkeaApplication extends Application {
     public void start(final Stage stage) throws Exception {
         instance = this;
         this.stage = stage;
-        stage.setTitle("Ensemble");
+        stage.setTitle("Ikea Logistic Application");
+
+        LoadingPane loadingPane;
         // set default docs location
         StackPane layerPane = new StackPane();
         stage.initStyle(StageStyle.UNDECORATED);
@@ -99,12 +104,19 @@ public class IkeaApplication extends Application {
         pageToolBar.getItems().add(breadcrumbBar);
         Region spacer3 = new Region();
         HBox.setHgrow(spacer3, Priority.ALWAYS);
-        Button settingsButton = new Button();
+
+
+        preferenceDialog = new ApplicationPreferenceDialog() {
+            @Override
+            public void onCancel() {
+                hidePopupDialog();
+            }
+        };
+        Button settingsButton = new Button(null, new ImageView(new Image(this.getClass().getResourceAsStream("/styles/images/settings.png"))));
         settingsButton.setId("SettingsButton");
-        settingsButton.setGraphic(new ImageView(new Image(this.getClass().getResourceAsStream("/styles/images/settings.png"))));
         settingsButton.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
-                // showProxyDialog();
+                showPopupDialog(preferenceDialog);
             }
         });
         settingsButton.setMaxHeight(Double.MAX_VALUE);

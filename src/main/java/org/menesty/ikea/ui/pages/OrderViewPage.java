@@ -267,6 +267,11 @@ public class OrderViewPage extends BasePage {
         eppViewComponent = new EppViewComponent(getStage()) {
 
             @Override
+            public void onChange(InvoicePdf invoicePdf) {
+                invoicePdfViewComponent.updateState();
+            }
+
+            @Override
             public void export(List<InvoiceItem> items, String path) {
                 invoiceService.exportToEpp(items, path);
             }

@@ -127,10 +127,10 @@ public abstract class EppViewComponent extends StackPane {
                 ServiceFacade.getInvoiceItemService().save(invoiceEppTableView.getItems());
                 ServiceFacade.getInvoiceItemService().save(invoiceEppInvisibleTableView.getItems());
                 saveBtn.setDisable(true);
-                if (!currentInvoicePdf.hasEpp) {
-                    currentInvoicePdf.hasEpp = true;
-                    ServiceFacade.getInvoicePdfService().save(currentInvoicePdf);
-                }
+
+                if (!currentInvoicePdf.hasEpp)
+                    changeEppState(true);
+
             }
         });
 
@@ -227,9 +227,7 @@ public abstract class EppViewComponent extends StackPane {
                     //search with 1 element
                     InvoiceItem updateItem = null;
                     for (InvoiceItem item : items)
-                        if (item.getCount() > 1)
-                            continue;
-                        else {
+                        if (item.getCount() == 1) {
                             updateItem = item;
                             break;
                         }
@@ -265,8 +263,7 @@ public abstract class EppViewComponent extends StackPane {
                     public void onYes() {
                         ServiceFacade.getInvoiceItemService().deleteBy(currentInvoicePdf);
                         updateViews(prepareData(currentInvoicePdf.getProducts()));
-                        currentInvoicePdf.hasEpp = false;
-                        ServiceFacade.getInvoicePdfService().save(currentInvoicePdf);
+                        changeEppState(false);
                         saveBtn.setDisable(false);
                     }
                 });
@@ -311,6 +308,13 @@ public abstract class EppViewComponent extends StackPane {
         return pane;
     }
 
+    private void changeEppState(boolean hasEpp) {
+        currentInvoicePdf.hasEpp = hasEpp;
+        ServiceFacade.getInvoicePdfService().save(currentInvoicePdf);
+        onChange(currentInvoicePdf);
+    }
+
+    public abstract void onChange(InvoicePdf invoicePdf);
 
     public abstract void export(List<InvoiceItem> items, String path);
 

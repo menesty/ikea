@@ -6,8 +6,9 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.scene.control.*;
-import javafx.scene.image.ImageView;
+import javafx.scene.control.Button;
+import javafx.scene.control.ToolBar;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -138,17 +139,7 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
 
     public void setItems(List<InvoicePdf> items) {
         invoicePdfTableView.setItems(transform(items));
-        boolean allowSync = true;
-        double total = 0d;
-
-        for (InvoicePdf item : items) {
-            total += item.getPrice();
-            if (!item.hasEpp)
-                allowSync = false;
-        }
-
-        syncBtn.setDisable(!allowSync);
-        statusPanel.setTotal(total);
+        updateState();
     }
 
     private ObservableList<InvoicePdfTableView.InvoicePdfTableItem> transform(List<InvoicePdf> entities) {
@@ -177,4 +168,17 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
         return invoicePdfTableView.getSelectionModel().getSelectedItem() != null ? invoicePdfTableView.getSelectionModel().getSelectedItem().getInvoicePdf() : null;
     }
 
+    public void updateState() {
+        boolean allowSync = true;
+        double total = 0d;
+
+        for (InvoicePdfTableView.InvoicePdfTableItem item : invoicePdfTableView.getItems()) {
+            total += item.getInvoicePdf().getPrice();
+            if (!item.getInvoicePdf().hasEpp)
+                allowSync = false;
+        }
+
+        syncBtn.setDisable(!allowSync);
+        statusPanel.setTotal(total);
+    }
 }
