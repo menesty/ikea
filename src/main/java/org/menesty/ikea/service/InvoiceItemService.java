@@ -23,6 +23,16 @@ public class InvoiceItemService extends Repository<InvoiceItem> {
         }
     }
 
+    public boolean hasItems(InvoicePdf invoicePdf) {
+        boolean result;
+        begin();
+        TypedQuery<Long> query = getEm().createQuery("select count(entity.id) from " + entityClass.getName() + " entity where  entity.invoicePdf.id = ?1", Long.class);
+        query.setParameter(1, invoicePdf.getId());
+        result = query.getSingleResult() > 0;
+        commit();
+        return result;
+    }
+
     public void deleteBy(InvoicePdf currentInvoicePdf) {
         remove(load(currentInvoicePdf));
         /*try {

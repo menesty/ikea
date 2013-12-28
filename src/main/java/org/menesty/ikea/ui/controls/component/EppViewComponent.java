@@ -127,9 +127,7 @@ public abstract class EppViewComponent extends StackPane {
                 ServiceFacade.getInvoiceItemService().save(invoiceEppTableView.getItems());
                 ServiceFacade.getInvoiceItemService().save(invoiceEppInvisibleTableView.getItems());
                 saveBtn.setDisable(true);
-
-                if (!currentInvoicePdf.hasEpp)
-                    changeEppState(true);
+                onChange(currentInvoicePdf);
 
             }
         });
@@ -263,8 +261,8 @@ public abstract class EppViewComponent extends StackPane {
                     public void onYes() {
                         ServiceFacade.getInvoiceItemService().deleteBy(currentInvoicePdf);
                         updateViews(prepareData(currentInvoicePdf.getProducts()));
-                        changeEppState(false);
                         saveBtn.setDisable(false);
+                        onChange(currentInvoicePdf);
                     }
                 });
 
@@ -306,12 +304,6 @@ public abstract class EppViewComponent extends StackPane {
         };
 
         return pane;
-    }
-
-    private void changeEppState(boolean hasEpp) {
-        currentInvoicePdf.hasEpp = hasEpp;
-        ServiceFacade.getInvoicePdfService().save(currentInvoicePdf);
-        onChange(currentInvoicePdf);
     }
 
     public abstract void onChange(InvoicePdf invoicePdf);

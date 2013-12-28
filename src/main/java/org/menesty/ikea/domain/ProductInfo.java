@@ -73,7 +73,7 @@ public class ProductInfo extends Identifiable {
     @Enumerated(EnumType.STRING)
     private Group group = Group.Unknown;
 
-    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "parent")
     private List<ProductPart> parts;
 
     @Embedded()

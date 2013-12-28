@@ -17,6 +17,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.menesty.ikea.domain.InvoicePdf;
 import org.menesty.ikea.factory.ImageFactory;
+import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.ui.controls.TotalStatusPanel;
 import org.menesty.ikea.ui.controls.dialog.Dialog;
 import org.menesty.ikea.ui.controls.table.InvoicePdfTableView;
@@ -174,7 +175,8 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
 
         for (InvoicePdfTableView.InvoicePdfTableItem item : invoicePdfTableView.getItems()) {
             total += item.getInvoicePdf().getPrice();
-            if (!item.getInvoicePdf().hasEpp)
+
+            if (allowSync && !ServiceFacade.getInvoiceItemService().hasItems(item.getInvoicePdf()))
                 allowSync = false;
         }
 

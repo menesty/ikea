@@ -35,8 +35,6 @@ public class InvoicePdf extends Identifiable {
     @ManyToOne(fetch = FetchType.LAZY)
     public CustomerOrder customerOrder;
 
-    public boolean hasEpp;
-
     public Date getCreatedDate() {
         return createdDate;
     }
@@ -85,5 +83,4 @@ public class InvoicePdf extends Identifiable {
         return price;
 
     }
-
 }
