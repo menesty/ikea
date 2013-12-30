@@ -213,8 +213,10 @@ public class InvoiceItem extends Identifiable {
             double price = productInfo.getPrice();
             double pricePerItem = round(price / productInfo.getPackageInfo().getBoxCount());
 
-            for (InvoiceItem item : result)
+            for (InvoiceItem item : result) {
                 item.price = pricePerItem;
+                item.basePrice = pricePerItem;
+            }
 
             double total = round(pricePerItem * productInfo.getPackageInfo().getBoxCount());
             if (total != price)
@@ -238,12 +240,15 @@ public class InvoiceItem extends Identifiable {
         invoiceItem.originArtNumber = artNumber;
         invoiceItem.shortName = shortName;
         invoiceItem.weight = weight;
+
         if (boxes > 1) {
             invoiceItem.artNumber += "(" + box + ")";
-            invoiceItem.shortName += " " + box + "/" + boxes;
+            invoiceItem.shortName += " " + box + " część";
         }
+
         if (artSuffix != null && !artSuffix.isEmpty())
             invoiceItem.artNumber += "_" + artSuffix;
+
         invoiceItem.basePrice = price;
         invoiceItem.price = price;
         invoiceItem.wat = wat;

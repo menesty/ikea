@@ -102,7 +102,7 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
         syncBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-
+                onSync();
             }
         });
         syncBtn.setDisable(true);
@@ -113,6 +113,8 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
         setCenter(invoicePdfTableView);
         setBottom(statusPanel = new TotalStatusPanel());
     }
+
+    protected abstract void onSync();
 
     private List<File> filter(List<File> files) {
         List<File> result = new ArrayList<>(files);

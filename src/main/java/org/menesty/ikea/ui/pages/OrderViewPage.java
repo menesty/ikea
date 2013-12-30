@@ -18,6 +18,7 @@ import org.menesty.ikea.domain.OrderItem;
 import org.menesty.ikea.processor.invoice.InvoiceItem;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.service.*;
+import org.menesty.ikea.service.task.InvoiceSyncService;
 import org.menesty.ikea.ui.TaskProgress;
 import org.menesty.ikea.ui.controls.component.*;
 import org.menesty.ikea.ui.controls.dialog.IkeaUserFillProgressDialog;
@@ -36,7 +37,6 @@ import java.util.*;
 public class OrderViewPage extends BasePage {
     private OrderItemViewComponent orderItemViewComponent;
 
-    private OrderService orderService;
 
     private InvoicePdfService invoicePdfService;
 
@@ -60,14 +60,18 @@ public class OrderViewPage extends BasePage {
 
     private EppViewComponent eppViewComponent;
 
+    private InvoiceSyncService invoiceSyncService;
+
     public OrderViewPage() {
         super("CustomerOrder");
 
-        orderService = new OrderService();
         invoicePdfService = new InvoicePdfService();
         invoiceService = new InvoiceService();
         productService = new ProductService();
         ikeaUserService = new IkeaUserService();
+
+        invoiceSyncService = new InvoiceSyncService();
+
     }
 
     @Override
@@ -124,7 +128,7 @@ public class OrderViewPage extends BasePage {
             @Override
             public void handle(Event event) {
                 if (tab.isSelected())
-                    storageLackItemViewComponent.setItems(orderService.calculateOrderInvoiceDiff(currentOrder));
+                    storageLackItemViewComponent.setItems(ServiceFacade.getOrderService().calculateOrderInvoiceDiff(currentOrder));
 
             }
         });
@@ -210,15 +214,22 @@ public class OrderViewPage extends BasePage {
 
         invoicePdfViewComponent = new InvoicePdfViewComponent(getStage()) {
             @Override
+            protected void onSync() {
+                invoiceSyncService.setCustomerOrder(currentOrder);
+                loadingPane.bindTask(invoiceSyncService);
+                invoiceSyncService.restart();
+            }
+
+            @Override
             public void onDelete(List<InvoicePdf> items) {
-                orderService.remove(currentOrder, items);
+                ServiceFacade.getOrderService().remove(currentOrder, items);
                 invoicePdfViewComponent.setItems(currentOrder.getInvoicePdfs());
                 updateRawInvoiceTableView();
             }
 
             @Override
             public void onSave(InvoicePdf invoicePdf) {
-                orderService.save(invoicePdf);
+                ServiceFacade.getOrderService().save(invoicePdf);
             }
 
             @Override
@@ -322,7 +333,7 @@ public class OrderViewPage extends BasePage {
             try {
                 List<InvoicePdf> entities = invoicePdfService.createInvoicePdf(currentOrder, files);
                 currentOrder.addInvoicePdfs(entities);
-                orderService.save(currentOrder);
+                ServiceFacade.getOrderService().save(currentOrder);
 
                 Platform.runLater(new Runnable() {
                     @Override
@@ -374,7 +385,7 @@ public class OrderViewPage extends BasePage {
         @Override
         protected Void call() throws Exception {
             try {
-                orderService.exportToXls(order, fileName, new TaskProgress() {
+                ServiceFacade.getOrderService().exportToXls(order, fileName, new TaskProgress() {
                     @Override
                     public void updateProgress(long l, long l1) {
                         ExportOrderItemsTask.this.updateProgress(l, l1);
