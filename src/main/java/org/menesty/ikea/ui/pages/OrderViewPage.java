@@ -20,6 +20,7 @@ import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.service.*;
 import org.menesty.ikea.ui.TaskProgress;
 import org.menesty.ikea.ui.controls.component.*;
+import org.menesty.ikea.ui.controls.dialog.BaseDialog;
 import org.menesty.ikea.ui.controls.dialog.IkeaUserFillProgressDialog;
 import org.menesty.ikea.ui.controls.dialog.ProductDialog;
 import org.menesty.ikea.ui.controls.search.OrderItemSearchData;
@@ -157,7 +158,7 @@ public class OrderViewPage extends BasePage {
             }
 
             @Override
-            protected void showPopupDialog(ProductDialog productEditDialog) {
+            protected void showPopupDialog(BaseDialog productEditDialog) {
                 OrderViewPage.this.showPopupDialog(productEditDialog);
             }
 

@@ -7,21 +7,25 @@ import javafx.event.EventHandler;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.domain.OrderItem;
+import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.ui.controls.TotalStatusPanel;
+import org.menesty.ikea.ui.controls.dialog.BaseDialog;
+import org.menesty.ikea.ui.controls.dialog.OrderItemDialog;
 import org.menesty.ikea.ui.controls.dialog.ProductDialog;
 import org.menesty.ikea.ui.controls.search.OrderItemSearchBar;
 import org.menesty.ikea.ui.controls.search.OrderItemSearchData;
 import org.menesty.ikea.ui.controls.table.OrderItemTableView;
 import org.menesty.ikea.ui.pages.EntityDialogCallback;
+import org.menesty.ikea.util.NumberUtil;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.text.NumberFormat;
 import java.util.List;
 
 /**
@@ -39,8 +43,12 @@ public abstract class OrderItemViewComponent extends BorderPane {
 
     private StatusPanel statusPanel;
 
+    private OrderItemDialog orderItemDialog;
+
     public OrderItemViewComponent(final Stage stage) {
         productEditDialog = new ProductDialog();
+
+        orderItemDialog = new OrderItemDialog();
 
         orderItemTableView = new OrderItemTableView() {
             @Override
@@ -81,9 +89,30 @@ public abstract class OrderItemViewComponent extends BorderPane {
 
 
         ToolBar toolBar = new ToolBar();
-        ImageView imageView = new ImageView(new Image("/styles/images/icon/xls-32x32.png"));
-        Button exportOrder = new Button("", imageView);
-        exportOrder.setContentDisplay(ContentDisplay.RIGHT);
+        {
+            Button button = new Button(null, ImageFactory.createAdd32Icon());
+            button.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent actionEvent) {
+                    showPopupDialog(orderItemDialog);
+                    orderItemDialog.bind(new OrderItem(), new EntityDialogCallback<OrderItem>() {
+                        @Override
+                        public void onSave(OrderItem orderItem, Object... params) {
+
+                        }
+
+                        @Override
+                        public void onCancel() {
+                            hidePopupDialog();
+                        }
+                    });
+                }
+            });
+            toolBar.getItems().addAll(button);
+
+        }
+
+        Button exportOrder = new Button(null, ImageFactory.createXls32Icon());
         exportOrder.setTooltip(new Tooltip("Export to XLS"));
         exportOrder.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
@@ -100,7 +129,7 @@ public abstract class OrderItemViewComponent extends BorderPane {
         });
         toolBar.getItems().add(exportOrder);
 
-        imageView = new ImageView(new Image("/styles/images/icon/ikea-32x32.png"));
+        ImageView imageView = new ImageView(new Image("/styles/images/icon/ikea-32x32.png"));
         exportToIkeaBtn = new Button("", imageView);
         exportToIkeaBtn.setContentDisplay(ContentDisplay.RIGHT);
         exportToIkeaBtn.setTooltip(new Tooltip("Export CustomerOrder to IKEA"));
@@ -133,7 +162,7 @@ public abstract class OrderItemViewComponent extends BorderPane {
 
     protected abstract void hidePopupDialog();
 
-    protected abstract void showPopupDialog(ProductDialog productEditDialog);
+    protected abstract void showPopupDialog(BaseDialog productEditDialog);
 
     protected abstract List<OrderItem> filter(OrderItemSearchData orderItemSearchForm);
 
@@ -162,6 +191,7 @@ public abstract class OrderItemViewComponent extends BorderPane {
 
         statusPanel.setTotal(orderTotal.doubleValue());
         statusPanel.showPriceWarning(diff.compareTo(productTotal) != 0);
+        statusPanel.setProductTotalPrice(productTotal.doubleValue());
     }
 
     public void disableIkeaExport(boolean disable) {
@@ -170,16 +200,24 @@ public abstract class OrderItemViewComponent extends BorderPane {
 
     class StatusPanel extends TotalStatusPanel {
         private Label warningLabel;
+        private Label productTotalPrice;
 
         public StatusPanel() {
             getItems().add(warningLabel = new Label());
             warningLabel.setGraphic(new ImageView(new Image("/styles/images/icon/warning-16x16.png")));
             warningLabel.setVisible(false);
             warningLabel.setTooltip(new Tooltip("Total CustomerOrder price is different then IKEA site product"));
+            Region space = new Region();
+            HBox.setHgrow(space, Priority.ALWAYS);
+            getItems().addAll(space, new Label("Current Total Price"), productTotalPrice = new Label());
         }
 
         public void showPriceWarning(boolean show) {
             warningLabel.setVisible(show);
+        }
+
+        public void setProductTotalPrice(double total) {
+            productTotalPrice.setText(NumberFormat.getNumberInstance().format(NumberUtil.round(total)));
         }
     }
 }

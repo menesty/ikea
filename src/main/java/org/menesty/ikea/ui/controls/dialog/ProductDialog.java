@@ -5,15 +5,11 @@ import javafx.beans.Observable;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.util.Callback;
@@ -22,11 +18,11 @@ import org.menesty.ikea.domain.ProductPart;
 import org.menesty.ikea.ui.controls.PathProperty;
 import org.menesty.ikea.ui.controls.form.DoubleTextField;
 import org.menesty.ikea.ui.controls.form.IntegerTextField;
+import org.menesty.ikea.ui.controls.form.ProductIdField;
 import org.menesty.ikea.ui.pages.EntityDialogCallback;
 
 import java.awt.*;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -134,7 +130,7 @@ public class ProductDialog extends BaseDialog {
 
         private Label shorNameCount;
 
-        private TextField artNumber;
+        private ProductIdField productIdField;
 
         private TextField originalArtNumber;
 
@@ -150,29 +146,16 @@ public class ProductDialog extends BaseDialog {
 
         public ProductForm() {
 
-            ImageView imageView = new ImageView(new Image("/styles/images/icon/web-22x22.png"));
-            imageView.setOnMouseClicked(new EventHandler<MouseEvent>() {
-                @Override
-                public void handle(MouseEvent mouseEvent) {
-                    ProductDialog.browse(currentProductInfo.getOriginalArtNum());
 
-                }
-            });
-            HBox.setMargin(imageView, new Insets(2, 2, 2, 2));
-
-            artNumber = new TextField();
-            HBox.setHgrow(artNumber, Priority.ALWAYS);
-            HBox hbox = new HBox();
-            hbox.getChildren().addAll(artNumber, imageView);
-            addRow("Art Number", hbox);
+            addRow("Art Number", productIdField = new ProductIdField());
             addRow("O Art Number", originalArtNumber = new TextField());
 
             originalArtNumber.setEditable(false);
-            artNumber.setEditable(false);
+            productIdField.setEditable(false);
 
             addRow("Name", name = new TextField());
 
-            hbox = new HBox();
+            HBox hbox = new HBox();
             hbox.setAlignment(Pos.BASELINE_CENTER);
             shortName = new TextField();
             shortName.textProperty().addListener(new InvalidationListener() {
@@ -210,7 +193,7 @@ public class ProductDialog extends BaseDialog {
         }
 
         public void setArtNumber(String artNumber) {
-            this.artNumber.setText(artNumber);
+            this.productIdField.setProductId(artNumber);
         }
 
         public void setOriginalArtNumber(String originalArtNumber) {
