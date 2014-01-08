@@ -102,7 +102,6 @@ public abstract class InvoiceEppTableView extends TableView<InvoiceItem> {
             getColumns().add(column);
         }
 
-
         {
             TableColumn<InvoiceItem, Double> column = new TableColumn<>("Price");
             column.setMaxWidth(70);
@@ -127,6 +126,17 @@ public abstract class InvoiceEppTableView extends TableView<InvoiceItem> {
             getColumns().add(column);
         }
 
+        {
+            TableColumn<InvoiceItem, Double> column = new TableColumn<>("Weight");
+            column.setMaxWidth(55);
+            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<InvoiceItem, Double>, ObservableValue<Double>>() {
+                @Override
+                public ObservableValue<Double> call(TableColumn.CellDataFeatures<InvoiceItem, Double> item) {
+                    return new PathProperty<>(item.getValue(), "weight");
+                }
+            });
+            getColumns().add(column);
+        }
         setEditable(true);
     }
 

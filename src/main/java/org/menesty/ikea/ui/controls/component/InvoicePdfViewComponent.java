@@ -17,6 +17,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.menesty.ikea.domain.InvoicePdf;
 import org.menesty.ikea.factory.ImageFactory;
+import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.ui.controls.TotalStatusPanel;
 import org.menesty.ikea.ui.controls.dialog.Dialog;
 import org.menesty.ikea.ui.controls.table.InvoicePdfTableView;
@@ -101,7 +102,7 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
         syncBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-
+                onSync();
             }
         });
         syncBtn.setDisable(true);
@@ -112,6 +113,8 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
         setCenter(invoicePdfTableView);
         setBottom(statusPanel = new TotalStatusPanel());
     }
+
+    protected abstract void onSync();
 
     private List<File> filter(List<File> files) {
         List<File> result = new ArrayList<>(files);
@@ -174,7 +177,8 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
 
         for (InvoicePdfTableView.InvoicePdfTableItem item : invoicePdfTableView.getItems()) {
             total += item.getInvoicePdf().getPrice();
-            if (!item.getInvoicePdf().hasEpp)
+
+            if (allowSync && !ServiceFacade.getInvoiceItemService().hasItems(item.getInvoicePdf()))
                 allowSync = false;
         }
 

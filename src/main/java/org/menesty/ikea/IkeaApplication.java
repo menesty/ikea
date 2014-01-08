@@ -111,6 +111,12 @@ public class IkeaApplication extends Application {
             public void onCancel() {
                 hidePopupDialog();
             }
+
+            @Override
+            public void onOk() {
+                super.onOk();
+                hidePopupDialog();
+            }
         };
         Button settingsButton = new Button(null, new ImageView(new Image(this.getClass().getResourceAsStream("/styles/images/settings.png"))));
         settingsButton.setId("SettingsButton");

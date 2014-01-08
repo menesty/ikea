@@ -25,6 +25,8 @@ public class InvoiceItem extends Identifiable {
 
     private String artNumber;
 
+    private String originArtNumber;
+
     private String name;
 
     @Column(scale = 8, precision = 2)
@@ -47,6 +49,14 @@ public class InvoiceItem extends Identifiable {
     private boolean zestav;
 
     private boolean visible;
+
+    public String getOriginArtNumber() {
+        return originArtNumber;
+    }
+
+    public void setOriginArtNumber(String originArtNumber) {
+        this.originArtNumber = originArtNumber;
+    }
 
     public String getSize() {
         return size;
@@ -189,22 +199,24 @@ public class InvoiceItem extends Identifiable {
         this.count = count;
     }
 
-    public static List<InvoiceItem> get(ProductInfo productInfo, double count) {
+    public static List<InvoiceItem> get(ProductInfo productInfo, String artSuffix, double count) {
         List<InvoiceItem> result = new ArrayList<>();
         boolean needGrind = productInfo.getPackageInfo().getBoxCount() > 1 && productInfo.getPackageInfo().getWeight() > 20000;
 
         if (needGrind)
             for (int i = 1; i <= productInfo.getPackageInfo().getBoxCount(); i++)
-                result.add(InvoiceItem.get(productInfo, count, i, productInfo.getPackageInfo().getBoxCount()));
+                result.add(InvoiceItem.get(productInfo, artSuffix, count, i, productInfo.getPackageInfo().getBoxCount()));
         else
-            result.add(InvoiceItem.get(productInfo, count, 1, 1));
+            result.add(InvoiceItem.get(productInfo, artSuffix, count, 1, 1));
 
         if (needGrind) {
             double price = productInfo.getPrice();
             double pricePerItem = round(price / productInfo.getPackageInfo().getBoxCount());
 
-            for (InvoiceItem item : result)
+            for (InvoiceItem item : result) {
                 item.price = pricePerItem;
+                item.basePrice = pricePerItem;
+            }
 
             double total = round(pricePerItem * productInfo.getPackageInfo().getBoxCount());
             if (total != price)
@@ -216,21 +228,27 @@ public class InvoiceItem extends Identifiable {
     }
 
 
-    public static InvoiceItem get(ProductInfo productInfo, double count, int box, int boxes) {
-        return get(productInfo.getOriginalArtNum(), productInfo.getName(), productInfo.getShortName(), productInfo.getPrice(), productInfo.getWat(), productInfo.getPackageInfo().size(), convertToKg(productInfo.getPackageInfo().getWeight()), count, box, boxes);
+    public static InvoiceItem get(ProductInfo productInfo, String artSuffix, double count, int box, int boxes) {
+        return get(productInfo.getOriginalArtNum(), artSuffix, productInfo.getName(), productInfo.getShortName(), productInfo.getPrice(), productInfo.getWat(), productInfo.getPackageInfo().size(), convertToKg(productInfo.getPackageInfo().getWeight()), count, box, boxes);
     }
 
-    public static InvoiceItem get(String artNumber, String name, String shortName, double price, int wat, String size, double weight, double count, int box, int boxes) {
+    public static InvoiceItem get(String artNumber, String artSuffix, String name, String shortName, double price, int wat, String size, double weight, double count, int box, int boxes) {
         InvoiceItem invoiceItem = new InvoiceItem();
         invoiceItem.setVisible(true);
         invoiceItem.name = name;
         invoiceItem.artNumber = "IKEA_" + artNumber;
+        invoiceItem.originArtNumber = artNumber;
         invoiceItem.shortName = shortName;
         invoiceItem.weight = weight;
+
         if (boxes > 1) {
             invoiceItem.artNumber += "(" + box + ")";
-            invoiceItem.shortName += " " + box + "/" + boxes;
+            invoiceItem.shortName += " " + box + " część";
         }
+
+        if (artSuffix != null && !artSuffix.isEmpty())
+            invoiceItem.artNumber += "_" + artSuffix;
+
         invoiceItem.basePrice = price;
         invoiceItem.price = price;
         invoiceItem.wat = wat;

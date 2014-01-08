@@ -75,4 +75,8 @@ public class ImageFactory {
     public static ImageView createAdd32Icon() {
         return new ImageView(new Image("/styles/images/icon/add-32x32.png"));
     }
+
+    public static ImageView createWeb16Icon() {
+        return new ImageView(new Image("/styles/images/icon/web-16x16.png"));
+    }
 }

@@ -127,9 +127,7 @@ public abstract class EppViewComponent extends StackPane {
                 ServiceFacade.getInvoiceItemService().save(invoiceEppTableView.getItems());
                 ServiceFacade.getInvoiceItemService().save(invoiceEppInvisibleTableView.getItems());
                 saveBtn.setDisable(true);
-
-                if (!currentInvoicePdf.hasEpp)
-                    changeEppState(true);
+                onChange(currentInvoicePdf);
 
             }
         });
@@ -263,8 +261,8 @@ public abstract class EppViewComponent extends StackPane {
                     public void onYes() {
                         ServiceFacade.getInvoiceItemService().deleteBy(currentInvoicePdf);
                         updateViews(prepareData(currentInvoicePdf.getProducts()));
-                        changeEppState(false);
                         saveBtn.setDisable(false);
+                        onChange(currentInvoicePdf);
                     }
                 });
 
@@ -306,12 +304,6 @@ public abstract class EppViewComponent extends StackPane {
         };
 
         return pane;
-    }
-
-    private void changeEppState(boolean hasEpp) {
-        currentInvoicePdf.hasEpp = hasEpp;
-        ServiceFacade.getInvoicePdfService().save(currentInvoicePdf);
-        onChange(currentInvoicePdf);
     }
 
     public abstract void onChange(InvoicePdf invoicePdf);
@@ -366,10 +358,10 @@ public abstract class EppViewComponent extends StackPane {
 
         for (RawInvoiceProductItem item : items)
             if (item.isSeparate())
-                result.addAll(InvoiceItem.get(item.getProductInfo(), item.getCount()));
+                result.addAll(InvoiceItem.get(item.getProductInfo(), artPrefix, item.getCount()));
             else {
                 filtered.add(item);
-                InvoiceItem invoiceItem = InvoiceItem.get(item.getProductInfo(), item.getCount(), 1, 1);
+                InvoiceItem invoiceItem = InvoiceItem.get(item.getProductInfo(), artPrefix, item.getCount(), 1, 1);
                 invoiceItem.setVisible(false);
                 result.add(invoiceItem);
             }
@@ -418,7 +410,7 @@ public abstract class EppViewComponent extends StackPane {
         String name = String.format("Zestaw IKEA %1$s", subName);
         String artNumber = artPrefix + "_" + subName.substring(0, 2) + "_" + (index + 1);
 
-        return InvoiceItem.get(artNumber, name, name, price, 23, "", 1, 1, 1, 1).setZestav(true);
+        return InvoiceItem.get(artNumber, null, name, name, price, 23, "", 1, 1, 1, 1).setZestav(true);
     }
 
     class LoadService extends AbstractAsyncService<List<InvoiceItem>> {

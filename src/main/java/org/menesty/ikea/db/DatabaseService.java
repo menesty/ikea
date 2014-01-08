@@ -37,10 +37,12 @@ public class DatabaseService {
     }
 
     public static void begin() {
+        logger.info("transaction begin");
         entityManager.getTransaction().begin();
     }
 
     public static synchronized void commit() {
+        logger.info("transaction commit");
         entityManager.getTransaction().commit();
     }
 

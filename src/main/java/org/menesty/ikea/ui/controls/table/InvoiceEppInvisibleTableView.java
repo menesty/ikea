@@ -54,7 +54,6 @@ public class InvoiceEppInvisibleTableView extends TableView<InvoiceItem> {
             getColumns().add(column);
         }
 
-
         {
             TableColumn<InvoiceItem, Double> column = new TableColumn<>("Weight");
             column.setMaxWidth(55);
