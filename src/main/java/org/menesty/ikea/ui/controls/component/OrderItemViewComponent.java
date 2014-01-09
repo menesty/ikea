@@ -98,7 +98,8 @@ public abstract class OrderItemViewComponent extends BorderPane {
                     orderItemDialog.bind(new OrderItem(), new EntityDialogCallback<OrderItem>() {
                         @Override
                         public void onSave(OrderItem orderItem, Object... params) {
-
+                            save(orderItem);
+                            hidePopupDialog();
                         }
 
                         @Override
@@ -160,6 +161,8 @@ public abstract class OrderItemViewComponent extends BorderPane {
 
     protected abstract void save(ProductInfo productInfo);
 
+    protected abstract void save(OrderItem orderItem);
+
     protected abstract void hidePopupDialog();
 
     protected abstract void showPopupDialog(BaseDialog productEditDialog);
@@ -172,12 +175,20 @@ public abstract class OrderItemViewComponent extends BorderPane {
 
     public void setItems(List<OrderItem> items) {
         orderItemTableView.setItems(FXCollections.observableArrayList(items));
+        priceCalculate();
 
+    }
+
+    public void disableIkeaExport(boolean disable) {
+        exportToIkeaBtn.setDisable(disable);
+    }
+
+    private void priceCalculate() {
         BigDecimal orderTotal = BigDecimal.ZERO;
         BigDecimal orderNaTotal = BigDecimal.ZERO;
         BigDecimal productTotal = BigDecimal.ZERO;
 
-        for (OrderItem item : items) {
+        for (OrderItem item : orderItemTableView.getItems()) {
             orderTotal = orderTotal.add(item.getTotal());
 
             if (OrderItem.Type.Na == item.getType())
@@ -194,8 +205,12 @@ public abstract class OrderItemViewComponent extends BorderPane {
         statusPanel.setProductTotalPrice(productTotal.doubleValue());
     }
 
-    public void disableIkeaExport(boolean disable) {
-        exportToIkeaBtn.setDisable(disable);
+    public void updateItem(OrderItem orderItem) {
+        if (!orderItemTableView.getItems().contains(orderItem))
+            orderItemTableView.getItems().add(orderItem);
+
+        priceCalculate();
+
     }
 
     class StatusPanel extends TotalStatusPanel {

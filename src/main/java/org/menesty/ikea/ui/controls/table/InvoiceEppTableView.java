@@ -3,14 +3,21 @@ package org.menesty.ikea.ui.controls.table;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.geometry.Insets;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.util.Callback;
+import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.processor.invoice.InvoiceItem;
 import org.menesty.ikea.ui.controls.PathProperty;
+import org.menesty.ikea.ui.controls.dialog.ProductDialog;
 import org.menesty.ikea.ui.table.DoubleEditableTableCell;
 import org.menesty.ikea.util.NumberUtil;
 
@@ -22,7 +29,52 @@ public abstract class InvoiceEppTableView extends TableView<InvoiceItem> {
     public InvoiceEppTableView() {
         {
             TableColumn<InvoiceItem, Number> column = new TableColumn<>();
-            column.setMaxWidth(35);
+            column.setMaxWidth(45);
+            column.setCellFactory(new Callback<TableColumn<InvoiceItem, Number>, TableCell<InvoiceItem, Number>>() {
+                @Override
+                public TableCell<InvoiceItem, Number> call(TableColumn<InvoiceItem, Number> invoiceItemNumberTableColumn) {
+                    TableCell<InvoiceItem, Number> tableCell = new TableCell<InvoiceItem, Number>() {
+                        private Label numberLabel;
+                        private HBox content;
+
+                        @Override
+                        protected void updateItem(Number number, boolean empty) {
+                            super.updateItem(number, empty);
+                            if (empty) {
+                                setGraphic(null);
+                                setText(null);
+                            } else {
+                                if (numberLabel == null) {
+                                    content = new HBox();
+                                    content.setPrefWidth(Double.MAX_VALUE);
+                                    numberLabel = new Label();
+
+                                    ImageView imageView = ImageFactory.createWeb16Icon();
+                                    HBox.setMargin(imageView, new Insets(0, 0, 0, 2));
+                                    imageView.setOnMouseClicked(new EventHandler<MouseEvent>() {
+                                        @Override
+                                        public void handle(MouseEvent mouseEvent) {
+                                            InvoiceItem item = getTableView().getItems().get(getIndex());
+                                            ProductDialog.browse(item.getOriginArtNumber());
+                                        }
+                                    });
+                                    Region space = new Region();
+                                    HBox.setHgrow(space, Priority.ALWAYS);
+                                    content.getChildren().addAll(numberLabel, space, imageView);
+                                }
+                                content.setMinWidth(getWidth() - getGraphicTextGap() * 2);
+                                setGraphic(content);
+                                numberLabel.setText(number + "");
+                            }
+
+
+                        }
+
+                    };
+
+                    return tableCell;
+                }
+            });
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<InvoiceItem, Number>, ObservableValue<Number>>() {
                 @Override
                 public ObservableValue<Number> call(TableColumn.CellDataFeatures<InvoiceItem, Number> item) {
@@ -137,6 +189,21 @@ public abstract class InvoiceEppTableView extends TableView<InvoiceItem> {
             });
             getColumns().add(column);
         }
+
+        ContextMenu contextMenu = new ContextMenu();
+        {
+            MenuItem menuItem = new MenuItem("Browse", ImageFactory.createWeb16Icon());
+            menuItem.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent actionEvent) {
+                    InvoiceItem item = getSelectionModel().getSelectedItem();
+                    if (item != null)
+                        ProductDialog.browse(item.getArtNumber());
+                }
+            });
+            contextMenu.getItems().add(menuItem);
+        }
+        setContextMenu(contextMenu);
         setEditable(true);
     }
 

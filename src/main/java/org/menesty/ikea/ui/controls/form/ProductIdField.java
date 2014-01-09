@@ -30,7 +30,7 @@ public class ProductIdField extends HBox {
     }
 
     public void setEditable(boolean editable) {
-        productId.setEditable(editable);
+        productId.setDisable(editable);
     }
 
     public void setProductId(String productId) {
@@ -46,6 +46,18 @@ public class ProductIdField extends HBox {
     }
 
     public boolean isEditable() {
-        return productId.isEditable();
+        return !productId.isDisable();
+    }
+
+    public void setInvalid(boolean invalid) {
+        productId.getStyleClass().remove("validation-error");
+        if (invalid)
+            productId.getStyleClass().add("validation-error");
+
+    }
+
+    public void focus() {
+        if (productId.isEditable() && !productId.isDisable())
+            productId.requestFocus();
     }
 }

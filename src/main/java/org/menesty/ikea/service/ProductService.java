@@ -61,7 +61,11 @@ public class ProductService extends Repository<ProductInfo> {
                     return null;
 
             } else
-                updateProductPrice(product);
+                try {
+                    updateProductPrice(product);
+                } catch (Exception e) {
+                    return product;
+                }
 
             save(product);
             return product;

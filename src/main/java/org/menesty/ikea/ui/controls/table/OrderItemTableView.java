@@ -14,6 +14,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.util.Callback;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.domain.OrderItem;
+import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.ui.controls.PathProperty;
 import org.menesty.ikea.ui.controls.dialog.ProductDialog;
 import org.menesty.ikea.util.NumberUtil;
@@ -213,7 +214,7 @@ public class OrderItemTableView extends TableView<OrderItem> {
                                 contextMenu.getItems().add(statusMenu);
 
                                 {
-                                    MenuItem menuItem = new MenuItem("Browse", new ImageView(new Image("/styles/images/icon/web-16x16.png")));
+                                    MenuItem menuItem = new MenuItem("Browse", ImageFactory.createWeb16Icon());
                                     menuItem.setOnAction(new EventHandler<ActionEvent>() {
                                         @Override
                                         public void handle(ActionEvent actionEvent) {

@@ -12,11 +12,14 @@ public class ServiceFacade {
 
     private static ApplicationPreference applicationPreference;
 
+    private static ProductService productService;
+
     static {
         orderService = new OrderService();
         invoiceItemService = new InvoiceItemService();
         invoicePdfService = new InvoicePdfService();
         applicationPreference = new ApplicationPreference();
+        productService = new ProductService();
     }
 
 
@@ -34,5 +37,9 @@ public class ServiceFacade {
 
     public static ApplicationPreference getApplicationPreference() {
         return applicationPreference;
+    }
+
+    public static ProductService getProductService() {
+        return productService;
     }
 }

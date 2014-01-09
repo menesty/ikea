@@ -157,6 +157,13 @@ public class OrderViewPage extends BasePage {
             }
 
             @Override
+            protected void save(OrderItem orderItem) {
+                orderItem.customerOrder = currentOrder;
+                ServiceFacade.getOrderService().save(orderItem);
+                orderItemViewComponent.updateItem(orderItem);
+            }
+
+            @Override
             protected void hidePopupDialog() {
                 OrderViewPage.this.hidePopupDialog();
             }
