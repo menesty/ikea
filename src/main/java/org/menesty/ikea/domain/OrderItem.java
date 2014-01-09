@@ -12,7 +12,11 @@ import java.math.BigDecimal;
 public class OrderItem extends Identifiable implements UserProductInfo {
 
     public enum Type {
-        General, Na, Specials, Combo
+        General, Na, Specials, Combo;
+
+        public static Type[] getSelected() {
+            return new Type[]{General, Specials, Combo};
+        }
     }
 
     private boolean invalidFetch;
@@ -97,7 +101,7 @@ public class OrderItem extends Identifiable implements UserProductInfo {
     }
 
     public BigDecimal getTotal() {
-        return BigDecimal.valueOf(count).multiply(BigDecimal.valueOf(price)).setScale(2, BigDecimal.ROUND_CEILING);
+        return BigDecimal.valueOf(count).multiply(BigDecimal.valueOf(price == null ? 0 : price)).setScale(2, BigDecimal.ROUND_CEILING);
     }
 
     public Double getPrice() {
@@ -123,6 +127,11 @@ public class OrderItem extends Identifiable implements UserProductInfo {
         if (o == null || getClass() != o.getClass()) return false;
 
         OrderItem orderItem = (OrderItem) o;
+        if (artNumber == null && orderItem.artNumber == null)
+            return true;
+
+        if (artNumber == null)
+            return false;
 
         if (!artNumber.equals(orderItem.artNumber)) return false;
 
@@ -138,5 +147,6 @@ public class OrderItem extends Identifiable implements UserProductInfo {
     public int getArtNumberAsInteger() {
         return Integer.valueOf(artNumber.replaceAll("\\D+", ""));
     }
+
 
 }

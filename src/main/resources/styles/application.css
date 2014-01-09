@@ -703,3 +703,7 @@
     -fx-border-color: #ff0000;
     -fx-border-style: solid;
 }
+.validation-succeed {
+    -fx-border-color: #008000;
+    -fx-border-style: solid;
+}

@@ -94,7 +94,6 @@ public abstract class OrderItemViewComponent extends BorderPane {
             button.setOnAction(new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(ActionEvent actionEvent) {
-                    showPopupDialog(orderItemDialog);
                     orderItemDialog.bind(new OrderItem(), new EntityDialogCallback<OrderItem>() {
                         @Override
                         public void onSave(OrderItem orderItem, Object... params) {
@@ -107,6 +106,8 @@ public abstract class OrderItemViewComponent extends BorderPane {
                             hidePopupDialog();
                         }
                     });
+
+                    showPopupDialog(orderItemDialog);
                 }
             });
             toolBar.getItems().addAll(button);

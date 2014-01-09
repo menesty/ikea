@@ -139,7 +139,7 @@ public class OrderService extends Repository<CustomerOrder> {
         });
     }
 
-    public String getPrepareArtNumber(String artNumber) {
+    public static String getPrepareArtNumber(String artNumber) {
         String prepared = StringUtils.leftPad(artNumber.trim(), 8, '0');
         int lastPos = artNumber.length();
         prepared = prepared.substring(0, lastPos - 5) + "-" + prepared.substring(lastPos - 5, lastPos - 2) + "-" + prepared.substring(lastPos - 2, lastPos);

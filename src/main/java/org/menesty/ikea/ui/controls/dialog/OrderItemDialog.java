@@ -7,6 +7,7 @@ import javafx.scene.control.TextField;
 import org.apache.commons.lang.StringUtils;
 import org.menesty.ikea.domain.OrderItem;
 import org.menesty.ikea.domain.ProductInfo;
+import org.menesty.ikea.service.OrderService;
 import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.ui.controls.form.DoubleTextField;
 import org.menesty.ikea.ui.controls.form.ProductIdField;
@@ -40,7 +41,7 @@ public class OrderItemDialog extends BaseDialog {
 
     @Override
     public void onOk() {
-        if (currentOrderItem.getId() != null)
+        if (currentOrderItem.getId() == null)
             currentOrderItem.setArtNumber(orderItemForm.getProductId());
 
         currentOrderItem.setCount(orderItemForm.getCount());
@@ -75,28 +76,38 @@ public class OrderItemDialog extends BaseDialog {
             productId.getField().focusedProperty().addListener(new InvalidationListener() {
                 @Override
                 public void invalidated(Observable observable) {
-                    productId.setInvalid(false);
+                    if (productId.getProductId() != null)
+                        productId.setProductId(productId.getProductId().replaceAll("[\\.-]", ""));
+
                     if (!productId.getField().isFocused() && productId.isEditable()) {
                         ProductInfo productInfo;
                         try {
-                            productInfo = ServiceFacade.getProductService().loadOrCreate(productId.getProductId());
+                            productInfo = ServiceFacade.getProductService().loadOrCreate(OrderService.getPrepareArtNumber(productId.getProductId()));
                         } catch (Exception e) {
                             productInfo = null;
                         }
 
                         if (productInfo != null) {
-                            if (ProductInfo.Group.Combo == productInfo.getGroup())
-                                type.getSelectionModel().select(OrderItem.Type.Combo);
+
+                            if (ProductInfo.Group.Combo == productInfo.getGroup()) {
+                                setType(OrderItem.Type.Combo);
+                                type.setDisable(true);
+                            }
+
+                            if (getType() == null)
+                                setType(OrderItem.Type.General);
 
                             shortName.setText(productInfo.getShortName());
                             price.setNumber(productInfo.getPrice());
+
+                            if (currentOrderItem.getPrice() == null)
+                                currentOrderItem.setPrice(productInfo.getPrice());
                         }
 
                         currentOrderItem.setProductInfo(productInfo);
-                        productId.setInvalid(productInfo == null);
-
                     }
 
+                    productId.setInvalid(currentOrderItem.getProductInfo() == null);
                     okBtn.setDisable(currentOrderItem == null || currentOrderItem.getProductInfo() == null);
                 }
             });
@@ -104,7 +115,7 @@ public class OrderItemDialog extends BaseDialog {
             addRow("Count", count = new DoubleTextField());
 
             addRow("Type", type = new ComboBox<>());
-            type.getItems().addAll(OrderItem.Type.values());
+
 
             addRow("Comment", comment = new TextField());
             addRow("Short name", shortName = new TextField());
@@ -116,6 +127,8 @@ public class OrderItemDialog extends BaseDialog {
         public void reset() {
             shortName.setText(null);
             price.setNumber(0d);
+            type.setDisable(false);
+            type.getItems().addAll(OrderItem.Type.getSelected());
         }
 
         public void setProductId(String productId) {

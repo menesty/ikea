@@ -131,8 +131,10 @@ public class CustomerOrder extends Identifiable {
 
             if (orderItemSearchForm.type != null && orderItemSearchForm.type != orderItem.getType())
                 continue;
+
             if (StringUtils.isNotBlank(orderItemSearchForm.artNumber) && !orderItem.getArtNumber().contains(orderItemSearchForm.artNumber))
                 continue;
+
             if (orderItemSearchForm.productGroup != null &&
                     (productInfo == null || !orderItemSearchForm.productGroup.equals(productInfo.getGroup())))
                 continue;

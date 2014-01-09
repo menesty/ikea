@@ -370,8 +370,10 @@ public class ProductService extends Repository<ProductInfo> {
         Root<ProductInfo> root = cq.from(entityClass);
 
         Predicate where = cb.conjunction();
-        if (data.artNumber != null)
-            where = cb.and(where, cb.like(root.<String>get("artNumber"), "%" + data.artNumber + "%"));
+        if (data.artNumber != null){
+            where = cb.or(cb.like(root.<String>get("artNumber"), "%" + data.artNumber + "%"), cb.like(root.<String>get("originalArtNum"), "%" + data.artNumber + "%"));
+            where = cb.and(where);
+        }
 
         if (data.productGroup != null)
             where = cb.and(where, cb.equal(root.<ProductInfo.Group>get("group"), data.productGroup));
@@ -386,7 +388,7 @@ public class ProductService extends Repository<ProductInfo> {
     }
 
     public void export(List<ProductInfo> items, String path) {
-        StringBuffer text = new StringBuffer();
+        StringBuilder text = new StringBuilder();
         String NL = System.getProperty("line.separator");
         char delimiter = '\t';
         for (ProductInfo item : items)

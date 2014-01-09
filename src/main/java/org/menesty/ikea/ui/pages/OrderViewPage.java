@@ -160,6 +160,10 @@ public class OrderViewPage extends BasePage {
             protected void save(OrderItem orderItem) {
                 orderItem.customerOrder = currentOrder;
                 ServiceFacade.getOrderService().save(orderItem);
+
+                if (!currentOrder.getOrderItems().contains(orderItem))
+                    currentOrder.getOrderItems().add(orderItem);
+
                 orderItemViewComponent.updateItem(orderItem);
             }
 

@@ -51,8 +51,11 @@ public class ProductIdField extends HBox {
 
     public void setInvalid(boolean invalid) {
         productId.getStyleClass().remove("validation-error");
+        productId.getStyleClass().remove("validation-succeed");
         if (invalid)
             productId.getStyleClass().add("validation-error");
+        else
+            productId.getStyleClass().add("validation-succeed");
 
     }
 
