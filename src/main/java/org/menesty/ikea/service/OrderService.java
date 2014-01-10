@@ -58,7 +58,7 @@ public class OrderService extends Repository<CustomerOrder> {
                 order.addWarning(message.getMessage());
 
             order = ServiceFacade.getOrderService().save(order);
-            order.setOrderItems(ServiceFacade.getOrderService().save(reduce(order, rawOrderItems, taskProgress)));
+            ServiceFacade.getOrderService().save(reduce(order, rawOrderItems, taskProgress));
 
             return order;
         } catch (Exception e) {
@@ -83,7 +83,7 @@ public class OrderService extends Repository<CustomerOrder> {
 
                 if (orderItem == null) {
                     orderItem = new OrderItem();
-                    orderItem.customerOrder = order;
+                    orderItem.setCustomerOrder(order);
                     orderItem.setArtNumber(artNumber);
                     orderItem.setComment(rawOrderItem.getComment());
                     orderItem.setCount(rawOrderItem.getCount());
@@ -157,7 +157,7 @@ public class OrderService extends Repository<CustomerOrder> {
     public void exportToXls(CustomerOrder order, String filePath, TaskProgress taskProgress) throws URISyntaxException {
         Map<OrderItem.Type, List<OrderItem>> typeFilterMap = new HashMap<>();
 
-        for (OrderItem orderItem : order.getOrderItems()) {
+        for (OrderItem orderItem : ServiceFacade.getOrderItemService().loadBy(order)) {
             List<OrderItem> orderItems = getByType(orderItem.getType(), typeFilterMap);
             orderItems.add(orderItem);
         }
@@ -263,7 +263,7 @@ public class OrderService extends Repository<CustomerOrder> {
     public List<StorageLack> calculateOrderInvoiceDiff(CustomerOrder order) {
         List<RawInvoiceProductItem> rawItems = new ArrayList<>();
 
-        for (InvoicePdf invoicePdf : order.getInvoicePdfs())
+        for (InvoicePdf invoicePdf : ServiceFacade.getInvoicePdfService().loadBy(order))
             rawItems.addAll(invoicePdf.getProducts());
 
         rawItems = InvoicePdfService.reduce(rawItems);
@@ -272,7 +272,7 @@ public class OrderService extends Repository<CustomerOrder> {
         Map<String, ProductInfo> infoData = new HashMap<>();
 
 
-        for (OrderItem orderItem : order.getOrderItems()) {
+        for (OrderItem orderItem : ServiceFacade.getOrderItemService().loadBy(order)) {
             if (OrderItem.Type.Na != orderItem.getType() && !orderItem.isInvalidFetch() && OrderItem.Type.Specials != orderItem.getType())
                 if (OrderItem.Type.Combo == orderItem.getType())
                     for (ProductPart part : orderItem.getProductInfo().getParts()) {
@@ -313,21 +313,12 @@ public class OrderService extends Repository<CustomerOrder> {
         data.put(key, currentValue);
     }
 
-    public void remove(final CustomerOrder order, InvoicePdf invoicePdf) {
-        order.getInvoicePdfs().remove(invoicePdf);
-        ServiceFacade.getInvoicePdfService().remove(invoicePdf);
-    }
-
-    public void remove(CustomerOrder order, List<InvoicePdf> items) {
-        for (InvoicePdf item : items)
-            remove(order, item);
-    }
 
     public void remove(CustomerOrder item) {
         try {
             begin();
-            remove(item, item.getInvoicePdfs());
-            remove(item.getOrderItems());
+            ServiceFacade.getInvoicePdfService().removeBy(item);
+            ServiceFacade.getOrderItemService().removeBy(item);
             super.remove(item);
             commit();
         } catch (Exception e) {

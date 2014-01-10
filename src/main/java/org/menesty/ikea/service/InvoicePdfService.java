@@ -9,6 +9,7 @@ import org.menesty.ikea.exception.ProductFetchException;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.util.NumberUtil;
 
+import javax.persistence.TypedQuery;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -87,7 +88,7 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
             double price = Double.valueOf(m.group(1).trim().replaceAll("[\\s\\u00A0]+", "").replace(",", "."));
             invoicePdf.setPrice(price);
         }
-        return  products;
+        return products;
     }
 
     private InvoicePdf parseInvoice(final CustomerOrder order, final String name, final InputStream stream) throws IOException {
@@ -171,15 +172,55 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
     }
 
     public void remove(InvoicePdf entity) {
+        boolean started = isActive();
         try {
-            begin();
+            if (!started)
+                begin();
+
             ServiceFacade.getInvoiceItemService().deleteBy(entity);
             super.remove(entity.getProducts());
             super.remove(entity);
-            commit();
+            if (!started)
+                commit();
         } catch (Exception e) {
             rollback();
         }
+    }
+
+    public void removeAll(List<InvoicePdf> entities) {
+        boolean started = isActive();
+        if (!started)
+            begin();
+
+        for (InvoicePdf item : entities)
+            this.remove(item);
+
+        if (!started)
+            commit();
+    }
+
+
+    public List<InvoicePdf> loadBy(CustomerOrder order) {
+        boolean started = isActive();
+        try {
+            if (!started)
+                begin();
+
+            TypedQuery<InvoicePdf> query = getEm().createQuery("select entity from " + entityClass.getName() + " entity where entity.customerOrder.id = ?1", entityClass);
+            query.setParameter(1, order.getId());
+            return query.getResultList();
+
+        } finally {
+            if (!started)
+                commit();
+        }
+
+    }
+
+    public void removeBy(CustomerOrder order) {
+        begin();
+        removeAll(loadBy(order));
+        commit();
     }
 }
 

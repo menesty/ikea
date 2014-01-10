@@ -9,6 +9,7 @@ import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.StackPane;
+import org.apache.commons.lang.StringUtils;
 import org.menesty.ikea.domain.CustomerOrder;
 import org.menesty.ikea.domain.InvoicePdf;
 import org.menesty.ikea.domain.ProductInfo;
@@ -63,6 +64,10 @@ public class OrderViewPage extends BasePage {
 
     private InvoiceSyncService invoiceSyncService;
 
+    private OrderData orderData;
+
+    private LoadService loadService;
+
     public OrderViewPage() {
         super("CustomerOrder");
 
@@ -73,6 +78,27 @@ public class OrderViewPage extends BasePage {
 
         invoiceSyncService = new InvoiceSyncService();
 
+
+        loadService = new LoadService();
+        loadService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<OrderData>() {
+            @Override
+            public void onSucceeded(final OrderData value) {
+                OrderViewPage.this.orderData = value;
+                Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            orderItemViewComponent.setItems(orderData.orderItems);
+                            invoicePdfViewComponent.setItems(orderData.invoicePdfs);
+                            updateRawInvoiceTableView();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
+        });
+
     }
 
     @Override
@@ -81,6 +107,8 @@ public class OrderViewPage extends BasePage {
         StackPane pane = createRoot();
         pane.getChildren().add(0, createInvoiceView());
         productEditDialog = new ProductDialog();
+
+        loadingPane.bindTask(loadService);
         return pane;
     }
 
@@ -158,13 +186,25 @@ public class OrderViewPage extends BasePage {
 
             @Override
             protected void save(OrderItem orderItem) {
-                orderItem.customerOrder = currentOrder;
+
+
+                if (orderItem.getId() == null) {
+                    orderItem.setCustomerOrder(currentOrder);
+
+                    for (OrderItem item : orderData.orderItems)
+                        if (item.getArtNumber().equals(orderItem.getArtNumber())) {
+                            item.addCount(orderItem.getCount());
+                            orderItem = item;
+                            break;
+                        }
+                }
+
                 ServiceFacade.getOrderService().save(orderItem);
 
-                if (!currentOrder.getOrderItems().contains(orderItem))
-                    currentOrder.getOrderItems().add(orderItem);
+                if (!orderData.orderItems.contains(orderItem))
+                    orderData.orderItems.add(orderItem);
 
-                orderItemViewComponent.updateItem(orderItem);
+                orderItemViewComponent.setItems(orderData.orderItems);
             }
 
             @Override
@@ -179,7 +219,7 @@ public class OrderViewPage extends BasePage {
 
             @Override
             protected List<OrderItem> filter(OrderItemSearchData orderItemSearchForm) {
-                return currentOrder.filterOrderItems(orderItemSearchForm);
+                return filterOrderItems(orderItemSearchForm);
             }
 
             @Override
@@ -218,6 +258,45 @@ public class OrderViewPage extends BasePage {
         return tab;
     }
 
+    public List<OrderItem> filterOrderItems(OrderItemSearchData orderItemSearchForm) {
+        List<OrderItem> result = new ArrayList<>();
+
+        for (OrderItem orderItem : orderData.orderItems) {
+
+            ProductInfo productInfo = orderItem.getProductInfo();
+
+            if (orderItemSearchForm.type != null && orderItemSearchForm.type != orderItem.getType())
+                continue;
+
+            if (StringUtils.isNotBlank(orderItemSearchForm.artNumber) && !orderItem.getArtNumber().contains(orderItemSearchForm.artNumber))
+                continue;
+
+            if (orderItemSearchForm.productGroup != null &&
+                    (productInfo == null || !orderItemSearchForm.productGroup.equals(productInfo.getGroup())))
+                continue;
+
+            if (orderItemSearchForm.pum &&
+                    (OrderItem.Type.Na == orderItem.getType() ||
+                            (productInfo != null && orderItem.getPrice() == productInfo.getPrice())
+                    ))
+                continue;
+
+            if (productInfo != null) {
+                if (orderItemSearchForm.gei && !(productInfo.getPackageInfo().getWeight() > 3000 ||
+                        productInfo.getPackageInfo().getLength() > 450 || productInfo.getPackageInfo().getWidth() > 450 || productInfo.getPackageInfo().getHeight() > 450
+                ))
+                    continue;
+
+                if (orderItemSearchForm.ufd && productInfo.getPackageInfo().hasAllSize())
+                    continue;
+            }
+
+            result.add(orderItem);
+        }
+
+        return result;
+    }
+
     private TabPane createInvoiceView() {
         final TabPane tabPane = new TabPane();
 
@@ -234,8 +313,9 @@ public class OrderViewPage extends BasePage {
 
             @Override
             public void onDelete(List<InvoicePdf> items) {
-                ServiceFacade.getOrderService().remove(currentOrder, items);
-                invoicePdfViewComponent.setItems(currentOrder.getInvoicePdfs());
+                ServiceFacade.getInvoicePdfService().removeAll(items);
+                orderData.invoicePdfs.removeAll(items);
+                invoicePdfViewComponent.setItems(orderData.invoicePdfs);
                 updateRawInvoiceTableView();
             }
 
@@ -319,10 +399,8 @@ public class OrderViewPage extends BasePage {
     @Override
     public void onActive(Object... params) {
         currentOrder = (CustomerOrder) params[0];
-        orderItemViewComponent.setItems(currentOrder.getOrderItems());
-        invoicePdfViewComponent.setItems(currentOrder.getInvoicePdfs());
-        updateRawInvoiceTableView();
 
+        loadService.restart();
         orderItemViewComponent.disableIkeaExport(currentOrder.getGeneralUser() == null || currentOrder.getComboUser() == null);
         storageLackItemViewComponent.disableIkeaExport(currentOrder.getLackUser() == null);
 
@@ -344,13 +422,13 @@ public class OrderViewPage extends BasePage {
         protected Void call() throws Exception {
             try {
                 List<InvoicePdf> entities = invoicePdfService.createInvoicePdf(currentOrder, files);
-                currentOrder.addInvoicePdfs(entities);
+                orderData.invoicePdfs.addAll(entities);
                 ServiceFacade.getOrderService().save(currentOrder);
 
                 Platform.runLater(new Runnable() {
                     @Override
                     public void run() {
-                        invoicePdfViewComponent.setItems(currentOrder.getInvoicePdfs());
+                        invoicePdfViewComponent.setItems(orderData.invoicePdfs);
                         updateRawInvoiceTableView();
                     }
                 });
@@ -421,5 +499,27 @@ public class OrderViewPage extends BasePage {
             rawInvoiceItemViewComponent.setItems(Collections.<RawInvoiceProductItem>emptyList());
 
         eppViewComponent.setActive(selected);
+    }
+
+
+    class LoadService extends AbstractAsyncService<OrderData> {
+
+        @Override
+        protected Task<OrderData> createTask() {
+            return new Task<OrderData>() {
+                @Override
+                protected OrderData call() throws Exception {
+                    OrderData orderData = new OrderData();
+                    orderData.invoicePdfs = ServiceFacade.getInvoicePdfService().loadBy(currentOrder);
+                    orderData.orderItems = ServiceFacade.getOrderItemService().loadBy(currentOrder);
+                    return orderData;
+                }
+            };
+        }
+    }
+
+    class OrderData {
+        List<OrderItem> orderItems;
+        List<InvoicePdf> invoicePdfs;
     }
 }

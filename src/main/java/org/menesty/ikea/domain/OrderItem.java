@@ -32,13 +32,21 @@ public class OrderItem extends Identifiable implements UserProductInfo {
     private Double price;
 
     private String comment;
-    @ManyToOne(fetch = FetchType.LAZY)
-    public CustomerOrder customerOrder;
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
+    private CustomerOrder customerOrder;
 
     @ManyToOne
     private ProductInfo productInfo;
     @Enumerated(EnumType.STRING)
     private Type type;
+
+    public CustomerOrder getCustomerOrder() {
+        return customerOrder;
+    }
+
+    public void setCustomerOrder(CustomerOrder customerOrder) {
+        this.customerOrder = customerOrder;
+    }
 
     public int getTryCount() {
         return tryCount;
@@ -148,5 +156,9 @@ public class OrderItem extends Identifiable implements UserProductInfo {
         return Integer.valueOf(artNumber.replaceAll("\\D+", ""));
     }
 
+
+    public void addCount(double count) {
+        this.count = BigDecimal.valueOf(this.count).add(BigDecimal.valueOf(count)).setScale(2, BigDecimal.ROUND_CEILING).doubleValue();
+    }
 
 }

@@ -14,12 +14,15 @@ public class ServiceFacade {
 
     private static ProductService productService;
 
+    private static OrderItemService orderItemService;
+
     static {
         orderService = new OrderService();
         invoiceItemService = new InvoiceItemService();
         invoicePdfService = new InvoicePdfService();
         applicationPreference = new ApplicationPreference();
         productService = new ProductService();
+        orderItemService = new OrderItemService();
     }
 
 
@@ -41,5 +44,9 @@ public class ServiceFacade {
 
     public static ProductService getProductService() {
         return productService;
+    }
+
+    public static OrderItemService getOrderItemService() {
+        return orderItemService;
     }
 }

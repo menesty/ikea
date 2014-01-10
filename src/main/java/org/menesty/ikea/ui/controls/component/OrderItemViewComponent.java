@@ -2,7 +2,6 @@ package org.menesty.ikea.ui.controls.component;
 
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
-import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
@@ -12,8 +11,8 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.domain.OrderItem;
+import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.ui.controls.TotalStatusPanel;
 import org.menesty.ikea.ui.controls.dialog.BaseDialog;
@@ -209,7 +208,8 @@ public abstract class OrderItemViewComponent extends BorderPane {
     protected abstract void onExportToIkea();
 
     public void setItems(List<OrderItem> items) {
-        orderItemTableView.setItems(FXCollections.observableArrayList(items));
+        orderItemTableView.getItems().clear();
+        orderItemTableView.getItems().addAll(items);
         priceCalculate();
 
     }
@@ -238,14 +238,6 @@ public abstract class OrderItemViewComponent extends BorderPane {
         statusPanel.setTotal(orderTotal.doubleValue());
         statusPanel.showPriceWarning(diff.compareTo(productTotal) != 0);
         statusPanel.setProductTotalPrice(productTotal.doubleValue());
-    }
-
-    public void updateItem(OrderItem orderItem) {
-        if (!orderItemTableView.getItems().contains(orderItem))
-            orderItemTableView.getItems().add(orderItem);
-
-        priceCalculate();
-
     }
 
     class StatusPanel extends TotalStatusPanel {

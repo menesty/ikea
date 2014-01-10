@@ -89,8 +89,8 @@ public class InvoiceSyncService extends AbstractAsyncService<Void> {
             @Override
             protected Void call() throws Exception {
                 List<WarehouseItemDto> result = new ArrayList<>();
-
-                for (InvoicePdf invoicePdf : _order.getInvoicePdfs())
+                //TODO FIX me change to one query
+                for (InvoicePdf invoicePdf : ServiceFacade.getInvoicePdfService().loadBy(_order))
                     for (InvoiceItem item : ServiceFacade.getInvoiceItemService().load(invoicePdf))
                         result.add(convert(_order.getId(), invoicePdf, item));
 
