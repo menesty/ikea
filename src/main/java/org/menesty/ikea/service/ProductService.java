@@ -370,7 +370,7 @@ public class ProductService extends Repository<ProductInfo> {
         Root<ProductInfo> root = cq.from(entityClass);
 
         Predicate where = cb.conjunction();
-        if (data.artNumber != null){
+        if (data.artNumber != null) {
             where = cb.or(cb.like(root.<String>get("artNumber"), "%" + data.artNumber + "%"), cb.like(root.<String>get("originalArtNum"), "%" + data.artNumber + "%"));
             where = cb.and(where);
         }
@@ -388,6 +388,9 @@ public class ProductService extends Repository<ProductInfo> {
     }
 
     public void export(List<ProductInfo> items, String path) {
+        if (!path.endsWith(".csv"))
+            path += ".csv";
+
         StringBuilder text = new StringBuilder();
         String NL = System.getProperty("line.separator");
         char delimiter = '\t';
@@ -397,6 +400,7 @@ public class ProductService extends Repository<ProductInfo> {
                 text.append(item.getOriginalArtNum()).append(delimiter);
                 text.append(item.getName()).append(delimiter);
                 text.append(item.getShortName()).append(delimiter);
+                text.append(item.getUaName()).append(delimiter);
                 text.append(item.getGroup()).append(delimiter);
                 text.append(item.getPrice()).append(delimiter);
                 text.append(item.getWat()).append(delimiter);
@@ -425,6 +429,7 @@ public class ProductService extends Repository<ProductInfo> {
                 String originalArtNum = tokenizer.nextToken().trim();
                 String name = tokenizer.nextToken().trim();
                 String shortName = tokenizer.nextToken().trim();
+                String uaName = tokenizer.nextToken().trim();
                 ProductInfo.Group group = ProductInfo.Group.valueOf(tokenizer.nextToken().trim());
                 double price = getDouble(tokenizer.nextToken());
                 int wat = getInt(tokenizer.nextToken());
@@ -446,6 +451,7 @@ public class ProductService extends Repository<ProductInfo> {
 
                 productInfo.setName(name);
                 productInfo.setShortName(shortName);
+                productInfo.setUaName(uaName);
                 productInfo.setGroup(group);
                 productInfo.setPrice(price);
                 productInfo.setWat(wat);
