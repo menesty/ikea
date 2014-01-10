@@ -19,7 +19,7 @@
             <property name="javax.persistence.jdbc.driver" value="org.h2.Driver"/>
             <property name="javax.persistence.jdbc.url" value="jdbc:h2:data/db/ikea"/>
             <property name="javax.persistence.jdbc.user" value="menesty"/>
-           <!-- <property name="org.batoo.jpa.sql_logging" value="STDOUT" />-->
+            <!--<property name="org.batoo.jpa.sql_logging" value="STDOUT" />-->
             <property name="javax.persistence.jdbc.password" value="ikea-desktop-1"/>
         </properties>
     </persistence-unit>

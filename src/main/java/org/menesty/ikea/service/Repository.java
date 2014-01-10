@@ -22,14 +22,12 @@ public abstract class Repository<T extends Identifiable> {
     }
 
     public List<T> load() {
-        try {
-            begin();
-            String queryString = "select entity from " + entityClass.getName() + " entity";
-            TypedQuery<T> query = getEm().createQuery(queryString, entityClass);
-            return query.getResultList();
-        } finally {
-            commit();
-        }
+        begin();
+        String queryString = "select entity from " + entityClass.getName() + " entity";
+        TypedQuery<T> query = getEm().createQuery(queryString, entityClass);
+        List<T> result = query.getResultList();
+        commit();
+        return result;
     }
 
     public EntityManager getEm() {

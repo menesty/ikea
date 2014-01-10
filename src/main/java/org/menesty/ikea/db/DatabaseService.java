@@ -23,7 +23,12 @@ public class DatabaseService {
 
     private static EntityManagerFactory entityManagerFactory;
 
-    private static EntityManager entityManager;
+    private static ThreadLocal<EntityManager> entityManagerLocal = new ThreadLocal<EntityManager>() {
+        @Override
+        protected EntityManager initialValue() {
+            return entityManagerFactory.createEntityManager();
+        }
+    };
 
     public static Task<Void> init() {
         if (initialized >= 0)
@@ -38,26 +43,34 @@ public class DatabaseService {
 
     public static void begin() {
         logger.info("transaction begin");
-        entityManager.getTransaction().begin();
+        entityManagerLocal.get().getTransaction().begin();
     }
 
     public static synchronized void commit() {
         logger.info("transaction commit");
-        entityManager.getTransaction().commit();
+        entityManagerLocal.get().flush();
+        entityManagerLocal.get().getTransaction().commit();
+        clearManager();
     }
 
     public static void rollback() {
-        entityManager.getTransaction().rollback();
+        entityManagerLocal.get().getTransaction().rollback();
+        clearManager();
+    }
+
+    private static void clearManager() {
+        entityManagerLocal.get().close();
+        entityManagerLocal.remove();
     }
 
     public static EntityManager getEntityManager() {
-        return entityManager;
+        return entityManagerLocal.get();
     }
 
     public static void close() {
         if (!isInitialized())
             throw new RuntimeException("Database not initialized");
-        entityManager.close();
+        clearManager();
         entityManagerFactory.close();
         databaseExecutor.shutdown();
         logger.info("close db connections");
@@ -69,7 +82,7 @@ public class DatabaseService {
     }
 
     public static boolean isActive() {
-        return entityManager.getTransaction().isActive();
+        return entityManagerLocal.get().getTransaction().isActive();
     }
 
 
@@ -92,7 +105,6 @@ public class DatabaseService {
             logger.info("start initialize EntityManagerFactory ...");
             try {
                 entityManagerFactory = Persistence.createEntityManagerFactory("ikea");
-                entityManager = entityManagerFactory.createEntityManager();
                 initialized = 1;
                 logger.info("finish initialization EntityManagerFactory.");
             } catch (Exception e) {
