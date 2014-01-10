@@ -1,5 +1,7 @@
 package org.menesty.ikea.ui.controls.component;
 
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -44,6 +46,8 @@ public abstract class OrderItemViewComponent extends BorderPane {
     private StatusPanel statusPanel;
 
     private OrderItemDialog orderItemDialog;
+
+    private Button editBtn;
 
     public OrderItemViewComponent(final Stage stage) {
         productEditDialog = new ProductDialog();
@@ -111,9 +115,33 @@ public abstract class OrderItemViewComponent extends BorderPane {
                 }
             });
             toolBar.getItems().addAll(button);
+        }
+        {
+            editBtn = new Button(null, ImageFactory.createEdit32Icon());
+            editBtn.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent actionEvent) {
+                    orderItemDialog.bind(orderItemTableView.getSelectionModel().getSelectedItem(), new EntityDialogCallback<OrderItem>() {
+                        @Override
+                        public void onSave(OrderItem orderItem, Object... params) {
+                            save(orderItem);
+                            hidePopupDialog();
+                        }
 
+                        @Override
+                        public void onCancel() {
+                            hidePopupDialog();
+                        }
+                    });
+
+                    showPopupDialog(orderItemDialog);
+                }
+            });
+            editBtn.setDisable(true);
+            toolBar.getItems().addAll(editBtn);
         }
 
+        toolBar.getItems().addAll(new Separator());
         Button exportOrder = new Button(null, ImageFactory.createXls32Icon());
         exportOrder.setTooltip(new Tooltip("Export to XLS"));
         exportOrder.setOnAction(new EventHandler<ActionEvent>() {
@@ -153,6 +181,12 @@ public abstract class OrderItemViewComponent extends BorderPane {
 
         });
 
+        orderItemTableView.getSelectionModel().selectedItemProperty().addListener(new InvalidationListener() {
+            @Override
+            public void invalidated(Observable observable) {
+                editBtn.setDisable(orderItemTableView.getSelectionModel().getSelectedItem() == null);
+            }
+        });
         setTop(controlBox);
         setBottom(statusPanel = new StatusPanel());
 

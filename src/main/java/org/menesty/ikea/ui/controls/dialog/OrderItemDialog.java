@@ -36,6 +36,7 @@ public class OrderItemDialog extends BaseDialog {
         orderItemForm.setCount(orderItem.getCount());
         orderItemForm.setComment(orderItem.getComment());
         orderItemForm.setType(orderItem.getType());
+        orderItemForm.setProductInfo(orderItem.getProductInfo());
 
     }
 
@@ -167,6 +168,15 @@ public class OrderItemDialog extends BaseDialog {
         public void focus() {
             productId.setEditable(StringUtils.isNotBlank(productId.getProductId()));
             productId.focus();
+        }
+
+        public void setProductInfo(ProductInfo productInfo) {
+            if (productInfo == null)
+                return;
+
+            shortName.setText(productInfo.getShortName());
+            price.setNumber(productInfo.getPrice());
+
         }
     }
 }
