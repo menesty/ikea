@@ -1,6 +1,5 @@
 package org.menesty.ikea.ui.controls.component;
 
-import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.property.SimpleObjectProperty;
@@ -76,12 +75,7 @@ public abstract class EppViewComponent extends StackPane {
         loadService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<List<InvoiceItem>>() {
             @Override
             public void onSucceeded(final List<InvoiceItem> value) {
-                Platform.runLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        updateViews(value);
-                    }
-                });
+                updateViews(value);
             }
         });
 

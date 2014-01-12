@@ -71,12 +71,12 @@ public class IkeaUserService {
         try {
             List<OrderItem> orderItems = ServiceFacade.getOrderItemService().loadBy(order);
 
-            Map<ProductInfo.Group, List<OrderItem>> groupMap = groupItems(getByType(orderItems, OrderItem.Type.General));
+            Map<ProductInfo.Group, List<OrderItem>> groupMap = groupItems(OrderItemService.getByType(orderItems, OrderItem.Type.General));
             Map<ProductInfo.Group, List<OrderItem>> subGroupMap = new HashMap<>();
 
             fillUser(order.getGeneralUser(), ProductInfo.Group.general(), groupMap, subGroupMap, taskProgressLog);
 
-            subGroupMap.put(ProductInfo.Group.Combo, getByType(orderItems, OrderItem.Type.Combo));
+            subGroupMap.put(ProductInfo.Group.Combo, OrderItemService.getByType(orderItems, OrderItem.Type.Combo));
 
             fillUser(order.getComboUser(), subGroupMap.keySet(), subGroupMap, taskProgressLog);
 
@@ -89,17 +89,6 @@ public class IkeaUserService {
         }
 
         taskProgressLog.done();
-    }
-
-    public List<OrderItem> getByType(List<OrderItem> orderItems, OrderItem.Type type) {
-        List<OrderItem> result = new ArrayList<>();
-
-        for (OrderItem orderItem : orderItems)
-            if (type == orderItem.getType())
-                result.add(orderItem);
-
-        return result;
-
     }
 
     private <T extends UserProductInfo> List<T> fillListWithProduct(final Category category, final List<T> list, final TaskProgressLog taskProgressLog) throws IOException {

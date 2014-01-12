@@ -8,12 +8,10 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.util.Callback;
-import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.domain.OrderItem;
+import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.ui.controls.PathProperty;
 import org.menesty.ikea.ui.controls.dialog.ProductDialog;
@@ -91,7 +89,7 @@ public class OrderItemTableView extends TableView<OrderItem> {
         }
 
         {
-            TableColumn<OrderItem, Double> column = new TableColumn<>("Price");
+            TableColumn<OrderItem, Double> column = new TableColumn<>("XLS Price");
             column.setMinWidth(60);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderItem, Double>, ObservableValue<Double>>() {
                 @Override
@@ -145,7 +143,7 @@ public class OrderItemTableView extends TableView<OrderItem> {
         }
 
         {
-            TableColumn<OrderItem, Double> column = new TableColumn<>("P Price");
+            TableColumn<OrderItem, Double> column = new TableColumn<>("Ikea Price");
             column.setMinWidth(60);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderItem, Double>, ObservableValue<Double>>() {
                 @Override
@@ -189,7 +187,7 @@ public class OrderItemTableView extends TableView<OrderItem> {
 
                                 ContextMenu contextMenu = new ContextMenu();
                                 {
-                                    MenuItem menuItem = new MenuItem("Fetch", new ImageView(new Image("/styles/images/icon/refresh-16x16.png")));
+                                    MenuItem menuItem = new MenuItem("Fetch", ImageFactory.createFetch16Icon());
                                     menuItem.setOnAction(new EventHandler<ActionEvent>() {
                                         @Override
                                         public void handle(ActionEvent actionEvent) {

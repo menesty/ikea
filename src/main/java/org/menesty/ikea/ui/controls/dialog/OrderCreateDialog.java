@@ -35,11 +35,11 @@ public class OrderCreateDialog extends BaseDialog {
         userService = new UserService();
 
         okBtn.setDisable(true);
-        getChildren().add(createTitle("Create new order from customer"));
+        addRow(createTitle("Create new order from customer"));
 
         orderForm = new OrderForm();
 
-        getChildren().addAll(orderForm, bottomBar);
+        addRow(orderForm, bottomBar);
     }
 
     @Override

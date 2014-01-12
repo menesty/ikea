@@ -13,13 +13,16 @@ import java.util.List;
 public class InvoiceItemService extends Repository<InvoiceItem> {
 
     public List<InvoiceItem> load(InvoicePdf invoicePdf) {
+        boolean started = isActive();
         try {
-            begin();
+            if (!started)
+                begin();
             TypedQuery<InvoiceItem> query = getEm().createQuery("select entity from " + entityClass.getName() + " entity where entity.invoicePdf.id = ?1", entityClass);
             query.setParameter(1, invoicePdf.getId());
             return query.getResultList();
         } finally {
-            commit();
+            if (!started)
+                commit();
         }
     }
 
@@ -34,7 +37,9 @@ public class InvoiceItemService extends Repository<InvoiceItem> {
     }
 
     public void deleteBy(InvoicePdf currentInvoicePdf) {
+        begin();
         remove(load(currentInvoicePdf));
+        commit();
         /*try {
             remove(load(currentInvoicePdf));
             begin();

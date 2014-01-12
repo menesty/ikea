@@ -14,7 +14,7 @@ public class ProductIdField extends HBox {
     private TextField productId;
 
     public ProductIdField() {
-        ImageView imageView = ImageFactory.createWeb22Icon();
+        ImageView imageView = ImageFactory.createWeb16Icon();
         imageView.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent mouseEvent) {

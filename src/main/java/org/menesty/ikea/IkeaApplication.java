@@ -53,6 +53,12 @@ public class IkeaApplication extends Application {
     @Override
     public void start(final Stage stage) throws Exception {
         instance = this;
+        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread t, Throwable e) {
+                e.printStackTrace();
+            }
+        });
         this.stage = stage;
         stage.setTitle("Ikea Logistic Application");
 
@@ -106,23 +112,11 @@ public class IkeaApplication extends Application {
         HBox.setHgrow(spacer3, Priority.ALWAYS);
 
 
-        preferenceDialog = new ApplicationPreferenceDialog() {
-            @Override
-            public void onCancel() {
-                hidePopupDialog();
-            }
-
-            @Override
-            public void onOk() {
-                super.onOk();
-                hidePopupDialog();
-            }
-        };
         Button settingsButton = new Button(null, new ImageView(new Image(this.getClass().getResourceAsStream("/styles/images/settings.png"))));
         settingsButton.setId("SettingsButton");
         settingsButton.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
-                showPopupDialog(preferenceDialog);
+                showPopupDialog(getPreferenceDialog());
             }
         });
         settingsButton.setMaxHeight(Double.MAX_VALUE);
@@ -152,6 +146,7 @@ public class IkeaApplication extends Application {
         stage.setScene(scene);
         stage.show();
 
+
         pageManager = new PageManager(pageArea, breadcrumbBar);
 
 
@@ -171,6 +166,23 @@ public class IkeaApplication extends Application {
                 pageManager.goToPage("IKEA/CustomerOrder list");
             }
         });
+    }
+
+    private BaseDialog getPreferenceDialog() {
+        if (preferenceDialog == null)
+            preferenceDialog = new ApplicationPreferenceDialog() {
+                @Override
+                public void onCancel() {
+                    hidePopupDialog();
+                }
+
+                @Override
+                public void onOk() {
+                    super.onOk();
+                    hidePopupDialog();
+                }
+            };
+        return preferenceDialog;
     }
 
     @Override

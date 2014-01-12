@@ -2,19 +2,28 @@ package org.menesty.ikea.ui.controls.dialog;
 
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.concurrent.Task;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.util.Callback;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.domain.ProductPart;
+import org.menesty.ikea.factory.ImageFactory;
+import org.menesty.ikea.service.AbstractAsyncService;
+import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.ui.controls.PathProperty;
 import org.menesty.ikea.ui.controls.form.DoubleTextField;
 import org.menesty.ikea.ui.controls.form.IntegerTextField;
@@ -42,17 +51,17 @@ public class ProductDialog extends BaseDialog {
 
     private final TableView<ProductPart> subProductTableView;
 
-
     private ProductInfo currentProductInfo;
 
     private EntityDialogCallback<ProductInfo> callback;
 
+    private PriceRefreshService priceRefreshService;
 
     private final TabPane options;
 
 
     public ProductDialog() {
-        getChildren().add(createTitle("Create new order from customer"));
+        addRow(createTitle("Create new order from customer"));
         okBtn.setText("Save");
 
         options = new TabPane();
@@ -118,7 +127,17 @@ public class ProductDialog extends BaseDialog {
             }
         });
 
-        getChildren().addAll(options, bottomBar);
+        addRow(options, bottomBar);
+
+        priceRefreshService = new PriceRefreshService();
+        priceRefreshService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<Double>() {
+            @Override
+            public void onSucceeded(Double value) {
+                if (value != null)
+                    productForm.setPrice(value);
+            }
+        });
+        loadingPane.bindTask(priceRefreshService);
     }
 
     private void bind(ProductPart productPart) {
@@ -172,7 +191,27 @@ public class ProductDialog extends BaseDialog {
 
             addRow("Short name", hbox);
             addRow("UA name", uaName = new TextField());
-            addRow("Price", price = new DoubleTextField());
+
+            HBox priceBox = new HBox();
+            price = new DoubleTextField();
+            HBox.setHgrow(price, Priority.ALWAYS);
+
+            ImageView fetchIcon = ImageFactory.createFetch16Icon();
+            fetchIcon.setMouseTransparent(false);
+
+            Pane back = new Pane();
+            HBox.setMargin(back, new Insets(2, 2, 2, 2));
+            back.setOnMousePressed(new EventHandler<MouseEvent>() {
+                @Override
+                public void handle(MouseEvent mouseEvent) {
+                    priceRefreshService.productId.setValue(originalArtNumber.getText());
+                    priceRefreshService.restart();
+                }
+            });
+            back.getChildren().add(fetchIcon);
+
+            priceBox.getChildren().addAll(price, back);
+            addRow("Price", priceBox);
 
 
             group = new ComboBox<>();
@@ -308,10 +347,10 @@ public class ProductDialog extends BaseDialog {
         if (hasParts) {
             subProductTableView.setItems(FXCollections.observableArrayList(productInfo.getParts()));
             subProductTableView.getItems().add(0, new ProductPart(0, currentProductInfo));
-            getChildren().add(getChildren().size() - 1, subProductTableView);
-        } else {
-            getChildren().remove(subProductTableView);
-        }
+            addRow(rowCount() - 1, subProductTableView);
+        } else
+            removeRow(subProductTableView);
+
         subProductTableView.setVisible(hasParts);
         options.getSelectionModel().select(options.getTabs().get(0));
     }
@@ -367,10 +406,26 @@ public class ProductDialog extends BaseDialog {
 
     public static void browse(String artNumber) {
         try {
+            artNumber = artNumber.replaceAll("\\D+", "");
             URI uri = new URI("http://www.ikea.com/pl/pl/catalog/products/" + artNumber);
             Desktop.getDesktop().browse(uri);
         } catch (URISyntaxException | IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    class PriceRefreshService extends AbstractAsyncService<Double> {
+        public SimpleStringProperty productId = new SimpleStringProperty();
+
+        @Override
+        protected Task<Double> createTask() {
+            final String _productId = productId.get();
+            return new Task<Double>() {
+                @Override
+                protected Double call() throws Exception {
+                    return ServiceFacade.getProductService().loadProductPrice(_productId);
+                }
+            };
         }
     }
 }

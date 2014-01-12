@@ -34,10 +34,10 @@ public class Dialog {
         private DialogCallback callback;
 
         public ConfirmDialog() {
-            getChildren().add(title = createTitle("Warning"));
+            addRow(title = createTitle("Warning"));
             okBtn.setText("Yes");
             cancelBtn.setText("No");
-            getChildren().addAll(message = new Label(), bottomBar);
+            addRow(message = new Label(), bottomBar);
             cancelBtn.setDefaultButton(true);
             okBtn.setDefaultButton(false);
         }

@@ -3,19 +3,14 @@ package org.menesty.ikea.ui.controls.table;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
-import javafx.geometry.Pos;
-import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.HBox;
 import javafx.util.Callback;
-import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.processor.invoice.InvoiceItem;
 import org.menesty.ikea.ui.controls.PathProperty;
-import org.menesty.ikea.ui.controls.dialog.ProductDialog;
+import org.menesty.ikea.ui.table.ProductBrowseColumn;
 import org.menesty.ikea.util.NumberUtil;
 
 
@@ -25,43 +20,7 @@ import org.menesty.ikea.util.NumberUtil;
 public class InvoiceEppInvisibleTableView extends TableView<InvoiceItem> {
     public InvoiceEppInvisibleTableView() {
         {
-            TableColumn<InvoiceItem, String> column = new TableColumn<>();
-            column.setMaxWidth(25);
-            column.setCellFactory(new Callback<TableColumn<InvoiceItem, String>, TableCell<InvoiceItem, String>>() {
-                @Override
-                public TableCell<InvoiceItem, String> call(TableColumn<InvoiceItem, String> invoiceItemNumberTableColumn) {
-                    TableCell<InvoiceItem, String> tableCell = new TableCell<InvoiceItem, String>() {
-                        private ImageView imageView;
-                        private HBox content;
-                        @Override
-                        protected void updateItem(final String artNumber, boolean empty) {
-                            super.updateItem(artNumber, empty);
-                            if (empty) {
-                                setGraphic(null);
-                                setText(null);
-                            } else {
-                                if (imageView == null) {
-                                    imageView = ImageFactory.createWeb16Icon();
-                                    content = new HBox();
-                                    content.getChildren().add(imageView);
-
-                                }
-
-                                imageView.setOnMouseClicked(new EventHandler<MouseEvent>() {
-                                    @Override
-                                    public void handle(MouseEvent mouseEvent) {
-                                        ProductDialog.browse(artNumber);
-                                    }
-                                });
-                                setGraphic(content);
-                            }
-                        }
-
-                    };
-                    tableCell.setAlignment(Pos.CENTER);
-                    return tableCell;
-                }
-            });
+            ProductBrowseColumn<InvoiceItem> column = new ProductBrowseColumn<>();
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<InvoiceItem, String>, ObservableValue<String>>() {
                 @Override
                 public ObservableValue<String> call(TableColumn.CellDataFeatures<InvoiceItem, String> item) {

@@ -4,6 +4,7 @@ import org.menesty.ikea.db.DatabaseService;
 import org.menesty.ikea.domain.Identifiable;
 
 import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
@@ -22,12 +23,12 @@ public abstract class Repository<T extends Identifiable> {
     }
 
     public List<T> load() {
-            begin();
-            String queryString = "select entity from " + entityClass.getName() + " entity";
-            TypedQuery<T> query = getEm().createQuery(queryString, entityClass);
-            List<T> result =  query.getResultList();
-            commit();
-            return result;
+        begin();
+        String queryString = "select entity from " + entityClass.getName() + " entity";
+        TypedQuery<T> query = getEm().createQuery(queryString, entityClass);
+        List<T> result = query.getResultList();
+        commit();
+        return result;
     }
 
     public EntityManager getEm() {
@@ -76,14 +77,18 @@ public abstract class Repository<T extends Identifiable> {
 
     }
 
-    public <E extends Identifiable> void remove(List<E> list) {
+    public void remove(List<T> list) {
+        remove(list, entityClass);
+    }
+
+    public <E extends Identifiable> void remove(List<E> list, Class<E> clazz) {
         boolean started = isActive();
         try {
             if (!started)
                 begin();
 
             for (E item : list)
-                remove(item);
+                remove(item, clazz);
 
             if (!started)
                 commit();
@@ -93,13 +98,17 @@ public abstract class Repository<T extends Identifiable> {
         }
     }
 
+    public void remove(T entity) {
+        remove(entity, entityClass);
+    }
 
-    public <E extends Identifiable> void remove(E entity) {
+    public <E extends Identifiable> void remove(E entity, Class<E> clazz) {
         boolean started = isActive();
         if (!started)
             begin();
-
-        getEm().remove(entity);
+        Query query = getEm().createQuery("delete from " + clazz.getName() + " entity where entity.id=?1");
+        query.setParameter(1, entity.getId());
+        query.executeUpdate();
 
         if (!started)
             commit();

@@ -53,18 +53,13 @@ public class OrderListPage extends BasePage {
 
     public OrderListPage() {
         super("CustomerOrder list");
-        editDialog = new OrderEditDialog();
+
         loadService = new LoadService();
         loadService.setOnSucceededListener(new SucceededListener<List<CustomerOrder>>() {
             @Override
             public void onSucceeded(final List<CustomerOrder> value) {
-                Platform.runLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        tableView.getItems().clear();
-                        tableView.getItems().addAll(transform((value)));
-                    }
-                });
+                tableView.getItems().clear();
+                tableView.getItems().addAll(transform((value)));
             }
         });
     }
@@ -134,8 +129,8 @@ public class OrderListPage extends BasePage {
                     @Override
                     public void handle(MouseEvent mouseEvent) {
                         if (mouseEvent.getClickCount() == 2 && row.getItem() != null) {
-                            showPopupDialog(editDialog);
-                            editDialog.bind(row.getItem().getOrder(), new EntityDialogCallback<CustomerOrder>() {
+                            showPopupDialog(getEditDialog());
+                            getEditDialog().bind(row.getItem().getOrder(), new EntityDialogCallback<CustomerOrder>() {
                                 @Override
                                 public void onSave(CustomerOrder user, Object... params) {
                                     ServiceFacade.getOrderService().save(user);
@@ -159,6 +154,13 @@ public class OrderListPage extends BasePage {
 
 
         return tableView;
+    }
+
+    private OrderEditDialog getEditDialog() {
+        if (editDialog == null)
+            editDialog = new OrderEditDialog();
+
+        return editDialog;
     }
 
     private ToolBar createToolBar() {

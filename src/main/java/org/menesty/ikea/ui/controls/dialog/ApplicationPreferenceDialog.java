@@ -10,13 +10,10 @@ public class ApplicationPreferenceDialog extends BaseDialog {
     private WarehousePreferenceForm warehouseForm;
 
     public ApplicationPreferenceDialog() {
-        getChildren().add(createTitle("Application preferences"));
+        addRow(createTitle("Application preferences"));
         okBtn.setText("Save");
-
         warehouseForm = new WarehousePreferenceForm();
-
-
-        getChildren().addAll(warehouseForm, bottomBar);
+        addRow(warehouseForm, bottomBar);
     }
 
 

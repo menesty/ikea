@@ -178,7 +178,7 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
                 begin();
 
             ServiceFacade.getInvoiceItemService().deleteBy(entity);
-            super.remove(entity.getProducts());
+            super.remove(entity.getProducts(), RawInvoiceProductItem.class);
             super.remove(entity);
             if (!started)
                 commit();
@@ -218,9 +218,26 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
     }
 
     public void removeBy(CustomerOrder order) {
-        begin();
+        boolean started = isActive();
+        if (!started)
+            begin();
         removeAll(loadBy(order));
-        commit();
+        if (!started)
+            commit();
+    }
+
+    public List<RawInvoiceProductItem> loadRawInvoiceItemBy(CustomerOrder order) {
+        boolean started = isActive();
+        try {
+            if (!started)
+                begin();
+            TypedQuery<RawInvoiceProductItem> query = getEm().createQuery("select entity from " + RawInvoiceProductItem.class.getName() + " entity left join entity.invoicePdf invoice  where invoice.customerOrder.id = ?1", RawInvoiceProductItem.class);
+            query.setParameter(1, order.getId());
+            return query.getResultList();
+        } finally {
+            if (!started)
+                commit();
+        }
     }
 }
 

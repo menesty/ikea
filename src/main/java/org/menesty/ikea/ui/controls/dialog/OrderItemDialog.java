@@ -20,10 +20,10 @@ public class OrderItemDialog extends BaseDialog {
     private EntityDialogCallback<OrderItem> callback;
 
     public OrderItemDialog() {
-        getChildren().add(createTitle("Create/Edit OrderItem"));
+        addRow(createTitle("Create/Edit OrderItem"));
         orderItemForm = new OrderItemForm();
 
-        getChildren().addAll(orderItemForm, bottomBar);
+        addRow(orderItemForm, bottomBar);
         okBtn.setText("Save");
     }
 

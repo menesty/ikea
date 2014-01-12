@@ -10,17 +10,15 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
+import org.menesty.ikea.ui.controls.pane.LoadingPane;
 
 /**
  * User: Menesty
  * Date: 10/14/13
  * Time: 1:11 PM
  */
-public class BaseDialog extends VBox {
+public class BaseDialog extends StackPane {
 
     protected final HBox bottomBar;
 
@@ -30,9 +28,13 @@ public class BaseDialog extends VBox {
 
     private boolean allowAutoHide = true;
 
+    protected LoadingPane loadingPane;
+
+    private VBox content;
+
     public BaseDialog() {
+        super();
         setId("ProxyDialog");
-        setSpacing(10);
         setMaxSize(430, USE_PREF_SIZE);
         // block mouse clicks
         setOnMouseClicked(new EventHandler<MouseEvent>() {
@@ -40,6 +42,13 @@ public class BaseDialog extends VBox {
                 t.consume();
             }
         });
+
+        content = new VBox();
+        content.setSpacing(10);
+        loadingPane = new LoadingPane();
+
+        getChildren().addAll(content, loadingPane);
+
         cancelBtn = new Button("Cancel");
         cancelBtn.setId("cancelButton");
         cancelBtn.setOnAction(new EventHandler<ActionEvent>() {
@@ -69,6 +78,22 @@ public class BaseDialog extends VBox {
         bottomBar.setAlignment(Pos.BASELINE_RIGHT);
         bottomBar.getChildren().addAll(cancelBtn, okBtn);
         VBox.setMargin(bottomBar, new Insets(20, 5, 5, 5));
+    }
+
+    public void addRow(Node... rows) {
+        content.getChildren().addAll(rows);
+    }
+
+    public void addRow(int index, Node row) {
+        content.getChildren().add(index, row);
+    }
+
+    protected boolean removeRow(Node row) {
+        return content.getChildren().remove(row);
+    }
+
+    protected int rowCount() {
+        return content.getChildren().size();
     }
 
     public void onCancel() {

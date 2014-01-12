@@ -83,4 +83,8 @@ public class ImageFactory {
     public static ImageView createEdit32Icon() {
         return new ImageView(new Image("/styles/images/icon/edit-32x32.png"));
     }
+
+    public static ImageView createFetch16Icon() {
+        return new ImageView(new Image("/styles/images/icon/refresh-16x16.png"));
+    }
 }

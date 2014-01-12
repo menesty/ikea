@@ -6,7 +6,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.menesty.ikea.domain.*;
 import org.menesty.ikea.exception.ProductFetchException;
-import org.menesty.ikea.domain.OrderItem;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.ui.TaskProgress;
 import org.menesty.ikea.util.NumberUtil;
@@ -56,11 +55,16 @@ public class OrderService extends Repository<CustomerOrder> {
 
             for (XLSReadMessage message : (List<XLSReadMessage>) readStatus.getReadMessages())
                 order.addWarning(message.getMessage());
+            try {
+                begin();
+                order = ServiceFacade.getOrderService().save(order);
+                ServiceFacade.getOrderService().save(reduce(order, rawOrderItems, taskProgress));
+                commit();
+                return order;
 
-            order = ServiceFacade.getOrderService().save(order);
-            ServiceFacade.getOrderService().save(reduce(order, rawOrderItems, taskProgress));
-
-            return order;
+            } catch (Exception e) {
+                rollback();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -94,7 +98,7 @@ public class OrderService extends Repository<CustomerOrder> {
 
                     if (StringUtils.isNotBlank(rawOrderItem.getComment()))
                         orderItem.setType(OrderItem.Type.Specials);
-                    else if (StringUtils.isNotBlank(rawOrderItem.getCombo()))
+                    else if (StringUtils.isNotBlank(rawOrderItem.getCombo()) || !Character.isDigit(artNumber.charAt(0)))
                         orderItem.setType(OrderItem.Type.Combo);
                     else
                         orderItem.setType(OrderItem.Type.General);
@@ -260,39 +264,144 @@ public class OrderService extends Repository<CustomerOrder> {
         return total.doubleValue();
     }
 
-    public List<StorageLack> calculateOrderInvoiceDiff(CustomerOrder order) {
-        List<RawInvoiceProductItem> rawItems = new ArrayList<>();
+    public List<StorageComboLack> calculateOrderInvoiceDiffCombo(CustomerOrder order) {
+        try {
+            begin();
 
-        for (InvoicePdf invoicePdf : ServiceFacade.getInvoicePdfService().loadBy(order))
-            rawItems.addAll(invoicePdf.getProducts());
+            List<RawInvoiceProductItem> rawItems = new ArrayList<>(getRawInvoiceItems(order));
+            List<OrderItem> comboItems = ServiceFacade.getOrderItemService().loadBy(order, OrderItem.Type.Combo);
 
+            Map<String, Double> orderComboData = new HashMap<>();
+            Map<String, ProductInfo> infoComboData = new HashMap<>();
+
+            List<ProductInfo> singleComboList = new ArrayList<>();
+            for (OrderItem orderItem : comboItems) {
+                for (ProductPart part : orderItem.getProductInfo().getParts()) {
+                    // increaseData(orderComboData, part.getProductInfo().getOriginalArtNum(), NumberUtil.round(orderItem.getCount() * part.getCount()));
+                    infoComboData.put(part.getProductInfo().getOriginalArtNum(), part.getProductInfo());
+                }
+
+                for (int i = 0; i < (int) orderItem.getCount(); i++)
+                    singleComboList.add(orderItem.getProductInfo());
+            }
+            {
+                //filter raw items
+                Iterator<RawInvoiceProductItem> iterator = rawItems.iterator();
+                while (iterator.hasNext()) {
+                    RawInvoiceProductItem item = iterator.next();
+                    if (!infoComboData.containsKey(item.getOriginalArtNumber())) {
+                        iterator.remove();
+                        continue;
+                    }
+                    orderComboData.put(item.getOriginalArtNumber(), item.getCount());
+                }
+            }
+
+            {
+                Iterator<ProductInfo> iterator = singleComboList.iterator();
+                while (iterator.hasNext()) {
+                    ProductInfo productInfo = iterator.next();
+                    boolean allParts = true;
+                    for (ProductPart part : productInfo.getParts()) {
+                        String key = part.getProductInfo().getOriginalArtNum();
+                        if (!orderComboData.containsKey(key) || orderComboData.get(key) < part.getCount()) {
+                            allParts = false;
+                            break;
+                        }
+                    }
+
+                    if (allParts) {
+                        for (ProductPart part : productInfo.getParts()) {
+                            String key = part.getProductInfo().getOriginalArtNum();
+                            double newCount = NumberUtil.round(orderComboData.get(key) - part.getCount());
+
+                            if (newCount == 0)
+                                orderComboData.remove(key);
+                            else
+                                orderComboData.put(key, newCount);
+
+                        }
+                        iterator.remove();
+                    }
+
+                }
+            }
+
+            List<StorageComboLack> result = new ArrayList<>();
+            for (ProductInfo productInfo : singleComboList) {
+                StorageComboLack item = new StorageComboLack(productInfo);
+                for (ProductPart part : productInfo.getParts()) {
+                    String key = part.getProductInfo().getOriginalArtNum();
+                    StorageComboPartLack partLack = new StorageComboPartLack(part.getProductInfo(), part.getCount());
+
+                    if (orderComboData.containsKey(key)) {
+                        int newValue = orderComboData.get(key).intValue() - part.getCount();
+
+                        if (newValue <= 0) {
+                            partLack.setLackCount(newValue * -1);
+                            orderComboData.remove(key);
+                        } else
+                            orderComboData.put(key, (double) newValue);
+
+                    } else
+                        partLack.setLackCount(part.getCount());
+
+                    item.storageComboLacks.add(partLack);
+                }
+
+                result.add(item);
+            }
+            return result;
+        } finally {
+            commit();
+        }
+
+    }
+
+    private List<RawInvoiceProductItem> getRawInvoiceItems(CustomerOrder order) {
+        List<RawInvoiceProductItem> rawItems = ServiceFacade.getInvoicePdfService().loadRawInvoiceItemBy(order);
         rawItems = InvoicePdfService.reduce(rawItems);
 
+        return rawItems;
+    }
+
+    public List<StorageLack> calculateOrderInvoiceDiffWithoutCombo(final CustomerOrder order, List<OrderItem> orderItems) {
+        List<RawInvoiceProductItem> rawItems = getRawInvoiceItems(order);
+
         Map<String, Double> orderData = new HashMap<>();
+        Map<String, Double> orderComboData = new HashMap<>();
+
         Map<String, ProductInfo> infoData = new HashMap<>();
+        Map<String, ProductInfo> infoComboData = new HashMap<>();
 
-
-        for (OrderItem orderItem : ServiceFacade.getOrderItemService().loadBy(order)) {
-            if (OrderItem.Type.Na != orderItem.getType() && !orderItem.isInvalidFetch() && OrderItem.Type.Specials != orderItem.getType())
+        for (OrderItem orderItem : orderItems) {
+            if (OrderItem.Type.Na != orderItem.getType() && !orderItem.isInvalidFetch() && OrderItem.Type.Specials != orderItem.getType()) {
                 if (OrderItem.Type.Combo == orderItem.getType())
                     for (ProductPart part : orderItem.getProductInfo().getParts()) {
-                        increaseData(orderData, part.getProductInfo().getOriginalArtNum(), NumberUtil.round(orderItem.getCount() * part.getCount()));
-                        infoData.put(part.getProductInfo().getOriginalArtNum(), part.getProductInfo());
+                        increaseData(orderComboData, part.getProductInfo().getOriginalArtNum(), NumberUtil.round(orderItem.getCount() * part.getCount()));
+                        infoComboData.put(part.getProductInfo().getOriginalArtNum(), part.getProductInfo());
                     }
-                else
+                else if (OrderItem.Type.General == orderItem.getType()) {
                     increaseData(orderData, orderItem.getProductInfo().getOriginalArtNum(), orderItem.getCount());
-
-            if (!orderItem.isInvalidFetch() && OrderItem.Type.Na != orderItem.getType())
-                infoData.put(orderItem.getProductInfo().getOriginalArtNum(), orderItem.getProductInfo());
+                    infoData.put(orderItem.getProductInfo().getOriginalArtNum(), orderItem.getProductInfo());
+                }
+            }
         }
 
         List<StorageLack> result = new ArrayList<>();
 
         for (RawInvoiceProductItem item : rawItems) {
             Double count = orderData.get(item.getOriginalArtNumber());
-            if (count == null)
-                result.add(new StorageLack(item.getProductInfo(), item.getCount(), false));
-            else {
+            if (count == null) {
+                Double comboPartCount = orderComboData.get(item.getOriginalArtNumber());
+                double overCount = item.getCount();
+                if (comboPartCount != null) {
+                    overCount = NumberUtil.round(overCount - comboPartCount);
+                    orderComboData.remove(item.getOriginalArtNumber());
+                }
+                if (overCount != 0)
+                    result.add(new StorageLack(item.getProductInfo(), overCount, false));
+            } else {
                 if (NumberUtil.round(count - item.getCount()) == 0)
                     orderData.remove(item.getOriginalArtNumber());
                 else

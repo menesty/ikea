@@ -6,6 +6,7 @@ import javafx.concurrent.Task;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -26,7 +27,15 @@ public class DatabaseService {
     private static ThreadLocal<EntityManager> entityManagerLocal = new ThreadLocal<EntityManager>() {
         @Override
         protected EntityManager initialValue() {
+            logger.info(Thread.currentThread().getName() + " new thread create Entity Manager");
             return entityManagerFactory.createEntityManager();
+        }
+
+        @Override
+        public void remove() {
+            get().close();
+            logger.info(Thread.currentThread().getName() + "  thread destroy Entity Manager");
+            super.remove();
         }
     };
 
@@ -41,14 +50,24 @@ public class DatabaseService {
         return setupTask;
     }
 
+    public static <T> T runInTransaction(Callable<T> callable) {
+        begin();
+        try {
+            return callable.call();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            commit();
+        }
+        return null;
+    }
+
     public static void begin() {
-        logger.info("transaction begin");
+        // logger.info("transaction begin");
         entityManagerLocal.get().getTransaction().begin();
     }
 
-    public static synchronized void commit() {
-        logger.info("transaction commit");
-        entityManagerLocal.get().flush();
+    public static void commit() {
         entityManagerLocal.get().getTransaction().commit();
         clearManager();
     }
@@ -59,7 +78,6 @@ public class DatabaseService {
     }
 
     private static void clearManager() {
-        entityManagerLocal.get().close();
         entityManagerLocal.remove();
     }
 

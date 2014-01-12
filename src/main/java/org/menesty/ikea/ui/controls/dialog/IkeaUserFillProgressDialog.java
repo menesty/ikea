@@ -15,7 +15,7 @@ public class IkeaUserFillProgressDialog extends BaseDialog implements TaskProgre
         setAllowAutoHide(false);
         cancelBtn.setVisible(false);
         okBtn.setVisible(false);
-        getChildren().addAll(logBox = new VBox(), bottomBar);
+        addRow(logBox = new VBox(), bottomBar);
 
     }
 

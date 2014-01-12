@@ -27,11 +27,11 @@ public class OrderEditDialog extends BaseDialog {
         userService = new UserService();
 
         okBtn.setDisable(true);
-        getChildren().add(createTitle("Edit order"));
+        addRow(createTitle("Edit order"));
 
         form = new OrderForm();
 
-        getChildren().addAll(form, bottomBar);
+        addRow(form, bottomBar);
     }
 
     @Override

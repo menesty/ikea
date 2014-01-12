@@ -11,8 +11,7 @@ public class UserDialog extends BaseDialog {
     private User currentEntity;
 
     public UserDialog() {
-
-        getChildren().addAll(form = new UserForm(), bottomBar);
+        addRow(form = new UserForm(), bottomBar);
     }
 
 

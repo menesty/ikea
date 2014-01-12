@@ -1,5 +1,6 @@
 package org.menesty.ikea.service;
 
+import javafx.application.Platform;
 import javafx.concurrent.Service;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
@@ -17,9 +18,19 @@ public abstract class AbstractAsyncService<T> extends Service<T> {
         if (listener != null)
             setOnSucceeded(new EventHandler<WorkerStateEvent>() {
                 @Override
-                public void handle(WorkerStateEvent workerStateEvent) {
-                    listener.onSucceeded((T) workerStateEvent.getSource().getValue());
+                public void handle(final WorkerStateEvent workerStateEvent) {
+                    Platform.runLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                listener.onSucceeded((T) workerStateEvent.getSource().getValue());
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
                 }
             });
+
     }
 }

@@ -10,12 +10,9 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.StackPane;
 import org.apache.commons.lang.StringUtils;
-import org.menesty.ikea.domain.CustomerOrder;
-import org.menesty.ikea.domain.InvoicePdf;
-import org.menesty.ikea.domain.ProductInfo;
-import org.menesty.ikea.domain.StorageLack;
+import org.menesty.ikea.db.DatabaseService;
+import org.menesty.ikea.domain.*;
 import org.menesty.ikea.exception.LoginIkeaException;
-import org.menesty.ikea.domain.OrderItem;
 import org.menesty.ikea.processor.invoice.InvoiceItem;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.service.*;
@@ -30,6 +27,7 @@ import org.menesty.ikea.util.NumberUtil;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.Callable;
 
 /**
  * User: Menesty
@@ -68,6 +66,12 @@ public class OrderViewPage extends BasePage {
 
     private LoadService loadService;
 
+    private StoreLackService storeLackService;
+
+    private StoreLackComboService storeLackComboService;
+
+    private StorageLackComboComponent storageLackComboComponent;
+
     public OrderViewPage() {
         super("CustomerOrder");
 
@@ -84,18 +88,25 @@ public class OrderViewPage extends BasePage {
             @Override
             public void onSucceeded(final OrderData value) {
                 OrderViewPage.this.orderData = value;
-                Platform.runLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            orderItemViewComponent.setItems(orderData.orderItems);
-                            invoicePdfViewComponent.setItems(orderData.invoicePdfs);
-                            updateRawInvoiceTableView();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
+                orderItemViewComponent.setItems(orderData.orderItems);
+                invoicePdfViewComponent.setItems(orderData.invoicePdfs);
+                updateRawInvoiceTableView();
+            }
+        });
+
+        storeLackService = new StoreLackService();
+        storeLackService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<List<StorageLack>>() {
+            @Override
+            public void onSucceeded(List<StorageLack> value) {
+                storageLackItemViewComponent.setItems(value);
+            }
+        });
+
+        storeLackComboService = new StoreLackComboService();
+        storeLackComboService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<List<StorageComboLack>>() {
+            @Override
+            public void onSucceeded(List<StorageComboLack> value) {
+                storageLackComboComponent.setItems(value);
             }
         });
 
@@ -103,13 +114,28 @@ public class OrderViewPage extends BasePage {
 
     @Override
     public Node createView() {
-
         StackPane pane = createRoot();
         pane.getChildren().add(0, createInvoiceView());
         productEditDialog = new ProductDialog();
-
-        loadingPane.bindTask(loadService);
         return pane;
+    }
+
+    private Tab createStorageComboTab() {
+        final Tab tab = new Tab("Storage Combo Lack");
+        tab.setClosable(false);
+
+        storageLackComboComponent = new StorageLackComboComponent();
+        tab.setContent(storageLackComboComponent);
+        tab.setOnSelectionChanged(new EventHandler<Event>() {
+            @Override
+            public void handle(Event event) {
+                if (tab.isSelected()) {
+                    loadingPane.bindTask(storeLackComboService);
+                    storeLackComboService.restart();
+                }
+            }
+        });
+        return tab;
     }
 
     private Tab createStorageTab() {
@@ -149,16 +175,16 @@ public class OrderViewPage extends BasePage {
 
             }
         };
-        final Tab tab = new Tab();
-        tab.setText("Storage Lack");
+        final Tab tab = new Tab("Storage Lack");
         tab.setContent(storageLackItemViewComponent);
         tab.setClosable(false);
         tab.setOnSelectionChanged(new EventHandler<Event>() {
             @Override
             public void handle(Event event) {
-                if (tab.isSelected())
-                    storageLackItemViewComponent.setItems(ServiceFacade.getOrderService().calculateOrderInvoiceDiff(currentOrder));
-
+                if (tab.isSelected()) {
+                    loadingPane.bindTask(storeLackService);
+                    storeLackService.restart();
+                }
             }
         });
         return tab;
@@ -391,7 +417,7 @@ public class OrderViewPage extends BasePage {
 
         invoiceTab.setContent(splitPane);
 
-        tabPane.getTabs().addAll(orderItemTab = createOrderItemTab(), invoiceTab, createStorageTab());
+        tabPane.getTabs().addAll(orderItemTab = createOrderItemTab(), invoiceTab, createStorageTab(), createStorageComboTab());
         return tabPane;
     }
 
@@ -399,7 +425,7 @@ public class OrderViewPage extends BasePage {
     @Override
     public void onActive(Object... params) {
         currentOrder = (CustomerOrder) params[0];
-
+        loadingPane.bindTask(loadService);
         loadService.restart();
         orderItemViewComponent.disableIkeaExport(currentOrder.getGeneralUser() == null || currentOrder.getComboUser() == null);
         storageLackItemViewComponent.disableIkeaExport(currentOrder.getLackUser() == null);
@@ -449,15 +475,20 @@ public class OrderViewPage extends BasePage {
 
         @Override
         protected Void call() throws Exception {
-            ProductInfo productInfo = productService.loadOrCreate(orderItem.getArtNumber());
-            if (productInfo == null)
-                orderItem.increaseTryCount();
-            else {
-                orderItem.setProductInfo(productInfo);
-                orderItem.setInvalidFetch(false);
-                productService.save(orderItem);
-            }
-            return null;
+            return DatabaseService.runInTransaction(new Callable<Void>() {
+                @Override
+                public Void call() throws Exception {
+                    ProductInfo productInfo = productService.loadOrCreate(orderItem.getArtNumber());
+                    if (productInfo == null)
+                        orderItem.increaseTryCount();
+                    else {
+                        orderItem.setProductInfo(productInfo);
+                        orderItem.setInvalidFetch(false);
+                        productService.save(orderItem);
+                    }
+                    return null;
+                }
+            });
         }
     }
 
@@ -509,10 +540,45 @@ public class OrderViewPage extends BasePage {
             return new Task<OrderData>() {
                 @Override
                 protected OrderData call() throws Exception {
-                    OrderData orderData = new OrderData();
-                    orderData.invoicePdfs = ServiceFacade.getInvoicePdfService().loadBy(currentOrder);
-                    orderData.orderItems = ServiceFacade.getOrderItemService().loadBy(currentOrder);
-                    return orderData;
+                    return DatabaseService.runInTransaction(new Callable<OrderData>() {
+                        @Override
+                        public OrderData call() throws Exception {
+                            OrderData orderData = new OrderData();
+                            orderData.invoicePdfs = ServiceFacade.getInvoicePdfService().loadBy(currentOrder);
+                            orderData.orderItems = ServiceFacade.getOrderItemService().loadBy(currentOrder);
+                            return orderData;
+                        }
+                    });
+                }
+            };
+        }
+    }
+
+    class StoreLackService extends AbstractAsyncService<List<StorageLack>> {
+        @Override
+        protected Task<List<StorageLack>> createTask() {
+            return new Task<List<StorageLack>>() {
+                @Override
+                protected List<StorageLack> call() throws Exception {
+                    return ServiceFacade.getOrderService().calculateOrderInvoiceDiffWithoutCombo(currentOrder, Collections.unmodifiableList(orderData.orderItems));
+                }
+            };
+        }
+    }
+
+    class StoreLackComboService extends AbstractAsyncService<List<StorageComboLack>> {
+
+        @Override
+        protected Task<List<StorageComboLack>> createTask() {
+            return new Task<List<StorageComboLack>>() {
+                @Override
+                protected List<StorageComboLack> call() throws Exception {
+                    try {
+                        return ServiceFacade.getOrderService().calculateOrderInvoiceDiffCombo(currentOrder);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    return null;
                 }
             };
         }

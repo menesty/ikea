@@ -75,9 +75,19 @@ public class ProductService extends Repository<ProductInfo> {
     }
 
     private void updateProductPrice(ProductInfo productInfo) throws IOException {
-        String requestUrl = PRODUCT_DETAIL_URL + productInfo.getOriginalArtNum();
-        Document doc = Jsoup.connect(requestUrl).get();
-        productInfo.setPrice(NumberUtil.parse(doc.select("#price1").text()));
+        Double price = loadProductPrice(productInfo.getOriginalArtNum());
+        if (price != null)
+            productInfo.setPrice(price);
+    }
+
+    public Double loadProductPrice(String artNumber) {
+        try {
+            String requestUrl = PRODUCT_DETAIL_URL + artNumber;
+            Document doc = Jsoup.connect(requestUrl).get();
+            return NumberUtil.parse(doc.select("#price1").text());
+        } catch (IOException e) {
+            return null;
+        }
     }
 
     public ProductInfo findByArtNumber(final String artNumber) {
@@ -337,6 +347,7 @@ public class ProductService extends Repository<ProductInfo> {
 
         productPart.setCount(packageInfo.getBoxCount());
         productPart.setProductInfo(part);
+
         return productPart;
     }
 
@@ -395,7 +406,7 @@ public class ProductService extends Repository<ProductInfo> {
         String NL = System.getProperty("line.separator");
         char delimiter = '\t';
         for (ProductInfo item : items)
-            if (item.isVerified() && item.getPackageInfo().hasAllSize()) {
+            if (item.isVerified()) {
                 text.append(item.getArtNumber()).append(delimiter);
                 text.append(item.getOriginalArtNum()).append(delimiter);
                 text.append(item.getName()).append(delimiter);
@@ -422,46 +433,51 @@ public class ProductService extends Repository<ProductInfo> {
         try (Scanner scanner = new Scanner(Files.newInputStream(FileSystems.getDefault().getPath(path), StandardOpenOption.READ), "utf8")) {
 
             while (scanner.hasNextLine()) {
-                StringTokenizer tokenizer = new StringTokenizer(scanner.nextLine(), "\t");
-                if (tokenizer.countTokens() != 12)
-                    continue;
-                String artNumber = tokenizer.nextToken().trim();
-                String originalArtNum = tokenizer.nextToken().trim();
-                String name = tokenizer.nextToken().trim();
-                String shortName = tokenizer.nextToken().trim();
-                String uaName = tokenizer.nextToken().trim();
-                ProductInfo.Group group = ProductInfo.Group.valueOf(tokenizer.nextToken().trim());
-                double price = getDouble(tokenizer.nextToken());
-                int wat = getInt(tokenizer.nextToken());
+                String line = scanner.nextLine();
+                try {
+                    StringTokenizer tokenizer = new StringTokenizer(line, "\t");
+                    if (tokenizer.countTokens() != 12)
+                        continue;
+                    String artNumber = tokenizer.nextToken().trim();
+                    String originalArtNum = tokenizer.nextToken().trim();
+                    String name = tokenizer.nextToken().trim();
+                    String shortName = tokenizer.nextToken().trim();
+                    String uaName = tokenizer.nextToken().trim();
+                    ProductInfo.Group group = ProductInfo.Group.valueOf(tokenizer.nextToken().trim());
+                    double price = getDouble(tokenizer.nextToken());
+                    int wat = getInt(tokenizer.nextToken());
 
-                int boxCount = getInt(tokenizer.nextToken());
-                int weight = getInt(tokenizer.nextToken());
+                    int boxCount = getInt(tokenizer.nextToken());
+                    int weight = getInt(tokenizer.nextToken());
 
-                int height = getInt(tokenizer.nextToken());
-                int length = getInt(tokenizer.nextToken());
-                int width = getInt(tokenizer.nextToken());
+                    int height = getInt(tokenizer.nextToken());
+                    int length = getInt(tokenizer.nextToken());
+                    int width = getInt(tokenizer.nextToken());
 
-                ProductInfo productInfo = findByArtNumber(artNumber);
+                    ProductInfo productInfo = findByArtNumber(artNumber);
 
-                if (productInfo == null) {
-                    productInfo = new ProductInfo();
-                    productInfo.setArtNumber(artNumber);
-                    productInfo.setOriginalArtNum(originalArtNum);
+                    if (productInfo == null) {
+                        productInfo = new ProductInfo();
+                        productInfo.setArtNumber(artNumber);
+                        productInfo.setOriginalArtNum(originalArtNum);
+                    }
+
+                    productInfo.setName(name);
+                    productInfo.setShortName(shortName);
+                    productInfo.setUaName(uaName);
+                    productInfo.setGroup(group);
+                    productInfo.setPrice(price);
+                    productInfo.setWat(wat);
+                    productInfo.getPackageInfo().setBoxCount(boxCount);
+                    productInfo.getPackageInfo().setWeight(weight);
+                    productInfo.getPackageInfo().setHeight(height);
+                    productInfo.getPackageInfo().setWidth(width);
+                    productInfo.getPackageInfo().setLength(length);
+
+                    save(productInfo);
+                } catch (Exception e) {
+                    logger.log(Level.SEVERE, line, e);
                 }
-
-                productInfo.setName(name);
-                productInfo.setShortName(shortName);
-                productInfo.setUaName(uaName);
-                productInfo.setGroup(group);
-                productInfo.setPrice(price);
-                productInfo.setWat(wat);
-                productInfo.getPackageInfo().setBoxCount(boxCount);
-                productInfo.getPackageInfo().setWeight(weight);
-                productInfo.getPackageInfo().setHeight(height);
-                productInfo.getPackageInfo().setWidth(width);
-                productInfo.getPackageInfo().setLength(length);
-
-                save(productInfo);
 
             }
 
