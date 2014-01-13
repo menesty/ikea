@@ -399,7 +399,7 @@ public class OrderService extends Repository<CustomerOrder> {
                     overCount = NumberUtil.round(overCount - comboPartCount);
                     orderComboData.remove(item.getOriginalArtNumber());
                 }
-                if (overCount != 0)
+                if (overCount > 0)
                     result.add(new StorageLack(item.getProductInfo(), overCount, false));
             } else {
                 if (NumberUtil.round(count - item.getCount()) == 0)
