@@ -47,6 +47,7 @@ public class ProductService extends Repository<ProductInfo> {
     }
 
     public ProductInfo loadOrCreate(String artNumber) {
+        artNumber = ProductInfo.cleanProductId(artNumber);
         try {
             ProductInfo product = findByArtNumber(artNumber);
 
@@ -96,7 +97,7 @@ public class ProductService extends Repository<ProductInfo> {
             if (!started)
                 begin();
 
-            TypedQuery<ProductInfo> query = getEm().createQuery("select entity from " + entityClass.getName() + " entity where entity.artNumber = ?1 or entity.originalArtNum = ?1", entityClass);
+            TypedQuery<ProductInfo> query = getEm().createQuery("select entity from " + entityClass.getName() + " entity where entity.originalArtNum = ?1", entityClass);
             query.setParameter(1, artNumber);
             query.setMaxResults(1);
             return query.getSingleResult();
@@ -127,8 +128,7 @@ public class ProductService extends Repository<ProductInfo> {
 
 
     private ProductInfo loadFromIkea(String artNumber) throws IOException {
-        String preparedArtNumber = artNumber.replaceAll("-", "").trim();
-        String requestUrl = PRODUCT_DETAIL_URL + preparedArtNumber;
+        String requestUrl = PRODUCT_DETAIL_URL + artNumber;
         Document doc = Jsoup.connect(requestUrl).get();
 
         String name = getProductName(doc);
@@ -138,12 +138,11 @@ public class ProductService extends Repository<ProductInfo> {
         }
 
         ProductInfo productInfo = new ProductInfo();
-        productInfo.setArtNumber(artNumber);
-        productInfo.setOriginalArtNum(preparedArtNumber);
+        productInfo.setOriginalArtNum(artNumber);
         productInfo.setPackageInfo(parseProductPackageInfo(doc));
         productInfo.setName(name);
         productInfo.setShortName(generateShortName(name, artNumber, productInfo.getPackageInfo().getBoxCount()));
-        productInfo.setGroup(resolveGroup(preparedArtNumber, doc));
+        productInfo.setGroup(resolveGroup(artNumber, doc));
         productInfo.setPrice(NumberUtil.parse(doc.select("#price1").text()));
         return productInfo;
     }
@@ -280,18 +279,17 @@ public class ProductService extends Repository<ProductInfo> {
     }
 
     private ProductInfo loadComboProduct(String artNumber) throws IOException {
-        String preparedArtNumber = artNumber.replaceAll("-", "").trim();
-        Document doc = Jsoup.connect(PRODUCT_DETAIL_URL + preparedArtNumber).get();
+        artNumber = ProductInfo.cleanProductId(artNumber);
+        Document doc = Jsoup.connect(PRODUCT_DETAIL_URL + artNumber).get();
         String name = getProductName(doc);
 
         if (name == null) {
-            System.out.println("Product not found on site " + preparedArtNumber + " " + PRODUCT_DETAIL_URL + preparedArtNumber);
+            System.out.println("Product not found on site " + artNumber + " " + PRODUCT_DETAIL_URL + artNumber);
             return null;
         }
 
         ProductInfo combo = new ProductInfo();
-        combo.setArtNumber(artNumber);
-        combo.setOriginalArtNum(preparedArtNumber);
+        combo.setOriginalArtNum(artNumber);
         combo.setName(name);
         combo.setShortName(name);
         combo.setGroup(ProductInfo.Group.Combo);
@@ -301,7 +299,7 @@ public class ProductService extends Repository<ProductInfo> {
         List<ProductPart> parts = new ArrayList<>();
         String content = doc.html();
 
-        Document rowDetailsDoc = Jsoup.connect("http://www.ikea.com/pl/pl/catalog/packagepopup/" + preparedArtNumber).get();
+        Document rowDetailsDoc = Jsoup.connect("http://www.ikea.com/pl/pl/catalog/packagepopup/" + artNumber).get();
         Elements rows = rowDetailsDoc.select(".rowContainerPackage .colArticle");
 
         for (Element row : rows) {
@@ -317,7 +315,7 @@ public class ProductService extends Repository<ProductInfo> {
 
     private ProductPart parsePartDetails(String artNumber, String content) {
         ProductPart productPart = new ProductPart();
-        String originalArtNumber = artNumber.replaceAll("\\.|-", "");
+        String originalArtNumber = ProductInfo.cleanProductId(artNumber);
         ProductInfo part = findByArtNumber(artNumber);
 
         if (part == null)
@@ -338,7 +336,6 @@ public class ProductService extends Repository<ProductInfo> {
             part = new ProductInfo();
 
             part.setPackageInfo(packageInfo);
-            part.setArtNumber(artNumber.replace(".", "-"));
             part.setOriginalArtNum(originalArtNumber);
             part.setName(parsePartName(part.getArtNumber(), content));
             part.setShortName(generateShortName(part.getName(), part.getArtNumber(), part.getPackageInfo().getBoxCount()));
@@ -407,7 +404,6 @@ public class ProductService extends Repository<ProductInfo> {
         char delimiter = '\t';
         for (ProductInfo item : items)
             if (item.isVerified()) {
-                text.append(item.getArtNumber()).append(delimiter);
                 text.append(item.getOriginalArtNum()).append(delimiter);
                 text.append(item.getName()).append(delimiter);
                 text.append(item.getShortName()).append(delimiter);
@@ -438,7 +434,6 @@ public class ProductService extends Repository<ProductInfo> {
                     StringTokenizer tokenizer = new StringTokenizer(line, "\t");
                     if (tokenizer.countTokens() != 12)
                         continue;
-                    String artNumber = tokenizer.nextToken().trim();
                     String originalArtNum = tokenizer.nextToken().trim();
                     String name = tokenizer.nextToken().trim();
                     String shortName = tokenizer.nextToken().trim();
@@ -454,11 +449,10 @@ public class ProductService extends Repository<ProductInfo> {
                     int length = getInt(tokenizer.nextToken());
                     int width = getInt(tokenizer.nextToken());
 
-                    ProductInfo productInfo = findByArtNumber(artNumber);
+                    ProductInfo productInfo = findByArtNumber(originalArtNum);
 
                     if (productInfo == null) {
                         productInfo = new ProductInfo();
-                        productInfo.setArtNumber(artNumber);
                         productInfo.setOriginalArtNum(originalArtNum);
                     }
 

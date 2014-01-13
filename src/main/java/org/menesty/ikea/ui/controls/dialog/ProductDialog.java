@@ -151,8 +151,6 @@ public class ProductDialog extends BaseDialog {
 
         private ProductIdField productIdField;
 
-        private TextField originalArtNumber;
-
         private TextField name;
 
         private TextField shortName;
@@ -166,11 +164,8 @@ public class ProductDialog extends BaseDialog {
         public ProductForm() {
 
 
-            addRow("Art Number", productIdField = new ProductIdField());
-            addRow("O Art Number", originalArtNumber = new TextField());
-
-            originalArtNumber.setEditable(false);
-            productIdField.setEditable(false);
+            addRow("Product Id", productIdField = new ProductIdField());
+            productIdField.setDisable(true);
 
             addRow("Name", name = new TextField());
 
@@ -204,7 +199,7 @@ public class ProductDialog extends BaseDialog {
             back.setOnMousePressed(new EventHandler<MouseEvent>() {
                 @Override
                 public void handle(MouseEvent mouseEvent) {
-                    priceRefreshService.productId.setValue(originalArtNumber.getText());
+                    priceRefreshService.productId.setValue(productIdField.getProductId());
                     priceRefreshService.restart();
                 }
             });
@@ -231,12 +226,8 @@ public class ProductDialog extends BaseDialog {
             this.name.setText(name);
         }
 
-        public void setArtNumber(String artNumber) {
-            this.productIdField.setProductId(artNumber);
-        }
-
         public void setOriginalArtNumber(String originalArtNumber) {
-            this.originalArtNumber.setText(originalArtNumber);
+            this.productIdField.setProductId(originalArtNumber);
         }
 
         public void setShortName(String shortName) {
@@ -347,6 +338,7 @@ public class ProductDialog extends BaseDialog {
         if (hasParts) {
             subProductTableView.setItems(FXCollections.observableArrayList(productInfo.getParts()));
             subProductTableView.getItems().add(0, new ProductPart(0, currentProductInfo));
+            if(!containRaw(subProductTableView))
             addRow(rowCount() - 1, subProductTableView);
         } else
             removeRow(subProductTableView);
@@ -356,7 +348,6 @@ public class ProductDialog extends BaseDialog {
     }
 
     private void bindProperties() {
-        productForm.setArtNumber(currentProductInfo.getArtNumber());
         productForm.setOriginalArtNumber(currentProductInfo.getOriginalArtNum());
         productForm.setName(currentProductInfo.getName());
         productForm.setShortName(currentProductInfo.getShortName());
@@ -406,7 +397,7 @@ public class ProductDialog extends BaseDialog {
 
     public static void browse(String artNumber) {
         try {
-            artNumber = artNumber.replaceAll("\\D+", "");
+            artNumber = ProductInfo.cleanProductId(artNumber);
             URI uri = new URI("http://www.ikea.com/pl/pl/catalog/products/" + artNumber);
             Desktop.getDesktop().browse(uri);
         } catch (URISyntaxException | IOException e) {

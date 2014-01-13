@@ -294,7 +294,7 @@ public class OrderViewPage extends BasePage {
             if (orderItemSearchForm.type != null && orderItemSearchForm.type != orderItem.getType())
                 continue;
 
-            if (StringUtils.isNotBlank(orderItemSearchForm.artNumber) && !orderItem.getArtNumber().contains(orderItemSearchForm.artNumber))
+            if (StringUtils.isNotBlank(orderItemSearchForm.artNumber) && !orderItem.getArtNumber().contains(ProductInfo.cleanProductId(orderItemSearchForm.artNumber)))
                 continue;
 
             if (orderItemSearchForm.productGroup != null &&

@@ -139,7 +139,6 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
         }
         if (productInfo == null) {
             productInfo = new ProductInfo();
-            productInfo.setArtNumber(product.getArtNumber());
             productInfo.setOriginalArtNum(product.getOriginalArtNumber());
             productInfo.setName(product.getName());
             productInfo.setShortName(ProductService.generateShortName(product.getName(), product.getArtNumber(), 1));

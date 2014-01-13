@@ -34,7 +34,7 @@ public class OrderItemTableView extends TableView<OrderItem> {
 
         {
             TableColumn<OrderItem, String> column = new TableColumn<>("Art # ");
-            column.setMinWidth(80);
+            column.setMinWidth(85);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderItem, String>, ObservableValue<String>>() {
                 @Override
                 public ObservableValue<String> call(TableColumn.CellDataFeatures<OrderItem, String> item) {

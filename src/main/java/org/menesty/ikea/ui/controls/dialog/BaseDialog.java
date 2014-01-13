@@ -96,6 +96,10 @@ public class BaseDialog extends StackPane {
         return content.getChildren().size();
     }
 
+    protected boolean containRaw(Node row) {
+        return content.getChildren().contains(row);
+    }
+
     public void onCancel() {
 
     }

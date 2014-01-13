@@ -32,14 +32,14 @@ public class StorageLackComboComponent extends HBox {
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<StorageComboLack, String>, ObservableValue<String>>() {
                 @Override
                 public ObservableValue<String> call(TableColumn.CellDataFeatures<StorageComboLack, String> item) {
-                    return new PathProperty<>(item.getValue(), "productInfo.originArtNumber");
+                    return new PathProperty<>(item.getValue(), "productInfo.originalArtNum");
                 }
             });
             tableView.getColumns().add(column);
         }
         {
             TableColumn<StorageComboLack, String> column = new TableColumn<>("Product Id");
-            column.setPrefWidth(80);
+            column.setPrefWidth(100);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<StorageComboLack, String>, ObservableValue<String>>() {
                 @Override
                 public ObservableValue<String> call(TableColumn.CellDataFeatures<StorageComboLack, String> item) {
@@ -93,14 +93,14 @@ public class StorageLackComboComponent extends HBox {
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<StorageComboPartLack, String>, ObservableValue<String>>() {
                 @Override
                 public ObservableValue<String> call(TableColumn.CellDataFeatures<StorageComboPartLack, String> item) {
-                    return new PathProperty<>(item.getValue(), "productInfo.originArtNumber");
+                    return new PathProperty<>(item.getValue(), "productInfo.originalArtNum");
                 }
             });
             tableItemView.getColumns().add(column);
         }
         {
             TableColumn<StorageComboPartLack, String> column = new TableColumn<>("Product Id");
-            column.setPrefWidth(80);
+            column.setPrefWidth(90);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<StorageComboPartLack, String>, ObservableValue<String>>() {
                 @Override
                 public ObservableValue<String> call(TableColumn.CellDataFeatures<StorageComboPartLack, String> item) {

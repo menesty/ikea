@@ -78,7 +78,7 @@ public class OrderItemDialog extends BaseDialog {
                 @Override
                 public void invalidated(Observable observable) {
                     if (productId.getProductId() != null)
-                        productId.setProductId(productId.getProductId().replaceAll("[\\.-]", ""));
+                        productId.setProductId(ProductInfo.cleanProductId(productId.getProductId()));
 
                     if (!productId.getField().isFocused() && productId.isEditable()) {
                         ProductInfo productInfo;

@@ -1,6 +1,5 @@
 package org.menesty.ikea.processor.invoice;
 
-import org.apache.commons.lang.StringUtils;
 import org.menesty.ikea.domain.Identifiable;
 import org.menesty.ikea.domain.InvoicePdf;
 import org.menesty.ikea.domain.PackageInfo;
@@ -101,10 +100,7 @@ public class RawInvoiceProductItem extends Identifiable {
     }
 
     public String getPrepareArtNumber() {
-        String artNumber = StringUtils.leftPad(this.artNumber.trim(), 8, '0');
-        int lastPos = artNumber.length();
-        artNumber = artNumber.substring(0, lastPos - 5) + "-" + artNumber.substring(lastPos - 5, lastPos - 2) + "-" + artNumber.substring(lastPos - 2, lastPos);
-        return artNumber;
+        return ProductInfo.formatProductId(artNumber);
     }
 
     public void setArtNumber(String artNumber) {
