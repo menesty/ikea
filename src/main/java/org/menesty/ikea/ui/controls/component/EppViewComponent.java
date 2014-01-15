@@ -65,6 +65,8 @@ public abstract class EppViewComponent extends StackPane {
 
     private InvalidationListener saveBtnUpdater;
 
+    private static final int MAX_ZESTAV_PRICE = 460;
+
     public EppViewComponent(final Stage stage) {
         loadingPane = new LoadingPane();
         loadService = new LoadService();
@@ -376,12 +378,12 @@ public abstract class EppViewComponent extends StackPane {
 
         }
 
-        int zestavCount = (int) (totalPrice.doubleValue() / 460);
+        int zestavCount = (int) (totalPrice.doubleValue() / MAX_ZESTAV_PRICE);
 
         for (int i = 0; i < zestavCount; i++)
-            result.add(createZestav(groupMap, i, 460));
+            result.add(createZestav(groupMap, i, MAX_ZESTAV_PRICE));
 
-        BigDecimal diff = totalPrice.subtract(BigDecimal.valueOf(zestavCount * 460));
+        BigDecimal diff = totalPrice.subtract(BigDecimal.valueOf(zestavCount * MAX_ZESTAV_PRICE));
 
         if (diff.doubleValue() > 0)
             result.add(createZestav(groupMap, zestavCount, diff.doubleValue()));

@@ -79,6 +79,9 @@ public class InvoiceSyncService extends AbstractAsyncService<Void> {
         item.shortName = invoiceItem.getShortName();
         item.zestav = invoiceItem.isZestav();
         item.visible = invoiceItem.isVisible();
+        item.weight =  invoiceItem.getWeight();
+        item.productId = invoiceItem.getOriginArtNumber();
+
         return item;
     }
 

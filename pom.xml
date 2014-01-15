@@ -53,9 +53,9 @@
                     <mainClass>org.menesty.ikea.IkeaApplication</mainClass>
 
                     <!-- only required if signing the jar file -->
-                    <keyStoreAlias>example-user</keyStoreAlias>
+                    <!--<keyStoreAlias>example-user</keyStoreAlias>
                     <keyStorePassword>example-password</keyStorePassword>
-                    <allPermissions>true</allPermissions>
+                    <allPermissions>true</allPermissions>-->
 
                 </configuration>
             </plugin>

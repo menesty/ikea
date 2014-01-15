@@ -165,7 +165,7 @@ public class ProductDialog extends BaseDialog {
 
 
             addRow("Product Id", productIdField = new ProductIdField());
-            productIdField.setDisable(true);
+            productIdField.getField().setDisable(true);
 
             addRow("Name", name = new TextField());
 

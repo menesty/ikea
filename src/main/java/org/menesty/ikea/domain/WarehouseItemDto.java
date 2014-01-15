@@ -5,8 +5,6 @@ package org.menesty.ikea.domain;
  */
 public class WarehouseItemDto {
 
-    public int clientId;
-
     public String productNumber;
 
     public String shortName;
@@ -27,6 +25,5 @@ public class WarehouseItemDto {
 
     public int invoicePdf;
 
-
-
+    public String productId;
 }

@@ -39,6 +39,14 @@ public class RawInvoiceProductItem extends Identifiable {
     @ManyToOne
     private ProductInfo productInfo;
 
+    private static final int MAX_TEXTILE_DIMENSION = 2050;
+
+    private static final int MAX_TEXTILE_WEIGHT = 3500;
+
+    private static final int MAX_DIMENSION = 450;
+
+    private static final int MAX_WEIGHT = 3000;
+
     public ProductInfo getProductInfo() {
         return productInfo;
     }
@@ -122,12 +130,12 @@ public class RawInvoiceProductItem extends Identifiable {
     public boolean isSeparate() {
         PackageInfo packageInfo = getProductInfo().getPackageInfo();
         if (ProductInfo.Group.Textile == getProductInfo().getGroup()) {
-            if (packageInfo.getWeight() > 3500 || packageInfo.getLength() > 2050 || packageInfo.getWidth() > 2050 || packageInfo.getHeight() > 2050)
+            if (packageInfo.getWeight() > MAX_TEXTILE_WEIGHT || packageInfo.getLength() > MAX_TEXTILE_DIMENSION || packageInfo.getWidth() > MAX_TEXTILE_DIMENSION || packageInfo.getHeight() > MAX_TEXTILE_DIMENSION)
                 return true;
             return false;
         }
-        if (packageInfo.getWeight() > 3000 || getPrice() * getCount() > 150 || (
-                packageInfo.getLength() > 450 || packageInfo.getWidth() > 450 || packageInfo.getHeight() > 450
+        if (packageInfo.getWeight() > MAX_WEIGHT || getPrice() * getCount() > 150 || (
+                packageInfo.getLength() > MAX_DIMENSION || packageInfo.getWidth() > MAX_DIMENSION || packageInfo.getHeight() > MAX_DIMENSION
         ))
             return true;
         return false;
