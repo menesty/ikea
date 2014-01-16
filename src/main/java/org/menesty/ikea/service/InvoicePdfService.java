@@ -1,7 +1,11 @@
 package org.menesty.ikea.service;
 
+import javafx.concurrent.WorkerStateEvent;
+import javafx.event.EventHandler;
+import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.util.PDFTextStripper;
+import org.menesty.ikea.db.DatabaseService;
 import org.menesty.ikea.domain.CustomerOrder;
 import org.menesty.ikea.domain.InvoicePdf;
 import org.menesty.ikea.domain.ProductInfo;
@@ -11,11 +15,14 @@ import org.menesty.ikea.util.NumberUtil;
 
 import javax.persistence.TypedQuery;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -89,6 +96,15 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
             invoicePdf.setPrice(price);
         }
         return products;
+    }
+
+    public static void main(String... arg) throws IOException, InterruptedException, ExecutionException {
+        InvoicePdfService service = new InvoicePdfService();
+        try {
+            service.parseInvoiceItems(new InvoicePdf(), new FileInputStream("D:\\tmp\\33654 katow.pdf"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private InvoicePdf parseInvoice(final CustomerOrder order, final String name, final InputStream stream) throws IOException {
@@ -183,6 +199,7 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
                 commit();
         } catch (Exception e) {
             rollback();
+            e.printStackTrace();
         }
     }
 

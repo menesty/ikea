@@ -1,5 +1,6 @@
 package org.menesty.ikea.service;
 
+import org.menesty.ikea.domain.CustomerOrder;
 import org.menesty.ikea.domain.InvoicePdf;
 import org.menesty.ikea.processor.invoice.InvoiceItem;
 
@@ -37,9 +38,12 @@ public class InvoiceItemService extends Repository<InvoiceItem> {
     }
 
     public void deleteBy(InvoicePdf currentInvoicePdf) {
-        begin();
+        boolean started = isActive();
+        if (!started)
+            begin();
         remove(load(currentInvoicePdf));
-        commit();
+        if (!started)
+            commit();
         /*try {
             remove(load(currentInvoicePdf));
             begin();
@@ -51,5 +55,16 @@ public class InvoiceItemService extends Repository<InvoiceItem> {
         } finally {
             commit();
         }*/
+    }
+
+    public List<InvoiceItem> loadBy(CustomerOrder order) {
+        try {
+            begin();
+            TypedQuery<InvoiceItem> query = getEm().createQuery("select entity from " + entityClass.getName() + " entity left join entity.invoicePdf  invoicePdf where invoicePdf.customerOrder.id=?1", entityClass);
+            query.setParameter(1, order.getId());
+            return query.getResultList();
+        } finally {
+            commit();
+        }
     }
 }

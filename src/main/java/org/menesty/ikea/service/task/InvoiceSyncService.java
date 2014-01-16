@@ -67,19 +67,17 @@ public class InvoiceSyncService extends AbstractAsyncService<Void> {
         }
     }
 
-    private WarehouseItemDto convert(Integer orderId, InvoicePdf invoicePdf, InvoiceItem invoiceItem) {
+    private WarehouseItemDto convert(Integer orderId, InvoiceItem invoiceItem) {
         WarehouseItemDto item = new WarehouseItemDto();
         item.allowed = true;
-        item.clientId = invoiceItem.getId();
         item.count = invoiceItem.getCount();
         item.orderId = orderId;
         item.price = invoiceItem.getPriceWat();
         item.productNumber = invoiceItem.getArtNumber();
-        item.invoicePdf = invoicePdf.getId();
         item.shortName = invoiceItem.getShortName();
         item.zestav = invoiceItem.isZestav();
         item.visible = invoiceItem.isVisible();
-        item.weight =  invoiceItem.getWeight();
+        item.weight = invoiceItem.getWeight();
         item.productId = invoiceItem.getOriginArtNumber();
 
         return item;
@@ -93,9 +91,8 @@ public class InvoiceSyncService extends AbstractAsyncService<Void> {
             protected Void call() throws Exception {
                 List<WarehouseItemDto> result = new ArrayList<>();
                 //TODO FIX me change to one query
-                for (InvoicePdf invoicePdf : ServiceFacade.getInvoicePdfService().loadBy(_order))
-                    for (InvoiceItem item : ServiceFacade.getInvoiceItemService().load(invoicePdf))
-                        result.add(convert(_order.getId(), invoicePdf, item));
+                for (InvoiceItem item : ServiceFacade.getInvoiceItemService().loadBy(_order))
+                    result.add(convert(_order.getId(), item));
 
                 try {
                     sendData(new Gson().toJson(result));

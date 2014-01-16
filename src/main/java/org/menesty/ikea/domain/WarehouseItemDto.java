@@ -23,7 +23,5 @@ public class WarehouseItemDto {
 
     public int orderId;
 
-    public int invoicePdf;
-
     public String productId;
 }
