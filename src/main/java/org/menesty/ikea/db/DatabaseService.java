@@ -20,9 +20,9 @@ public class DatabaseService {
 
     private static ExecutorService databaseExecutor;
 
-    private static int initialized = -1;
+    static int initialized = -1;
 
-    private static EntityManagerFactory entityManagerFactory;
+    static EntityManagerFactory entityManagerFactory;
 
     private static ThreadLocal<EntityManager> entityManagerLocal = new ThreadLocal<EntityManager>() {
         @Override
@@ -42,6 +42,7 @@ public class DatabaseService {
     public static Task<Void> init() {
         if (initialized >= 0)
             throw new RuntimeException("Already initialized or initialization in progress");
+
         initialized = 0;
         databaseExecutor = Executors.newFixedThreadPool(2, new DatabaseThreadFactory());
 
@@ -52,13 +53,16 @@ public class DatabaseService {
 
     public static <T> T runInTransaction(Callable<T> callable) {
         begin();
+
         try {
-            return callable.call();
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
+            T result = callable.call();
             commit();
+            return result;
+        } catch (Exception e) {
+            rollback();
+            logger.log(Level.SEVERE, "Exception occurred when run in transaction", e);
         }
+
         return null;
     }
 
@@ -88,9 +92,13 @@ public class DatabaseService {
     public static void close() {
         if (!isInitialized())
             throw new RuntimeException("Database not initialized");
+
         clearManager();
         entityManagerFactory.close();
-        databaseExecutor.shutdown();
+
+        if (databaseExecutor != null)
+            databaseExecutor.shutdown();
+
         logger.info("close db connections");
     }
 

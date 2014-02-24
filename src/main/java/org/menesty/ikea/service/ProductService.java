@@ -43,7 +43,6 @@ public class ProductService extends Repository<ProductInfo> {
     private static final String KATOWICE = "306";
 
     public ProductService() {
-
     }
 
     public ProductInfo loadOrCreate(String artNumber) {
@@ -77,6 +76,7 @@ public class ProductService extends Repository<ProductInfo> {
 
     private void updateProductPrice(ProductInfo productInfo) throws IOException {
         Double price = loadProductPrice(productInfo.getOriginalArtNum());
+
         if (price != null)
             productInfo.setPrice(price);
     }
@@ -132,8 +132,9 @@ public class ProductService extends Repository<ProductInfo> {
         Document doc = Jsoup.connect(requestUrl).get();
 
         String name = getProductName(doc);
+
         if (name == null) {
-            System.out.println("Product not found on site " + artNumber + " " + requestUrl);
+            logger.info(String.format("Product not found on site : %1$s url: %2$s", artNumber, requestUrl));
             return null;
         }
 
@@ -144,12 +145,14 @@ public class ProductService extends Repository<ProductInfo> {
         productInfo.setShortName(generateShortName(name, artNumber, productInfo.getPackageInfo().getBoxCount()));
         productInfo.setGroup(resolveGroup(artNumber, doc));
         productInfo.setPrice(NumberUtil.parse(doc.select("#price1").text()));
+
         return productInfo;
     }
 
     private PackageInfo parseProductPackageInfo(Document document) {
         PackageInfo packageInfo = parsePartPackageInfo(document.html());
         packageInfo.setBoxCount(getBoxCount(document));
+
         if (!packageInfo.hasAllSize()) {
             String productSize = document.select("#measuresPart #metric").text();
 
@@ -197,6 +200,7 @@ public class ProductService extends Repository<ProductInfo> {
     private ProductInfo.Group resolveGroup(String artNumber, Document productDetails) throws IOException {
         Document doc = Jsoup.connect(PRODUCT_AVAILABLE_URL + artNumber).get();
         Elements elements = doc.select("localStore[buCode=" + KATOWICE + "] findIt type");
+
         if (!elements.isEmpty())
             if ("BOX_SHELF".equals(elements.get(0).text()))
                 return ProductInfo.Group.Regal;
@@ -206,13 +210,14 @@ public class ProductService extends Repository<ProductInfo> {
 
         Matcher m = Patterns.WEIGHT_PATTERN.matcher(elements.text());
         double weight = 0;
-        if (m.find()) {
+
+        if (m.find())
             if ((weight = Double.valueOf(m.group(1).replace(',', '.'))) > 19)
                 return ProductInfo.Group.Full;
-        }
 
         String breadCrumbs = productDetails.select("#breadCrumbs").text();
         String content = productDetails.select(".rightContent").text();
+
         if (breadCrumbs.contains("dziec"))
             return ProductInfo.Group.Kids;
         else if (breadCrumbs.contains("Oświe") || breadCrumbs.contains("Lamp") || breadCrumbs.contains("Klosz") || breadCrumbs.contains("Kabl") || breadCrumbs.contains("Żarówk"))
@@ -250,8 +255,6 @@ public class ProductService extends Repository<ProductInfo> {
                 breadCrumbs.contains("Kołdry") || breadCrumbs.contains("Pościel") || breadCrumbs.contains("Narzuty") ||
                 breadCrumbs.contains("Tkanin") || breadCrumbs.contains("Zasłony i rolety") || breadCrumbs.contains("Koce") || breadCrumbs.contains("Ochraniacze na materace"))
             return ProductInfo.Group.Textile;
-
-
         else if (breadCrumbs.contains("Bezpieczeństwo") || breadCrumbs.contains("IKEA FAMILY") || breadCrumbs.contains("AGD / Przechow") || breadCrumbs.contains("Rozwiązania mobilne") || breadCrumbs.contains("Rozwiązania na ścian"))
             return ProductInfo.Group.Family;
         else if (content.contains("dziec"))
@@ -275,10 +278,11 @@ public class ProductService extends Repository<ProductInfo> {
             shortNameLength = name.length();
 
         shortName = shortNameLength != 0 ? name.substring(0, shortNameLength - 1) + shortName : shortName;
+
         return shortName;
     }
 
-    private ProductInfo loadComboProduct(String artNumber) throws IOException {
+    protected ProductInfo loadComboProduct(String artNumber) throws IOException {
         artNumber = ProductInfo.cleanProductId(artNumber);
         Document doc = Jsoup.connect(PRODUCT_DETAIL_URL + artNumber).get();
         String name = getProductName(doc);
@@ -310,6 +314,7 @@ public class ProductService extends Repository<ProductInfo> {
         }
 
         combo.setParts(parts);
+
         return combo;
     }
 
@@ -329,6 +334,7 @@ public class ProductService extends Repository<ProductInfo> {
         Matcher m = p.matcher(content);
 
         PackageInfo packageInfo = new PackageInfo();
+
         if (m.find())
             packageInfo = parsePartPackageInfo(m.group(1));
 
@@ -351,8 +357,10 @@ public class ProductService extends Repository<ProductInfo> {
     private String parsePartName(String artNumber, String content) {
         Pattern partNamePattern = Pattern.compile("\\{\"attachmentName\":\"([\\w\\sążźćńłśęóĄÅŻŹĆŃŁŚĘÓ]+)\",\"articleNumber\":\"" + artNumber + "\".*?\\}");
         Matcher m = partNamePattern.matcher(content);
+
         if (m.find())
             return m.group(1);
+
         return "";
     }
 
@@ -378,6 +386,7 @@ public class ProductService extends Repository<ProductInfo> {
         Root<ProductInfo> root = cq.from(entityClass);
 
         Predicate where = cb.conjunction();
+
         if (data.artNumber != null) {
             where = cb.or(cb.like(root.<String>get("artNumber"), "%" + data.artNumber + "%"), cb.like(root.<String>get("originalArtNum"), "%" + data.artNumber + "%"));
             where = cb.and(where);
@@ -402,6 +411,7 @@ public class ProductService extends Repository<ProductInfo> {
         StringBuilder text = new StringBuilder();
         String NL = System.getProperty("line.separator");
         char delimiter = '\t';
+
         for (ProductInfo item : items)
             if (item.isVerified()) {
                 text.append(item.getOriginalArtNum()).append(delimiter);
@@ -418,6 +428,7 @@ public class ProductService extends Repository<ProductInfo> {
                 text.append(item.getPackageInfo().getLength()).append(delimiter);
                 text.append(item.getPackageInfo().getWidth()).append(NL);
             }
+
         try (OutputStream os = Files.newOutputStream(FileSystems.getDefault().getPath(path), StandardOpenOption.CREATE_NEW)) {
             os.write(text.toString().getBytes("utf8"));
         } catch (IOException e) {
@@ -427,13 +438,14 @@ public class ProductService extends Repository<ProductInfo> {
 
     public void importProduct(String path) {
         try (Scanner scanner = new Scanner(Files.newInputStream(FileSystems.getDefault().getPath(path), StandardOpenOption.READ), "utf8")) {
-
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
+
                 try {
                     StringTokenizer tokenizer = new StringTokenizer(line, "\t");
-                    if (tokenizer.countTokens() != 12)
-                        continue;
+
+                    if (tokenizer.countTokens() != 12) continue;
+
                     String originalArtNum = tokenizer.nextToken().trim();
                     String name = tokenizer.nextToken().trim();
                     String shortName = tokenizer.nextToken().trim();
@@ -472,7 +484,6 @@ public class ProductService extends Repository<ProductInfo> {
                 } catch (Exception e) {
                     logger.log(Level.SEVERE, line, e);
                 }
-
             }
 
         } catch (IOException e) {

@@ -134,8 +134,12 @@ public class ProductInfo extends Identifiable {
     }
 
     public static String cleanProductId(final String artNumber) {
+        if (artNumber == null || artNumber.length() < 1)
+            throw new RuntimeException("ArtNumber can't be null or less then one length");
+
         String productId = artNumber;
         boolean prefix = false;
+
         if (Character.isAlphabetic(productId.charAt(0))) {
             productId = productId.substring(1);
             prefix = true;
