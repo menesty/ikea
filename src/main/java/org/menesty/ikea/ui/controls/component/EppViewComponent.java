@@ -170,6 +170,7 @@ public abstract class EppViewComponent extends StackPane {
                 invoiceEppTableView.getItems().add(item);
             }
         });
+
         eppToolBar.getItems().add(addBtn);
 
         delBtn = new Button(null, ImageFactory.createMinus32Icon());
@@ -238,6 +239,7 @@ public abstract class EppViewComponent extends StackPane {
 
             }
         });
+
         eppToolBar.getItems().add(balanceBtn);
 
         Region spacer = new Region();
@@ -264,8 +266,8 @@ public abstract class EppViewComponent extends StackPane {
 
             }
         });
-        eppToolBar.getItems().add(reloadBtn);
 
+        eppToolBar.getItems().add(reloadBtn);
 
         invoiceEppTableView.getSelectionModel().selectedItemProperty().addListener(new InvalidationListener() {
             @Override
@@ -336,15 +338,16 @@ public abstract class EppViewComponent extends StackPane {
 
     public void setActive(final InvoicePdf invoicePdf) {
         currentInvoicePdf = invoicePdf;
+
         if (invoicePdf != null) {
             artPrefix = ((int) NumberUtil.parse(invoicePdf.customerOrder.getName())) + "";
             loadService.setInvoicePdf(invoicePdf);
             loadService.restart();
             invoicePrice = InvoicePdf.getTotalPrice(currentInvoicePdf.getProducts());
             eppStatusPanel.setTotal(invoicePrice.doubleValue());
-        } else {
+        } else
             updateViews(new ArrayList<InvoiceItem>());
-        }
+
         eppToolBar.setDisable(invoicePdf == null);
     }
 
@@ -365,10 +368,12 @@ public abstract class EppViewComponent extends StackPane {
         BigDecimal totalPrice = BigDecimal.ZERO;
 
         Map<ProductInfo.Group, Integer> groupMap = new HashMap<>();
+
         for (RawInvoiceProductItem item : filtered) {
             totalPrice = totalPrice.add(BigDecimal.valueOf(item.getTotal()));
 
             Integer groupCount = groupMap.get(item.getProductInfo().getGroup());
+
             if (groupCount == null)
                 groupCount = 1;
             else
@@ -397,6 +402,7 @@ public abstract class EppViewComponent extends StackPane {
     private InvoiceItem createZestav(Map<ProductInfo.Group, Integer> groupMap, int index, double price) {
         String subName = "";
         int maxIndex = 0;
+
         for (Map.Entry<ProductInfo.Group, Integer> entry : groupMap.entrySet())
             if (entry.getValue() > maxIndex) {
                 maxIndex = entry.getValue();

@@ -12,8 +12,8 @@ import javafx.scene.layout.Priority;
 import javafx.util.Callback;
 import org.menesty.ikea.domain.StorageComboLack;
 import org.menesty.ikea.domain.StorageComboPartLack;
-import org.menesty.ikea.ui.controls.PathProperty;
 import org.menesty.ikea.ui.table.ProductBrowseColumn;
+import org.menesty.ikea.util.ColumnUtil;
 
 import java.util.List;
 
@@ -29,46 +29,26 @@ public class StorageLackComboComponent extends HBox {
         tableView = new TableView<>();
         {
             ProductBrowseColumn<StorageComboLack> column = new ProductBrowseColumn<>();
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<StorageComboLack, String>, ObservableValue<String>>() {
-                @Override
-                public ObservableValue<String> call(TableColumn.CellDataFeatures<StorageComboLack, String> item) {
-                    return new PathProperty<>(item.getValue(), "productInfo.originalArtNum");
-                }
-            });
+            column.setCellValueFactory(ColumnUtil.<StorageComboLack, String>column("productInfo.originalArtNum"));
             tableView.getColumns().add(column);
         }
         {
             TableColumn<StorageComboLack, String> column = new TableColumn<>("Product Id");
             column.setPrefWidth(100);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<StorageComboLack, String>, ObservableValue<String>>() {
-                @Override
-                public ObservableValue<String> call(TableColumn.CellDataFeatures<StorageComboLack, String> item) {
-                    return new PathProperty<>(item.getValue(), "productInfo.artNumber");
-                }
-            });
+            column.setCellValueFactory(ColumnUtil.<StorageComboLack, String>column("productInfo.artNumber"));
             tableView.getColumns().add(column);
         }
         {
             TableColumn<StorageComboLack, String> column = new TableColumn<>("Name");
             column.setPrefWidth(300);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<StorageComboLack, String>, ObservableValue<String>>() {
-                @Override
-                public ObservableValue<String> call(TableColumn.CellDataFeatures<StorageComboLack, String> item) {
-                    return new PathProperty<>(item.getValue(), "productInfo.shortName");
-                }
-            });
+            column.setCellValueFactory(ColumnUtil.<StorageComboLack, String>column("productInfo.shortName"));
 
             tableView.getColumns().add(column);
         }
         {
             TableColumn<StorageComboLack, Double> column = new TableColumn<>("Price");
             column.setMinWidth(60);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<StorageComboLack, Double>, ObservableValue<Double>>() {
-                @Override
-                public ObservableValue<Double> call(TableColumn.CellDataFeatures<StorageComboLack, Double> item) {
-                    return new PathProperty<>(item.getValue(), "productInfo.price");
-                }
-            });
+            column.setCellValueFactory(ColumnUtil.<StorageComboLack, Double>column("productInfo.price"));
 
             tableView.getColumns().add(column);
         }
@@ -90,47 +70,27 @@ public class StorageLackComboComponent extends HBox {
         tableItemView = new TableView<>();
         {
             ProductBrowseColumn<StorageComboPartLack> column = new ProductBrowseColumn<>();
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<StorageComboPartLack, String>, ObservableValue<String>>() {
-                @Override
-                public ObservableValue<String> call(TableColumn.CellDataFeatures<StorageComboPartLack, String> item) {
-                    return new PathProperty<>(item.getValue(), "productInfo.originalArtNum");
-                }
-            });
+            column.setCellValueFactory(ColumnUtil.<StorageComboPartLack, String>column("productInfo.originalArtNum"));
             tableItemView.getColumns().add(column);
         }
         {
             TableColumn<StorageComboPartLack, String> column = new TableColumn<>("Product Id");
             column.setPrefWidth(90);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<StorageComboPartLack, String>, ObservableValue<String>>() {
-                @Override
-                public ObservableValue<String> call(TableColumn.CellDataFeatures<StorageComboPartLack, String> item) {
-                    return new PathProperty<>(item.getValue(), "productInfo.artNumber");
-                }
-            });
+            column.setCellValueFactory(ColumnUtil.<StorageComboPartLack, String>column("productInfo.artNumber"));
             tableItemView.getColumns().add(column);
         }
 
         {
             TableColumn<StorageComboPartLack, String> column = new TableColumn<>("Name");
             column.setPrefWidth(190);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<StorageComboPartLack, String>, ObservableValue<String>>() {
-                @Override
-                public ObservableValue<String> call(TableColumn.CellDataFeatures<StorageComboPartLack, String> item) {
-                    return new PathProperty<>(item.getValue(), "productInfo.shortName");
-                }
-            });
+            column.setCellValueFactory(ColumnUtil.<StorageComboPartLack, String>column("productInfo.shortName"));
 
             tableItemView.getColumns().add(column);
         }
         {
             TableColumn<StorageComboPartLack, Double> column = new TableColumn<>("Price");
             column.setMinWidth(30);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<StorageComboPartLack, Double>, ObservableValue<Double>>() {
-                @Override
-                public ObservableValue<Double> call(TableColumn.CellDataFeatures<StorageComboPartLack, Double> item) {
-                    return new PathProperty<>(item.getValue(), "productInfo.price");
-                }
-            });
+            column.setCellValueFactory(ColumnUtil.<StorageComboPartLack, Double>column("productInfo.price"));
 
             tableItemView.getColumns().add(column);
         }
@@ -138,12 +98,7 @@ public class StorageLackComboComponent extends HBox {
         {
             TableColumn<StorageComboPartLack, Double> column = new TableColumn<>("Lack Price");
             column.setMinWidth(60);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<StorageComboPartLack, Double>, ObservableValue<Double>>() {
-                @Override
-                public ObservableValue<Double> call(TableColumn.CellDataFeatures<StorageComboPartLack, Double> item) {
-                    return new PathProperty<>(item.getValue(), "totalLackPrice");
-                }
-            });
+            column.setCellValueFactory(ColumnUtil.<StorageComboPartLack, Double>column("totalLackPrice"));
 
             tableItemView.getColumns().add(column);
         }

@@ -147,7 +147,7 @@ public class ProductDialog extends BaseDialog {
 
     private class ProductForm extends FormPanel {
 
-        private Label shorNameCount;
+        private Label shortNameCount;
 
         private ProductIdField productIdField;
 
@@ -175,13 +175,13 @@ public class ProductDialog extends BaseDialog {
             shortName.textProperty().addListener(new InvalidationListener() {
                 @Override
                 public void invalidated(Observable observable) {
-                    shorNameCount.setText(shortName.getText().length() + "");
+                    shortNameCount.setText(shortName.getText().length() + "");
                 }
             });
             HBox.setHgrow(shortName, Priority.ALWAYS);
-            hbox.getChildren().addAll(shortName, shorNameCount = new Label());
-            shorNameCount.setMaxWidth(20);
-            HBox.setMargin(shorNameCount, new Insets(0, 0, 0, 2));
+            hbox.getChildren().addAll(shortName, shortNameCount = new Label());
+            shortNameCount.setMaxWidth(20);
+            HBox.setMargin(shortNameCount, new Insets(0, 0, 0, 2));
 
 
             addRow("Short name", hbox);
@@ -232,7 +232,7 @@ public class ProductDialog extends BaseDialog {
 
         public void setShortName(String shortName) {
             this.shortName.setText(shortName);
-            shorNameCount.setText(shortName.length() + "");
+            shortNameCount.setText(shortName.length() + "");
         }
 
         public String getShortName() {

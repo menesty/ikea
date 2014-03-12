@@ -4,27 +4,21 @@ import com.google.gson.Gson;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Task;
 import org.apache.http.HttpHost;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.AuthCache;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.auth.DigestScheme;
-import org.apache.http.impl.client.BasicAuthCache;
-import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.menesty.ikea.domain.CustomerOrder;
-import org.menesty.ikea.domain.InvoicePdf;
 import org.menesty.ikea.domain.WarehouseItemDto;
 import org.menesty.ikea.processor.invoice.InvoiceItem;
 import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.service.ServiceFacade;
+import org.menesty.ikea.util.HttpUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,31 +29,14 @@ public class InvoiceSyncService extends AbstractAsyncService<Void> {
 
     private void sendData(String data) throws IOException {
         HttpHost targetHost = new HttpHost(ServiceFacade.getApplicationPreference().getWarehouseHost());
-        CredentialsProvider credsProvider = new BasicCredentialsProvider();
-        credsProvider.setCredentials(
-                new AuthScope(targetHost.getHostName(), targetHost.getPort()),
-                new UsernamePasswordCredentials(
-                        ServiceFacade.getApplicationPreference().getWarehouseUser(),
-                        ServiceFacade.getApplicationPreference().getWarehousePassword()
-                )
-        );
+
+        CredentialsProvider credsProvider = HttpUtil.credentialsProvider(targetHost);
 
         try (CloseableHttpClient httpClient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build()) {
-            // Create AuthCache instance
-            AuthCache authCache = new BasicAuthCache();
-            DigestScheme digestAuth = new DigestScheme();
-            digestAuth.overrideParamter("realm", "Authentication require");
-            digestAuth.overrideParamter("nonce", "1");
-            authCache.put(targetHost, digestAuth);
-
-            // Add AuthCache to the execution context
-            HttpClientContext localContext = HttpClientContext.create();
-            localContext.setAuthCache(authCache);
-
+            HttpClientContext localContext = HttpUtil.context(targetHost);
 
             HttpPost httpPost = new HttpPost("/sync/update");
             httpPost.setEntity(new StringEntity(data, ContentType.APPLICATION_JSON));
-
 
             try (CloseableHttpResponse response = httpClient.execute(targetHost, httpPost, localContext)) {
                 EntityUtils.consume(response.getEntity());

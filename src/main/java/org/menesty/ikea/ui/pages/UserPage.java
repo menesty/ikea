@@ -1,6 +1,5 @@
 package org.menesty.ikea.ui.pages;
 
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -14,8 +13,8 @@ import javafx.scene.layout.StackPane;
 import javafx.util.Callback;
 import org.menesty.ikea.domain.User;
 import org.menesty.ikea.service.UserService;
-import org.menesty.ikea.ui.controls.PathProperty;
 import org.menesty.ikea.ui.controls.dialog.UserDialog;
+import org.menesty.ikea.util.ColumnUtil;
 
 
 public class UserPage extends BasePage {
@@ -36,24 +35,14 @@ public class UserPage extends BasePage {
         {
             TableColumn<User, String> column = new TableColumn<>("Login");
             column.setMinWidth(200);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<User, String>, ObservableValue<String>>() {
-                @Override
-                public ObservableValue<String> call(TableColumn.CellDataFeatures<User, String> item) {
-                    return new PathProperty<>(item.getValue(), "login");
-                }
-            });
+            column.setCellValueFactory(ColumnUtil.<User, String>column("login"));
             tableView.getColumns().add(column);
         }
 
         {
             TableColumn<User, String> column = new TableColumn<>("Password");
             column.setMinWidth(200);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<User, String>, ObservableValue<String>>() {
-                @Override
-                public ObservableValue<String> call(TableColumn.CellDataFeatures<User, String> item) {
-                    return new PathProperty<>(item.getValue(), "password");
-                }
-            });
+            column.setCellValueFactory(ColumnUtil.<User, String>column("password"));
             tableView.getColumns().add(column);
         }
 
@@ -95,7 +84,8 @@ public class UserPage extends BasePage {
 
         ToolBar control = new ToolBar();
         ImageView imageView = new ImageView(new Image("/styles/images/icon/add1-48x48.png"));
-        Button createUser = new Button("", imageView);
+
+        Button createUser = new Button(null, imageView);
         createUser.setContentDisplay(ContentDisplay.RIGHT);
 
         createUser.setOnAction(new EventHandler<ActionEvent>() {
@@ -128,6 +118,6 @@ public class UserPage extends BasePage {
 
     @Override
     protected Node createIconContent() {
-        return new ImageView(new javafx.scene.image.Image("/styles/images/icon/users-64x64.png"));
+        return new ImageView(new javafx.scene.image.Image("/styles/images/icon/warehouse-72x72.png"));
     }
 }

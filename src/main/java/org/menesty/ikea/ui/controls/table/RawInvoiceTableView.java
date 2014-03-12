@@ -1,6 +1,5 @@
 package org.menesty.ikea.ui.controls.table;
 
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -12,7 +11,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.util.Callback;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
-import org.menesty.ikea.ui.controls.PathProperty;
+import org.menesty.ikea.util.ColumnUtil;
 import org.menesty.ikea.util.NumberUtil;
 
 /**
@@ -31,35 +30,20 @@ public class RawInvoiceTableView extends TableView<RawInvoiceProductItem> {
         {
             TableColumn<RawInvoiceProductItem, Number> column = new TableColumn<>();
             column.setMaxWidth(45);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<RawInvoiceProductItem, Number>, ObservableValue<Number>>() {
-                @Override
-                public ObservableValue<Number> call(TableColumn.CellDataFeatures<RawInvoiceProductItem, Number> item) {
-                    return new SimpleIntegerProperty(item.getTableView().getItems().indexOf(item.getValue()) + 1);
-                }
-            });
+            column.setCellValueFactory(ColumnUtil.<RawInvoiceProductItem>indexColumn());
             getColumns().add(column);
         }
         {
             TableColumn<RawInvoiceProductItem, String> column = new TableColumn<>("Art # ");
             column.setMinWidth(100);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<RawInvoiceProductItem, String>, ObservableValue<String>>() {
-                @Override
-                public ObservableValue<String> call(TableColumn.CellDataFeatures<RawInvoiceProductItem, String> item) {
-                    return new PathProperty<>(item.getValue(), "artNumber");
-                }
-            });
+            column.setCellValueFactory(ColumnUtil.<RawInvoiceProductItem, String>column("artNumber"));
             getColumns().add(column);
         }
 
         {
             TableColumn<RawInvoiceProductItem, String> column = new TableColumn<>("Name");
             column.setMinWidth(200);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<RawInvoiceProductItem, String>, ObservableValue<String>>() {
-                @Override
-                public ObservableValue<String> call(TableColumn.CellDataFeatures<RawInvoiceProductItem, String> item) {
-                    return new PathProperty<>(item.getValue(), "name");
-                }
-            });
+            column.setCellValueFactory(ColumnUtil.<RawInvoiceProductItem, String>column("name"));
 
             getColumns().add(column);
         }
@@ -81,12 +65,7 @@ public class RawInvoiceTableView extends TableView<RawInvoiceProductItem> {
         {
             TableColumn<RawInvoiceProductItem, Double> column = new TableColumn<>("Price");
             column.setMinWidth(60);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<RawInvoiceProductItem, Double>, ObservableValue<Double>>() {
-                @Override
-                public ObservableValue<Double> call(TableColumn.CellDataFeatures<RawInvoiceProductItem, Double> item) {
-                    return new PathProperty<>(item.getValue(), "price");
-                }
-            });
+            column.setCellValueFactory(ColumnUtil.<RawInvoiceProductItem, Double>column("price"));
 
             getColumns().add(column);
         }
@@ -94,12 +73,7 @@ public class RawInvoiceTableView extends TableView<RawInvoiceProductItem> {
         {
             TableColumn<RawInvoiceProductItem, Double> column = new TableColumn<>("T Price");
             column.setMinWidth(60);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<RawInvoiceProductItem, Double>, ObservableValue<Double>>() {
-                @Override
-                public ObservableValue<Double> call(TableColumn.CellDataFeatures<RawInvoiceProductItem, Double> item) {
-                    return new PathProperty<>(item.getValue(), "total");
-                }
-            });
+            column.setCellValueFactory(ColumnUtil.<RawInvoiceProductItem, Double>column("total"));
 
             getColumns().add(column);
         }
