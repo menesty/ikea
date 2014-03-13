@@ -87,4 +87,12 @@ public class ImageFactory {
     public static ImageView createFetch16Icon() {
         return new ImageView(new Image("/styles/images/icon/refresh-16x16.png"));
     }
+
+    public static ImageView createUsersIcon64() {
+        return new ImageView(new Image("/styles/images/icon/users-64x64.png"));
+    }
+
+    public static ImageView createWarehouseIcon72() {
+        return new ImageView(new Image("/styles/images/icon/warehouse-72x72.png"));
+    }
 }

@@ -24,4 +24,19 @@ public class WarehouseItemDto {
     public int orderId;
 
     public String productId;
+
+    public String getProductNumber(){
+        return productNumber;
+    }
+
+    public double getPrice(){
+        return price;
+    }
+
+    public String getShortName(){
+        return shortName;
+    }
+    public double getCount(){
+        return count;
+    }
 }

@@ -49,6 +49,8 @@ public class PathProperty<B, T> extends ObjectPropertyBase<T> {
             }
             return super.get();
         } catch (final Throwable t) {
+            //try find public value
+
             throw new RuntimeException("Unable to get value", t);
         }
     }

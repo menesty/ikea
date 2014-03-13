@@ -2,10 +2,15 @@ package org.menesty.ikea.ui.pages;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.ToolBar;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import org.apache.http.HttpHost;
@@ -17,28 +22,55 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.menesty.ikea.domain.WarehouseItemDto;
+import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.util.ColumnUtil;
 import org.menesty.ikea.util.HttpUtil;
 
 import java.lang.reflect.Type;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 public class WarehousePage extends BasePage {
 
+    private final LoadService loadService;
+    private TableView<WarehouseItemDto> tableView;
+
     public WarehousePage() {
         super("Warehouse");
+
+        loadService = new LoadService();
+        loadService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<Collection<WarehouseItemDto>>() {
+            @Override
+            public void onSucceeded(final Collection<WarehouseItemDto> value) {
+                tableView.setItems(FXCollections.observableArrayList(value));
+            }
+        });
+
+    }
+
+    @Override
+    public void onActive(Object... params) {
+        loadingPane.bindTask(loadService);
+        loadService.restart();
     }
 
     @Override
     public Node createView() {
-        final TableView<WarehouseItemDto> tableView = new TableView<>();
+        tableView = new TableView<>();
         {
             TableColumn<WarehouseItemDto, String> column = new TableColumn<>("Product Number");
             column.setMinWidth(150);
             column.setCellValueFactory(ColumnUtil.<WarehouseItemDto, String>column("productNumber"));
+            tableView.getColumns().add(column);
+        }
+
+        {
+            TableColumn<WarehouseItemDto, String> column = new TableColumn<>("Short Number");
+            column.setMinWidth(250);
+            column.setCellValueFactory(ColumnUtil.<WarehouseItemDto, String>column("shortName"));
             tableView.getColumns().add(column);
         }
 
@@ -56,9 +88,20 @@ public class WarehousePage extends BasePage {
             tableView.getColumns().add(column);
         }
 
+        ToolBar control = new ToolBar();
+        Button refresh = new Button(null, ImageFactory.createReload32Icon());
+        refresh.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                loadService.restart();
+            }
+        });
+        control.getItems().add(refresh);
 
         BorderPane borderPane = new BorderPane();
+
         borderPane.setCenter(tableView);
+        borderPane.setTop(control);
 
         StackPane pane = createRoot();
         pane.getChildren().add(0, borderPane);
@@ -66,34 +109,44 @@ public class WarehousePage extends BasePage {
         return pane;
     }
 
-    class LoadService extends AbstractAsyncService<List<WarehouseItemDto>> {
+    class LoadService extends AbstractAsyncService<Collection<WarehouseItemDto>> {
 
         @Override
-        protected Task<List<WarehouseItemDto>> createTask() {
-            return new Task<List<WarehouseItemDto>>() {
+        protected Task<Collection<WarehouseItemDto>> createTask() {
+            return new Task<Collection<WarehouseItemDto>>() {
                 @Override
-                protected List<WarehouseItemDto> call() throws Exception {
-                    HttpHost targetHost = new HttpHost(ServiceFacade.getApplicationPreference().getWarehouseHost());
+                protected Collection<WarehouseItemDto> call() throws Exception {
+                    URL url = new URL(ServiceFacade.getApplicationPreference().getWarehouseHost() + "/storage/load");
+                    HttpHost targetHost = new HttpHost(url.getHost());
 
                     CredentialsProvider credsProvider = HttpUtil.credentialsProvider(targetHost);
 
                     try (CloseableHttpClient httpClient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build()) {
                         HttpClientContext localContext = HttpUtil.context(targetHost);
 
-                        HttpGet httpPost = new HttpGet("/storage/load");
+                        HttpGet httpPost = new HttpGet(url.toURI());
 
-                        try (CloseableHttpResponse response = httpClient.execute(targetHost, httpPost, localContext)) {
-                            EntityUtils.toString(response.getEntity());
+                        try (CloseableHttpResponse response = httpClient.execute(httpPost, localContext)) {
+                            String data = EntityUtils.toString(response.getEntity());
 
                             Gson gson = new Gson();
-                            Type collectionType = new TypeToken<Collection<Integer>>(){}.getType();
-                            Collection<Integer> ints2 = gson.fromJson("", collectionType);
-                        }
-                    }
+                            Type collectionType = new TypeToken<Collection<WarehouseItemDto>>() {
+                            }.getType();
+                            Collection<WarehouseItemDto> result = gson.fromJson(data, collectionType);
 
-                    return null;
+                            return result;
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    return new ArrayList<>();
                 }
             };
         }
+    }
+
+    @Override
+    protected Node createIconContent() {
+        return ImageFactory.createWarehouseIcon72();
     }
 }

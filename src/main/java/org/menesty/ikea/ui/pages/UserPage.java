@@ -12,6 +12,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.util.Callback;
 import org.menesty.ikea.domain.User;
+import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.service.UserService;
 import org.menesty.ikea.ui.controls.dialog.UserDialog;
 import org.menesty.ikea.util.ColumnUtil;
@@ -118,6 +119,6 @@ public class UserPage extends BasePage {
 
     @Override
     protected Node createIconContent() {
-        return new ImageView(new javafx.scene.image.Image("/styles/images/icon/warehouse-72x72.png"));
+        return ImageFactory.createUsersIcon64();
     }
 }

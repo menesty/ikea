@@ -21,6 +21,7 @@ import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.util.HttpUtil;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,19 +29,23 @@ public class InvoiceSyncService extends AbstractAsyncService<Void> {
     private SimpleObjectProperty<CustomerOrder> customerOrder = new SimpleObjectProperty<>();
 
     private void sendData(String data) throws IOException {
-        HttpHost targetHost = new HttpHost(ServiceFacade.getApplicationPreference().getWarehouseHost());
+        URL url = new URL(ServiceFacade.getApplicationPreference().getWarehouseHost() + "/sync/update");
+        HttpHost targetHost = new HttpHost(url.getHost());
 
         CredentialsProvider credsProvider = HttpUtil.credentialsProvider(targetHost);
 
         try (CloseableHttpClient httpClient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build()) {
             HttpClientContext localContext = HttpUtil.context(targetHost);
 
-            HttpPost httpPost = new HttpPost("/sync/update");
-            httpPost.setEntity(new StringEntity(data, ContentType.APPLICATION_JSON));
+            HttpPost httpPost = new HttpPost(url.toURI());
+            httpPost.setEntity(new StringEntity(data, ContentType.APPLICATION_FORM_URLENCODED));
 
             try (CloseableHttpResponse response = httpClient.execute(targetHost, httpPost, localContext)) {
-                EntityUtils.consume(response.getEntity());
+                String responseData = EntityUtils.toString(response.getEntity());
+                System.out.println(responseData);
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
