@@ -38,7 +38,7 @@ public class InvoiceSyncService extends AbstractAsyncService<Void> {
             HttpClientContext localContext = HttpUtil.context(targetHost);
 
             HttpPost httpPost = new HttpPost(url.toURI());
-            httpPost.setEntity(new StringEntity(data, ContentType.APPLICATION_FORM_URLENCODED));
+            httpPost.setEntity(new StringEntity(data, ContentType.APPLICATION_JSON));
 
             try (CloseableHttpResponse response = httpClient.execute(targetHost, httpPost, localContext)) {
                 String responseData = EntityUtils.toString(response.getEntity());

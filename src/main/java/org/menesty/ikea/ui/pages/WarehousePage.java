@@ -1,6 +1,6 @@
 package org.menesty.ikea.ui.pages;
 
-import com.google.gson.Gson;
+import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
@@ -32,6 +32,7 @@ import java.lang.reflect.Type;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 public class WarehousePage extends BasePage {
 
@@ -42,10 +43,10 @@ public class WarehousePage extends BasePage {
         super("Warehouse");
 
         loadService = new LoadService();
-        loadService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<Collection<WarehouseItemDto>>() {
+        loadService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<List<WarehouseItemDto>>() {
             @Override
-            public void onSucceeded(final Collection<WarehouseItemDto> value) {
-                tableView.setItems(FXCollections.observableArrayList(value));
+            public void onSucceeded(final List<WarehouseItemDto> value) {
+                tableView.setItems(FXCollections.observableList(value));
             }
         });
 
@@ -109,18 +110,19 @@ public class WarehousePage extends BasePage {
         return pane;
     }
 
-    class LoadService extends AbstractAsyncService<Collection<WarehouseItemDto>> {
+    class LoadService extends AbstractAsyncService<List<WarehouseItemDto>> {
 
         @Override
-        protected Task<Collection<WarehouseItemDto>> createTask() {
-            return new Task<Collection<WarehouseItemDto>>() {
+        protected Task<List<WarehouseItemDto>> createTask() {
+            return new Task<List<WarehouseItemDto>>() {
                 @Override
-                protected Collection<WarehouseItemDto> call() throws Exception {
+                protected List<WarehouseItemDto> call() throws Exception {
                     URL url = new URL(ServiceFacade.getApplicationPreference().getWarehouseHost() + "/storage/load");
                     HttpHost targetHost = new HttpHost(url.getHost());
 
                     CredentialsProvider credsProvider = HttpUtil.credentialsProvider(targetHost);
 
+                    List<WarehouseItemDto> result = new ArrayList<>();
                     try (CloseableHttpClient httpClient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build()) {
                         HttpClientContext localContext = HttpUtil.context(targetHost);
 
@@ -129,17 +131,23 @@ public class WarehousePage extends BasePage {
                         try (CloseableHttpResponse response = httpClient.execute(httpPost, localContext)) {
                             String data = EntityUtils.toString(response.getEntity());
 
-                            Gson gson = new Gson();
+                            GsonBuilder gson = new GsonBuilder();
+                            gson.registerTypeAdapter(WarehouseItemDto.class, new WarehouseItemDtoAdapter());
+
                             Type collectionType = new TypeToken<Collection<WarehouseItemDto>>() {
                             }.getType();
-                            Collection<WarehouseItemDto> result = gson.fromJson(data, collectionType);
 
-                            return result;
+                            Collection<WarehouseItemDto> dataList = gson.create().fromJson(data, collectionType);
+                            //filter not visible
+                            for(WarehouseItemDto itemDto : dataList)
+                                if(itemDto.visible)
+                                    result.add(itemDto);
+
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                    return new ArrayList<>();
+                    return result;
                 }
             };
         }
@@ -148,5 +156,28 @@ public class WarehousePage extends BasePage {
     @Override
     protected Node createIconContent() {
         return ImageFactory.createWarehouseIcon72();
+    }
+}
+
+class WarehouseItemDtoAdapter implements JsonDeserializer<WarehouseItemDto> {
+
+    @Override
+    public WarehouseItemDto deserialize(JsonElement element, Type type, JsonDeserializationContext context) throws JsonParseException {
+        JsonObject jsonElement = element.getAsJsonObject();
+
+        WarehouseItemDto entity = new WarehouseItemDto();
+
+        entity.price = jsonElement.get("price").getAsDouble();
+        entity.count = jsonElement.get("count").getAsDouble();
+        entity.orderId = jsonElement.get("orderId").getAsInt();
+        entity.productId = jsonElement.get("productId").getAsString();
+        entity.productNumber = jsonElement.get("productNumber").getAsString();
+        entity.shortName = jsonElement.get("shortName").getAsString();
+        entity.visible = jsonElement.get("visible").getAsInt() > 0;
+        entity.allowed = jsonElement.get("allowed").getAsInt() > 0;
+        entity.zestav = jsonElement.get("zestav").getAsInt() > 0;
+        entity.weight = jsonElement.get("weight").getAsDouble();
+
+        return entity;
     }
 }
