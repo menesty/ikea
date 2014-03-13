@@ -19,14 +19,18 @@ import org.menesty.ikea.processor.invoice.InvoiceItem;
 import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.util.HttpUtil;
+import org.menesty.ikea.util.NumberUtil;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 public class InvoiceSyncService extends AbstractAsyncService<Void> {
     private SimpleObjectProperty<CustomerOrder> customerOrder = new SimpleObjectProperty<>();
+
+    private final BigDecimal margin = BigDecimal.valueOf(1.02);
 
     private void sendData(String data) throws IOException {
         URL url = new URL(ServiceFacade.getApplicationPreference().getWarehouseHost() + "/sync/update");
@@ -54,7 +58,8 @@ public class InvoiceSyncService extends AbstractAsyncService<Void> {
         item.allowed = true;
         item.count = invoiceItem.getCount();
         item.orderId = orderId;
-        item.price = invoiceItem.getPriceWat();
+        //add 2%
+        item.price = NumberUtil.round(BigDecimal.valueOf(invoiceItem.getPriceWat()).multiply(margin).doubleValue());
         item.productNumber = invoiceItem.getArtNumber();
         item.shortName = invoiceItem.getShortName();
         item.zestav = invoiceItem.isZestav();
