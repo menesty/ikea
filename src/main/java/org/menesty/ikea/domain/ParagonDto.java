@@ -2,7 +2,7 @@ package org.menesty.ikea.domain;
 
 import java.util.Date;
 
-public class Paragon {
+public class ParagonDto {
     private int id;
 
     private int driverId;

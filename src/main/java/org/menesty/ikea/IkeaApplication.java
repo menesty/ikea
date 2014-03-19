@@ -163,7 +163,7 @@ public class IkeaApplication extends Application {
         initDbTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
             @Override
             public void handle(WorkerStateEvent workerStateEvent) {
-                pageManager.goToPage("IKEA/CustomerOrder list");
+                pageManager.goToPage("IKEA/" + Pages.ORDERS.getTitle());
             }
         });
     }

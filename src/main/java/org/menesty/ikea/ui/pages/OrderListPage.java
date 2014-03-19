@@ -52,7 +52,7 @@ public class OrderListPage extends BasePage {
     private LoadService loadService;
 
     public OrderListPage() {
-        super("CustomerOrder list");
+        super(Pages.ORDERS.getTitle());
 
         loadService = new LoadService();
         loadService.setOnSucceededListener(new SucceededListener<List<CustomerOrder>>() {

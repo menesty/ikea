@@ -36,6 +36,7 @@ import java.util.List;
 public class WarehouseViewComponent extends BorderPane {
     private final LoadService loadService;
     private TableView<WarehouseItemDto> tableView;
+    private LoadingPane loadingPane;
 
     public WarehouseViewComponent() {
         loadService = new LoadService();
@@ -81,7 +82,7 @@ public class WarehouseViewComponent extends BorderPane {
         refresh.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-                loadService.restart();
+                load();
             }
         });
         control.getItems().add(refresh);
@@ -91,11 +92,12 @@ public class WarehouseViewComponent extends BorderPane {
     }
 
     public void load() {
+        loadingPane.bindTask(loadService);
         loadService.restart();
     }
 
     public void bindLoading(final LoadingPane loadingPane) {
-        loadingPane.bindTask(loadService);
+        this.loadingPane = loadingPane;
     }
 
     class LoadService extends AbstractAsyncService<List<WarehouseItemDto>> {
