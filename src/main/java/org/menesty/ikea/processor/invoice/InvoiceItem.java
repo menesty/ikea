@@ -166,8 +166,10 @@ public class InvoiceItem extends Identifiable {
     public static String format(double value) {
         String valueStr = value + "";
         int pos = valueStr.length() - (valueStr.indexOf(".") + 1);
+
         for (int i = 4 - pos; i > 0; i--)
             valueStr += "0";
+
         return valueStr;
     }
 

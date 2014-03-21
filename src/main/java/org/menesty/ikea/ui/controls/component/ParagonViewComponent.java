@@ -2,17 +2,17 @@ package org.menesty.ikea.ui.controls.component;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.scene.control.Button;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.ToolBar;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import javafx.util.Callback;
 import org.apache.http.HttpHost;
 import org.apache.http.client.CredentialsProvider;
@@ -30,6 +30,8 @@ import org.menesty.ikea.ui.controls.pane.LoadingPane;
 import org.menesty.ikea.util.ColumnUtil;
 import org.menesty.ikea.util.HttpUtil;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.lang.reflect.Type;
 import java.net.URL;
 import java.text.ParseException;
@@ -44,16 +46,42 @@ public class ParagonViewComponent extends BorderPane {
     private TableView<ParagonDto> tableView;
 
     private LoadingPane loadingPane;
+    private ParagonEppService paragonEppService;
 
     private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
-    public ParagonViewComponent() {
-
+    public ParagonViewComponent(final Stage stage) {
         loadService = new LoadService();
         loadService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<List<ParagonDto>>() {
             @Override
             public void onSucceeded(final List<ParagonDto> value) {
                 tableView.setItems(FXCollections.observableList(value));
+            }
+        });
+
+        paragonEppService = new ParagonEppService();
+        paragonEppService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<String>() {
+            @Override
+            public void onSucceeded(final String value) {
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle("Epp location");
+                FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("Epp file (*.epp)", "*.epp");
+                fileChooser.getExtensionFilters().add(extFilter);
+                File selectedFile = fileChooser.showSaveDialog(stage);
+
+                if (selectedFile != null) {
+                    String fileName = selectedFile.getAbsolutePath();
+
+                    if (!fileName.endsWith(".epp"))
+                        fileName += ".epp";
+
+                    try {
+                        new FileOutputStream(fileName).write(value.getBytes("ISO-8859-2"));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                }
             }
         });
 
@@ -107,6 +135,23 @@ public class ParagonViewComponent extends BorderPane {
             tableView.getColumns().add(column);
         }
 
+        ContextMenu contextMenu = new ContextMenu();
+        MenuItem downloadEppItem = new MenuItem("Download Epp", ImageFactory.createDownload16Icon());
+        downloadEppItem.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                ParagonDto paragonDto = tableView.getSelectionModel().getSelectedItem();
+
+                if (paragonDto != null) {
+                    loadingPane.bindTask(paragonEppService);
+                    paragonEppService.setParagonId(paragonDto.getId());
+                    paragonEppService.reset();
+                }
+            }
+        });
+        tableView.setContextMenu(contextMenu);
+
+
         ToolBar control = new ToolBar();
         Button refresh = new Button(null, ImageFactory.createReload32Icon());
         refresh.setOnAction(new EventHandler<ActionEvent>() {
@@ -130,6 +175,40 @@ public class ParagonViewComponent extends BorderPane {
         this.loadingPane = loadingPane;
     }
 
+    class ParagonEppService extends AbstractAsyncService<String> {
+        private SimpleIntegerProperty paragonId = new SimpleIntegerProperty();
+
+        @Override
+        protected Task<String> createTask() {
+            final int _paragonId = paragonId.get();
+            return new Task<String>() {
+                @Override
+                protected String call() throws Exception {
+                    URL url = new URL(ServiceFacade.getApplicationPreference().getWarehouseHost() + "/storage/paragon/" + _paragonId + "/epp");
+                    HttpHost targetHost = new HttpHost(url.getHost());
+
+                    CredentialsProvider credsProvider = HttpUtil.credentialsProvider(targetHost);
+
+                    try (CloseableHttpClient httpClient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build()) {
+                        HttpClientContext localContext = HttpUtil.context(targetHost);
+
+                        HttpGet httpPost = new HttpGet(url.toURI());
+
+                        try (CloseableHttpResponse response = httpClient.execute(httpPost, localContext)) {
+                            return EntityUtils.toString(response.getEntity(), "ISO-8859-2");
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    return "";
+                }
+            };
+        }
+
+        public void setParagonId(int paragonId) {
+            this.paragonId.setValue(paragonId);
+        }
+    }
 
     class LoadService extends AbstractAsyncService<List<ParagonDto>> {
 

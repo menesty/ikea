@@ -35,8 +35,6 @@ public class PathProperty<B, T> extends ObjectPropertyBase<T> {
         }
     }
 
-    ;
-
     @Override
     public T get() {
         try {
@@ -118,7 +116,8 @@ public class PathProperty<B, T> extends ObjectPropertyBase<T> {
                     } catch (final Exception e) {
                         throw new IllegalArgumentException(
                                 String.format("Unable to build setter expression for %1$s using %2$s.",
-                                        fieldName, accessor.type().returnType()));
+                                        fieldName, accessor.type().returnType())
+                        );
                     }
                 }
             }
@@ -126,7 +125,8 @@ public class PathProperty<B, T> extends ObjectPropertyBase<T> {
                 final MethodHandle mh1 = MethodHandles.lookup().findVirtual(target.getClass(),
                         buildMethodName("set", fieldName),
                         MethodType.methodType(void.class,
-                                accessor.type().returnType())).bindTo(target);
+                                accessor.type().returnType())
+                ).bindTo(target);
                 if (getSetterArgument() != null) {
                     mh1.invoke(getSetterArgument());
                 }
@@ -143,15 +143,16 @@ public class PathProperty<B, T> extends ObjectPropertyBase<T> {
             final String accessorName = buildMethodName(fieldNamePrefix[0], fieldName);
             try {
                 return MethodHandles.lookup().findVirtual(target.getClass(), accessorName,
-                        MethodType.methodType(
-                                target.getClass().getMethod(
-                                        accessorName).getReturnType())).bindTo(target);
+                        MethodType.methodType(target.getClass().getMethod(accessorName).getReturnType())
+                ).bindTo(target);
             } catch (final NoSuchMethodException e) {
                 return buildAccessor(target, fieldName, Arrays.copyOfRange(fieldNamePrefix, 1, fieldNamePrefix.length));
             } catch (final Throwable t) {
-               /* throw new IllegalArgumentException(
-                        "Unable to resolve accessor " + accessorName, t);*/
-                return null;
+                try {
+                    return MethodHandles.lookup().unreflectGetter(target.getClass().getDeclaredField(fieldName)).bindTo(target);
+                } catch (Throwable e) {
+                    return null;
+                }
             }
         }
 

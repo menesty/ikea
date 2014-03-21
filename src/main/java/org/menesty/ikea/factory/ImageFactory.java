@@ -95,4 +95,8 @@ public class ImageFactory {
     public static ImageView createWarehouseIcon72() {
         return new ImageView(new Image("/styles/images/icon/warehouse-72x72.png"));
     }
+
+    public static ImageView createDownload16Icon() {
+        return new ImageView(new Image("/styles/images/icon/download-16x16.png"));
+    }
 }
