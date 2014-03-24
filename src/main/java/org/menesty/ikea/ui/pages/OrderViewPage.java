@@ -1,6 +1,7 @@
 package org.menesty.ikea.ui.pages;
 
 import javafx.application.Platform;
+import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.Event;
@@ -37,20 +38,13 @@ import java.util.concurrent.Callable;
 public class OrderViewPage extends BasePage {
     private OrderItemViewComponent orderItemViewComponent;
 
-
-    private InvoicePdfService invoicePdfService;
-
-    private InvoiceService invoiceService;
-
     private CustomerOrder currentOrder;
 
     private InvoicePdfViewComponent invoicePdfViewComponent;
 
     private ProductDialog productEditDialog;
 
-    private ProductService productService;
-
-    private IkeaUserService ikeaUserService;
+    //private IkeaUserService ikeaUserService;
 
     private RawInvoiceItemViewComponent rawInvoiceItemViewComponent;
 
@@ -75,26 +69,23 @@ public class OrderViewPage extends BasePage {
     public OrderViewPage() {
         super("CustomerOrder");
 
-        invoicePdfService = new InvoicePdfService();
-        invoiceService = new InvoiceService();
-        productService = new ProductService();
-        ikeaUserService = new IkeaUserService();
-
         invoiceSyncService = new InvoiceSyncService();
-
-
         loadService = new LoadService();
+
         loadService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<OrderData>() {
             @Override
             public void onSucceeded(final OrderData value) {
                 OrderViewPage.this.orderData = value;
+
                 orderItemViewComponent.setItems(orderData.orderItems);
                 invoicePdfViewComponent.setItems(orderData.invoicePdfs);
+
                 updateRawInvoiceTableView();
             }
         });
 
         storeLackService = new StoreLackService();
+
         storeLackService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<List<StorageLack>>() {
             @Override
             public void onSucceeded(List<StorageLack> value) {
@@ -103,6 +94,7 @@ public class OrderViewPage extends BasePage {
         });
 
         storeLackComboService = new StoreLackComboService();
+
         storeLackComboService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<List<StorageComboLack>>() {
             @Override
             public void onSucceeded(List<StorageComboLack> value) {
@@ -135,6 +127,7 @@ public class OrderViewPage extends BasePage {
                 }
             }
         });
+
         return tab;
     }
 
@@ -161,7 +154,7 @@ public class OrderViewPage extends BasePage {
                     @Override
                     protected Void call() throws Exception {
                         try {
-                            ikeaUserService.fillUser(currentOrder.getLackUser(), ProductInfo.Group.general(), ikeaUserService.groupItems(storageLacks), logDialog);
+                            ServiceFacade.getIkeaUserService().fillUser(currentOrder.getLackUser(), ProductInfo.Group.general(), ServiceFacade.getIkeaUserService().groupItems(storageLacks), logDialog);
                         } catch (LoginIkeaException e) {
                             logDialog.addLog(e.getMessage());
                         } catch (IOException e) {
@@ -175,6 +168,7 @@ public class OrderViewPage extends BasePage {
 
             }
         };
+
         final Tab tab = new Tab("Storage Lack");
         tab.setContent(storageLackItemViewComponent);
         tab.setClosable(false);
@@ -187,6 +181,7 @@ public class OrderViewPage extends BasePage {
                 }
             }
         });
+
         return tab;
     }
 
@@ -207,13 +202,11 @@ public class OrderViewPage extends BasePage {
 
             @Override
             protected void save(ProductInfo productInfo) {
-                productService.save(productInfo);
+                ServiceFacade.getProductService().save(productInfo);
             }
 
             @Override
             protected void save(OrderItem orderItem) {
-
-
                 if (orderItem.getId() == null) {
                     orderItem.setCustomerOrder(currentOrder);
 
@@ -266,7 +259,7 @@ public class OrderViewPage extends BasePage {
                     new Thread(new Task<Void>() {
                         @Override
                         protected Void call() throws Exception {
-                            ikeaUserService.fillOrder(currentOrder, logDialog);
+                            ServiceFacade.getIkeaUserService().fillOrder(currentOrder, logDialog);
                             return null;
                         }
                     }).start();
@@ -276,7 +269,6 @@ public class OrderViewPage extends BasePage {
                 }
             }
         };
-
 
         Tab tab = new Tab("CustomerOrder Items");
         tab.setContent(orderItemViewComponent);
@@ -338,6 +330,11 @@ public class OrderViewPage extends BasePage {
             }
 
             @Override
+            protected CustomerOrder getCustomerOrder() {
+                return currentOrder;
+            }
+
+            @Override
             public void onDelete(List<InvoicePdf> items) {
                 ServiceFacade.getInvoicePdfService().removeAll(items);
                 orderData.invoicePdfs.removeAll(items);
@@ -348,6 +345,7 @@ public class OrderViewPage extends BasePage {
             @Override
             public void onSave(InvoicePdf invoicePdf) {
                 ServiceFacade.getOrderService().save(invoicePdf);
+                loadService.restart();
             }
 
             @Override
@@ -369,7 +367,7 @@ public class OrderViewPage extends BasePage {
         rawInvoiceItemViewComponent = new RawInvoiceItemViewComponent(getStage()) {
             @Override
             public void onExport(List<RawInvoiceProductItem> items, String path) {
-                invoiceService.exportToXls(items, path);
+                ServiceFacade.getInvoiceService().exportToXls(items, path);
             }
 
             @Override
@@ -378,7 +376,7 @@ public class OrderViewPage extends BasePage {
                 productEditDialog.bind(row.getItem().getProductInfo(), new EntityDialogCallback<ProductInfo>() {
                     @Override
                     public void onSave(ProductInfo productInfo, Object[] params) {
-                        productService.save(productInfo);
+                        ServiceFacade.getProductService().save(productInfo);
                         if (!(Boolean) params[0])
                             hidePopupDialog();
                         row.setItem(null);
@@ -402,7 +400,7 @@ public class OrderViewPage extends BasePage {
 
             @Override
             public void export(List<InvoiceItem> items, String path) {
-                invoiceService.exportToEpp(items, path);
+                ServiceFacade.getInvoiceService().exportToEpp(items, path);
             }
         };
 
@@ -447,7 +445,7 @@ public class OrderViewPage extends BasePage {
         @Override
         protected Void call() throws Exception {
             try {
-                List<InvoicePdf> entities = invoicePdfService.createInvoicePdf(currentOrder, files);
+                List<InvoicePdf> entities = ServiceFacade.getInvoicePdfService().createInvoicePdf(currentOrder, files);
                 orderData.invoicePdfs.addAll(entities);
                 ServiceFacade.getOrderService().save(currentOrder);
 
@@ -478,13 +476,13 @@ public class OrderViewPage extends BasePage {
             return DatabaseService.runInTransaction(new Callable<Void>() {
                 @Override
                 public Void call() throws Exception {
-                    ProductInfo productInfo = productService.loadOrCreate(orderItem.getArtNumber());
+                    ProductInfo productInfo = ServiceFacade.getProductService().loadOrCreate(orderItem.getArtNumber());
                     if (productInfo == null)
                         orderItem.increaseTryCount();
                     else {
                         orderItem.setProductInfo(productInfo);
                         orderItem.setInvalidFetch(false);
-                        productService.save(orderItem);
+                        ServiceFacade.getProductService().save(orderItem);
                     }
                     return null;
                 }

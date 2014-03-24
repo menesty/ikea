@@ -1,0 +1,92 @@
+package org.menesty.ikea.ui.controls.dialog;
+
+import javafx.scene.control.TextField;
+import org.menesty.ikea.domain.InvoicePdf;
+import org.menesty.ikea.ui.controls.form.DoubleTextField;
+import org.menesty.ikea.ui.pages.EntityDialogCallback;
+
+public class InvoiceDialog extends BaseDialog {
+    private InvoiceForm invoiceForm;
+
+    private InvoicePdf currentInvoice;
+
+    private EntityDialogCallback<InvoicePdf> callback;
+
+    public InvoiceDialog (){
+        addRow(createTitle("Create invoice"));
+
+        addRow(invoiceForm = new InvoiceForm(), bottomBar);
+        okBtn.setText("Save");
+    }
+
+    public void bind(InvoicePdf invoiceItem, EntityDialogCallback<InvoicePdf> callback) {
+        currentInvoice = invoiceItem;
+        this.callback = callback;
+
+        invoiceForm.reset();
+        invoiceForm.setPrice(invoiceItem.getPrice());
+        invoiceForm.setName(invoiceItem.getName());
+        invoiceForm.setInvoiceNumber(invoiceItem.getInvoiceNumber());
+
+    }
+
+    @Override
+    public void onOk() {
+        currentInvoice.setPrice(invoiceForm.getPrice());
+        currentInvoice.setName(invoiceForm.getName());
+        currentInvoice.setInvoiceNumber(invoiceForm.getInvoiceNumber());
+
+        if (callback != null)
+            callback.onSave(currentInvoice);
+    }
+
+    @Override
+    public void onCancel() {
+        if (callback != null)
+            callback.onCancel();
+    }
+
+    private class InvoiceForm extends FormPanel {
+        DoubleTextField price;
+        TextField name;
+        TextField invoiceNumber;
+
+        public InvoiceForm(){
+            addRow("Name", name = new TextField());
+            addRow("Invoice Number", invoiceNumber = new TextField());
+            addRow("Price", price = new DoubleTextField());
+        }
+
+
+        void reset(){
+            price.setNumber(0d);
+            name.setText(null);
+            invoiceNumber.setText(null);
+        }
+
+        public void setPrice(Double price){
+            this.price.setNumber(price);
+        }
+
+        public void setName(String name){
+            this.name.setText(name);
+        }
+
+        public void setInvoiceNumber(String invoiceNumber){
+            this.invoiceNumber.setText(invoiceNumber);
+        }
+
+        public Double getPrice(){
+            return this.price.getNumber();
+        }
+
+        public String getName(){
+            return this.name.getText();
+        }
+
+        public String getInvoiceNumber(){
+            return this.invoiceNumber.getText();
+        }
+    }
+
+}

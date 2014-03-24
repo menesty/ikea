@@ -30,7 +30,7 @@ public class WarehousePage extends BasePage {
     @Override
     public Node createView() {
         warehouseViewComponent = new  WarehouseViewComponent();
-        paragonViewComponent = new ParagonViewComponent();
+        paragonViewComponent = new ParagonViewComponent(getStage());
 
         TabPane tabPane = new TabPane();
 
@@ -53,8 +53,6 @@ public class WarehousePage extends BasePage {
 
         return pane;
     }
-
-
 
     @Override
     protected Node createIconContent() {

@@ -16,11 +16,20 @@ import java.util.List;
 public class InvoicePdf extends Identifiable {
 
     public InvoicePdf() {
-
     }
 
     public InvoicePdf(String name) {
+        this(name, null);
+    }
+
+    public InvoicePdf(CustomerOrder customerOrder) {
+        this(null, customerOrder);
+    }
+
+    public InvoicePdf(String name, CustomerOrder customerOrder) {
         setName(name);
+
+        this.customerOrder = customerOrder;
         this.createdDate = new Date();
     }
 

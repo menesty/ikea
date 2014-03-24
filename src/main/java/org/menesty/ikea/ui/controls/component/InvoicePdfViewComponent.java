@@ -15,13 +15,17 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import org.menesty.ikea.IkeaApplication;
+import org.menesty.ikea.domain.CustomerOrder;
 import org.menesty.ikea.domain.InvoicePdf;
 import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.ui.controls.TotalStatusPanel;
 import org.menesty.ikea.ui.controls.dialog.Dialog;
+import org.menesty.ikea.ui.controls.dialog.InvoiceDialog;
 import org.menesty.ikea.ui.controls.table.InvoicePdfTableView;
 import org.menesty.ikea.ui.pages.DialogCallback;
+import org.menesty.ikea.ui.pages.EntityDialogCallback;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -38,7 +42,10 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
 
     private Button syncBtn;
 
+    private InvoiceDialog invoiceDialog;
+
     public InvoicePdfViewComponent(final Stage stage) {
+        invoiceDialog = new InvoiceDialog();
 
         invoicePdfTableView = new InvoicePdfTableView() {
             @Override
@@ -60,6 +67,31 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
         });
 
         ToolBar pdfToolBar = new ToolBar();
+
+        Button createInvoicePdf = new Button(null, ImageFactory.createAdd32Icon());
+        createInvoicePdf.setTooltip(new Tooltip("Create Invoice"));
+        createInvoicePdf.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                invoiceDialog.bind(new InvoicePdf(getCustomerOrder()), new EntityDialogCallback<InvoicePdf>() {
+                    @Override
+                    public void onSave(InvoicePdf invoicePdf, Object... params) {
+                        InvoicePdfViewComponent.this.onSave(invoicePdf);
+                        IkeaApplication.get().hidePopupDialog();
+                    }
+
+                    @Override
+                    public void onCancel() {
+                        IkeaApplication.get().hidePopupDialog();
+                    }
+                });
+
+                IkeaApplication.get().showPopupDialog(invoiceDialog);
+            }
+        });
+
+        pdfToolBar.getItems().add(createInvoicePdf);
+
         Button uploadInvoice = new Button(null, ImageFactory.createPdf32Icon());
         uploadInvoice.setTooltip(new Tooltip("Upload Invoice PDF"));
         uploadInvoice.setOnAction(new EventHandler<ActionEvent>() {
@@ -115,6 +147,8 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
     }
 
     protected abstract void onSync();
+
+    protected abstract CustomerOrder getCustomerOrder();
 
     private List<File> filter(List<File> files) {
         List<File> result = new ArrayList<>(files);

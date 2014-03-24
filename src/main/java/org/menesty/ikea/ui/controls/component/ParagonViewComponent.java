@@ -136,6 +136,7 @@ public class ParagonViewComponent extends BorderPane {
         }
 
         ContextMenu contextMenu = new ContextMenu();
+
         MenuItem downloadEppItem = new MenuItem("Download Epp", ImageFactory.createDownload16Icon());
         downloadEppItem.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -145,12 +146,14 @@ public class ParagonViewComponent extends BorderPane {
                 if (paragonDto != null) {
                     loadingPane.bindTask(paragonEppService);
                     paragonEppService.setParagonId(paragonDto.getId());
-                    paragonEppService.reset();
+                    paragonEppService.restart();
                 }
             }
         });
-        tableView.setContextMenu(contextMenu);
 
+        contextMenu.getItems().add(downloadEppItem);
+
+        tableView.setContextMenu(contextMenu);
 
         ToolBar control = new ToolBar();
         Button refresh = new Button(null, ImageFactory.createReload32Icon());
