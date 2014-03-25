@@ -11,6 +11,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
+import javafx.stage.Stage;
+import org.menesty.ikea.IkeaApplication;
 import org.menesty.ikea.ui.controls.pane.LoadingPane;
 
 /**
@@ -78,6 +80,10 @@ public class BaseDialog extends StackPane {
         bottomBar.setAlignment(Pos.BASELINE_RIGHT);
         bottomBar.getChildren().addAll(cancelBtn, okBtn);
         VBox.setMargin(bottomBar, new Insets(20, 5, 5, 5));
+    }
+
+    public Stage getStage(){
+        return IkeaApplication.get().getStage();
     }
 
     public void addRow(Node... rows) {

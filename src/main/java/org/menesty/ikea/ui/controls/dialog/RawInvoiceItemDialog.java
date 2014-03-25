@@ -65,7 +65,7 @@ public class RawInvoiceItemDialog extends BaseDialog {
                         try {
                             productInfo = ServiceFacade.getProductService().loadOrCreate(productIdField.getProductId());
                         } catch (ProductFetchException e) {
-                            Toast.makeText("Product not found", Toast.DURATION_SHORT);
+                            Toast.makeText("Product not found", Toast.DURATION_LONG).show(getStage());
                         }
 
                         if (productInfo != null) {
@@ -74,19 +74,24 @@ public class RawInvoiceItemDialog extends BaseDialog {
                             wat.setNumber(23);
                         }
 
-                        okBtn.setDisable(productInfo == null);
-
                         RawInvoiceItemForm.this.productInfo = productInfo;
-
-                        detailPane.setDisable(productInfo == null);
 
                         loadingPane.hide();
 
                     }
 
+                    String productId = productIdField.getProductId();
+
+                    if (productInfo == null || productId == null || productId.length() < 8) {
+                        detailPane.setDisable(true);
+                        okBtn.setDisable(true);
+                    } else {
+                        detailPane.setDisable(false);
+                        okBtn.setDisable(false);
+                    }
+
                 }
             });
-
             productIdField.getField().addEventFilter(KeyEvent.KEY_TYPED, new EventHandler<KeyEvent>() {
                 public void handle(KeyEvent event) {
                     TextField field = productIdField.getField();
@@ -99,7 +104,7 @@ public class RawInvoiceItemDialog extends BaseDialog {
                                 event.getCharacter() + field.getText()
                                 .substring(field.getSelection().getEnd(), field.getText().length());
 
-                    if (!NumberUtils.isNumber(newValue))
+                    if (!NumberUtils.isNumber(newValue) || (field.getText() != null && field.getText().length() + 1 > 8))
                         event.consume();
                 }
             });
@@ -114,13 +119,14 @@ public class RawInvoiceItemDialog extends BaseDialog {
         }
 
         public void reset() {
+            productInfo = null;
+
             productIdField.setProductId(null);
             count.setNumber(0d);
             price.setNumber(0d);
             name.setText(null);
             wat.setNumber(23);
-            productInfo = null;
-            okBtn.setDisable(false);
+
         }
 
         void setPrice(double price) {
@@ -156,6 +162,7 @@ public class RawInvoiceItemDialog extends BaseDialog {
         void setProductInfo(ProductInfo productInfo) {
             this.productInfo = productInfo;
             detailPane.setDisable(productInfo == null);
+            okBtn.setDisable(productInfo == null);
         }
 
         ProductInfo getProductInfo() {
