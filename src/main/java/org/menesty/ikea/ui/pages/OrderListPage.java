@@ -78,7 +78,7 @@ public class OrderListPage extends BasePage {
 
         ToolBar control = createToolBar();
 
-        pagination = new Pagination(0);
+        pagination = new Pagination(1, 0);
 
         pagination.currentPageIndexProperty().addListener(new ChangeListener<Number>() {
             @Override

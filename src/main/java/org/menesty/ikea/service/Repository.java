@@ -34,7 +34,7 @@ public abstract class Repository<T extends Identifiable> {
     public List<T> load(int offset, int limit) {
         begin();
 
-        String queryString = "select entity from " + entityClass.getName() + " entity";
+        String queryString = "select entity from " + entityClass.getName() + " entity order by entity.id desc ";
         TypedQuery<T> query = getEm().createQuery(queryString, entityClass);
         query.setMaxResults(limit);
         query.setFirstResult(offset);
