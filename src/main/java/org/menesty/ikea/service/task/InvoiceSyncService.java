@@ -78,8 +78,10 @@ public class InvoiceSyncService extends AbstractAsyncService<Void> {
             protected Void call() throws Exception {
                 List<WarehouseItemDto> result = new ArrayList<>();
                 //TODO FIX me change to one query
+                int orderId = ((int) NumberUtil.parse(_order.getName()));
+
                 for (InvoiceItem item : ServiceFacade.getInvoiceItemService().loadBy(_order))
-                    result.add(convert(_order.getId(), item));
+                    result.add(convert(orderId, item));
 
                 try {
                     sendData(new Gson().toJson(result));
