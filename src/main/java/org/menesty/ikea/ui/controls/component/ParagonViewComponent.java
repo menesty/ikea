@@ -76,7 +76,7 @@ public class ParagonViewComponent extends BorderPane {
                         fileName += ".epp";
 
                     try {
-                        new FileOutputStream(fileName).write(value.getBytes("ISO-8859-2"));
+                        new FileOutputStream(fileName).write(value.getBytes());
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
