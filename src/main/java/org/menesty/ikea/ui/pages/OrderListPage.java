@@ -97,9 +97,7 @@ public class OrderListPage extends BasePage {
         pane.getChildren().add(0, borderPane);
 
         loadingPane.bindTask(loadService);
-
-        pagination.setCurrentPageIndex(0);
-        //loadService.restart();
+        loadService.restart();
         return pane;
     }
 
