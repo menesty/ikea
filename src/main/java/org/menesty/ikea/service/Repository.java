@@ -31,6 +31,30 @@ public abstract class Repository<T extends Identifiable> {
         return result;
     }
 
+    public List<T> load(int offset, int limit) {
+        begin();
+
+        String queryString = "select entity from " + entityClass.getName() + " entity";
+        TypedQuery<T> query = getEm().createQuery(queryString, entityClass);
+        query.setMaxResults(limit);
+        query.setFirstResult(offset);
+
+        List<T> result = query.getResultList();
+        commit();
+        return result;
+    }
+
+    public long count(){
+        begin();
+
+        String queryString = "select count(entity) from " + entityClass.getName() + " entity";
+        TypedQuery<Long> query = getEm().createQuery(queryString, Long.class);
+        Long result = query.getSingleResult();
+
+        commit();
+        return result;
+    }
+
     public EntityManager getEm() {
         return DatabaseService.getEntityManager();
     }

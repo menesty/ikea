@@ -5,6 +5,7 @@ import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -21,6 +22,7 @@ import javafx.scene.layout.StackPane;
 import javafx.util.Callback;
 import org.menesty.ikea.IkeaApplication;
 import org.menesty.ikea.domain.CustomerOrder;
+import org.menesty.ikea.domain.PagingResult;
 import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.service.AbstractAsyncService.SucceededListener;
@@ -51,15 +53,21 @@ public class OrderListPage extends BasePage {
 
     private LoadService loadService;
 
+    private Pagination pagination;
+
+    private static final int ITEM_PER_PAGE = 5;
+
     public OrderListPage() {
         super(Pages.ORDERS.getTitle());
 
         loadService = new LoadService();
-        loadService.setOnSucceededListener(new SucceededListener<List<CustomerOrder>>() {
+        loadService.setOnSucceededListener(new SucceededListener<PagingResult<CustomerOrder>>() {
             @Override
-            public void onSucceeded(final List<CustomerOrder> value) {
+            public void onSucceeded(final PagingResult<CustomerOrder> value) {
                 tableView.getItems().clear();
-                tableView.getItems().addAll(transform((value)));
+                tableView.getItems().addAll(transform((value.getData())));
+
+                pagination.setPageCount(value.getCount() / ITEM_PER_PAGE);
             }
         });
     }
@@ -70,15 +78,28 @@ public class OrderListPage extends BasePage {
 
         ToolBar control = createToolBar();
 
+        pagination = new Pagination(0);
+
+        pagination.currentPageIndexProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number pageIndex) {
+                loadService.setPageIndex(pageIndex.intValue());
+                loadService.restart();
+            }
+        });
+
         BorderPane borderPane = new BorderPane();
         borderPane.setCenter(tableView);
         borderPane.setTop(control);
+        borderPane.setBottom(pagination);
 
         StackPane pane = createRoot();
         pane.getChildren().add(0, borderPane);
 
         loadingPane.bindTask(loadService);
-        loadService.restart();
+
+        pagination.setCurrentPageIndex(0);
+        //loadService.restart();
         return pane;
     }
 
@@ -117,7 +138,8 @@ public class OrderListPage extends BasePage {
                     public ObservableValue<String> call(TableColumn.CellDataFeatures<OrderTableItem, String> item) {
                         return new SimpleStringProperty(DATE_FORMAT.format(item.getValue().getOrder().getCreatedDate()));
                     }
-                });
+                }
+        );
 
         TableView<OrderTableItem> tableView = new TableView<>();
 
@@ -319,18 +341,32 @@ public class OrderListPage extends BasePage {
         return ImageFactory.createOrders72Icon();
     }
 
-}
 
-class LoadService extends AbstractAsyncService<List<CustomerOrder>> {
+    class LoadService extends AbstractAsyncService<PagingResult<CustomerOrder>> {
+        private SimpleIntegerProperty pageIndex = new SimpleIntegerProperty();
 
-    @Override
-    protected Task<List<CustomerOrder>> createTask() {
-        return new Task<List<CustomerOrder>>() {
-            @Override
-            protected List<CustomerOrder> call() throws Exception {
-                return ServiceFacade.getOrderService().load();
-            }
-        };
+        @Override
+        protected Task<PagingResult<CustomerOrder>> createTask() {
+            final int _pageIndex = pageIndex.get();
+
+            return new Task<PagingResult<CustomerOrder>>() {
+                @Override
+                protected PagingResult<CustomerOrder> call() throws Exception {
+                    PagingResult<CustomerOrder> result = new PagingResult<>();
+
+                    result.setData(ServiceFacade.getOrderService().load(_pageIndex * ITEM_PER_PAGE, ITEM_PER_PAGE));
+                    result.setCount((int) ServiceFacade.getOrderService().count());
+
+                    return result;
+                }
+            };
+        }
+
+        public void setPageIndex(int pageIndex) {
+            this.pageIndex.set(pageIndex);
+        }
     }
 }
+
+
 

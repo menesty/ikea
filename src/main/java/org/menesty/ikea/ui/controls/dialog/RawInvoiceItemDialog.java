@@ -7,8 +7,10 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
 import org.apache.commons.lang.math.NumberUtils;
 import org.menesty.ikea.domain.ProductInfo;
+import org.menesty.ikea.exception.ProductFetchException;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.service.ServiceFacade;
+import org.menesty.ikea.ui.Toast;
 import org.menesty.ikea.ui.controls.form.DoubleTextField;
 import org.menesty.ikea.ui.controls.form.IntegerTextField;
 import org.menesty.ikea.ui.controls.form.ProductIdField;
@@ -57,7 +59,14 @@ public class RawInvoiceItemDialog extends BaseDialog {
 
                     if (productIdField.getProductId() != null && productIdField.getProductId().length() == 8) {
                         loadingPane.show();
-                        ProductInfo productInfo = ServiceFacade.getProductService().loadOrCreate(productIdField.getProductId());
+
+                        ProductInfo productInfo = null;
+
+                        try {
+                            productInfo = ServiceFacade.getProductService().loadOrCreate(productIdField.getProductId());
+                        } catch (ProductFetchException e) {
+                            Toast.makeText("Product not found", Toast.DURATION_SHORT);
+                        }
 
                         if (productInfo != null) {
                             name.setText(productInfo.getName());
@@ -132,24 +141,24 @@ public class RawInvoiceItemDialog extends BaseDialog {
             silent = false;
         }
 
-        double getPrice(){
+        double getPrice() {
             return this.price.getNumber();
         }
 
-        double getCount(){
+        double getCount() {
             return this.count.getNumber();
         }
 
-        String getName(){
+        String getName() {
             return this.name.getText();
         }
 
-        void setProductInfo(ProductInfo productInfo){
+        void setProductInfo(ProductInfo productInfo) {
             this.productInfo = productInfo;
             detailPane.setDisable(productInfo == null);
         }
 
-        ProductInfo getProductInfo(){
+        ProductInfo getProductInfo() {
             return productInfo;
         }
     }
