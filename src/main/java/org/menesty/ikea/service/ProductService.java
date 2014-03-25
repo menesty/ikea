@@ -111,7 +111,7 @@ public class ProductService extends Repository<ProductInfo> {
 
     public ProductInfo getProductInfo(final RawInvoiceProductItem invoiceItem) {
         try {
-            ProductInfo product = findByArtNumber(invoiceItem.getArtNumber());
+            ProductInfo product = findByArtNumber(invoiceItem.getOriginalArtNumber());
 
             if (product == null) {
                 product = loadFromIkea(invoiceItem.getPrepareArtNumber());

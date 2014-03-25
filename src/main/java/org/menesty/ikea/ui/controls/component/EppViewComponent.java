@@ -406,7 +406,7 @@ public abstract class EppViewComponent extends StackPane {
         for (Map.Entry<ProductInfo.Group, Integer> entry : groupMap.entrySet())
             if (entry.getValue() > maxIndex) {
                 maxIndex = entry.getValue();
-                subName = entry.getKey().getTitel().equals("") ? entry.getKey().name() : entry.getKey().getTitel();
+                subName = entry.getKey().getTitle().equals("") ? entry.getKey().name() : entry.getKey().getTitle();
             }
 
         String name = String.format("Zestaw IKEA %1$s", subName);

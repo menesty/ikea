@@ -20,15 +20,19 @@ import java.math.RoundingMode;
 @Entity
 public class RawInvoiceProductItem extends Identifiable {
 
-    private String originalArtNumber;
+    public RawInvoiceProductItem() {
 
-    private String artNumber;
+    }
+
+    public RawInvoiceProductItem(InvoicePdf invoicePdf) {
+       this.invoicePdf = invoicePdf;
+    }
+
+    private String originalArtNumber;
 
     private String name;
 
     private double count;
-
-    private String comment;
 
     private double price;
 
@@ -71,18 +75,6 @@ public class RawInvoiceProductItem extends Identifiable {
         return BigDecimal.valueOf(getPrice()).multiply(BigDecimal.valueOf(count)).setScale(2, RoundingMode.CEILING).doubleValue();
     }
 
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
-
-    public void setPriceStr(String priceStr) {
-        price = Double.valueOf(priceStr.trim().replaceAll("[\\s\\u00A0]+", "").replace(",", "."));
-    }
-
     public String getWat() {
         return wat;
     }
@@ -103,16 +95,8 @@ public class RawInvoiceProductItem extends Identifiable {
         this.originalArtNumber = originalArtNumber;
     }
 
-    public String getArtNumber() {
-        return artNumber;
-    }
-
     public String getPrepareArtNumber() {
-        return ProductInfo.formatProductId(artNumber);
-    }
-
-    public void setArtNumber(String artNumber) {
-        this.artNumber = artNumber;
+        return ProductInfo.formatProductId(originalArtNumber);
     }
 
     public String getName() {
@@ -143,6 +127,6 @@ public class RawInvoiceProductItem extends Identifiable {
 
     @Override
     public String toString() {
-        return artNumber + ";" + name + ";" + count + ";" + wat + ";" + String.valueOf(getPrice()).replace(".", ",") + ";" + String.valueOf(getTotal()).replace(".", ",");
+        return getPrepareArtNumber() + ";" + name + ";" + count + ";" + wat + ";" + String.valueOf(getPrice()).replace(".", ",") + ";" + String.valueOf(getTotal()).replace(".", ",");
     }
 }

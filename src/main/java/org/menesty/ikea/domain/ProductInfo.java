@@ -53,7 +53,7 @@ public class ProductInfo extends Identifiable {
             return groups;
         }
 
-        public String getTitel() {
+        public String getTitle() {
             return title;
         }
     }
@@ -149,17 +149,21 @@ public class ProductInfo extends Identifiable {
 
     public static String formatProductId(final String artNumber) {
         String productId = artNumber;
-        if (Character.isAlphabetic(artNumber.charAt(0)))
 
+        if (Character.isAlphabetic(artNumber.charAt(0)))
             productId = productId.substring(1);
+
         productId = productId.replaceAll("\\D+", "");
 
         if (productId.length() < 8)
             productId = String.format("%08d%n", Integer.valueOf(productId));
 
         int lastPos = productId.length();
+
         return (Character.isAlphabetic(artNumber.charAt(0)) ? artNumber.charAt(0) : "")
-                + (productId.substring(0, lastPos - 5) + "-" + productId.substring(lastPos - 5, lastPos - 2) + "-" + productId.substring(lastPos - 2)).intern();
+                + (productId.substring(0, lastPos - 5) + "-"
+                + productId.substring(lastPos - 5, lastPos - 2) + "-"
+                + productId.substring(lastPos - 2)).intern();
     }
 
     public String getName() {

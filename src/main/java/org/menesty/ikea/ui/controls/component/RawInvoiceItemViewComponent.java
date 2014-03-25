@@ -7,10 +7,14 @@ import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import org.menesty.ikea.IkeaApplication;
+import org.menesty.ikea.domain.InvoicePdf;
 import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.ui.controls.TotalStatusPanel;
+import org.menesty.ikea.ui.controls.dialog.RawInvoiceItemDialog;
 import org.menesty.ikea.ui.controls.table.RawInvoiceTableView;
+import org.menesty.ikea.ui.pages.EntityDialogCallback;
 
 import java.io.File;
 import java.math.BigDecimal;
@@ -19,12 +23,45 @@ import java.util.List;
 public abstract class RawInvoiceItemViewComponent extends BorderPane {
 
     private final RawInvoiceTableView rawInvoiceItemTableView;
+
     private final TotalStatusPanel totalStatusPanel;
 
     private String artPrefix = "";
 
+    private RawInvoiceItemDialog rawInvoiceItemDialog;
+
     public RawInvoiceItemViewComponent(final Stage stage) {
+        rawInvoiceItemDialog = new RawInvoiceItemDialog();
+
         ToolBar rawInvoiceControl = new ToolBar();
+
+        Button createRawInvoice = new Button(null, ImageFactory.createAdd32Icon());
+        createRawInvoice.setTooltip(new Tooltip("Create Invoice"));
+        createRawInvoice.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                InvoicePdf invoicePdf = getInvoicePdf();
+
+                if(invoicePdf == null)
+                    return;
+
+                rawInvoiceItemDialog.bind(new RawInvoiceProductItem(getInvoicePdf()), new EntityDialogCallback<RawInvoiceProductItem>() {
+                    @Override
+                    public void onSave(RawInvoiceProductItem item, Object... params) {
+                        RawInvoiceItemViewComponent.this.onSave(item);
+                        IkeaApplication.get().hidePopupDialog();
+                    }
+
+                    @Override
+                    public void onCancel() {
+                        IkeaApplication.get().hidePopupDialog();
+                    }
+                });
+
+                IkeaApplication.get().showPopupDialog(rawInvoiceItemDialog);
+            }
+        });
+        rawInvoiceControl.getItems().add(createRawInvoice);
 
 
         Button export = new Button(null, ImageFactory.createXlsExportIcon());
@@ -59,6 +96,10 @@ public abstract class RawInvoiceItemViewComponent extends BorderPane {
         setCenter(rawInvoiceItemTableView);
         setBottom(totalStatusPanel = new TotalStatusPanel());
     }
+
+    protected abstract void onSave(RawInvoiceProductItem item);
+
+    protected abstract InvoicePdf getInvoicePdf();
 
     public abstract void onExport(List<RawInvoiceProductItem> items, String path);
 

@@ -129,11 +129,11 @@ public class BaseDialog extends StackPane {
     }
 }
 
-class FormPanel extends GridPane {
+class RowPanel extends GridPane {
 
     private int currentRow = 0;
 
-    public FormPanel() {
+    public RowPanel() {
         setPadding(new Insets(8));
         setHgap(5.0F);
         setVgap(5.0F);
@@ -159,7 +159,11 @@ class FormPanel extends GridPane {
     }
 
     public void addRow(Node field) {
-        GridPane.setConstraints(field, 0, getCurrentRow(), 1, 1, HPos.LEFT, VPos.CENTER, Priority.ALWAYS, Priority.NEVER);
+        addRow(field, 1);
+    }
+
+    public void addRow(Node field, int columnSpan) {
+        GridPane.setConstraints(field, 0, getCurrentRow(), columnSpan, 1, HPos.LEFT, VPos.CENTER, Priority.ALWAYS, Priority.NEVER);
         getChildren().add(field);
         nextRow();
     }

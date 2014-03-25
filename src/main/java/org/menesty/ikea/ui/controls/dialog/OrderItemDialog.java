@@ -64,7 +64,7 @@ public class OrderItemDialog extends BaseDialog {
         orderItemForm.focus();
     }
 
-    class OrderItemForm extends FormPanel {
+    class OrderItemForm extends RowPanel {
         ProductIdField productId;
         DoubleTextField count;
         ComboBox<OrderItem.Type> type;

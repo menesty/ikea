@@ -1,5 +1,6 @@
 package org.menesty.ikea.ui.controls.form;
 
+import javafx.beans.InvalidationListener;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.control.TextField;
@@ -22,6 +23,7 @@ public class ProductIdField extends HBox {
 
             }
         });
+
         HBox.setMargin(imageView, new Insets(2, 2, 2, 2));
 
         productId = new TextField();
@@ -62,5 +64,9 @@ public class ProductIdField extends HBox {
     public void focus() {
         if (productId.isEditable() && !productId.isDisable())
             productId.requestFocus();
+    }
+
+    public void setChangeListener(InvalidationListener listener) {
+        productId.textProperty().addListener(listener);
     }
 }

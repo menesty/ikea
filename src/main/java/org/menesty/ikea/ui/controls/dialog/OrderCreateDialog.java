@@ -57,7 +57,7 @@ public class OrderCreateDialog extends BaseDialog {
 
     }
 
-    private class OrderForm extends FormPanel {
+    private class OrderForm extends RowPanel {
         private final ComboBox<User> generalUsers;
         private final ComboBox<User> comboUsers;
         TextField orderName;

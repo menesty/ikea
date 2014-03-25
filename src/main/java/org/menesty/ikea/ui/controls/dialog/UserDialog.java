@@ -45,7 +45,7 @@ public class UserDialog extends BaseDialog {
     }
 
 
-    private class UserForm extends FormPanel {
+    private class UserForm extends RowPanel {
         private final TextField login;
         private final TextField password;
         private final CheckBox combo;

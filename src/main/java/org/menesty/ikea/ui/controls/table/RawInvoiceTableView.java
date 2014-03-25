@@ -36,7 +36,7 @@ public class RawInvoiceTableView extends TableView<RawInvoiceProductItem> {
         {
             TableColumn<RawInvoiceProductItem, String> column = new TableColumn<>("Art # ");
             column.setMinWidth(100);
-            column.setCellValueFactory(ColumnUtil.<RawInvoiceProductItem, String>column("artNumber"));
+            column.setCellValueFactory(ColumnUtil.<RawInvoiceProductItem, String>column("prepareArtNumber"));
             getColumns().add(column);
         }
 

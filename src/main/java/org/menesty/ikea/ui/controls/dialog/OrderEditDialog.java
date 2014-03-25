@@ -70,7 +70,7 @@ public class OrderEditDialog extends BaseDialog {
             callback.onSave(currentEntity);
     }
 
-    private class OrderForm extends FormPanel {
+    private class OrderForm extends RowPanel {
         private final ComboBox<User> generalUsers;
         private final ComboBox<User> comboUsers;
         private final ComboBox<User> lackUsers;

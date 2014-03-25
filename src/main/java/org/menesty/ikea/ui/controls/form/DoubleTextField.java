@@ -75,6 +75,7 @@ public class DoubleTextField extends TextField {
         addEventFilter(KeyEvent.KEY_TYPED, new EventHandler<KeyEvent>() {
             public void handle(KeyEvent event) {
                 String newValue = getText().substring(0, getSelection().getStart()) + event.getCharacter() + getText().substring(getSelection().getEnd(), getText().length());
+
                 if (!NumberUtils.isNumber(newValue))
                     event.consume();
             }

@@ -31,4 +31,16 @@ public class LoadingPane extends StackPane {
         visibleProperty().bind(task.runningProperty());
         progressIndicator.visibleProperty().bind(task.runningProperty());
     }
+
+    public void show(){
+        maskRegion.setVisible(true);
+        setVisible(true);
+        progressIndicator.setVisible(true);
+    }
+
+    public void hide(){
+        maskRegion.setVisible(false);
+        setVisible(false);
+        progressIndicator.setVisible(false);
+    }
 }

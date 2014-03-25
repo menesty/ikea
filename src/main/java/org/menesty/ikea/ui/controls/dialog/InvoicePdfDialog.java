@@ -5,17 +5,17 @@ import org.menesty.ikea.domain.InvoicePdf;
 import org.menesty.ikea.ui.controls.form.DoubleTextField;
 import org.menesty.ikea.ui.pages.EntityDialogCallback;
 
-public class InvoiceDialog extends BaseDialog {
-    private InvoiceForm invoiceForm;
+public class InvoicePdfDialog extends BaseDialog {
+    private InvoiceForm form;
 
     private InvoicePdf currentInvoice;
 
     private EntityDialogCallback<InvoicePdf> callback;
 
-    public InvoiceDialog (){
+    public InvoicePdfDialog(){
         addRow(createTitle("Create invoice"));
 
-        addRow(invoiceForm = new InvoiceForm(), bottomBar);
+        addRow(form = new InvoiceForm(), bottomBar);
         okBtn.setText("Save");
     }
 
@@ -23,18 +23,18 @@ public class InvoiceDialog extends BaseDialog {
         currentInvoice = invoiceItem;
         this.callback = callback;
 
-        invoiceForm.reset();
-        invoiceForm.setPrice(invoiceItem.getPrice());
-        invoiceForm.setName(invoiceItem.getName());
-        invoiceForm.setInvoiceNumber(invoiceItem.getInvoiceNumber());
+        form.reset();
+        form.setPrice(invoiceItem.getPrice());
+        form.setName(invoiceItem.getName());
+        form.setInvoiceNumber(invoiceItem.getInvoiceNumber());
 
     }
 
     @Override
     public void onOk() {
-        currentInvoice.setPrice(invoiceForm.getPrice());
-        currentInvoice.setName(invoiceForm.getName());
-        currentInvoice.setInvoiceNumber(invoiceForm.getInvoiceNumber());
+        currentInvoice.setPrice(form.getPrice());
+        currentInvoice.setName(form.getName());
+        currentInvoice.setInvoiceNumber(form.getInvoiceNumber());
 
         if (callback != null)
             callback.onSave(currentInvoice);
@@ -46,7 +46,7 @@ public class InvoiceDialog extends BaseDialog {
             callback.onCancel();
     }
 
-    private class InvoiceForm extends FormPanel {
+    private class InvoiceForm extends RowPanel {
         DoubleTextField price;
         TextField name;
         TextField invoiceNumber;

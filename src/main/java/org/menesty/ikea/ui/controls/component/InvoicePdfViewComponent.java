@@ -22,7 +22,7 @@ import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.ui.controls.TotalStatusPanel;
 import org.menesty.ikea.ui.controls.dialog.Dialog;
-import org.menesty.ikea.ui.controls.dialog.InvoiceDialog;
+import org.menesty.ikea.ui.controls.dialog.InvoicePdfDialog;
 import org.menesty.ikea.ui.controls.table.InvoicePdfTableView;
 import org.menesty.ikea.ui.pages.DialogCallback;
 import org.menesty.ikea.ui.pages.EntityDialogCallback;
@@ -42,10 +42,10 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
 
     private Button syncBtn;
 
-    private InvoiceDialog invoiceDialog;
+    private InvoicePdfDialog invoicePdfDialog;
 
     public InvoicePdfViewComponent(final Stage stage) {
-        invoiceDialog = new InvoiceDialog();
+        invoicePdfDialog = new InvoicePdfDialog();
 
         invoicePdfTableView = new InvoicePdfTableView() {
             @Override
@@ -73,7 +73,7 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
         createInvoicePdf.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-                invoiceDialog.bind(new InvoicePdf(getCustomerOrder()), new EntityDialogCallback<InvoicePdf>() {
+                invoicePdfDialog.bind(new InvoicePdf(getCustomerOrder()), new EntityDialogCallback<InvoicePdf>() {
                     @Override
                     public void onSave(InvoicePdf invoicePdf, Object... params) {
                         InvoicePdfViewComponent.this.onSave(invoicePdf);
@@ -86,7 +86,7 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
                     }
                 });
 
-                IkeaApplication.get().showPopupDialog(invoiceDialog);
+                IkeaApplication.get().showPopupDialog(invoicePdfDialog);
             }
         });
 

@@ -35,7 +35,7 @@ public class ApplicationPreferenceDialog extends BaseDialog {
     }
 
 
-    class WarehousePreferenceForm extends FormPanel {
+    class WarehousePreferenceForm extends RowPanel {
         private final TextField user;
         private final TextField password;
         private final TextField host;

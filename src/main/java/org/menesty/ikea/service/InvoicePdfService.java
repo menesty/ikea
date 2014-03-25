@@ -1,11 +1,7 @@
 package org.menesty.ikea.service;
 
-import javafx.concurrent.WorkerStateEvent;
-import javafx.event.EventHandler;
-import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.util.PDFTextStripper;
-import org.menesty.ikea.db.DatabaseService;
 import org.menesty.ikea.domain.CustomerOrder;
 import org.menesty.ikea.domain.InvoicePdf;
 import org.menesty.ikea.domain.ProductInfo;
@@ -21,7 +17,6 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.util.*;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -66,7 +61,6 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
             Matcher m = linePattern.matcher(line);
             if (m.find()) {
                 RawInvoiceProductItem product = new RawInvoiceProductItem();
-                product.setArtNumber(m.group(2));
                 product.setOriginalArtNumber(m.group(2).replace("-", ""));
                 product.setName(m.group(3));
 
@@ -76,7 +70,10 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
                     count = count.divide(BigDecimal.valueOf(100));
 
                 product.setCount(count.doubleValue());
-                product.setPriceStr(m.group(6));
+
+                double price = Double.valueOf(m.group(6).trim().replaceAll("[\\s\\u00A0]+", "").replace(",", "."));
+
+                product.setPrice(price);
                 product.setWat(m.group(7));
                 product.setProductInfo(loadProductInfo(product));
                 product.invoicePdf = invoicePdf;
@@ -149,15 +146,15 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
     private ProductInfo loadProductInfo(RawInvoiceProductItem product) {
         ProductInfo productInfo = null;
         try {
-            productInfo = productService.loadOrCreate(product.getArtNumber());
+            productInfo = productService.loadOrCreate(product.getOriginalArtNumber());
         } catch (ProductFetchException e) {
-            System.out.println("Problem with open product : " + product.getArtNumber());
+            System.out.println("Problem with open product : " + product.getPrepareArtNumber());
         }
         if (productInfo == null) {
             productInfo = new ProductInfo();
             productInfo.setOriginalArtNum(product.getOriginalArtNumber());
             productInfo.setName(product.getName());
-            productInfo.setShortName(ProductService.generateShortName(product.getName(), product.getArtNumber(), 1));
+            productInfo.setShortName(ProductService.generateShortName(product.getName(), product.getPrepareArtNumber(), 1));
             productInfo.getPackageInfo().setBoxCount(1);
             productInfo = save(productInfo);
         }

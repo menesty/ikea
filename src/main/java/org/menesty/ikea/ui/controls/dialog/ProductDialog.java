@@ -145,7 +145,7 @@ public class ProductDialog extends BaseDialog {
         bindProperties();
     }
 
-    private class ProductForm extends FormPanel {
+    private class ProductForm extends RowPanel {
 
         private Label shortNameCount;
 
@@ -268,7 +268,7 @@ public class ProductDialog extends BaseDialog {
     private class PackageInfoForm {
 
 
-        private FormPanel formPanel;
+        private RowPanel formPanel;
         private DoubleTextField weight;
         private IntegerTextField boxCount;
         private DoubleTextField height;
@@ -276,7 +276,7 @@ public class ProductDialog extends BaseDialog {
         private DoubleTextField length;
 
         public PackageInfoForm() {
-            formPanel = new FormPanel();
+            formPanel = new RowPanel();
             formPanel.addRow("Box Count", boxCount = new IntegerTextField());
             formPanel.addRow("Weight (kg)", weight = new DoubleTextField());
             formPanel.addRow("Height (cm)", height = new DoubleTextField());
@@ -284,7 +284,7 @@ public class ProductDialog extends BaseDialog {
             formPanel.addRow("Length (cm)", length = new DoubleTextField());
         }
 
-        public FormPanel getForm() {
+        public RowPanel getForm() {
             return formPanel;
         }
 

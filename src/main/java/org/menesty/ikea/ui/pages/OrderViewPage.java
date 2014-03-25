@@ -1,14 +1,16 @@
 package org.menesty.ikea.ui.pages;
 
 import javafx.application.Platform;
-import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
-import javafx.scene.control.*;
+import javafx.scene.control.SplitPane;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
+import javafx.scene.control.TableRow;
 import javafx.scene.layout.StackPane;
 import org.apache.commons.lang.StringUtils;
 import org.menesty.ikea.db.DatabaseService;
@@ -16,7 +18,8 @@ import org.menesty.ikea.domain.*;
 import org.menesty.ikea.exception.LoginIkeaException;
 import org.menesty.ikea.processor.invoice.InvoiceItem;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
-import org.menesty.ikea.service.*;
+import org.menesty.ikea.service.AbstractAsyncService;
+import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.service.task.InvoiceSyncService;
 import org.menesty.ikea.ui.TaskProgress;
 import org.menesty.ikea.ui.controls.component.*;
@@ -26,8 +29,12 @@ import org.menesty.ikea.ui.controls.dialog.ProductDialog;
 import org.menesty.ikea.ui.controls.search.OrderItemSearchData;
 import org.menesty.ikea.util.NumberUtil;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 /**
@@ -365,6 +372,17 @@ public class OrderViewPage extends BasePage {
         splitPane.setOrientation(Orientation.VERTICAL);
 
         rawInvoiceItemViewComponent = new RawInvoiceItemViewComponent(getStage()) {
+            @Override
+            protected void onSave(RawInvoiceProductItem item) {
+                  ServiceFacade.getInvoicePdfService().save(item);
+                updateRawInvoiceTableView(getInvoicePdf());
+            }
+
+            @Override
+            protected InvoicePdf getInvoicePdf() {
+                return invoicePdfViewComponent.getSelected();
+            }
+
             @Override
             public void onExport(List<RawInvoiceProductItem> items, String path) {
                 ServiceFacade.getInvoiceService().exportToXls(items, path);
