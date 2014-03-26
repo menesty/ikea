@@ -345,10 +345,13 @@ public class ProductService extends Repository<ProductInfo> {
             part.setOriginalArtNum(originalArtNumber);
             part.setName(parsePartName(part.getArtNumber(), content));
             part.setShortName(generateShortName(part.getName(), part.getArtNumber(), part.getPackageInfo().getBoxCount()));
-            part.getPackageInfo().setBoxCount(1);
-        }
 
-        productPart.setCount(packageInfo.getBoxCount());
+            productPart.setCount(packageInfo.getBoxCount());
+            part.getPackageInfo().setBoxCount(1);
+        } else
+            productPart.setCount(packageInfo.getBoxCount());
+
+
         productPart.setProductInfo(part);
 
         return productPart;
