@@ -51,8 +51,6 @@ public class OrderViewPage extends BasePage {
 
     private ProductDialog productEditDialog;
 
-    //private IkeaUserService ikeaUserService;
-
     private RawInvoiceItemViewComponent rawInvoiceItemViewComponent;
 
     private StorageLackItemViewComponent storageLackItemViewComponent;
@@ -145,10 +143,11 @@ public class OrderViewPage extends BasePage {
             protected void onExportToIkea(List<StorageLack> items) {
                 final List<StorageLack> storageLacks = new ArrayList<>(items);
                 Iterator<StorageLack> iterator = storageLacks.iterator();
-                while (iterator.hasNext()) {
+
+                while (iterator.hasNext())
                     if (!iterator.next().isExist())
                         iterator.remove();
-                }
+
 
                 final IkeaUserFillProgressDialog logDialog = new IkeaUserFillProgressDialog() {
                     @Override
@@ -157,6 +156,7 @@ public class OrderViewPage extends BasePage {
                     }
                 };
                 OrderViewPage.this.showPopupDialog(logDialog);
+
                 new Thread(new Task<Void>() {
                     @Override
                     protected Void call() throws Exception {
@@ -193,7 +193,6 @@ public class OrderViewPage extends BasePage {
     }
 
     private Tab createOrderItemTab() {
-
         orderItemViewComponent = new OrderItemViewComponent(getStage()) {
             @Override
             protected void reloadProduct(OrderItem orderItem, final EventHandler<Event> onSucceeded) {
@@ -374,7 +373,7 @@ public class OrderViewPage extends BasePage {
         rawInvoiceItemViewComponent = new RawInvoiceItemViewComponent(getStage()) {
             @Override
             protected void onSave(RawInvoiceProductItem item) {
-                  ServiceFacade.getInvoicePdfService().save(item);
+                ServiceFacade.getInvoicePdfService().save(item);
                 updateRawInvoiceTableView(getInvoicePdf());
             }
 
@@ -395,8 +394,10 @@ public class OrderViewPage extends BasePage {
                     @Override
                     public void onSave(ProductInfo productInfo, Object[] params) {
                         ServiceFacade.getProductService().save(productInfo);
+
                         if (!(Boolean) params[0])
                             hidePopupDialog();
+
                         row.setItem(null);
                     }
 
@@ -410,7 +411,6 @@ public class OrderViewPage extends BasePage {
         };
 
         eppViewComponent = new EppViewComponent(getStage()) {
-
             @Override
             public void onChange(InvoicePdf invoicePdf) {
                 invoicePdfViewComponent.updateState();
@@ -429,7 +429,6 @@ public class OrderViewPage extends BasePage {
 
         splitPane.setDividerPosition(1, 0.40);
         splitPane.getItems().addAll(top, eppViewComponent);
-        ///splitPane.setDividerPosition(0, 0.40);
 
         invoiceTab.setContent(splitPane);
 
@@ -454,7 +453,6 @@ public class OrderViewPage extends BasePage {
     class CreateInvoicePdfTask extends Task<Void> {
 
         private final List<File> files;
-
 
         public CreateInvoicePdfTask(List<File> files) {
             this.files = files;
@@ -495,6 +493,7 @@ public class OrderViewPage extends BasePage {
                 @Override
                 public Void call() throws Exception {
                     ProductInfo productInfo = ServiceFacade.getProductService().loadOrCreate(orderItem.getArtNumber());
+
                     if (productInfo == null)
                         orderItem.increaseTryCount();
                     else {
@@ -502,6 +501,7 @@ public class OrderViewPage extends BasePage {
                         orderItem.setInvalidFetch(false);
                         ServiceFacade.getProductService().save(orderItem);
                     }
+
                     return null;
                 }
             });
@@ -531,6 +531,7 @@ public class OrderViewPage extends BasePage {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
             return null;
         }
     }
@@ -540,9 +541,9 @@ public class OrderViewPage extends BasePage {
     }
 
     private void updateRawInvoiceTableView(InvoicePdf selected) {
-        if (selected != null) {
+        if (selected != null)
             rawInvoiceItemViewComponent.setItems(selected.getProducts());
-        } else
+        else
             rawInvoiceItemViewComponent.setItems(Collections.<RawInvoiceProductItem>emptyList());
 
         eppViewComponent.setActive(selected);
@@ -550,7 +551,6 @@ public class OrderViewPage extends BasePage {
 
 
     class LoadService extends AbstractAsyncService<OrderData> {
-
         @Override
         protected Task<OrderData> createTask() {
             return new Task<OrderData>() {
@@ -562,6 +562,7 @@ public class OrderViewPage extends BasePage {
                             OrderData orderData = new OrderData();
                             orderData.invoicePdfs = ServiceFacade.getInvoicePdfService().loadBy(currentOrder);
                             orderData.orderItems = ServiceFacade.getOrderItemService().loadBy(currentOrder);
+
                             return orderData;
                         }
                     });
@@ -594,6 +595,7 @@ public class OrderViewPage extends BasePage {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
+
                     return null;
                 }
             };

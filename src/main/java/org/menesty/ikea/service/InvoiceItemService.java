@@ -28,12 +28,18 @@ public class InvoiceItemService extends Repository<InvoiceItem> {
     }
 
     public boolean hasItems(InvoicePdf invoicePdf) {
-        boolean result;
-        begin();
+        boolean started = isActive();
+
+        if (!started)
+            begin();
+
         TypedQuery<Long> query = getEm().createQuery("select count(entity.id) from " + entityClass.getName() + " entity where  entity.invoicePdf.id = ?1", Long.class);
         query.setParameter(1, invoicePdf.getId());
-        result = query.getSingleResult() > 0;
-        commit();
+        boolean result = query.getSingleResult() > 0;
+
+        if (!started)
+            commit();
+
         return result;
     }
 

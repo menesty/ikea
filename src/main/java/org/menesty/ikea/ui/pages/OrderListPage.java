@@ -21,6 +21,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.util.Callback;
 import org.menesty.ikea.IkeaApplication;
+import org.menesty.ikea.db.DatabaseService;
 import org.menesty.ikea.domain.CustomerOrder;
 import org.menesty.ikea.domain.PagingResult;
 import org.menesty.ikea.factory.ImageFactory;
@@ -42,6 +43,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 public class OrderListPage extends BasePage {
 
@@ -350,12 +352,18 @@ public class OrderListPage extends BasePage {
             return new Task<PagingResult<CustomerOrder>>() {
                 @Override
                 protected PagingResult<CustomerOrder> call() throws Exception {
-                    PagingResult<CustomerOrder> result = new PagingResult<>();
 
-                    result.setData(ServiceFacade.getOrderService().load(_pageIndex * ITEM_PER_PAGE, ITEM_PER_PAGE));
-                    result.setCount((int) ServiceFacade.getOrderService().count());
+                    return DatabaseService.runInTransaction(new Callable<PagingResult<CustomerOrder>>() {
+                        @Override
+                        public PagingResult<CustomerOrder> call() throws Exception {
+                            PagingResult<CustomerOrder> result = new PagingResult<>();
 
-                    return result;
+                            result.setData(ServiceFacade.getOrderService().load(_pageIndex * ITEM_PER_PAGE, ITEM_PER_PAGE));
+                            result.setCount((int) ServiceFacade.getOrderService().count());
+
+                            return result;
+                        }
+                    });
                 }
             };
         }

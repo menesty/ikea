@@ -16,6 +16,7 @@ import javafx.scene.layout.Region;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.menesty.ikea.IkeaApplication;
+import org.menesty.ikea.db.DatabaseService;
 import org.menesty.ikea.domain.CustomerOrder;
 import org.menesty.ikea.domain.InvoicePdf;
 import org.menesty.ikea.factory.ImageFactory;
@@ -31,6 +32,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 public abstract class InvoicePdfViewComponent extends BorderPane {
 
@@ -206,17 +208,24 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
     }
 
     public void updateState() {
-        boolean allowSync = true;
-        double total = 0d;
+        DatabaseService.runInTransaction(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                boolean allowSync = true;
+                double total = 0d;
 
-        for (InvoicePdfTableView.InvoicePdfTableItem item : invoicePdfTableView.getItems()) {
-            total += item.getInvoicePdf().getPrice();
+                for (InvoicePdfTableView.InvoicePdfTableItem item : invoicePdfTableView.getItems()) {
+                    total += item.getInvoicePdf().getPrice();
 
-            if (allowSync && !ServiceFacade.getInvoiceItemService().hasItems(item.getInvoicePdf()))
-                allowSync = false;
-        }
+                    if (allowSync && !ServiceFacade.getInvoiceItemService().hasItems(item.getInvoicePdf()))
+                        allowSync = false;
+                }
 
-        syncBtn.setDisable(!allowSync);
-        statusPanel.setTotal(total);
+                syncBtn.setDisable(!allowSync);
+                statusPanel.setTotal(total);
+
+                return null;
+            }
+        });
     }
 }

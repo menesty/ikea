@@ -23,16 +23,26 @@ public abstract class Repository<T extends Identifiable> {
     }
 
     public List<T> load() {
-        begin();
+        boolean started = isActive();
+
+        if (!started)
+            begin();
+
         String queryString = "select entity from " + entityClass.getName() + " entity";
         TypedQuery<T> query = getEm().createQuery(queryString, entityClass);
         List<T> result = query.getResultList();
-        commit();
+
+        if (!started)
+            commit();
+
         return result;
     }
 
     public List<T> load(int offset, int limit) {
-        begin();
+        boolean started = isActive();
+
+        if (!started)
+            begin();
 
         String queryString = "select entity from " + entityClass.getName() + " entity order by entity.id desc ";
         TypedQuery<T> query = getEm().createQuery(queryString, entityClass);
@@ -40,18 +50,26 @@ public abstract class Repository<T extends Identifiable> {
         query.setFirstResult(offset);
 
         List<T> result = query.getResultList();
-        commit();
+
+        if (!started)
+            commit();
+
         return result;
     }
 
     public long count(){
-        begin();
+        boolean started = isActive();
+
+        if (!started)
+            begin();
 
         String queryString = "select count(entity) from " + entityClass.getName() + " entity";
         TypedQuery<Long> query = getEm().createQuery(queryString, Long.class);
         Long result = query.getSingleResult();
 
-        commit();
+        if (!started)
+            commit();
+
         return result;
     }
 
@@ -128,8 +146,10 @@ public abstract class Repository<T extends Identifiable> {
 
     public <E extends Identifiable> void remove(E entity, Class<E> clazz) {
         boolean started = isActive();
+
         if (!started)
             begin();
+
         Query query = getEm().createQuery("delete from " + clazz.getName() + " entity where entity.id=?1");
         query.setParameter(1, entity.getId());
         query.executeUpdate();
