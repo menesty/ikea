@@ -129,6 +129,7 @@ public class OrderItemDialog extends BaseDialog {
             shortName.setText(null);
             price.setNumber(0d);
             type.setDisable(false);
+            type.getItems().clear();
             type.getItems().addAll(OrderItem.Type.getSelected());
         }
 

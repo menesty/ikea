@@ -99,6 +99,7 @@ public class OrderListPage extends BasePage {
         pane.getChildren().add(0, borderPane);
 
         loadingPane.bindTask(loadService);
+        loadService.setPageIndex(0);
         loadService.restart();
         return pane;
     }
@@ -189,18 +190,20 @@ public class OrderListPage extends BasePage {
         ToolBar control = new MToolBar();
         Button addOrder = new Button(null, ImageFactory.createAdd48Icon());
 
+        addOrder.setTooltip(new Tooltip("Create Order"));
         addOrder.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
                 showCreateOrderDialog();
             }
         });
 
-        final Button editOrder = new Button(null, ImageFactory.creteEdit48Icon());
+        final Button editOrder = new Button(null, ImageFactory.creteInfo48Icon());
         editOrder.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
                 IkeaApplication.getPageManager().goToPageByName("CustomerOrder", tableView.getSelectionModel().getSelectedItem().getOrder());
             }
         });
+        editOrder.setTooltip(new Tooltip("View order"));
         editOrder.setDisable(true);
 
         final Button deleteBtn = new Button(null, ImageFactory.createDelete48Icon());

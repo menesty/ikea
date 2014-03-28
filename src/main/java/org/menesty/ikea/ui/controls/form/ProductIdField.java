@@ -20,7 +20,6 @@ public class ProductIdField extends HBox {
             @Override
             public void handle(MouseEvent mouseEvent) {
                 ProductDialog.browse(productId.getText());
-
             }
         });
 

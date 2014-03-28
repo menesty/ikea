@@ -1,7 +1,6 @@
 package org.menesty.ikea.service;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.menesty.ikea.db.DatabaseTestCase;
 import org.menesty.ikea.domain.ProductInfo;
@@ -44,6 +43,16 @@ public class ProductServiceTest extends DatabaseTestCase {
         List<ProductPart> parts = productInfo.getParts();
         ProductPart commod = parts.get(0);
         Assert.assertEquals(2, commod.getCount());
+
+    }
+
+    @Test
+    public void comboPartParseIncorrect() throws IOException {
+        ProductService productService = new ProductService();
+
+        ProductInfo productInfo = productService.loadComboProduct("S49900221");
+
+        productInfo.getParts();
 
     }
 }

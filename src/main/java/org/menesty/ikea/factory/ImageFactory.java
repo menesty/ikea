@@ -99,4 +99,8 @@ public class ImageFactory {
     public static ImageView createDownload16Icon() {
         return new ImageView(new Image("/styles/images/icon/download-16x16.png"));
     }
+
+    public static ImageView creteInfo48Icon() {
+        return new ImageView(new Image("/styles/images/icon/info-48x48.png"));
+    }
 }

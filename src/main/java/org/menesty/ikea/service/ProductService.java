@@ -1,5 +1,6 @@
 package org.menesty.ikea.service;
 
+import org.apache.commons.lang.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -282,7 +283,7 @@ public class ProductService extends Repository<ProductInfo> {
         return shortName;
     }
 
-    protected ProductInfo loadComboProduct(String artNumber) throws IOException {
+    public ProductInfo loadComboProduct(String artNumber) throws IOException {
         artNumber = ProductInfo.cleanProductId(artNumber);
         Document doc = Jsoup.connect(PRODUCT_DETAIL_URL + artNumber).get();
         String name = getProductName(doc);
@@ -327,7 +328,7 @@ public class ProductService extends Repository<ProductInfo> {
             try {
                 part = loadFromIkea(artNumber);
             } catch (IOException e) {
-
+                logger.log(Level.SEVERE, "Load from Ikea server", e);
             }
 
         Pattern p = Pattern.compile("metricPackageInfo.*\\{(.*?" + originalArtNumber + ".*?)\\}");
@@ -371,6 +372,7 @@ public class ProductService extends Repository<ProductInfo> {
         PackageInfo packageInfo = new PackageInfo();
 
         Matcher m = Patterns.PACKAGE_INFO_PATTERN.matcher(content);
+
         if (m.find()) {
             System.out.println(m.group());
             packageInfo.setBoxCount(Integer.valueOf(m.group(1)));
@@ -390,10 +392,8 @@ public class ProductService extends Repository<ProductInfo> {
 
         Predicate where = cb.conjunction();
 
-        if (data.artNumber != null) {
-            where = cb.or(cb.like(root.<String>get("artNumber"), "%" + data.artNumber + "%"), cb.like(root.<String>get("originalArtNum"), "%" + data.artNumber + "%"));
-            where = cb.and(where);
-        }
+        if (StringUtils.isNotBlank(data.artNumber))
+            where = cb.like(root.<String>get("originalArtNum"), "%" + ProductInfo.cleanProductId(data.artNumber) + "%");
 
         if (data.productGroup != null)
             where = cb.and(where, cb.equal(root.<ProductInfo.Group>get("group"), data.productGroup));
@@ -500,5 +500,24 @@ public class ProductService extends Repository<ProductInfo> {
 
     private double getDouble(String value) {
         return NumberUtil.parse(value.trim());
+    }
+
+    public List<ProductInfo> loadCombos() {
+        boolean started = isActive();
+        try {
+            if (!started)
+                begin();
+
+            TypedQuery<ProductInfo> query = getEm().createQuery("select entity from " + entityClass.getName() + " entity where LOWER(entity.originalArtNum) like 's%'", entityClass);
+            List<ProductInfo> result = query.getResultList();
+
+            if (!started)
+                commit();
+            return result;
+        } catch (Exception e) {
+            rollback();
+            return null;
+        }
+
     }
 }

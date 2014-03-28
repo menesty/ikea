@@ -71,6 +71,8 @@ public class OrderViewPage extends BasePage {
 
     private StorageLackComboComponent storageLackComboComponent;
 
+    private RawInvoiceItemSearchComponent rawInvoiceItemSearchComponent;
+
     public OrderViewPage() {
         super("CustomerOrder");
 
@@ -85,6 +87,7 @@ public class OrderViewPage extends BasePage {
                 orderItemViewComponent.setItems(orderData.orderItems);
                 invoicePdfViewComponent.setItems(orderData.invoicePdfs);
 
+                updateInvoiceRawSearchTab();
                 updateRawInvoiceTableView();
             }
         });
@@ -107,6 +110,15 @@ public class OrderViewPage extends BasePage {
             }
         });
 
+    }
+
+    private void updateInvoiceRawSearchTab() {
+        List<RawInvoiceProductItem> items = new ArrayList<>();
+
+        for (InvoicePdf pdf : orderData.invoicePdfs)
+            items.addAll(pdf.getProducts());
+
+        rawInvoiceItemSearchComponent.setItems(items);
     }
 
     @Override
@@ -147,7 +159,6 @@ public class OrderViewPage extends BasePage {
                 while (iterator.hasNext())
                     if (!iterator.next().isExist())
                         iterator.remove();
-
 
                 final IkeaUserFillProgressDialog logDialog = new IkeaUserFillProgressDialog() {
                     @Override
@@ -321,6 +332,16 @@ public class OrderViewPage extends BasePage {
         return result;
     }
 
+    private Tab createInvoiceRawItemSearchTab() {
+        Tab tab = new Tab("Invoice Item Search");
+        tab.setClosable(false);
+
+        rawInvoiceItemSearchComponent = new RawInvoiceItemSearchComponent();
+        tab.setContent(rawInvoiceItemSearchComponent);
+
+        return tab;
+    }
+
     private TabPane createInvoiceView() {
         final TabPane tabPane = new TabPane();
 
@@ -374,6 +395,10 @@ public class OrderViewPage extends BasePage {
             @Override
             protected void onSave(RawInvoiceProductItem item) {
                 ServiceFacade.getInvoicePdfService().save(item);
+                //reload InvoicePdf items
+                ServiceFacade.getInvoicePdfService().reloadProducts(getInvoicePdf());
+
+                updateInvoiceRawSearchTab();
                 updateRawInvoiceTableView(getInvoicePdf());
             }
 
@@ -432,7 +457,7 @@ public class OrderViewPage extends BasePage {
 
         invoiceTab.setContent(splitPane);
 
-        tabPane.getTabs().addAll(orderItemTab = createOrderItemTab(), invoiceTab, createStorageTab(), createStorageComboTab());
+        tabPane.getTabs().addAll(orderItemTab = createOrderItemTab(), invoiceTab, createInvoiceRawItemSearchTab(), createStorageTab(), createStorageComboTab());
         return tabPane;
     }
 

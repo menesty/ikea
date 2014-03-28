@@ -147,12 +147,20 @@ public class RawInvoiceItemDialog extends BaseDialog {
             silent = false;
         }
 
+        String getProductId() {
+            return productIdField.getProductId();
+        }
+
         double getPrice() {
             return this.price.getNumber();
         }
 
         double getCount() {
             return this.count.getNumber();
+        }
+
+        int getWat() {
+            return wat.getNumber();
         }
 
         String getName() {
@@ -185,10 +193,12 @@ public class RawInvoiceItemDialog extends BaseDialog {
 
     @Override
     public void onOk() {
+        currentItem.setOriginalArtNumber(form.getProductId());
         currentItem.setPrice(form.getPrice());
         currentItem.setName(form.getName());
         currentItem.setCount(form.getCount());
         currentItem.setProductInfo(form.getProductInfo());
+        currentItem.setWat(form.getWat() + "");
 
         if (callback != null)
             callback.onSave(currentItem);

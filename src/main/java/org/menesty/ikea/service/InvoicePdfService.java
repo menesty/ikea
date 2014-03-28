@@ -244,6 +244,7 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
         try {
             if (!started)
                 begin();
+
             TypedQuery<RawInvoiceProductItem> query = getEm().createQuery("select entity from " + RawInvoiceProductItem.class.getName() + " entity left join entity.invoicePdf invoice  where invoice.customerOrder.id = ?1", RawInvoiceProductItem.class);
             query.setParameter(1, order.getId());
             return query.getResultList();
@@ -251,6 +252,22 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
             if (!started)
                 commit();
         }
+    }
+
+    public void reloadProducts(InvoicePdf invoicePdf) {
+        boolean started = isActive();
+
+        if (!started)
+            begin();
+
+        TypedQuery<RawInvoiceProductItem> query = getEm().createQuery("select entity from " + RawInvoiceProductItem.class.getName() + " entity  where entity.invoicePdf.id = ?1", RawInvoiceProductItem.class);
+        query.setParameter(1, invoicePdf.getId());
+
+        invoicePdf.setProducts(query.getResultList());
+
+        if (!started)
+            commit();
+
     }
 }
 

@@ -45,7 +45,7 @@ public abstract class RawInvoiceItemViewComponent extends BorderPane {
                 if(invoicePdf == null)
                     return;
 
-                rawInvoiceItemDialog.bind(new RawInvoiceProductItem(getInvoicePdf()), new EntityDialogCallback<RawInvoiceProductItem>() {
+                rawInvoiceItemDialog.bind(new RawInvoiceProductItem(invoicePdf), new EntityDialogCallback<RawInvoiceProductItem>() {
                     @Override
                     public void onSave(RawInvoiceProductItem item, Object... params) {
                         RawInvoiceItemViewComponent.this.onSave(item);
