@@ -221,6 +221,7 @@ public class InvoiceItem extends Identifiable {
             }
 
             double total = round(pricePerItem * productInfo.getPackageInfo().getBoxCount());
+
             if (total != price)
                 result.get(0).price = pricePerItem + (price - total);
 
@@ -245,7 +246,7 @@ public class InvoiceItem extends Identifiable {
 
         if (boxes > 1) {
             invoiceItem.artNumber += "(" + box + ")";
-            invoiceItem.shortName += " " + box + " część";
+            invoiceItem.shortName += " " + box + "/" + boxes;
         }
 
         if (artSuffix != null && !artSuffix.isEmpty())
