@@ -219,8 +219,14 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
             if (!started)
                 begin();
 
-            TypedQuery<InvoicePdf> query = getEm().createQuery("select entity from " + entityClass.getName() + " entity where entity.customerOrder.id = ?1", entityClass);
-            query.setParameter(1, order.getId());
+            TypedQuery<InvoicePdf> query;
+
+            if (order != null) {
+                query = getEm().createQuery("select entity from " + entityClass.getName() + " entity where entity.customerOrder.id = ?1", entityClass);
+                query.setParameter(1, order.getId());
+            } else
+                query = getEm().createQuery("select entity from " + entityClass.getName() + " entity where entity.customerOrder.id IS NULL", entityClass);
+
             return query.getResultList();
 
         } finally {

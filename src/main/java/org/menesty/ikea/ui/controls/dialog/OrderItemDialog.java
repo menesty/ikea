@@ -11,6 +11,7 @@ import org.menesty.ikea.service.OrderService;
 import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.ui.controls.form.DoubleTextField;
 import org.menesty.ikea.ui.controls.form.ProductIdField;
+import org.menesty.ikea.ui.layout.RowPanel;
 import org.menesty.ikea.ui.pages.EntityDialogCallback;
 
 public class OrderItemDialog extends BaseDialog {

@@ -103,4 +103,12 @@ public class ImageFactory {
     public static ImageView creteInfo48Icon() {
         return new ImageView(new Image("/styles/images/icon/info-48x48.png"));
     }
+
+    public static ImageView createSetting22Icon() {
+        return new ImageView(new Image("/styles/images/settings.png"));
+    }
+
+    public static ImageView createInvoice72Icon() {
+        return new ImageView(new Image("/styles/images/icon/invoice-72x72.png"));
+    }
 }

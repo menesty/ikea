@@ -2,15 +2,15 @@ package org.menesty.ikea.ui.controls.dialog;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.geometry.VPos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.menesty.ikea.IkeaApplication;
 import org.menesty.ikea.ui.controls.pane.LoadingPane;
@@ -135,50 +135,3 @@ public class BaseDialog extends StackPane {
     }
 }
 
-class RowPanel extends GridPane {
-
-    private int currentRow = 0;
-
-    public RowPanel() {
-        setPadding(new Insets(8));
-        setHgap(5.0F);
-        setVgap(5.0F);
-        setPrefWidth(USE_PREF_SIZE);
-    }
-
-    public void addRow(String labelText, Node field) {
-        Label label = new Label(labelText);
-        label.setId("proxy-dialog-label");
-        GridPane.setConstraints(label, 0, getCurrentRow());
-
-        GridPane.setConstraints(field, 1, getCurrentRow(), 1, 1, HPos.LEFT, VPos.CENTER, Priority.ALWAYS, Priority.NEVER);
-        getChildren().addAll(label, field);
-        nextRow();
-    }
-
-    public void addRow(String labelText) {
-        Label label = new Label(labelText);
-        label.setId("proxy-dialog-label");
-        GridPane.setConstraints(label, 0, getCurrentRow());
-        getChildren().add(label);
-        nextRow();
-    }
-
-    public void addRow(Node field) {
-        addRow(field, 1);
-    }
-
-    public void addRow(Node field, int columnSpan) {
-        GridPane.setConstraints(field, 0, getCurrentRow(), columnSpan, 1, HPos.LEFT, VPos.CENTER, Priority.ALWAYS, Priority.NEVER);
-        getChildren().add(field);
-        nextRow();
-    }
-
-    public int getCurrentRow() {
-        return currentRow;
-    }
-
-    public int nextRow() {
-        return ++currentRow;
-    }
-}

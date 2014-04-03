@@ -4,6 +4,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import org.menesty.ikea.ApplicationPreference;
 import org.menesty.ikea.service.ServiceFacade;
+import org.menesty.ikea.ui.layout.RowPanel;
 
 public class ApplicationPreferenceDialog extends BaseDialog {
 

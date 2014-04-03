@@ -3,6 +3,7 @@ package org.menesty.ikea.ui.controls.dialog;
 import javafx.scene.control.TextField;
 import org.menesty.ikea.domain.InvoicePdf;
 import org.menesty.ikea.ui.controls.form.DoubleTextField;
+import org.menesty.ikea.ui.layout.RowPanel;
 import org.menesty.ikea.ui.pages.EntityDialogCallback;
 
 public class InvoicePdfDialog extends BaseDialog {

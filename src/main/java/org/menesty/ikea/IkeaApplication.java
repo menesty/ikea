@@ -11,14 +11,18 @@ import javafx.scene.DepthTest;
 import javafx.scene.Node;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
+import javafx.scene.control.Button;
+import javafx.scene.control.Control;
+import javafx.scene.control.ToolBar;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.menesty.ikea.db.DatabaseService;
-import org.menesty.ikea.ui.controls.*;
+import org.menesty.ikea.factory.ImageFactory;
+import org.menesty.ikea.ui.controls.BreadcrumbBar;
+import org.menesty.ikea.ui.controls.MainToolBar;
+import org.menesty.ikea.ui.controls.PopupDialog;
+import org.menesty.ikea.ui.controls.WindowResizeButton;
 import org.menesty.ikea.ui.controls.dialog.ApplicationPreferenceDialog;
 import org.menesty.ikea.ui.controls.dialog.BaseDialog;
 import org.menesty.ikea.ui.controls.pane.LoadingPane;
@@ -112,7 +116,7 @@ public class IkeaApplication extends Application {
         HBox.setHgrow(spacer3, Priority.ALWAYS);
 
 
-        Button settingsButton = new Button(null, new ImageView(new Image(this.getClass().getResourceAsStream("/styles/images/settings.png"))));
+        Button settingsButton = new Button(null, ImageFactory.createSetting22Icon());
         settingsButton.setId("SettingsButton");
         settingsButton.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
@@ -151,7 +155,7 @@ public class IkeaApplication extends Application {
 
 
         OrderListPage orderListPage = new OrderListPage();
-        pageManager.register(new CategoryPage("IKEA", orderListPage, new ProductPage(), new UserPage(), new WarehousePage()));
+        pageManager.register(new CategoryPage("IKEA", orderListPage, new ProductPage(), new UserPage(), new WarehousePage(), new CustomInvoicePage()));
 
         OrderViewPage orderViewPage = new OrderViewPage();
         orderViewPage.setBreadCrumbPath(orderListPage.getBreadCrumb());

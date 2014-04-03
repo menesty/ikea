@@ -16,6 +16,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Window;
 import org.menesty.ikea.domain.User;
 import org.menesty.ikea.service.UserService;
+import org.menesty.ikea.ui.layout.RowPanel;
 
 import java.io.File;
 import java.util.Arrays;

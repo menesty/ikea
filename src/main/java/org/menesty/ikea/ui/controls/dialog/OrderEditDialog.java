@@ -8,6 +8,7 @@ import javafx.scene.control.TextField;
 import org.menesty.ikea.domain.CustomerOrder;
 import org.menesty.ikea.domain.User;
 import org.menesty.ikea.service.UserService;
+import org.menesty.ikea.ui.layout.RowPanel;
 import org.menesty.ikea.ui.pages.EntityDialogCallback;
 
 import java.util.List;

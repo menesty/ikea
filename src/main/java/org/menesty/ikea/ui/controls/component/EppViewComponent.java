@@ -429,7 +429,7 @@ public abstract class EppViewComponent extends StackPane {
             return new Task<List<InvoiceItem>>() {
                 @Override
                 protected List<InvoiceItem> call() throws Exception {
-                    return ServiceFacade.getInvoiceItemService().load(_invoicePdf);
+                    return ServiceFacade.getInvoiceItemService().loadBy(_invoicePdf);
                 }
             };
         }

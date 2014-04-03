@@ -3,7 +3,6 @@ package org.menesty.ikea.ui.controls.table;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
@@ -16,8 +15,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.util.Callback;
 import org.menesty.ikea.domain.InvoicePdf;
-import org.menesty.ikea.ui.controls.PathProperty;
-import org.menesty.ikea.ui.pages.OrderListPage;
+import org.menesty.ikea.util.ColumnUtil;
 
 public abstract class InvoicePdfTableView extends TableView<InvoicePdfTableView.InvoicePdfTableItem> {
 
@@ -49,12 +47,7 @@ public abstract class InvoicePdfTableView extends TableView<InvoicePdfTableView.
 
         TableColumn<InvoicePdfTableItem, String> name = new TableColumn<>("Name");
         name.setMinWidth(160);
-        name.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<InvoicePdfTableItem, String>, ObservableValue<String>>() {
-            @Override
-            public ObservableValue<String> call(TableColumn.CellDataFeatures<InvoicePdfTableItem, String> item) {
-                return new PathProperty<>(item.getValue(), "invoicePdf.name");
-            }
-        });
+        name.setCellValueFactory(ColumnUtil.<InvoicePdfTableItem, String>column("invoicePdf.name"));
         name.setCellFactory(TextFieldTableCell.<InvoicePdfTableItem>forTableColumn());
         name.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<InvoicePdfTableItem, String>>() {
             @Override
@@ -69,35 +62,19 @@ public abstract class InvoicePdfTableView extends TableView<InvoicePdfTableView.
         TableColumn<InvoicePdfTableItem, Double> priceColumn = new TableColumn<>();
         priceColumn.setText("Price");
         priceColumn.setMinWidth(60);
-        priceColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<InvoicePdfTableItem, Double>, ObservableValue<Double>>() {
-            @Override
-            public ObservableValue<Double> call(TableColumn.CellDataFeatures<InvoicePdfTableItem, Double> item) {
-                return new PathProperty<>(item.getValue(), "invoicePdf.price");
-            }
-        });
+        priceColumn.setCellValueFactory(ColumnUtil.<InvoicePdfTableItem, Double>column("invoicePdf.price"));
 
         TableColumn<InvoicePdfTableItem, String> createdDate = new TableColumn<>();
 
         createdDate.setText("Upload Date");
         createdDate.setMinWidth(90);
-        createdDate.setCellValueFactory(
-                new Callback<TableColumn.CellDataFeatures<InvoicePdfTableItem, String>, ObservableValue<String>>() {
-                    @Override
-                    public ObservableValue<String> call(TableColumn.CellDataFeatures<InvoicePdfTableItem, String> item) {
-                        return new SimpleStringProperty(OrderListPage.DATE_FORMAT.format(item.getValue().getInvoicePdf().getCreatedDate()));
-                    }
-                });
+        createdDate.setCellValueFactory(ColumnUtil.<InvoicePdfTableItem>dateColumn("invoicePdf.createdDate"));
 
         setEditable(true);
 
         TableColumn<InvoicePdfTableItem, String> invoiceNumber = new TableColumn<>("Number");
         invoiceNumber.setMinWidth(100);
-        invoiceNumber.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<InvoicePdfTableItem, String>, ObservableValue<String>>() {
-            @Override
-            public ObservableValue<String> call(TableColumn.CellDataFeatures<InvoicePdfTableItem, String> item) {
-                return new PathProperty<>(item.getValue(), "invoicePdf.invoiceNumber");
-            }
-        });
+        invoiceNumber.setCellValueFactory(ColumnUtil.<InvoicePdfTableItem, String>column("invoicePdf.invoiceNumber"));
         getColumns().addAll(checked, name, priceColumn, invoiceNumber, createdDate);
     }
 

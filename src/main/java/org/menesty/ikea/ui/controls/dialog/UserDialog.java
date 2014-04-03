@@ -3,6 +3,7 @@ package org.menesty.ikea.ui.controls.dialog;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
 import org.menesty.ikea.domain.User;
+import org.menesty.ikea.ui.layout.RowPanel;
 import org.menesty.ikea.ui.pages.EntityDialogCallback;
 
 public class UserDialog extends BaseDialog {

@@ -28,6 +28,7 @@ import org.menesty.ikea.ui.controls.PathProperty;
 import org.menesty.ikea.ui.controls.form.DoubleTextField;
 import org.menesty.ikea.ui.controls.form.IntegerTextField;
 import org.menesty.ikea.ui.controls.form.ProductIdField;
+import org.menesty.ikea.ui.layout.RowPanel;
 import org.menesty.ikea.ui.pages.EntityDialogCallback;
 
 import java.awt.*;

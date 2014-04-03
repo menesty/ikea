@@ -37,9 +37,11 @@ public class InvoicePdf extends Identifiable {
 
     private String name;
 
-    private Date createdDate;
+    private Date createdDate = new Date();
 
     private String invoiceNumber;
+
+    private boolean sync;
 
     @ManyToOne(fetch = FetchType.LAZY)
     public CustomerOrder customerOrder;
@@ -81,6 +83,14 @@ public class InvoicePdf extends Identifiable {
 
     public void setProducts(List<RawInvoiceProductItem> items) {
         this.products = items;
+    }
+
+    public boolean isSync() {
+        return sync;
+    }
+
+    public void setSync(boolean sync) {
+        this.sync = sync;
     }
 
     public static BigDecimal getTotalPrice(List<RawInvoiceProductItem> items) {
