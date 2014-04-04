@@ -9,6 +9,7 @@ import org.menesty.ikea.exception.ProductFetchException;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.util.NumberUtil;
 
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import java.io.File;
 import java.io.FileInputStream;
@@ -274,6 +275,20 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
         if (!started)
             commit();
 
+    }
+
+    public void updateSyncBy(CustomerOrder currentOrder) {
+        boolean started = isActive();
+
+        if (!started)
+            begin();
+
+        Query query = getEm().createQuery("update  " + entityClass.getName() + " entity set entity.sync = true  where entity.customerOrder.id = ?1");
+        query.setParameter(1, currentOrder.getId());
+        query.executeUpdate();
+
+        if (!started)
+            commit();
     }
 }
 

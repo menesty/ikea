@@ -111,4 +111,8 @@ public class ImageFactory {
     public static ImageView createInvoice72Icon() {
         return new ImageView(new Image("/styles/images/icon/invoice-72x72.png"));
     }
+
+    public static ImageView createUpload16Icon() {
+        return new ImageView(new Image("/styles/images/icon/upload-16x16.png"));
+    }
 }

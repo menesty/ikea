@@ -14,6 +14,7 @@ import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.processor.invoice.InvoiceItem;
 import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.service.ServiceFacade;
+import org.menesty.ikea.service.task.InvoicePdfSyncService;
 import org.menesty.ikea.ui.controls.dialog.BaseDialog;
 import org.menesty.ikea.ui.controls.dialog.InvoicePdfDialog;
 import org.menesty.ikea.ui.controls.form.DoubleTextField;
@@ -34,6 +35,8 @@ public class CustomInvoicePage extends BasePage {
     private InvoiceItemDialog invoiceItemDialog;
 
     private LoadService loadService;
+
+    private InvoicePdfSyncService invoicePdfSyncService;
 
     private LoadInvoiceItemService loadInvoiceItemService;
 
@@ -61,6 +64,19 @@ public class CustomInvoicePage extends BasePage {
             @Override
             public void onSucceeded(List<InvoiceItem> value) {
                 setInvoiceItems(value);
+            }
+        });
+
+        invoicePdfSyncService = new InvoicePdfSyncService();
+        invoicePdfSyncService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<Boolean>() {
+            @Override
+            public void onSucceeded(Boolean value) {
+                if (value) {
+                    InvoicePdf invoicePdf = invoicePdfSyncService.getInvoice();
+                    invoicePdf.setSync(true);
+                    ServiceFacade.getInvoicePdfService().save(invoicePdf);
+                    invoicePdfTable.update(invoicePdf);
+                }
             }
         });
     }
@@ -219,11 +235,32 @@ public class CustomInvoicePage extends BasePage {
 
         invoicePdfTable = new BaseTableView<InvoicePdf>() {
             @Override
-            protected void onRowRender(TableRow<InvoicePdf> row, InvoicePdf newValue) {
+            protected void onRowRender(TableRow<InvoicePdf> row, final InvoicePdf newValue) {
                 row.getStyleClass().remove("greenRow");
+                row.setContextMenu(null);
 
                 if (newValue != null && newValue.isSync())
                     row.getStyleClass().add("greenRow");
+                else {
+                    ContextMenu contextMenu = new ContextMenu();
+
+                    MenuItem menuItem = new MenuItem("Upload", ImageFactory.createUpload16Icon());
+                    menuItem.setOnAction(new EventHandler<ActionEvent>() {
+                        @Override
+                        public void handle(ActionEvent actionEvent) {
+                            invoicePdfSyncService.setInvoice(newValue);
+
+                            loadingPane.bindTask(invoicePdfSyncService);
+
+                            invoicePdfSyncService.restart();
+                        }
+                    });
+
+                    contextMenu.getItems().add(menuItem);
+
+                    row.setContextMenu(contextMenu);
+                }
+
             }
         };
 

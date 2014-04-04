@@ -19,7 +19,7 @@ import org.menesty.ikea.processor.invoice.InvoiceItem;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.service.ServiceFacade;
-import org.menesty.ikea.service.task.InvoiceSyncService;
+import org.menesty.ikea.service.task.OrderInvoiceSyncService;
 import org.menesty.ikea.ui.TaskProgress;
 import org.menesty.ikea.ui.controls.component.*;
 import org.menesty.ikea.ui.controls.dialog.BaseDialog;
@@ -58,7 +58,7 @@ public class OrderViewPage extends BasePage {
 
     private EppViewComponent eppViewComponent;
 
-    private InvoiceSyncService invoiceSyncService;
+    private OrderInvoiceSyncService orderInvoiceSyncService;
 
     private OrderData orderData;
 
@@ -75,7 +75,19 @@ public class OrderViewPage extends BasePage {
     public OrderViewPage() {
         super("CustomerOrder");
 
-        invoiceSyncService = new InvoiceSyncService();
+        orderInvoiceSyncService = new OrderInvoiceSyncService();
+        orderInvoiceSyncService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<Boolean>() {
+            @Override
+            public void onSucceeded(Boolean value) {
+                if (value) {
+                    ServiceFacade.getInvoicePdfService().updateSyncBy(currentOrder);
+
+                    for (InvoicePdf pdf : orderData.invoicePdfs)
+                        pdf.setSync(true);
+                }
+            }
+        });
+
         loadService = new LoadService();
 
         loadService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<OrderData>() {
@@ -348,9 +360,9 @@ public class OrderViewPage extends BasePage {
         invoicePdfViewComponent = new InvoicePdfViewComponent(getStage()) {
             @Override
             protected void onSync() {
-                invoiceSyncService.setCustomerOrder(currentOrder);
-                loadingPane.bindTask(invoiceSyncService);
-                invoiceSyncService.restart();
+                orderInvoiceSyncService.setCustomerOrder(currentOrder);
+                loadingPane.bindTask(orderInvoiceSyncService);
+                orderInvoiceSyncService.restart();
             }
 
             @Override
