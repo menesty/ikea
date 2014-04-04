@@ -11,7 +11,6 @@ import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableRow;
-import javafx.scene.layout.StackPane;
 import org.apache.commons.lang.StringUtils;
 import org.menesty.ikea.db.DatabaseService;
 import org.menesty.ikea.domain.*;
@@ -123,10 +122,8 @@ public class OrderViewPage extends BasePage {
 
     @Override
     public Node createView() {
-        StackPane pane = createRoot();
-        pane.getChildren().add(0, createInvoiceView());
         productEditDialog = new ProductDialog();
-        return pane;
+        return wrap(createInvoiceView());
     }
 
     private Tab createStorageComboTab() {

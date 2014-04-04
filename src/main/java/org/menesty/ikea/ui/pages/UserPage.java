@@ -9,7 +9,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.StackPane;
 import javafx.util.Callback;
 import org.menesty.ikea.domain.User;
 import org.menesty.ikea.factory.ImageFactory;
@@ -111,10 +110,7 @@ public class UserPage extends BasePage {
 
         borderPane.setTop(control);
 
-        StackPane pane = createRoot();
-        pane.getChildren().add(0, borderPane);
-
-        return pane;
+        return wrap(borderPane);
     }
 
     @Override

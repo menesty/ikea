@@ -81,6 +81,12 @@
     -fx-text-background-color: white;
 }
 
+.greenRow {
+    -fx-control-inner-background: #53ab00;
+    -fx-accent: derive(-fx-control-inner-background, -30%);
+    -fx-cell-hover-color: derive(-fx-control-inner-background, -20%);
+}
+
 #SearchBox .text-field {
     -fx-background-color: white;
     -fx-background-insets: 1;

@@ -15,7 +15,7 @@ import static org.menesty.ikea.util.NumberUtil.convertToKg;
 @Entity
 public class InvoiceItem extends Identifiable {
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
     public InvoicePdf invoicePdf;
 
     @Transient

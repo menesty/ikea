@@ -18,7 +18,6 @@ import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.StackPane;
 import javafx.util.Callback;
 import org.menesty.ikea.IkeaApplication;
 import org.menesty.ikea.db.DatabaseService;
@@ -95,13 +94,13 @@ public class OrderListPage extends BasePage {
         borderPane.setTop(control);
         borderPane.setBottom(pagination);
 
-        StackPane pane = createRoot();
-        pane.getChildren().add(0, borderPane);
+        return wrap(borderPane);
+    }
 
+    public void onActive(Object... params) {
         loadingPane.bindTask(loadService);
         loadService.setPageIndex(0);
         loadService.restart();
-        return pane;
     }
 
     private TableView<OrderTableItem> createTableView() {

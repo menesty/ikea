@@ -3,15 +3,12 @@ package org.menesty.ikea.ui.pages;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
-import javafx.util.Callback;
 import org.menesty.ikea.domain.InvoicePdf;
 import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.processor.invoice.InvoiceItem;
@@ -20,10 +17,12 @@ import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.ui.controls.dialog.BaseDialog;
 import org.menesty.ikea.ui.controls.dialog.InvoicePdfDialog;
 import org.menesty.ikea.ui.controls.form.DoubleTextField;
+import org.menesty.ikea.ui.controls.table.BaseTableView;
 import org.menesty.ikea.ui.layout.RowPanel;
 import org.menesty.ikea.util.ColumnUtil;
-import org.menesty.ikea.util.NumberUtil;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 public class CustomInvoicePage extends BasePage {
@@ -38,7 +37,7 @@ public class CustomInvoicePage extends BasePage {
 
     private LoadInvoiceItemService loadInvoiceItemService;
 
-    private TableView<InvoicePdf> invoicePdfTable;
+    private BaseTableView<InvoicePdf> invoicePdfTable;
 
     private TableView<InvoiceItem> invoiceItemTable;
 
@@ -61,23 +60,54 @@ public class CustomInvoicePage extends BasePage {
         loadInvoiceItemService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<List<InvoiceItem>>() {
             @Override
             public void onSucceeded(List<InvoiceItem> value) {
-                invoiceItemTable.getItems().clear();
-                invoiceItemTable.getItems().addAll(value);
+                setInvoiceItems(value);
             }
         });
     }
 
     @Override
     public Node createView() {
-        BorderPane main = new BorderPane();
-        main.setCenter(createInvoicePdfPane());
-        main.setBottom(createInvoiceItemPane());
-        return main;
+        BorderPane container = new BorderPane();
+        container.setCenter(createInvoicePdfPane());
+        container.setBottom(createInvoiceItemPane());
+
+        return wrap(container);
     }
 
     private BorderPane createInvoiceItemPane() {
         BorderPane pane = new BorderPane();
         pane.setPrefHeight(250);
+
+
+        final EntityDialogCallback<InvoiceItem> saveHandler = new EntityDialogCallback<InvoiceItem>() {
+            @Override
+            public void onSave(InvoiceItem invoiceItem, Object... params) {
+                hidePopupDialog();
+
+                loadingPane.show();
+                ServiceFacade.getInvoiceItemService().save(invoiceItem);
+                InvoicePdf invoicePdf = invoicePdfTable.getSelectionModel().getSelectedItem();
+                List<InvoiceItem> items = ServiceFacade.getInvoiceItemService().loadBy(invoicePdf);
+                //recalculate invoice price
+                BigDecimal price = BigDecimal.ZERO;
+
+                for (InvoiceItem item : items)
+                    price = price.add(item.getTotalWatPrice()).setScale(2, RoundingMode.CEILING);
+
+                invoicePdf.setPrice(price.doubleValue());
+                ServiceFacade.getInvoicePdfService().save(invoicePdf);
+                invoicePdfTable.update(invoicePdf);
+
+                setInvoiceItems(items);
+                loadingPane.hide();
+
+            }
+
+            @Override
+            public void onCancel() {
+                hidePopupDialog();
+            }
+        };
 
         invoiceItemToolBar = new ToolBar();
         {
@@ -92,20 +122,7 @@ public class CustomInvoicePage extends BasePage {
                     item.setVisible(true);
                     item.setCount(1);
 
-                    invoiceItemDialog.bind(item, new EntityDialogCallback<InvoiceItem>() {
-                        @Override
-                        public void onSave(InvoiceItem invoiceItem, Object... params) {
-                            ServiceFacade.getInvoiceItemService().save(invoiceItem);
-                            loadInvoiceItemService.restart();
-
-                            hidePopupDialog();
-                        }
-
-                        @Override
-                        public void onCancel() {
-                            hidePopupDialog();
-                        }
-                    });
+                    invoiceItemDialog.bind(item, saveHandler);
 
                     showPopupDialog(invoiceItemDialog);
                 }
@@ -114,7 +131,17 @@ public class CustomInvoicePage extends BasePage {
             invoiceItemToolBar.getItems().add(button);
         }
 
-        invoiceItemTable = new TableView<>();
+        invoiceItemTable = new BaseTableView<InvoiceItem>() {
+            @Override
+            protected void onRowDoubleClick(TableRow<InvoiceItem> row) {
+                if (row.getItem() == null)
+                    return;
+
+                invoiceItemDialog.bind(row.getItem(), saveHandler);
+
+                showPopupDialog(invoiceItemDialog);
+            }
+        };
 
         {
             TableColumn<InvoiceItem, String> column = new TableColumn<>("Art # ");
@@ -133,12 +160,7 @@ public class CustomInvoicePage extends BasePage {
         {
             TableColumn<InvoiceItem, String> column = new TableColumn<>("Count");
             column.setMaxWidth(50);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<InvoiceItem, String>, ObservableValue<String>>() {
-                @Override
-                public ObservableValue<String> call(TableColumn.CellDataFeatures<InvoiceItem, String> item) {
-                    return new SimpleStringProperty(NumberUtil.toString(item.getValue().getCount()));
-                }
-            });
+            column.setCellValueFactory(ColumnUtil.<InvoiceItem>number("count"));
             invoiceItemTable.getColumns().add(column);
         }
 
@@ -154,6 +176,11 @@ public class CustomInvoicePage extends BasePage {
         pane.setCenter(invoiceItemTable);
 
         return pane;
+    }
+
+    private void setInvoiceItems(List<InvoiceItem> items) {
+        invoiceItemTable.getItems().clear();
+        invoiceItemTable.getItems().addAll(items);
     }
 
     private BorderPane createInvoicePdfPane() {
@@ -190,7 +217,15 @@ public class CustomInvoicePage extends BasePage {
         pane.setTop(toolBar);
 
 
-        invoicePdfTable = new TableView<>();
+        invoicePdfTable = new BaseTableView<InvoicePdf>() {
+            @Override
+            protected void onRowRender(TableRow<InvoicePdf> row, InvoicePdf newValue) {
+                row.getStyleClass().remove("greenRow");
+
+                if (newValue != null && newValue.isSync())
+                    row.getStyleClass().add("greenRow");
+            }
+        };
 
         {
             TableColumn<InvoicePdf, String> column = new TableColumn<>("Name");
@@ -334,6 +369,7 @@ class InvoiceItemDialog extends BaseDialog {
         form.setPrice(invoiceItem.getPrice());
         form.setName(invoiceItem.getName());
         form.setShortName(invoiceItem.getShortName());
+        form.setOriginalArtNumber(invoiceItem.getOriginArtNumber());
 
     }
 

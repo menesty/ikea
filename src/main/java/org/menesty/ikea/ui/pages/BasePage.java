@@ -28,15 +28,14 @@ import org.menesty.ikea.ui.controls.dialog.BaseDialog;
 import org.menesty.ikea.ui.controls.pane.LoadingPane;
 
 public abstract class BasePage {
-
     protected LoadingPane loadingPane;
+
     String breadCrumbPath;
 
     String name;
 
     public BasePage(String name) {
         this.name = name;
-        loadingPane = new LoadingPane();
     }
 
     public String getName() {
@@ -53,7 +52,7 @@ public abstract class BasePage {
 
     public abstract Node createView();
 
-    protected StackPane createRoot() {
+    private StackPane createRoot() {
         StackPane pane = new StackPane() {
             @Override
             protected void layoutChildren() {
@@ -79,8 +78,14 @@ public abstract class BasePage {
         pane.setMaxHeight(Double.MAX_VALUE);
 
         StackPane stack = new StackPane();
-        stack.getChildren().addAll(loadingPane);
+        stack.getChildren().add(loadingPane = new LoadingPane());
         return stack;
+    }
+
+    protected StackPane wrap(Node container) {
+        StackPane pane = createRoot();
+        pane.getChildren().add(0, container);
+        return pane;
     }
 
     protected <T> void runTask(Task<T> task) {

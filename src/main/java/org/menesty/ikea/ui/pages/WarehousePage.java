@@ -3,7 +3,6 @@ package org.menesty.ikea.ui.pages;
 import javafx.scene.Node;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
-import javafx.scene.layout.StackPane;
 import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.ui.controls.component.ParagonViewComponent;
 import org.menesty.ikea.ui.controls.component.WarehouseViewComponent;
@@ -48,10 +47,7 @@ public class WarehousePage extends BasePage {
             tabPane.getTabs().add(tab);
         }
 
-        StackPane pane = createRoot();
-        pane.getChildren().add(0, tabPane);
-
-        return pane;
+        return wrap(tabPane);
     }
 
     @Override

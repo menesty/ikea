@@ -1,6 +1,5 @@
 package org.menesty.ikea.ui.controls.table;
 
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
@@ -15,6 +14,7 @@ import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.ui.controls.PathProperty;
 import org.menesty.ikea.ui.controls.dialog.ProductDialog;
+import org.menesty.ikea.util.ColumnUtil;
 import org.menesty.ikea.util.NumberUtil;
 
 public class OrderItemTableView extends TableView<OrderItem> {
@@ -23,24 +23,14 @@ public class OrderItemTableView extends TableView<OrderItem> {
         {
             TableColumn<OrderItem, Number> column = new TableColumn<>();
             column.setMaxWidth(40);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderItem, Number>, ObservableValue<Number>>() {
-                @Override
-                public ObservableValue<Number> call(TableColumn.CellDataFeatures<OrderItem, Number> item) {
-                    return new SimpleIntegerProperty(item.getTableView().getItems().indexOf(item.getValue()) + 1);
-                }
-            });
+            column.setCellValueFactory(ColumnUtil.<OrderItem>indexColumn());
             getColumns().add(column);
         }
 
         {
             TableColumn<OrderItem, String> column = new TableColumn<>("Art # ");
             column.setMinWidth(85);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderItem, String>, ObservableValue<String>>() {
-                @Override
-                public ObservableValue<String> call(TableColumn.CellDataFeatures<OrderItem, String> item) {
-                    return new PathProperty<>(item.getValue(), "artNumber");
-                }
-            });
+            column.setCellValueFactory(ColumnUtil.<OrderItem, String>column("artNumber"));
             getColumns().add(column);
         }
 
@@ -91,12 +81,7 @@ public class OrderItemTableView extends TableView<OrderItem> {
         {
             TableColumn<OrderItem, Double> column = new TableColumn<>("XLS Price");
             column.setMinWidth(60);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderItem, Double>, ObservableValue<Double>>() {
-                @Override
-                public ObservableValue<Double> call(TableColumn.CellDataFeatures<OrderItem, Double> item) {
-                    return new PathProperty<>(item.getValue(), "price");
-                }
-            });
+            column.setCellValueFactory(ColumnUtil.<OrderItem, Double>column("price"));
 
             getColumns().add(column);
         }
@@ -104,12 +89,7 @@ public class OrderItemTableView extends TableView<OrderItem> {
         {
             TableColumn<OrderItem, Double> column = new TableColumn<>("T Price");
             column.setMinWidth(60);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderItem, Double>, ObservableValue<Double>>() {
-                @Override
-                public ObservableValue<Double> call(TableColumn.CellDataFeatures<OrderItem, Double> item) {
-                    return new PathProperty<>(item.getValue(), "total");
-                }
-            });
+            column.setCellValueFactory(ColumnUtil.<OrderItem, Double>column("total"));
 
             getColumns().add(column);
         }
@@ -117,12 +97,7 @@ public class OrderItemTableView extends TableView<OrderItem> {
         {
             TableColumn<OrderItem, OrderItem.Type> column = new TableColumn<>("Type");
             column.setMinWidth(80);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderItem, OrderItem.Type>, ObservableValue<OrderItem.Type>>() {
-                @Override
-                public ObservableValue<OrderItem.Type> call(TableColumn.CellDataFeatures<OrderItem, OrderItem.Type> item) {
-                    return new PathProperty<>(item.getValue(), "type");
-                }
-            });
+            column.setCellValueFactory(ColumnUtil.<OrderItem, OrderItem.Type>column("type"));
 
             getColumns().add(column);
         }
@@ -135,6 +110,7 @@ public class OrderItemTableView extends TableView<OrderItem> {
                 public ObservableValue<ProductInfo.Group> call(TableColumn.CellDataFeatures<OrderItem, ProductInfo.Group> item) {
                     if (item.getValue().getProductInfo() != null)
                         return new PathProperty<>(item.getValue(), "productInfo.group");
+
                     return new SimpleObjectProperty<>(null);
                 }
             });
@@ -177,6 +153,7 @@ public class OrderItemTableView extends TableView<OrderItem> {
                     public void changed(ObservableValue<? extends OrderItem> observableValue, OrderItem oldValue, OrderItem newValue) {
                         row.getStyleClass().removeAll("productNotVerified", "productError");
                         row.setContextMenu(null);
+
                         if (newValue != null) {
                             if (OrderItem.Type.Na != newValue.getType() && !row.getItem().isInvalidFetch()
                                     && !newValue.getProductInfo().isVerified())

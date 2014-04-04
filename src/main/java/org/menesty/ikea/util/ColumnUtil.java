@@ -40,4 +40,14 @@ public class ColumnUtil {
             }
         };
     }
+
+    public static <Entity> Callback<TableColumn.CellDataFeatures<Entity, String>, ObservableValue<String>> number(final String propertyName) {
+        return new Callback<TableColumn.CellDataFeatures<Entity, String>, ObservableValue<String>>() {
+            @Override
+            public ObservableValue<String> call(TableColumn.CellDataFeatures<Entity, String> item) {
+                Double number = new PathProperty<Entity, Double>(item.getValue(), propertyName).get();
+                return new SimpleStringProperty(NumberUtil.toString(number));
+            }
+        };
+    }
 }

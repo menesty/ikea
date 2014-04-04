@@ -11,7 +11,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.util.Callback;
@@ -294,10 +293,8 @@ public class ProductPage extends BasePage {
         container.setTop(toolBarBox);
         container.setCenter(tableView);
 
-        StackPane pane = createRoot();
-        pane.getChildren().add(0, container);
         productEditDialog = new ProductDialog();
-        return pane;
+        return wrap(container);
     }
 
     private void filter(ProductItemSearchData data) {
