@@ -107,7 +107,7 @@ public class WarehouseViewComponent extends BorderPane {
             return new Task<List<WarehouseItemDto>>() {
                 @Override
                 protected List<WarehouseItemDto> call() throws Exception {
-                    URL url = new URL(ServiceFacade.getApplicationPreference().getWarehouseHost() + "/storage/loadBy");
+                    URL url = new URL(ServiceFacade.getApplicationPreference().getWarehouseHost() + "/storage/load");
                     HttpHost targetHost = new HttpHost(url.getHost());
 
                     CredentialsProvider credsProvider = HttpUtil.credentialsProvider(targetHost);

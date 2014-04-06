@@ -193,6 +193,7 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
             ServiceFacade.getInvoiceItemService().deleteBy(entity);
             super.remove(entity.getProducts(), RawInvoiceProductItem.class);
             super.remove(entity);
+
             if (!started)
                 commit();
         } catch (Exception e) {
@@ -239,9 +240,12 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
 
     public void removeBy(CustomerOrder order) {
         boolean started = isActive();
+
         if (!started)
             begin();
+
         removeAll(loadBy(order));
+
         if (!started)
             commit();
     }

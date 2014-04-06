@@ -82,7 +82,7 @@
 }
 
 .greenRow {
-    -fx-control-inner-background: #53ab00;
+    -fx-control-inner-background: #90f19d;
     -fx-accent: derive(-fx-control-inner-background, -30%);
     -fx-cell-hover-color: derive(-fx-control-inner-background, -20%);
 }
