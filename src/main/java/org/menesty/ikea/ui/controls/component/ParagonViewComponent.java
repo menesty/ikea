@@ -22,11 +22,14 @@ import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.menesty.ikea.IkeaApplication;
 import org.menesty.ikea.domain.ParagonDto;
 import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.service.ServiceFacade;
+import org.menesty.ikea.ui.controls.dialog.ParagonViewDialog;
 import org.menesty.ikea.ui.controls.pane.LoadingPane;
+import org.menesty.ikea.ui.controls.table.BaseTableView;
 import org.menesty.ikea.util.ColumnUtil;
 import org.menesty.ikea.util.HttpUtil;
 
@@ -41,14 +44,17 @@ import java.util.Collection;
 import java.util.List;
 
 public class ParagonViewComponent extends BorderPane {
-
     private final LoadService loadService;
+
     private TableView<ParagonDto> tableView;
 
     private LoadingPane loadingPane;
+
     private ParagonEppService paragonEppService;
 
     private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
+    private ParagonViewDialog paragonViewDialog;
 
     public ParagonViewComponent(final Stage stage) {
         loadService = new LoadService();
@@ -85,8 +91,23 @@ public class ParagonViewComponent extends BorderPane {
             }
         });
 
+        paragonViewDialog = new ParagonViewDialog() {
+            @Override
+            public void onOk() {
+                IkeaApplication.get().hidePopupDialog();
+            }
+        };
 
-        tableView = new TableView<>();
+        tableView = new BaseTableView<ParagonDto>() {
+            @Override
+            protected void onRowDoubleClick(TableRow<ParagonDto> row) {
+                if (row.getItem() != null) {
+                    IkeaApplication.get().showPopupDialog(paragonViewDialog);
+                    paragonViewDialog.show(row.getItem());
+                }
+
+            }
+        };
 
         {
             TableColumn<ParagonDto, Number> column = new TableColumn<>();

@@ -22,6 +22,7 @@ import org.menesty.ikea.util.ColumnUtil;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by Menesty on 4/6/14.
@@ -193,7 +194,10 @@ public abstract class CustomInvoiceComponent extends BorderPane {
             currentItem.basePrice = form.getPrice();
             currentItem.setName(form.getName());
             currentItem.setShortName(form.getShortName());
-            currentItem.setOriginArtNumber(form.getOriginalArtNumber());
+
+            if (currentItem.getId() == null)
+                currentItem.setOriginArtNumber(UUID.randomUUID().toString());
+
             currentItem.setArtNumber(form.getOriginalArtNumber());
 
             if (callback != null)
