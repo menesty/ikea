@@ -311,7 +311,7 @@ public class ProductService extends Repository<ProductInfo> {
             Matcher m = Patterns.ART_NUMBER_PART_PATTERN.matcher(row.html());
 
             if (m.find())
-                parts.add(parsePartDetails(m.group(1).replace(".", "-"), content));
+                parts.add(parsePartDetails(m.group(1).replace(".", ""), content));
         }
 
         combo.setParts(parts);

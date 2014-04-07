@@ -1,6 +1,7 @@
 package org.menesty.ikea.service;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.menesty.ikea.db.DatabaseTestCase;
 import org.menesty.ikea.domain.ProductInfo;
@@ -14,6 +15,7 @@ import java.util.List;
  */
 public class ProductServiceTest extends DatabaseTestCase {
 
+    @Ignore
     @Test
     public void comboLoadTest() throws IOException {
         ProductService productService = new ProductService();
