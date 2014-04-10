@@ -287,8 +287,9 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
         if (!started)
             begin();
 
-        Query query = getEm().createQuery("update  " + entityClass.getName() + " entity set entity.sync = true  where entity.customerOrder.id = ?1");
-        query.setParameter(1, currentOrder.getId());
+        Query query = getEm().createQuery("update  " + entityClass.getName() + " entity set entity.sync = ?1  where entity.customerOrder.id = ?2");
+        query.setParameter(1, true);
+        query.setParameter(2, currentOrder.getId());
         query.executeUpdate();
 
         if (!started)

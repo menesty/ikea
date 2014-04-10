@@ -101,7 +101,7 @@ public class ParagonViewDialog extends BaseDialog {
             return new Task<List<ParagonItemDto>>() {
                 @Override
                 protected List<ParagonItemDto> call() throws Exception {
-                    URL url = new URL(ServiceFacade.getApplicationPreference().getWarehouseHost() + "/storage/paragon/" + _paragonId);
+                    URL url = new URL(ServiceFacade.getApplicationPreference().getWarehouseHost() + "/paragon/details/" + _paragonId);
                     HttpHost targetHost = new HttpHost(url.getHost());
 
                     CredentialsProvider credsProvider = HttpUtil.credentialsProvider(targetHost);

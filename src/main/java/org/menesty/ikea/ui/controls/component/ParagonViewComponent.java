@@ -52,6 +52,8 @@ public class ParagonViewComponent extends BorderPane {
 
     private ParagonEppService paragonEppService;
 
+    private ParagonCancelService paragonCancelService;
+
     private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
     private ParagonViewDialog paragonViewDialog;
@@ -62,6 +64,14 @@ public class ParagonViewComponent extends BorderPane {
             @Override
             public void onSucceeded(final List<ParagonDto> value) {
                 tableView.setItems(FXCollections.observableList(value));
+            }
+        });
+
+        paragonCancelService = new ParagonCancelService();
+        paragonCancelService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<String>() {
+            @Override
+            public void onSucceeded(String value) {
+                load();
             }
         });
 
@@ -105,7 +115,43 @@ public class ParagonViewComponent extends BorderPane {
                     IkeaApplication.get().showPopupDialog(paragonViewDialog);
                     paragonViewDialog.show(row.getItem());
                 }
+            }
 
+            @Override
+            protected void onRowRender(TableRow<ParagonDto> row, final ParagonDto paragonDto) {
+                ContextMenu contextMenu = new ContextMenu();
+
+                {
+                    MenuItem menuItem = new MenuItem("Download Epp", ImageFactory.createDownload16Icon());
+                    menuItem.setOnAction(new EventHandler<ActionEvent>() {
+                        @Override
+                        public void handle(ActionEvent actionEvent) {
+                            if (paragonDto != null) {
+                                loadingPane.bindTask(paragonEppService);
+                                paragonEppService.setParagonId(paragonDto.getId());
+                                paragonEppService.restart();
+                            }
+                        }
+                    });
+                    contextMenu.getItems().add(menuItem);
+                }
+                {
+                    MenuItem menuItem = new MenuItem("Cancel paragon");
+                    menuItem.setOnAction(new EventHandler<ActionEvent>() {
+                        @Override
+                        public void handle(ActionEvent actionEvent) {
+                            if (paragonDto != null) {
+                                loadingPane.bindTask(paragonCancelService);
+                                paragonCancelService.setParagonId(paragonDto.getId());
+                                paragonCancelService.restart();
+                            }
+                        }
+                    });
+
+                    contextMenu.getItems().add(menuItem);
+                }
+
+                row.setContextMenu(contextMenu);
             }
         };
 
@@ -156,26 +202,6 @@ public class ParagonViewComponent extends BorderPane {
             tableView.getColumns().add(column);
         }
 
-        ContextMenu contextMenu = new ContextMenu();
-
-        MenuItem downloadEppItem = new MenuItem("Download Epp", ImageFactory.createDownload16Icon());
-        downloadEppItem.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                ParagonDto paragonDto = tableView.getSelectionModel().getSelectedItem();
-
-                if (paragonDto != null) {
-                    loadingPane.bindTask(paragonEppService);
-                    paragonEppService.setParagonId(paragonDto.getId());
-                    paragonEppService.restart();
-                }
-            }
-        });
-
-        contextMenu.getItems().add(downloadEppItem);
-
-        tableView.setContextMenu(contextMenu);
-
         ToolBar control = new ToolBar();
         Button refresh = new Button(null, ImageFactory.createReload32Icon());
         refresh.setOnAction(new EventHandler<ActionEvent>() {
@@ -208,7 +234,7 @@ public class ParagonViewComponent extends BorderPane {
             return new Task<String>() {
                 @Override
                 protected String call() throws Exception {
-                    URL url = new URL(ServiceFacade.getApplicationPreference().getWarehouseHost() + "/storage/paragon/" + _paragonId + "/epp");
+                    URL url = new URL(ServiceFacade.getApplicationPreference().getWarehouseHost() + "/paragon/details/" + _paragonId + "/epp");
                     HttpHost targetHost = new HttpHost(url.getHost());
 
                     CredentialsProvider credsProvider = HttpUtil.credentialsProvider(targetHost);
@@ -234,6 +260,42 @@ public class ParagonViewComponent extends BorderPane {
         }
     }
 
+    class ParagonCancelService extends AbstractAsyncService<String> {
+        private SimpleIntegerProperty paragonId = new SimpleIntegerProperty();
+
+        @Override
+        protected Task<String> createTask() {
+            final int _paragonId = paragonId.get();
+            return new Task<String>() {
+                @Override
+                protected String call() throws Exception {
+                    URL url = new URL(ServiceFacade.getApplicationPreference().getWarehouseHost() + "/paragon/cancel/" + _paragonId);
+                    HttpHost targetHost = new HttpHost(url.getHost());
+
+                    CredentialsProvider credsProvider = HttpUtil.credentialsProvider(targetHost);
+
+                    try (CloseableHttpClient httpClient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build()) {
+                        HttpClientContext localContext = HttpUtil.context(targetHost);
+
+                        HttpGet httpPost = new HttpGet(url.toURI());
+
+                        try (CloseableHttpResponse response = httpClient.execute(httpPost, localContext)) {
+                            return EntityUtils.toString(response.getEntity());
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    return "";
+                }
+            };
+        }
+
+        public void setParagonId(int paragonId) {
+            this.paragonId.setValue(paragonId);
+        }
+    }
+
+
     class LoadService extends AbstractAsyncService<List<ParagonDto>> {
 
         @Override
@@ -241,7 +303,7 @@ public class ParagonViewComponent extends BorderPane {
             return new Task<List<ParagonDto>>() {
                 @Override
                 protected List<ParagonDto> call() throws Exception {
-                    URL url = new URL(ServiceFacade.getApplicationPreference().getWarehouseHost() + "/storage/paragons");
+                    URL url = new URL(ServiceFacade.getApplicationPreference().getWarehouseHost() + "/paragon");
                     HttpHost targetHost = new HttpHost(url.getHost());
 
                     CredentialsProvider credsProvider = HttpUtil.credentialsProvider(targetHost);
