@@ -21,7 +21,7 @@ public class OrderItemDialog extends BaseDialog {
     private EntityDialogCallback<OrderItem> callback;
 
     public OrderItemDialog() {
-        addRow(createTitle("Create/Edit OrderItem"));
+        setTitle("Create/Edit OrderItem");
         orderItemForm = new OrderItemForm();
 
         addRow(orderItemForm, bottomBar);

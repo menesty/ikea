@@ -62,7 +62,7 @@ public class ProductDialog extends BaseDialog {
 
 
     public ProductDialog() {
-        addRow(createTitle("Create new order from customer"));
+        setTitle("Create new order from customer");
         okBtn.setText("Save");
 
         options = new TabPane();

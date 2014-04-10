@@ -5,7 +5,6 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
 import org.apache.commons.lang.math.NumberUtils;
 import org.menesty.ikea.util.NumberUtil;
@@ -34,11 +33,16 @@ public class DoubleTextField extends TextField {
     }
 
     public DoubleTextField() {
-        this(0d);
+        this(null);
     }
 
-    public DoubleTextField(Double value) {
+    public DoubleTextField(String label) {
+        this(0d, label);
+    }
+
+    public DoubleTextField(Double value, String label) {
         super();
+        setLabel(label);
         initHandlers();
         setNumber(value);
     }
@@ -94,5 +98,11 @@ public class DoubleTextField extends TextField {
 
         setNumber(NumberUtil.parse(input));
         selectAll();
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+        setNumber(0d);
     }
 }

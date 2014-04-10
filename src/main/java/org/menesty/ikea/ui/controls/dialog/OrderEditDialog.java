@@ -28,7 +28,7 @@ public class OrderEditDialog extends BaseDialog {
         userService = new UserService();
 
         okBtn.setDisable(true);
-        addRow(createTitle("Edit order"));
+        setTitle("Edit order");
 
         form = new OrderForm();
 

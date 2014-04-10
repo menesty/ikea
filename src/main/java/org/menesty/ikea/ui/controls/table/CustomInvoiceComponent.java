@@ -182,7 +182,7 @@ public abstract class CustomInvoiceComponent extends BorderPane {
         private InvoiceItemForm form;
 
         public InvoiceItemDialog() {
-            addRow(createTitle("Create invoice"));
+            setTitle("Create invoice");
 
             addRow(form = new InvoiceItemForm(), bottomBar);
             okBtn.setText("Save");

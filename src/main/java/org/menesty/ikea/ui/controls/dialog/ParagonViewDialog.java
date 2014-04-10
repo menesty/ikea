@@ -47,7 +47,7 @@ public class ParagonViewDialog extends BaseDialog {
 
         loadingPane.bindTask(loadService);
 
-        addRow(createTitle("Paragon details"));
+        setTitle("Paragon details");
 
         tableView = new TableView<>();
 

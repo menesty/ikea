@@ -1,9 +1,9 @@
 package org.menesty.ikea.ui.controls.dialog;
 
-import javafx.scene.control.TextField;
 import org.menesty.ikea.domain.InvoicePdf;
 import org.menesty.ikea.ui.controls.form.DoubleTextField;
-import org.menesty.ikea.ui.layout.RowPanel;
+import org.menesty.ikea.ui.controls.form.FormPane;
+import org.menesty.ikea.ui.controls.form.TextField;
 import org.menesty.ikea.ui.pages.EntityDialogCallback;
 
 public class InvoicePdfDialog extends BaseDialog {
@@ -13,9 +13,7 @@ public class InvoicePdfDialog extends BaseDialog {
 
     private EntityDialogCallback<InvoicePdf> callback;
 
-    public InvoicePdfDialog(){
-        addRow(createTitle("Create invoice"));
-
+    public InvoicePdfDialog() {
         addRow(form = new InvoiceForm(), bottomBar);
         okBtn.setText("Save");
     }
@@ -23,6 +21,11 @@ public class InvoicePdfDialog extends BaseDialog {
     public void bind(InvoicePdf invoiceItem, EntityDialogCallback<InvoicePdf> callback) {
         currentInvoice = invoiceItem;
         this.callback = callback;
+
+        if (invoiceItem.getId() == null)
+            setTitle("Create invoice");
+        else
+            setTitle("Edit invoice");
 
         form.reset();
         form.setPrice(invoiceItem.getPrice());
@@ -33,6 +36,9 @@ public class InvoicePdfDialog extends BaseDialog {
 
     @Override
     public void onOk() {
+        if (!form.isValid())
+            return;
+
         currentInvoice.setPrice(form.getPrice());
         currentInvoice.setName(form.getName());
         currentInvoice.setInvoiceNumber(form.getInvoiceNumber());
@@ -47,45 +53,42 @@ public class InvoicePdfDialog extends BaseDialog {
             callback.onCancel();
     }
 
-    private class InvoiceForm extends RowPanel {
+    private class InvoiceForm extends FormPane {
         DoubleTextField price;
         TextField name;
         TextField invoiceNumber;
 
-        public InvoiceForm(){
-            addRow("Name", name = new TextField());
-            addRow("Invoice Number", invoiceNumber = new TextField());
-            addRow("Price", price = new DoubleTextField());
+        public InvoiceForm() {
+            add(name = new TextField(null, "Name"));
+            name.setAllowBlank(false);
+
+            add(invoiceNumber = new TextField(null, "Invoice Number"));
+            invoiceNumber.setAllowBlank(false);
+
+            add(price = new DoubleTextField("Price"));
         }
 
-
-        void reset(){
-            price.setNumber(0d);
-            name.setText(null);
-            invoiceNumber.setText(null);
-        }
-
-        public void setPrice(Double price){
+        public void setPrice(Double price) {
             this.price.setNumber(price);
         }
 
-        public void setName(String name){
+        public void setName(String name) {
             this.name.setText(name);
         }
 
-        public void setInvoiceNumber(String invoiceNumber){
+        public void setInvoiceNumber(String invoiceNumber) {
             this.invoiceNumber.setText(invoiceNumber);
         }
 
-        public Double getPrice(){
+        public Double getPrice() {
             return this.price.getNumber();
         }
 
-        public String getName(){
+        public String getName() {
             return this.name.getText();
         }
 
-        public String getInvoiceNumber(){
+        public String getInvoiceNumber() {
             return this.invoiceNumber.getText();
         }
     }

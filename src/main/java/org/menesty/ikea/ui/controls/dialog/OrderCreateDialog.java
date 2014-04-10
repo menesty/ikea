@@ -36,7 +36,7 @@ public class OrderCreateDialog extends BaseDialog {
         userService = new UserService();
 
         okBtn.setDisable(true);
-        addRow(createTitle("Create new order from customer"));
+        setTitle("Create new order from customer");
 
         orderForm = new OrderForm();
 

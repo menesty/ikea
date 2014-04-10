@@ -70,29 +70,18 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
 
         ToolBar pdfToolBar = new ToolBar();
 
-        Button createInvoicePdf = new Button(null, ImageFactory.createAdd32Icon());
-        createInvoicePdf.setTooltip(new Tooltip("Create Invoice"));
-        createInvoicePdf.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                invoicePdfDialog.bind(new InvoicePdf(getCustomerOrder()), new EntityDialogCallback<InvoicePdf>() {
-                    @Override
-                    public void onSave(InvoicePdf invoicePdf, Object... params) {
-                        InvoicePdfViewComponent.this.onSave(invoicePdf);
-                        IkeaApplication.get().hidePopupDialog();
-                    }
+        {
+            Button button = new Button(null, ImageFactory.createAdd32Icon());
+            button.setTooltip(new Tooltip("Create Invoice"));
+            button.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent actionEvent) {
+                    showAddEditDialog(new InvoicePdf(getCustomerOrder()));
+                }
+            });
 
-                    @Override
-                    public void onCancel() {
-                        IkeaApplication.get().hidePopupDialog();
-                    }
-                });
-
-                IkeaApplication.get().showPopupDialog(invoicePdfDialog);
-            }
-        });
-
-        pdfToolBar.getItems().add(createInvoicePdf);
+            pdfToolBar.getItems().add(button);
+        }
 
         Button uploadInvoice = new Button(null, ImageFactory.createPdf32Icon());
         uploadInvoice.setTooltip(new Tooltip("Upload Invoice PDF"));
@@ -146,6 +135,23 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
         setTop(pdfToolBar);
         setCenter(invoicePdfTableView);
         setBottom(statusPanel = new TotalStatusPanel());
+    }
+
+    private void showAddEditDialog(InvoicePdf invoicePdf) {
+        invoicePdfDialog.bind(invoicePdf, new EntityDialogCallback<InvoicePdf>() {
+            @Override
+            public void onSave(InvoicePdf invoicePdf, Object... params) {
+                InvoicePdfViewComponent.this.onSave(invoicePdf);
+                IkeaApplication.get().hidePopupDialog();
+            }
+
+            @Override
+            public void onCancel() {
+                IkeaApplication.get().hidePopupDialog();
+            }
+        });
+
+        IkeaApplication.get().showPopupDialog(invoicePdfDialog);
     }
 
     protected abstract void onSync();

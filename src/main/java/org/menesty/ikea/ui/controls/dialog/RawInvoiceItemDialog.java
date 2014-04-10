@@ -23,7 +23,7 @@ public class RawInvoiceItemDialog extends BaseDialog {
     private RawInvoiceItemForm form;
 
     public RawInvoiceItemDialog() {
-        addRow(createTitle("Create Invoice item"));
+        setTitle("Create Invoice item");
 
         addRow(form = new RawInvoiceItemForm(), bottomBar);
         okBtn.setText("Save");

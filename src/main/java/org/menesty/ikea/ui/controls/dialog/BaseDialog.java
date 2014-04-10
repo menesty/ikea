@@ -34,10 +34,16 @@ public class BaseDialog extends StackPane {
 
     private VBox content;
 
+    private Label title;
+
     public BaseDialog() {
         super();
+        content = new VBox();
+
         setId("ProxyDialog");
         setMaxSize(430, USE_PREF_SIZE);
+
+        addRow(title = createTitle(null));
         // block mouse clicks
         setOnMouseClicked(new EventHandler<MouseEvent>() {
             public void handle(MouseEvent t) {
@@ -45,7 +51,6 @@ public class BaseDialog extends StackPane {
             }
         });
 
-        content = new VBox();
         content.setSpacing(10);
         loadingPane = new LoadingPane();
 
@@ -82,7 +87,7 @@ public class BaseDialog extends StackPane {
         VBox.setMargin(bottomBar, new Insets(20, 5, 5, 5));
     }
 
-    public Stage getStage(){
+    public Stage getStage() {
         return IkeaApplication.get().getStage();
     }
 
@@ -126,12 +131,17 @@ public class BaseDialog extends StackPane {
         this.allowAutoHide = allowAutoHide;
     }
 
-    protected Label createTitle(String text) {
+    private Label createTitle(String text) {
         Label title = new Label(text);
         title.setId("title");
         title.setMaxWidth(Double.MAX_VALUE);
         title.setAlignment(Pos.CENTER);
+
         return title;
+    }
+
+    public void setTitle(String title) {
+        this.title.setText(title);
     }
 }
 

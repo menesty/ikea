@@ -27,14 +27,12 @@ public class Dialog {
     static class ConfirmDialog extends BaseDialog {
         private Label message;
 
-        private Label title;
-
         private boolean isReleased = true;
 
         private DialogCallback callback;
 
         public ConfirmDialog() {
-            addRow(title = createTitle("Warning"));
+            setTitle("Warning");
             okBtn.setText("Yes");
             cancelBtn.setText("No");
             addRow(message = new Label(), bottomBar);
@@ -44,7 +42,7 @@ public class Dialog {
 
 
         public void show(String title, String message, DialogCallback callback) {
-            this.title.setText(title);
+            setTitle(title);
             this.message.setText(message);
             this.callback = callback;
             isReleased = false;

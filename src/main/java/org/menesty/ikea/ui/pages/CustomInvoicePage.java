@@ -39,6 +39,8 @@ public class CustomInvoicePage extends BasePage {
 
     private Button deleteButton;
 
+    private Button editButton;
+
     public CustomInvoicePage() {
         super("Invoice");
 
@@ -101,6 +103,24 @@ public class CustomInvoicePage extends BasePage {
         return wrap(container);
     }
 
+    private void showAddEditDialog(InvoicePdf invoicePdf) {
+        invoicePdfDialog.bind(invoicePdf, new EntityDialogCallback<InvoicePdf>() {
+            @Override
+            public void onSave(InvoicePdf invoicePdf, Object... params) {
+                ServiceFacade.getInvoicePdfService().save(invoicePdf);
+                hidePopupDialog();
+                loadingPane.bindTask(loadService);
+                loadService.restart();
+            }
+
+            @Override
+            public void onCancel() {
+                hidePopupDialog();
+            }
+        });
+
+        showPopupDialog(invoicePdfDialog);
+    }
 
     private BorderPane createInvoicePdfPane() {
         BorderPane pane = new BorderPane();
@@ -111,27 +131,26 @@ public class CustomInvoicePage extends BasePage {
             button.setOnAction(new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(ActionEvent actionEvent) {
-                    invoicePdfDialog.bind(new InvoicePdf(), new EntityDialogCallback<InvoicePdf>() {
-                        @Override
-                        public void onSave(InvoicePdf invoicePdf, Object... params) {
-                            ServiceFacade.getInvoicePdfService().save(invoicePdf);
-                            hidePopupDialog();
-                            loadingPane.bindTask(loadService);
-                            loadService.restart();
-                        }
-
-                        @Override
-                        public void onCancel() {
-                            hidePopupDialog();
-                        }
-                    });
-
-                    showPopupDialog(invoicePdfDialog);
+                    showAddEditDialog(new InvoicePdf());
                 }
             });
 
             toolBar.getItems().add(button);
         }
+
+        editButton = new Button(null, ImageFactory.createEdit32Icon());
+        editButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                InvoicePdf invoicePdf = invoicePdfTable.getSelectionModel().getSelectedItem();
+
+                if (invoicePdf != null)
+                    showAddEditDialog(invoicePdf);
+            }
+        });
+        editButton.setDisable(true);
+
+        toolBar.getItems().add(editButton);
 
         deleteButton = new Button(null, ImageFactory.createDelete32Icon());
         deleteButton.setOnAction(new EventHandler<ActionEvent>() {
@@ -263,6 +282,7 @@ public class CustomInvoicePage extends BasePage {
 
                 customInvoiceComponent.setInvoicePdf(invoicePdf);
                 deleteButton.setDisable(invoicePdf == null || invoicePdf.isSync());
+                editButton.setDisable(invoicePdf == null);
             }
         });
 
@@ -288,6 +308,7 @@ public class CustomInvoicePage extends BasePage {
         @Override
         protected Task<List<InvoicePdf>> createTask() {
             deleteButton.setDisable(true);
+            editButton.setDisable(true);
             return new Task<List<InvoicePdf>>() {
                 @Override
                 protected List<InvoicePdf> call() throws Exception {
