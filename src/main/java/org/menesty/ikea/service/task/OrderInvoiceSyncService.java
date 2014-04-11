@@ -29,7 +29,7 @@ public class OrderInvoiceSyncService extends BaseInvoiceSyncService {
                     result.add(convert(orderId, item));
 
                 try {
-                    sendData(new Gson().toJson(result));
+                    sendData(true, new Gson().toJson(result));
                 } catch (Exception e) {
                     e.printStackTrace();
                     return false;

@@ -25,8 +25,8 @@ public abstract class BaseInvoiceSyncService extends AbstractAsyncService<Boolea
 
     private final BigDecimal margin = BigDecimal.valueOf(1.02);
 
-    protected void sendData(String data) throws IOException {
-        URL url = new URL(ServiceFacade.getApplicationPreference().getWarehouseHost() + "/sync/update");
+    protected void sendData(boolean clean, String data) throws IOException {
+        URL url = new URL(ServiceFacade.getApplicationPreference().getWarehouseHost() + "/sync/update/" + clean);
         HttpHost targetHost = new HttpHost(url.getHost());
 
         CredentialsProvider credsProvider = HttpUtil.credentialsProvider(targetHost);

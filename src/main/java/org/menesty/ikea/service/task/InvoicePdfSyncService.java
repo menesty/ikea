@@ -26,7 +26,7 @@ public class InvoicePdfSyncService extends BaseInvoiceSyncService {
                     result.add(convert(0, item));
 
                 try {
-                    sendData(new Gson().toJson(result));
+                    sendData(false, new Gson().toJson(result));
                 } catch (Exception e) {
                     e.printStackTrace();
                     return false;
