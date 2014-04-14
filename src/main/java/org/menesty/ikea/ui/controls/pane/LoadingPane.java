@@ -25,11 +25,15 @@ public class LoadingPane extends StackPane {
         setVisible(false);
     }
 
-    public void bindTask(Worker<?> task) {
+    private void unbind() {
         progressIndicator.progressProperty().unbind();
         maskRegion.visibleProperty().unbind();
         visibleProperty().unbind();
         progressIndicator.visibleProperty().unbind();
+    }
+
+    public void bindTask(Worker<?> task) {
+        unbind();
 
         progressIndicator.progressProperty().bind(task.progressProperty());
         maskRegion.visibleProperty().bind(task.runningProperty());
@@ -38,17 +42,16 @@ public class LoadingPane extends StackPane {
     }
 
     public void show() {
-        visibleProperty().unbind();
+        unbind();
+
         setVisible(true);
-
-        maskRegion.visibleProperty().unbind();
         maskRegion.setVisible(true);
-
-        progressIndicator.visibleProperty().unbind();
         progressIndicator.setVisible(true);
     }
 
     public void hide() {
+        unbind();
+
         maskRegion.visibleProperty().setValue(false);
         visibleProperty().setValue(false);
         progressIndicator.visibleProperty().setValue(false);

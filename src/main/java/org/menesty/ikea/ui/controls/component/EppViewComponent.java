@@ -26,6 +26,7 @@ import org.menesty.ikea.ui.controls.pane.LoadingPane;
 import org.menesty.ikea.ui.controls.table.InvoiceEppInvisibleTableView;
 import org.menesty.ikea.ui.controls.table.InvoiceEppTableView;
 import org.menesty.ikea.ui.pages.DialogCallback;
+import org.menesty.ikea.util.FileChooserUtil;
 import org.menesty.ikea.util.NumberUtil;
 
 import java.io.File;
@@ -133,10 +134,8 @@ public abstract class EppViewComponent extends StackPane {
         exportEppBtn.setTooltip(new Tooltip("Export to EPP"));
         exportEppBtn.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
-                FileChooser fileChooser = new FileChooser();
-                fileChooser.setTitle("Epp location");
-                FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("Epp file (*.epp)", "*.epp");
-                fileChooser.getExtensionFilters().add(extFilter);
+                FileChooser fileChooser = FileChooserUtil.getEpp();
+
                 File selectedFile = fileChooser.showSaveDialog(stage);
 
                 if (selectedFile != null) {
@@ -147,6 +146,8 @@ public abstract class EppViewComponent extends StackPane {
                         invoiceItem.setIndex(++index);
 
                     export(list, selectedFile.getAbsolutePath());
+
+                    FileChooserUtil.setDefaultDir(selectedFile);
                 }
 
             }

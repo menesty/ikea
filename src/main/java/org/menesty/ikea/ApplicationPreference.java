@@ -34,4 +34,12 @@ public class ApplicationPreference {
         return preferences.get("warehouse-password", "");
     }
 
+    public String getFileChooseDefaultDir(){
+        return preferences.get("file-choose-default-dir", null);
+    }
+
+    public void setFileChooseDefaultDir(String path) {
+        preferences.put("file-choose-default-dir", path);
+    }
+
 }

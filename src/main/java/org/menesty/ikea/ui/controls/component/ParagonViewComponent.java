@@ -31,6 +31,7 @@ import org.menesty.ikea.ui.controls.dialog.ParagonViewDialog;
 import org.menesty.ikea.ui.controls.pane.LoadingPane;
 import org.menesty.ikea.ui.controls.table.BaseTableView;
 import org.menesty.ikea.util.ColumnUtil;
+import org.menesty.ikea.util.FileChooserUtil;
 import org.menesty.ikea.util.HttpUtil;
 
 import java.io.File;
@@ -51,6 +52,8 @@ public class ParagonViewComponent extends BorderPane {
     private LoadingPane loadingPane;
 
     private ParagonEppService paragonEppService;
+
+    private ParagonEmailService paragonEmailService;
 
     private ParagonCancelService paragonCancelService;
 
@@ -79,10 +82,9 @@ public class ParagonViewComponent extends BorderPane {
         paragonEppService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<String>() {
             @Override
             public void onSucceeded(final String value) {
-                FileChooser fileChooser = new FileChooser();
-                fileChooser.setTitle("Epp location");
-                FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("Epp file (*.epp)", "*.epp");
-                fileChooser.getExtensionFilters().add(extFilter);
+                loadingPane.hide();
+
+                FileChooser fileChooser = FileChooserUtil.getEpp();
                 File selectedFile = fileChooser.showSaveDialog(stage);
 
                 if (selectedFile != null) {
@@ -97,9 +99,12 @@ public class ParagonViewComponent extends BorderPane {
                         e.printStackTrace();
                     }
 
+                    FileChooserUtil.setDefaultDir(selectedFile);
                 }
             }
         });
+
+        paragonEmailService = new ParagonEmailService();
 
         paragonViewDialog = new ParagonViewDialog() {
             @Override
@@ -135,15 +140,31 @@ public class ParagonViewComponent extends BorderPane {
                     });
                     contextMenu.getItems().add(menuItem);
                 }
+
+                {
+                    MenuItem menuItem = new MenuItem("Send to Email", ImageFactory.createEmailSend16Icon());
+                    menuItem.setOnAction(new EventHandler<ActionEvent>() {
+                        @Override
+                        public void handle(ActionEvent actionEvent) {
+                            if (paragonDto != null) {
+                                loadingPane.bindTask(paragonEppService);
+                                paragonEppService.setParagonId(paragonDto.getId());
+                                paragonEppService.restart();
+                            }
+                        }
+                    });
+                    contextMenu.getItems().add(menuItem);
+                }
+
                 {
                     MenuItem menuItem = new MenuItem("Cancel paragon");
                     menuItem.setOnAction(new EventHandler<ActionEvent>() {
                         @Override
                         public void handle(ActionEvent actionEvent) {
                             if (paragonDto != null) {
-                                loadingPane.bindTask(paragonCancelService);
-                                paragonCancelService.setParagonId(paragonDto.getId());
-                                paragonCancelService.restart();
+                                loadingPane.bindTask(paragonEmailService);
+                                paragonEmailService.setParagonId(paragonDto.getId());
+                                paragonEmailService.restart();
                             }
                         }
                     });
@@ -246,6 +267,41 @@ public class ParagonViewComponent extends BorderPane {
 
                         try (CloseableHttpResponse response = httpClient.execute(httpPost, localContext)) {
                             return EntityUtils.toString(response.getEntity(), "ISO-8859-2");
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    return "";
+                }
+            };
+        }
+
+        public void setParagonId(int paragonId) {
+            this.paragonId.setValue(paragonId);
+        }
+    }
+
+    class ParagonEmailService extends AbstractAsyncService<String> {
+        private SimpleIntegerProperty paragonId = new SimpleIntegerProperty();
+
+        @Override
+        protected Task<String> createTask() {
+            final int _paragonId = paragonId.get();
+            return new Task<String>() {
+                @Override
+                protected String call() throws Exception {
+                    URL url = new URL(ServiceFacade.getApplicationPreference().getWarehouseHost() + "/paragon/details/" + _paragonId + "/email");
+                    HttpHost targetHost = new HttpHost(url.getHost());
+
+                    CredentialsProvider credsProvider = HttpUtil.credentialsProvider(targetHost);
+
+                    try (CloseableHttpClient httpClient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build()) {
+                        HttpClientContext localContext = HttpUtil.context(targetHost);
+
+                        HttpGet httpPost = new HttpGet(url.toURI());
+
+                        try (CloseableHttpResponse response = httpClient.execute(httpPost, localContext)) {
+                            return EntityUtils.toString(response.getEntity());
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
