@@ -2,6 +2,7 @@ package org.menesty.ikea.ui.controls.form;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.event.ActionEvent;
@@ -55,11 +56,11 @@ public class TextField extends javafx.scene.control.TextField {
 
     public boolean isValid() {
         boolean result = true;
-        getStyleClass().remove("validation-succeed");
-        getStyleClass().remove("validation-error");
+        getStyleClass().removeAll("validation-succeed", "validation-error");
 
         if (!allowBlank) {
             result = StringUtils.isNotBlank(getText());
+            getStyleClass().remove("white-border");
 
             if (result)
                 getStyleClass().add("validation-succeed");
@@ -97,7 +98,8 @@ public class TextField extends javafx.scene.control.TextField {
 
     public void reset() {
         setText(null);
-        getStyleClass().remove("validation-succeed");
-        getStyleClass().remove("validation-error");
+
+        getStyleClass().removeAll("validation-succeed", "validation-error");
+        getStyleClass().add("white-border");
     }
 }

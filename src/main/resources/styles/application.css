@@ -707,11 +707,16 @@
 
 .validation-error {
     -fx-border-color: #ff0000;
-    -fx-border-style: solid;
+    -fx-border-radius: 2, 2, 2, 2;
 }
+
 .validation-succeed {
     -fx-border-color: #008000;
-    -fx-border-style: solid;
+    -fx-border-radius: 2, 2, 2, 2;
+}
+.white-border {
+    -fx-border-color: #ffffff;
+    -fx-border-radius: 2, 2, 2, 2;
 }
 
 .pagination{
