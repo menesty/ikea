@@ -258,9 +258,9 @@ public class OrderService extends Repository<CustomerOrder> {
     private double getTotal(List<OrderItem> orderItems) {
         BigDecimal total = BigDecimal.ZERO;
 
-        for (OrderItem item : orderItems) {
+        for (OrderItem item : orderItems)
             total = total.add(item.getTotal());
-        }
+
         return total.doubleValue();
     }
 

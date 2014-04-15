@@ -11,39 +11,58 @@ import org.mvel.templates.TemplateRuntime;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class InvoiceService {
 
     private final static SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 
-    public void exportToEpp(List<InvoiceItem> items, String fileName) {
-        String templateFile = "/config/invoice-order.epp";
+    private static final Logger logger = Logger.getLogger(InvoiceService.class.getName());
 
+    public void exportToEpp(String invoiceName, List<InvoiceItem> items, String fileName) {
+        String templateFile = "/config/invoice-order.epp";
         StringBuilder text = new StringBuilder();
         String NL = System.getProperty("line.separator");
+
         try (Scanner scanner = new Scanner(getClass().getResourceAsStream(templateFile), "ISO-8859-2")) {
             while (scanner.hasNextLine())
                 text.append(scanner.nextLine() + NL);
 
             String template = new String(text.toString().getBytes("utf8"));
-
             Map<String, Object> map = new HashMap<>();
+
+            //calculate total
+            BigDecimal totalPrice = BigDecimal.ZERO;
+
+            for(InvoiceItem item : items)
+                totalPrice = totalPrice.add(item.getTotalWatPrice());
+
+            InvoiceItem totalItem = new InvoiceItem();
+            totalItem.setCount(1);
+            totalItem.setPrice(totalPrice.doubleValue());
+
+            map.put("totalItem", totalItem);
             map.put("invoiceItems", items);
             map.put("createDate", sdf.format(new Date()));
+            map.put("invoiceName", invoiceName);
+
             VariableResolverFactory vrf = new MapVariableResolverFactory(map);
             String result = (String) TemplateRuntime.eval(template, null, vrf, null);
 
             if (!fileName.endsWith(".epp"))
                 fileName += ".epp";
+
             new FileOutputStream(fileName).write(result.getBytes("ISO-8859-2"));
 
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "exportToEpp", e);
         }
     }
 
@@ -61,7 +80,7 @@ public class InvoiceService {
             workbook.write(Files.newOutputStream(FileSystems.getDefault().getPath(path), StandardOpenOption.CREATE_NEW));
 
         } catch (InvalidFormatException | IOException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "exportToXls", e);
         }
     }
 }

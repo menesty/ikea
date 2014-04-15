@@ -135,6 +135,7 @@ public abstract class EppViewComponent extends StackPane {
         exportEppBtn.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
                 FileChooser fileChooser = FileChooserUtil.getEpp();
+                fileChooser.setInitialFileName(currentInvoicePdf.getInvoiceNumber() + ".epp");
 
                 File selectedFile = fileChooser.showSaveDialog(stage);
 
@@ -145,7 +146,7 @@ public abstract class EppViewComponent extends StackPane {
                     for (InvoiceItem invoiceItem : list)
                         invoiceItem.setIndex(++index);
 
-                    export(list, selectedFile.getAbsolutePath());
+                    export(currentInvoicePdf.getInvoiceNumber(), list, selectedFile.getAbsolutePath());
 
                     FileChooserUtil.setDefaultDir(selectedFile);
                 }
@@ -307,7 +308,7 @@ public abstract class EppViewComponent extends StackPane {
 
     public abstract void onChange(InvoicePdf invoicePdf);
 
-    public abstract void export(List<InvoiceItem> items, String path);
+    public abstract void export(String invoiceName, List<InvoiceItem> items, String path);
 
     private BigDecimal calculatePrice(List<InvoiceItem> items) {
         BigDecimal price = BigDecimal.ZERO;

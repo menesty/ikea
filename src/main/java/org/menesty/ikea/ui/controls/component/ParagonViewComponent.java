@@ -3,6 +3,7 @@ package org.menesty.ikea.ui.controls.component;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -47,7 +48,7 @@ import java.util.List;
 public class ParagonViewComponent extends BorderPane {
     private final LoadService loadService;
 
-    private TableView<ParagonDto> tableView;
+    private BaseTableView<ParagonDto> tableView;
 
     private LoadingPane loadingPane;
 
@@ -79,12 +80,14 @@ public class ParagonViewComponent extends BorderPane {
         });
 
         paragonEppService = new ParagonEppService();
-        paragonEppService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<String>() {
+        paragonEppService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<Result>() {
             @Override
-            public void onSucceeded(final String value) {
+            public void onSucceeded(final Result value) {
                 loadingPane.hide();
 
                 FileChooser fileChooser = FileChooserUtil.getEpp();
+                fileChooser.setInitialFileName(value.name);
+
                 File selectedFile = fileChooser.showSaveDialog(stage);
 
                 if (selectedFile != null) {
@@ -94,7 +97,7 @@ public class ParagonViewComponent extends BorderPane {
                         fileName += ".epp";
 
                     try {
-                        new FileOutputStream(fileName).write(value.getBytes());
+                        new FileOutputStream(fileName).write(value.result.getBytes());
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -124,6 +127,12 @@ public class ParagonViewComponent extends BorderPane {
 
             @Override
             protected void onRowRender(TableRow<ParagonDto> row, final ParagonDto paragonDto) {
+                row.getStyleClass().remove("greenRow");
+                row.setContextMenu(null);
+
+                if (paragonDto == null)
+                    return;
+
                 ContextMenu contextMenu = new ContextMenu();
 
                 {
@@ -131,11 +140,9 @@ public class ParagonViewComponent extends BorderPane {
                     menuItem.setOnAction(new EventHandler<ActionEvent>() {
                         @Override
                         public void handle(ActionEvent actionEvent) {
-                            if (paragonDto != null) {
-                                loadingPane.bindTask(paragonEppService);
-                                paragonEppService.setParagonId(paragonDto.getId());
-                                paragonEppService.restart();
-                            }
+                            loadingPane.bindTask(paragonEppService);
+                            paragonEppService.setParagon(paragonDto);
+                            paragonEppService.restart();
                         }
                     });
                     contextMenu.getItems().add(menuItem);
@@ -146,11 +153,9 @@ public class ParagonViewComponent extends BorderPane {
                     menuItem.setOnAction(new EventHandler<ActionEvent>() {
                         @Override
                         public void handle(ActionEvent actionEvent) {
-                            if (paragonDto != null) {
-                                loadingPane.bindTask(paragonEppService);
-                                paragonEppService.setParagonId(paragonDto.getId());
-                                paragonEppService.restart();
-                            }
+                            loadingPane.bindTask(paragonEppService);
+                            paragonEmailService.setParagonId(paragonDto.getId());
+                            paragonEmailService.restart();
                         }
                     });
                     contextMenu.getItems().add(menuItem);
@@ -161,11 +166,9 @@ public class ParagonViewComponent extends BorderPane {
                     menuItem.setOnAction(new EventHandler<ActionEvent>() {
                         @Override
                         public void handle(ActionEvent actionEvent) {
-                            if (paragonDto != null) {
-                                loadingPane.bindTask(paragonEmailService);
-                                paragonEmailService.setParagonId(paragonDto.getId());
-                                paragonEmailService.restart();
-                            }
+                            loadingPane.bindTask(paragonEmailService);
+                            paragonEmailService.setParagonId(paragonDto.getId());
+                            paragonEmailService.restart();
                         }
                     });
 
@@ -173,6 +176,9 @@ public class ParagonViewComponent extends BorderPane {
                 }
 
                 row.setContextMenu(contextMenu);
+
+                if (paragonDto.isDownloaded())
+                    row.getStyleClass().add("greenRow");
             }
         };
 
@@ -246,16 +252,16 @@ public class ParagonViewComponent extends BorderPane {
         this.loadingPane = loadingPane;
     }
 
-    class ParagonEppService extends AbstractAsyncService<String> {
-        private SimpleIntegerProperty paragonId = new SimpleIntegerProperty();
+    class ParagonEppService extends AbstractAsyncService<Result> {
+        private SimpleObjectProperty<ParagonDto> paragonDto = new SimpleObjectProperty<>();
 
         @Override
-        protected Task<String> createTask() {
-            final int _paragonId = paragonId.get();
-            return new Task<String>() {
+        protected Task<Result> createTask() {
+            final ParagonDto _paragonDto = paragonDto.get();
+            return new Task<Result>() {
                 @Override
-                protected String call() throws Exception {
-                    URL url = new URL(ServiceFacade.getApplicationPreference().getWarehouseHost() + "/paragon/details/" + _paragonId + "/epp");
+                protected Result call() throws Exception {
+                    URL url = new URL(ServiceFacade.getApplicationPreference().getWarehouseHost() + "/paragon/details/" + _paragonDto.getId() + "/epp");
                     HttpHost targetHost = new HttpHost(url.getHost());
 
                     CredentialsProvider credsProvider = HttpUtil.credentialsProvider(targetHost);
@@ -266,18 +272,21 @@ public class ParagonViewComponent extends BorderPane {
                         HttpGet httpPost = new HttpGet(url.toURI());
 
                         try (CloseableHttpResponse response = httpClient.execute(httpPost, localContext)) {
-                            return EntityUtils.toString(response.getEntity(), "ISO-8859-2");
+                            _paragonDto.setDownloaded(true);
+                            tableView.update(_paragonDto);
+
+                            return new Result("paragon_" + _paragonDto.getPrice() + ".epp", EntityUtils.toString(response.getEntity(), "ISO-8859-2"));
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                    return "";
+                    return null;
                 }
             };
         }
 
-        public void setParagonId(int paragonId) {
-            this.paragonId.setValue(paragonId);
+        public void setParagon(ParagonDto paragonDto) {
+            this.paragonDto.setValue(paragonDto);
         }
     }
 
@@ -392,6 +401,18 @@ public class ParagonViewComponent extends BorderPane {
 
 }
 
+class Result {
+
+    public Result(String name, String result) {
+        this.name = name;
+        this.result = result;
+    }
+
+    public String name;
+
+    public String result;
+}
+
 class ParagonDtoAdapter implements JsonDeserializer<ParagonDto> {
 
     private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -417,6 +438,8 @@ class ParagonDtoAdapter implements JsonDeserializer<ParagonDto> {
 
         if (!jsEl.get("price").isJsonNull())
             entity.setPrice(jsEl.get("price").getAsDouble());
+
+        entity.setDownloaded(jsEl.get("downloaded").getAsInt() == 1);
 
         return entity;
     }

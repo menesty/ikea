@@ -15,6 +15,16 @@ public class ParagonDto {
 
     private double price;
 
+    public boolean isDownloaded() {
+        return downloaded;
+    }
+
+    public void setDownloaded(boolean downloaded) {
+        this.downloaded = downloaded;
+    }
+
+    private boolean downloaded;
+
     public int getId() {
         return id;
     }
@@ -62,4 +72,6 @@ public class ParagonDto {
     public void setPrice(double price) {
         this.price = price;
     }
+
+
 }

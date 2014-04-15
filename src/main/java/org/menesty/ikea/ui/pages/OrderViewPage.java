@@ -451,8 +451,8 @@ public class OrderViewPage extends BasePage {
             }
 
             @Override
-            public void export(List<InvoiceItem> items, String path) {
-                ServiceFacade.getInvoiceService().exportToEpp(items, path);
+            public void export(String invoiceNumber, List<InvoiceItem> items, String path) {
+                ServiceFacade.getInvoiceService().exportToEpp(invoiceNumber, items, path);
             }
         };
 
