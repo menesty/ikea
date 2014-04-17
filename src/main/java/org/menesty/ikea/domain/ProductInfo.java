@@ -69,6 +69,7 @@ public class ProductInfo extends Identifiable {
     private String uaName;
 
     @Enumerated(EnumType.STRING)
+    @Column(name="group_item")
     private Group group = Group.Unknown;
 
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)

@@ -1,8 +1,6 @@
 package org.menesty.ikea.domain;
 
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
 
@@ -10,7 +8,7 @@ import java.util.List;
 public class CustomerOrder extends Identifiable {
 
     private String name;
-
+    @Temporal(TemporalType.DATE)
     private Date createdDate;
     @ElementCollection
     private List<String> parseWarnings;

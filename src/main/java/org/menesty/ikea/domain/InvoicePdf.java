@@ -36,7 +36,7 @@ public class InvoicePdf extends Identifiable {
     private double price;
 
     private String name;
-
+    @Temporal(TemporalType.DATE)
     private Date createdDate = new Date();
 
     private String invoiceNumber;

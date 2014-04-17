@@ -22,7 +22,7 @@ public class OrderItem extends Identifiable implements UserProductInfo {
     private boolean invalidFetch;
 
     private int tryCount;
-
+    @Column(name = "count_items", scale = 8, precision = 2)
     private double count;
 
     private String artNumber;

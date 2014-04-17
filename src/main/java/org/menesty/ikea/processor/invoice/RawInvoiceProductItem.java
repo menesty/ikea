@@ -6,6 +6,7 @@ import org.menesty.ikea.domain.PackageInfo;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.util.NumberUtil;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
@@ -31,7 +32,7 @@ public class RawInvoiceProductItem extends Identifiable {
     private String originalArtNumber;
 
     private String name;
-
+    @Column(name = "count_items", scale = 8, precision = 2)
     private double count;
 
     private double price;

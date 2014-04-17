@@ -37,7 +37,7 @@ public class InvoiceItem extends Identifiable {
 
     private int wat;
 
-    @Column(scale = 8, precision = 2)
+    @Column(name = "count_items", scale = 8, precision = 2)
     private double count;
     @Column(scale = 8, precision = 3)
     private double weight;

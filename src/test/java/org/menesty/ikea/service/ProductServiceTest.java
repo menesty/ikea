@@ -30,7 +30,7 @@ public class ProductServiceTest extends DatabaseTestCase {
         Assert.assertEquals(410.0, productInfo.getPrice(), 0);
         Assert.assertEquals(5, productInfo.getParts().size());
     }
-
+    @Ignore
     @Test
     public void comboPartParseTest() throws IOException {
         ProductService productService = new ProductService();
