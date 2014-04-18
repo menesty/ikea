@@ -55,10 +55,11 @@ public abstract class BaseTableView<Entity> extends TableView<Entity> {
     }
 
     public void update(Entity entity) {
-        int index = getItems().indexOf(entity);
-
-        if (index != -1)
-            rows.get(index + 1).setItem(null);
+        for (TableRow<Entity> row : rows)
+            if (entity.equals(row.getItem())) {
+                row.setItem(null);
+                return;
+            }
     }
 
 }

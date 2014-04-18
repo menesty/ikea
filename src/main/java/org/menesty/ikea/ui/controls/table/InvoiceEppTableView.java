@@ -6,7 +6,6 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
@@ -16,15 +15,13 @@ import javafx.util.Callback;
 import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.processor.invoice.InvoiceItem;
 import org.menesty.ikea.ui.controls.dialog.ProductDialog;
-import org.menesty.ikea.ui.table.DoubleEditableTableCell;
 import org.menesty.ikea.util.ColumnUtil;
 import org.menesty.ikea.util.NumberUtil;
 
 /**
  * Created by Menesty on 12/22/13.
  */
-public abstract class InvoiceEppTableView extends TableView<InvoiceItem> {
-
+public class InvoiceEppTableView extends BaseTableView<InvoiceItem> {
     public InvoiceEppTableView() {
         {
             TableColumn<InvoiceItem, Number> column = new TableColumn<>();
@@ -57,10 +54,12 @@ public abstract class InvoiceEppTableView extends TableView<InvoiceItem> {
                                             ProductDialog.browse(item.getOriginArtNumber());
                                         }
                                     });
+
                                     Region space = new Region();
                                     HBox.setHgrow(space, Priority.ALWAYS);
                                     content.getChildren().addAll(numberLabel, space, imageView);
                                 }
+
                                 content.setMinWidth(getWidth() - getGraphicTextGap() * 2);
                                 setGraphic(content);
                                 numberLabel.setText(number + "");
@@ -74,6 +73,7 @@ public abstract class InvoiceEppTableView extends TableView<InvoiceItem> {
                     return tableCell;
                 }
             });
+
             column.setCellValueFactory(ColumnUtil.<InvoiceItem>indexColumn());
             getColumns().add(column);
         }
@@ -81,49 +81,16 @@ public abstract class InvoiceEppTableView extends TableView<InvoiceItem> {
         {
             TableColumn<InvoiceItem, String> column = new TableColumn<>("Art # ");
             column.setMinWidth(110);
-            column.setCellFactory(TextFieldTableCell.<InvoiceItem>forTableColumn());
             column.setCellValueFactory(ColumnUtil.<InvoiceItem, String>column("artNumber"));
-            column.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<InvoiceItem, String>>() {
-                @Override
-                public void handle(TableColumn.CellEditEvent<InvoiceItem, String> t) {
-                    InvoiceItem item = t.getTableView().getItems().get(t.getTablePosition().getRow());
-                    if (!item.getArtNumber().equals(t.getNewValue())) {
-                        item.setArtNumber(t.getNewValue());
-                        onEdit(item);
-                    }
-
-                }
-            });
-
             getColumns().add(column);
         }
 
         {
             TableColumn<InvoiceItem, String> column = new TableColumn<>("S Name");
             column.setMinWidth(170);
-            column.setCellFactory(TextFieldTableCell.<InvoiceItem>forTableColumn());
             column.setCellValueFactory(ColumnUtil.<InvoiceItem, String>column("shortName"));
-            column.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<InvoiceItem, String>>() {
-                @Override
-                public void handle(TableColumn.CellEditEvent<InvoiceItem, String> t) {
-                    InvoiceItem item = t.getTableView().getItems().get(t.getTablePosition().getRow());
-                    if (!item.getShortName().equals(t.getNewValue())) {
-                        item.setShortName(t.getNewValue());
-                        onEdit(item);
-                    }
-
-                }
-            });
-
             getColumns().add(column);
         }
-
-        Callback<TableColumn<InvoiceItem, Double>, TableCell<InvoiceItem, Double>> doubleFactory = new Callback<TableColumn<InvoiceItem, Double>, TableCell<InvoiceItem, Double>>() {
-            @Override
-            public TableCell<InvoiceItem, Double> call(TableColumn p) {
-                return new DoubleEditableTableCell<>();
-            }
-        };
 
         {
             TableColumn<InvoiceItem, String> column = new TableColumn<>("Count");
@@ -134,7 +101,6 @@ public abstract class InvoiceEppTableView extends TableView<InvoiceItem> {
                     return new SimpleStringProperty(NumberUtil.toString(item.getValue().getCount()));
                 }
             });
-            //column.setCellFactory(doubleFactory);
             getColumns().add(column);
         }
 
@@ -142,18 +108,6 @@ public abstract class InvoiceEppTableView extends TableView<InvoiceItem> {
             TableColumn<InvoiceItem, Double> column = new TableColumn<>("Price");
             column.setMaxWidth(70);
             column.setCellValueFactory(ColumnUtil.<InvoiceItem, Double>column("priceWat"));
-            column.setCellFactory(doubleFactory);
-            column.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<InvoiceItem, Double>>() {
-                @Override
-                public void handle(TableColumn.CellEditEvent<InvoiceItem, Double> t) {
-                    InvoiceItem item = t.getTableView().getItems().get(t.getTablePosition().getRow());
-                    if (item.getPriceWat() != t.getNewValue()) {
-                        item.setPrice(t.getNewValue());
-                        onEdit(item);
-                    }
-
-                }
-            });
             getColumns().add(column);
         }
 
@@ -171,15 +125,15 @@ public abstract class InvoiceEppTableView extends TableView<InvoiceItem> {
                 @Override
                 public void handle(ActionEvent actionEvent) {
                     InvoiceItem item = getSelectionModel().getSelectedItem();
+
                     if (item != null)
                         ProductDialog.browse(item.getArtNumber());
                 }
             });
             contextMenu.getItems().add(menuItem);
         }
+
         setContextMenu(contextMenu);
-        setEditable(true);
     }
 
-    public abstract void onEdit(InvoiceItem item);
 }
