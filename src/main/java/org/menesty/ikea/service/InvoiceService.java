@@ -41,7 +41,7 @@ public class InvoiceService {
             //calculate total
             BigDecimal totalPrice = BigDecimal.ZERO;
 
-            for(InvoiceItem item : items)
+            for (InvoiceItem item : items)
                 totalPrice = totalPrice.add(item.getTotalWatPrice());
 
             InvoiceItem totalItem = new InvoiceItem();
@@ -55,6 +55,8 @@ public class InvoiceService {
 
             VariableResolverFactory vrf = new MapVariableResolverFactory(map);
             String result = (String) TemplateRuntime.eval(template, null, vrf, null);
+
+            fileName = fileName.replaceAll("[/,-\\\\]", "_");
 
             if (!fileName.endsWith(".epp"))
                 fileName += ".epp";
