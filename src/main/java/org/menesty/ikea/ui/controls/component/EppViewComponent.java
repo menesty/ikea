@@ -154,7 +154,7 @@ public abstract class EppViewComponent extends StackPane {
         exportEppBtn.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
                 FileChooser fileChooser = FileChooserUtil.getEpp();
-                fileChooser.setInitialFileName(currentInvoicePdf.getInvoiceNumber() + ".epp");
+                fileChooser.setInitialFileName(currentInvoicePdf.getInvoiceNumber().replaceAll("[/-]", "_") + ".epp");
 
                 File selectedFile = fileChooser.showSaveDialog(stage);
 

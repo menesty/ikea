@@ -21,6 +21,7 @@ import org.menesty.ikea.ui.controls.dialog.InvoicePdfDialog;
 import org.menesty.ikea.ui.controls.table.BaseTableView;
 import org.menesty.ikea.ui.controls.table.CustomInvoiceComponent;
 import org.menesty.ikea.util.ColumnUtil;
+import org.menesty.ikea.util.FileChooserUtil;
 
 import java.io.File;
 import java.util.List;
@@ -217,10 +218,11 @@ public class CustomInvoicePage extends BasePage {
                     menuItem.setOnAction(new EventHandler<ActionEvent>() {
                         @Override
                         public void handle(ActionEvent actionEvent) {
-                            FileChooser fileChooser = new FileChooser();
-                            fileChooser.setTitle("Epp location");
-                            FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("Epp file (*.epp)", "*.epp");
-                            fileChooser.getExtensionFilters().add(extFilter);
+                            InvoicePdf invoicePdf = invoicePdfTable.getSelectionModel().getSelectedItem();
+
+                            FileChooser fileChooser = FileChooserUtil.getEpp();
+                            fileChooser.setInitialFileName(invoicePdf.getInvoiceNumber().replaceAll("[/,-\\\\]", "_") + ".epp");
+
                             File selectedFile = fileChooser.showSaveDialog(getStage());
 
                             if (selectedFile != null) {
@@ -229,8 +231,6 @@ public class CustomInvoicePage extends BasePage {
 
                                 for (InvoiceItem invoiceItem : list)
                                     invoiceItem.setIndex(++index);
-
-                                InvoicePdf invoicePdf = invoicePdfTable.getSelectionModel().getSelectedItem();
 
                                 ServiceFacade.getInvoiceService().exportToEpp(invoicePdf.getInvoiceNumber(), list, selectedFile.getAbsolutePath());
                             }

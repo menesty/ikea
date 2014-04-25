@@ -56,8 +56,6 @@ public class InvoiceService {
             VariableResolverFactory vrf = new MapVariableResolverFactory(map);
             String result = (String) TemplateRuntime.eval(template, null, vrf, null);
 
-            fileName = fileName.replaceAll("[/,-\\\\]", "_");
-
             if (!fileName.endsWith(".epp"))
                 fileName += ".epp";
 

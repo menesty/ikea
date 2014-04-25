@@ -276,10 +276,12 @@ public class OrderService extends Repository<CustomerOrder> {
 
             List<ProductInfo> singleComboList = new ArrayList<>();
             for (OrderItem orderItem : comboItems) {
-                for (ProductPart part : orderItem.getProductInfo().getParts()) {
+                if (orderItem.isInvalidFetch())
+                    continue;
+
+                for (ProductPart part : orderItem.getProductInfo().getParts())
                     // increaseData(orderComboData, part.getProductInfo().getOriginalArtNum(), NumberUtil.round(orderItem.getCount() * part.getCount()));
                     infoComboData.put(part.getProductInfo().getOriginalArtNum(), part.getProductInfo());
-                }
 
                 for (int i = 0; i < (int) orderItem.getCount(); i++)
                     singleComboList.add(orderItem.getProductInfo());

@@ -52,7 +52,7 @@ public class OrderItemService extends Repository<OrderItem> {
                 begin();
             TypedQuery<OrderItem> query = getEm().createQuery("select entity from " + entityClass.getName() + " entity where entity.customerOrder.id = ?1 and entity.type = ?2", entityClass);
             query.setParameter(1, order.getId());
-            query.setParameter(2, type.toString());
+            query.setParameter(2, type);
             return query.getResultList();
         } finally {
             if (!started)
