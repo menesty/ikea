@@ -18,7 +18,7 @@ import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.service.task.InvoicePdfSyncService;
 import org.menesty.ikea.ui.controls.dialog.Dialog;
 import org.menesty.ikea.ui.controls.dialog.InvoicePdfDialog;
-import org.menesty.ikea.ui.controls.table.BaseTableView;
+import org.menesty.ikea.ui.controls.table.component.BaseTableView;
 import org.menesty.ikea.ui.controls.table.CustomInvoiceComponent;
 import org.menesty.ikea.util.ColumnUtil;
 import org.menesty.ikea.util.FileChooserUtil;

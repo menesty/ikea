@@ -6,11 +6,9 @@ import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.scene.control.Button;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.ToolBar;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
 import org.apache.http.HttpHost;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -24,6 +22,8 @@ import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.ui.controls.pane.LoadingPane;
+import org.menesty.ikea.ui.controls.search.WarehouseItemSearchData;
+import org.menesty.ikea.ui.controls.search.WarehouseSearchBar;
 import org.menesty.ikea.util.ColumnUtil;
 import org.menesty.ikea.util.HttpUtil;
 
@@ -38,17 +38,28 @@ public class WarehouseViewComponent extends BorderPane {
     private TableView<WarehouseItemDto> tableView;
     private LoadingPane loadingPane;
 
+    private List<WarehouseItemDto> items;
+
     public WarehouseViewComponent() {
         loadService = new LoadService();
         loadService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<List<WarehouseItemDto>>() {
             @Override
             public void onSucceeded(final List<WarehouseItemDto> value) {
-                tableView.setItems(FXCollections.observableList(value));
+                setItems(items = value);
             }
         });
 
 
         tableView = new TableView<>();
+        {
+            TableColumn<WarehouseItemDto, Boolean> checked = new TableColumn<>();
+            checked.setMaxWidth(40);
+            checked.setGraphic(new CheckBox());
+            checked.setResizable(false);
+            tableView.getColumns().add(checked);
+
+        }
+
         {
             TableColumn<WarehouseItemDto, String> column = new TableColumn<>("Product Number");
             column.setMinWidth(150);
@@ -77,18 +88,47 @@ public class WarehouseViewComponent extends BorderPane {
             tableView.getColumns().add(column);
         }
 
-        ToolBar control = new ToolBar();
-        Button refresh = new Button(null, ImageFactory.createReload32Icon());
-        refresh.setOnAction(new EventHandler<ActionEvent>() {
+        VBox controlBox = new VBox();
+
+        {
+            ToolBar control = new ToolBar();
+            Button refresh = new Button(null, ImageFactory.createReload32Icon());
+            refresh.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent actionEvent) {
+                    load();
+                }
+            });
+            control.getItems().add(refresh);
+
+            controlBox.getChildren().add(control);
+        }
+        controlBox.getChildren().add(new WarehouseSearchBar() {
             @Override
-            public void handle(ActionEvent actionEvent) {
-                load();
+            public void onSearch(WarehouseItemSearchData data) {
+                setItems(filter(data));
             }
         });
-        control.getItems().add(refresh);
 
         setCenter(tableView);
-        setTop(control);
+        setTop(controlBox);
+    }
+
+    private void setItems(List<WarehouseItemDto> items) {
+        tableView.setItems(FXCollections.observableList(items));
+    }
+
+    public List<WarehouseItemDto> filter(WarehouseItemSearchData data) {
+        if (data.price == null || data.price == 0)
+            return items;
+
+        List<WarehouseItemDto> result = new ArrayList<>();
+
+        for (WarehouseItemDto item : items)
+            if (item.price <= data.price)
+                result.add(item);
+
+        return result;
     }
 
     public void load() {

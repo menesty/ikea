@@ -177,7 +177,6 @@ public abstract class OrderItemViewComponent extends BorderPane {
             public void onSearch(OrderItemSearchData orderItemSearchForm) {
                 setItems(filter(orderItemSearchForm));
             }
-
         });
 
         orderItemTableView.getSelectionModel().selectedItemProperty().addListener(new InvalidationListener() {

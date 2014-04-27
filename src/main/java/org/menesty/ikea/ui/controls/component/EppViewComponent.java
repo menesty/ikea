@@ -386,6 +386,14 @@ public abstract class EppViewComponent extends StackPane {
             else {
                 filtered.add(item);
                 InvoiceItem invoiceItem = InvoiceItem.get(item.getProductInfo(), artPrefix, item.getCount(), 1, 1);
+
+                double newPrice = NumberUtil.round(invoiceItem.getPriceWat() / 4);
+                newPrice = newPrice < 1.99 ? 1.99 : newPrice;
+                newPrice = newPrice > 20 ? 19.99 : newPrice;
+
+                invoiceItem.setPrice(newPrice);
+                invoiceItem.basePrice = newPrice;
+
                 invoiceItem.setVisible(false);
                 result.add(invoiceItem);
             }

@@ -6,15 +6,13 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
-import javafx.geometry.Pos;
-import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.util.Callback;
 import org.menesty.ikea.domain.InvoicePdf;
+import org.menesty.ikea.ui.controls.table.component.CheckBoxTableColumn;
 import org.menesty.ikea.util.ColumnUtil;
 
 public abstract class InvoicePdfTableView extends TableView<InvoicePdfTableView.InvoicePdfTableItem> {
@@ -33,17 +31,8 @@ public abstract class InvoicePdfTableView extends TableView<InvoicePdfTableView.
         }
 
 
-        TableColumn<InvoicePdfTableItem, Boolean> checked = new TableColumn<>();
-        checked.setMaxWidth(40);
-        checked.setResizable(false);
+        TableColumn<InvoicePdfTableItem, Boolean> checked = new CheckBoxTableColumn<>();
         checked.setCellValueFactory(new PropertyValueFactory<InvoicePdfTableItem, Boolean>("checked"));
-        checked.setCellFactory(new Callback<TableColumn<InvoicePdfTableItem, Boolean>, TableCell<InvoicePdfTableItem, Boolean>>() {
-            public TableCell<InvoicePdfTableItem, Boolean> call(TableColumn<InvoicePdfTableItem, Boolean> p) {
-                CheckBoxTableCell<InvoicePdfTableItem, Boolean> checkBoxTableCell = new CheckBoxTableCell<>();
-                checkBoxTableCell.setAlignment(Pos.CENTER);
-                return checkBoxTableCell;
-            }
-        });
 
         TableColumn<InvoicePdfTableItem, String> name = new TableColumn<>("Name");
         name.setMinWidth(160);

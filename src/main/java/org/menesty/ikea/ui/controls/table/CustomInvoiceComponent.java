@@ -14,6 +14,7 @@ import org.menesty.ikea.processor.invoice.InvoiceItem;
 import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.ui.controls.dialog.InvoiceItemDialog;
+import org.menesty.ikea.ui.controls.table.component.BaseTableView;
 import org.menesty.ikea.ui.pages.EntityDialogCallback;
 import org.menesty.ikea.util.ColumnUtil;
 

@@ -93,8 +93,11 @@ public class DoubleTextField extends TextField {
      */
     private void parseAndFormatInput() {
         String input = getText();
-        if (input == null || input.length() == 0)
+
+        if (input == null || input.length() == 0) {
+            setNumber(null);
             return;
+        }
 
         setNumber(NumberUtil.parse(input));
         selectAll();

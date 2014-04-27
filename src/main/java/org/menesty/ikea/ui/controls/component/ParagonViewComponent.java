@@ -30,7 +30,7 @@ import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.ui.controls.dialog.ParagonViewDialog;
 import org.menesty.ikea.ui.controls.pane.LoadingPane;
-import org.menesty.ikea.ui.controls.table.BaseTableView;
+import org.menesty.ikea.ui.controls.table.component.BaseTableView;
 import org.menesty.ikea.util.ColumnUtil;
 import org.menesty.ikea.util.FileChooserUtil;
 import org.menesty.ikea.util.HttpUtil;

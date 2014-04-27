@@ -1,4 +1,4 @@
-package org.menesty.ikea.ui.controls.table;
+package org.menesty.ikea.ui.controls.table.component;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
