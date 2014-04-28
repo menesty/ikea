@@ -2,11 +2,14 @@ package org.menesty.ikea.ui.controls.component;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import org.apache.http.HttpHost;
@@ -24,6 +27,7 @@ import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.ui.controls.pane.LoadingPane;
 import org.menesty.ikea.ui.controls.search.WarehouseItemSearchData;
 import org.menesty.ikea.ui.controls.search.WarehouseSearchBar;
+import org.menesty.ikea.ui.controls.table.component.CheckBoxTableColumn;
 import org.menesty.ikea.util.ColumnUtil;
 import org.menesty.ikea.util.HttpUtil;
 
@@ -35,7 +39,7 @@ import java.util.List;
 
 public class WarehouseViewComponent extends BorderPane {
     private final LoadService loadService;
-    private TableView<WarehouseItemDto> tableView;
+    private TableView<WarehouseItemDtoTableItem> tableView;
     private LoadingPane loadingPane;
 
     private List<WarehouseItemDto> items;
@@ -52,39 +56,37 @@ public class WarehouseViewComponent extends BorderPane {
 
         tableView = new TableView<>();
         {
-            TableColumn<WarehouseItemDto, Boolean> checked = new TableColumn<>();
-            checked.setMaxWidth(40);
-            checked.setGraphic(new CheckBox());
-            checked.setResizable(false);
+            TableColumn<WarehouseItemDtoTableItem, Boolean> checked = new CheckBoxTableColumn<>();
+            checked.setCellValueFactory(new PropertyValueFactory<WarehouseItemDtoTableItem, Boolean>("checked"));
             tableView.getColumns().add(checked);
 
         }
 
         {
-            TableColumn<WarehouseItemDto, String> column = new TableColumn<>("Product Number");
+            TableColumn<WarehouseItemDtoTableItem, String> column = new TableColumn<>("Product Number");
             column.setMinWidth(150);
-            column.setCellValueFactory(ColumnUtil.<WarehouseItemDto, String>column("productNumber"));
+            column.setCellValueFactory(ColumnUtil.<WarehouseItemDtoTableItem, String>column("item.productNumber"));
             tableView.getColumns().add(column);
         }
 
         {
-            TableColumn<WarehouseItemDto, String> column = new TableColumn<>("Short Number");
+            TableColumn<WarehouseItemDtoTableItem, String> column = new TableColumn<>("Short Number");
             column.setMinWidth(250);
-            column.setCellValueFactory(ColumnUtil.<WarehouseItemDto, String>column("shortName"));
+            column.setCellValueFactory(ColumnUtil.<WarehouseItemDtoTableItem, String>column("item.shortName"));
             tableView.getColumns().add(column);
         }
 
         {
-            TableColumn<WarehouseItemDto, Double> column = new TableColumn<>("Price");
+            TableColumn<WarehouseItemDtoTableItem, Double> column = new TableColumn<>("Price");
             column.setMinWidth(80);
-            column.setCellValueFactory(ColumnUtil.<WarehouseItemDto, Double>column("price"));
+            column.setCellValueFactory(ColumnUtil.<WarehouseItemDtoTableItem, Double>column("item.price"));
             tableView.getColumns().add(column);
         }
 
         {
-            TableColumn<WarehouseItemDto, Double> column = new TableColumn<>("Count");
+            TableColumn<WarehouseItemDtoTableItem, Double> column = new TableColumn<>("Count");
             column.setMinWidth(80);
-            column.setCellValueFactory(ColumnUtil.<WarehouseItemDto, Double>column("count"));
+            column.setCellValueFactory(ColumnUtil.<WarehouseItemDtoTableItem, Double>column("item.count"));
             tableView.getColumns().add(column);
         }
 
@@ -115,7 +117,16 @@ public class WarehouseViewComponent extends BorderPane {
     }
 
     private void setItems(List<WarehouseItemDto> items) {
-        tableView.setItems(FXCollections.observableList(items));
+        tableView.setItems(FXCollections.observableList(transform(items)));
+    }
+
+    private List<WarehouseItemDtoTableItem> transform(List<WarehouseItemDto> items) {
+        List<WarehouseItemDtoTableItem> result = new ArrayList<>();
+
+        for (WarehouseItemDto item : items)
+            result.add(new WarehouseItemDtoTableItem(false, item));
+
+        return result;
     }
 
     public List<WarehouseItemDto> filter(WarehouseItemSearchData data) {
@@ -138,6 +149,31 @@ public class WarehouseViewComponent extends BorderPane {
 
     public void bindLoading(final LoadingPane loadingPane) {
         this.loadingPane = loadingPane;
+    }
+
+    public class WarehouseItemDtoTableItem {
+
+        private BooleanProperty checked;
+
+        private final WarehouseItemDto item;
+
+        public WarehouseItemDtoTableItem(boolean checked, WarehouseItemDto item) {
+            this.item = item;
+            this.checked = new SimpleBooleanProperty(checked);
+        }
+
+        public BooleanProperty checkedProperty() {
+            return checked;
+        }
+
+        public boolean isChecked() {
+            return checked.get();
+        }
+
+        public WarehouseItemDto getItem() {
+            return item;
+        }
+
     }
 
     class LoadService extends AbstractAsyncService<List<WarehouseItemDto>> {
