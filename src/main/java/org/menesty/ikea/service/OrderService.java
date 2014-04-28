@@ -266,8 +266,6 @@ public class OrderService extends Repository<CustomerOrder> {
 
     public List<StorageComboLack> calculateOrderInvoiceDiffCombo(CustomerOrder order) {
         try {
-            begin();
-
             List<RawInvoiceProductItem> rawItems = new ArrayList<>(getRawInvoiceItems(order));
             List<OrderItem> comboItems = ServiceFacade.getOrderItemService().loadBy(order, OrderItem.Type.Combo);
 
@@ -275,6 +273,9 @@ public class OrderService extends Repository<CustomerOrder> {
             Map<String, ProductInfo> infoComboData = new HashMap<>();
 
             List<ProductInfo> singleComboList = new ArrayList<>();
+
+            begin();
+
             for (OrderItem orderItem : comboItems) {
                 if (orderItem.isInvalidFetch())
                     continue;
@@ -291,6 +292,7 @@ public class OrderService extends Repository<CustomerOrder> {
                 Iterator<RawInvoiceProductItem> iterator = rawItems.iterator();
                 while (iterator.hasNext()) {
                     RawInvoiceProductItem item = iterator.next();
+
                     if (!infoComboData.containsKey(item.getOriginalArtNumber())) {
                         iterator.remove();
                         continue;

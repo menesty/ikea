@@ -166,9 +166,9 @@ public class ParagonViewComponent extends BorderPane {
                     menuItem.setOnAction(new EventHandler<ActionEvent>() {
                         @Override
                         public void handle(ActionEvent actionEvent) {
-                            loadingPane.bindTask(paragonEmailService);
-                            paragonEmailService.setParagonId(paragonDto.getId());
-                            paragonEmailService.restart();
+                            loadingPane.bindTask(paragonCancelService);
+                            paragonCancelService.setParagonId(paragonDto.getId());
+                            paragonCancelService.restart();
                         }
                     });
 

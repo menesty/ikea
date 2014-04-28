@@ -2,13 +2,10 @@ package org.menesty.ikea.ui.controls.table;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
-import javafx.event.EventHandler;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableRow;
-import javafx.scene.control.TableView;
-import javafx.scene.input.MouseEvent;
 import javafx.util.Callback;
 import org.menesty.ikea.processor.invoice.InvoiceItem;
+import org.menesty.ikea.ui.controls.table.component.BaseTableView;
 import org.menesty.ikea.ui.table.ProductBrowseColumn;
 import org.menesty.ikea.util.ColumnUtil;
 import org.menesty.ikea.util.NumberUtil;
@@ -17,7 +14,7 @@ import org.menesty.ikea.util.NumberUtil;
 /**
  * Created by Menesty on 12/22/13.
  */
-public class InvoiceEppInvisibleTableView extends TableView<InvoiceItem> {
+public class InvoiceEppInvisibleTableView extends BaseTableView<InvoiceItem> {
     public InvoiceEppInvisibleTableView() {
         {
             ProductBrowseColumn<InvoiceItem> column = new ProductBrowseColumn<>();
@@ -52,6 +49,13 @@ public class InvoiceEppInvisibleTableView extends TableView<InvoiceItem> {
         }
 
         {
+            TableColumn<InvoiceItem, Double> column = new TableColumn<>("Price");
+            column.setMaxWidth(70);
+            column.setCellValueFactory(ColumnUtil.<InvoiceItem, Double>column("priceWat"));
+            getColumns().add(column);
+        }
+
+        {
             TableColumn<InvoiceItem, Double> column = new TableColumn<>("Weight");
             column.setMaxWidth(55);
             column.setCellValueFactory(ColumnUtil.<InvoiceItem, Double>column("weight"));
@@ -71,25 +75,5 @@ public class InvoiceEppInvisibleTableView extends TableView<InvoiceItem> {
             column.setCellValueFactory(ColumnUtil.<InvoiceItem, String>column("size"));
             getColumns().add(column);
         }
-
-        setRowFactory(new Callback<TableView<InvoiceItem>, TableRow<InvoiceItem>>() {
-            @Override
-            public TableRow<InvoiceItem> call(final TableView<InvoiceItem> tableView) {
-                final TableRow<InvoiceItem> row = new TableRow<>();
-
-                row.setOnMouseClicked(new EventHandler<MouseEvent>() {
-                    @Override
-                    public void handle(MouseEvent mouseEvent) {
-                        if (mouseEvent.getClickCount() == 2)
-                            onRowDoubleClick(row);
-                    }
-                });
-                return row;
-            }
-        });
-    }
-
-    public void onRowDoubleClick(TableRow<InvoiceItem> row) {
-
     }
 }

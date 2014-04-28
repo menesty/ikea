@@ -88,7 +88,15 @@ public abstract class EppViewComponent extends StackPane {
         splitPane.setOrientation(Orientation.HORIZONTAL);
         splitPane.setDividerPosition(1, 0.40);
 
-        splitPane.getItems().addAll(initInvoiceEppTableView(stage), invoiceEppInvisibleTableView = new InvoiceEppInvisibleTableView() {
+        splitPane.getItems().addAll(initInvoiceEppTableView(stage), initInvoiceEppInvisible());
+
+        getChildren().addAll(splitPane, loadingPane);
+    }
+
+    private BorderPane initInvoiceEppInvisible() {
+        BorderPane pane = new BorderPane();
+
+        invoiceEppInvisibleTableView = new InvoiceEppInvisibleTableView() {
             public void onRowDoubleClick(TableRow<InvoiceItem> row) {
                 InvoiceItem item = row.getItem();
                 item.setVisible(true);
@@ -97,9 +105,36 @@ public abstract class EppViewComponent extends StackPane {
                 invoiceEppInvisibleTableView.getItems().remove(item);
                 invoiceEppTableView.getItems().add(item);
             }
-        });
+        };
+        pane.setCenter(invoiceEppInvisibleTableView);
 
-        getChildren().addAll(splitPane, loadingPane);
+        ToolBar toolBar = new ToolBar();
+        {
+            Button button = new Button(null, ImageFactory.createMoney32Icon());
+            button.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent actionEvent) {
+                    List<InvoiceItem> items = invoiceEppInvisibleTableView.getItems();
+
+                    for (InvoiceItem item : items) {
+                        double newPrice = NumberUtil.round(item.getPriceWat() / 4);
+                        newPrice = newPrice < 1.99 ? 1.99 : newPrice;
+                        newPrice = newPrice > 20 ? 19.99 : newPrice;
+
+                        item.setPrice(newPrice);
+                        item.basePrice = newPrice;
+                    }
+
+                    invoiceEppInvisibleTableView.updateRows();
+                }
+            });
+
+            toolBar.getItems().add(button);
+        }
+
+        pane.setTop(toolBar);
+
+        return pane;
     }
 
     private BorderPane initInvoiceEppTableView(final Stage stage) {
@@ -312,7 +347,6 @@ public abstract class EppViewComponent extends StackPane {
         });
 
         invoiceEppTableView.itemsProperty().addListener(invalidationListener);
-        invoiceEppTableView.editingCellProperty().addListener(invalidationListener);
 
         BorderPane pane = new BorderPane();
         pane.setTop(eppToolBar);
@@ -386,15 +420,8 @@ public abstract class EppViewComponent extends StackPane {
             else {
                 filtered.add(item);
                 InvoiceItem invoiceItem = InvoiceItem.get(item.getProductInfo(), artPrefix, item.getCount(), 1, 1);
-
-                double newPrice = NumberUtil.round(invoiceItem.getPriceWat() / 4);
-                newPrice = newPrice < 1.99 ? 1.99 : newPrice;
-                newPrice = newPrice > 20 ? 19.99 : newPrice;
-
-                invoiceItem.setPrice(newPrice);
-                invoiceItem.basePrice = newPrice;
-
                 invoiceItem.setVisible(false);
+
                 result.add(invoiceItem);
             }
 

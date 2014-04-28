@@ -1,6 +1,5 @@
 package org.menesty.ikea.factory;
 
-import javafx.scene.Node;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
@@ -119,5 +118,9 @@ public class ImageFactory {
 
     public static ImageView createEmailSend16Icon() {
         return new ImageView(new Image("/styles/images/icon/email-send-16x16.png"));
+    }
+
+    public static ImageView createMoney32Icon() {
+        return new ImageView(new Image("/styles/images/icon/money-32x32.png"));
     }
 }
