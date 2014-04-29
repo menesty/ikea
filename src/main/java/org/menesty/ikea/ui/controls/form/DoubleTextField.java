@@ -1,5 +1,7 @@
 package org.menesty.ikea.ui.controls.form;
 
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -19,7 +21,6 @@ public class DoubleTextField extends TextField {
     private SimpleDoubleProperty number = new SimpleDoubleProperty(0);
 
     public final Double getNumber() {
-        parseAndFormatInput();
         return number.get();
     }
 
@@ -68,20 +69,19 @@ public class DoubleTextField extends TextField {
             }
         });
 
-        // Set text in field if BigDecimal property is changed from outside.
-        numberProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                setText(newValue.doubleValue() + "");
-            }
-        });
-
         addEventFilter(KeyEvent.KEY_TYPED, new EventHandler<KeyEvent>() {
             public void handle(KeyEvent event) {
                 String newValue = getText().substring(0, getSelection().getStart()) + event.getCharacter() + getText().substring(getSelection().getEnd(), getText().length());
 
                 if (!NumberUtils.isNumber(newValue))
                     event.consume();
+            }
+        });
+
+        textProperty().addListener(new InvalidationListener() {
+            @Override
+            public void invalidated(Observable observable) {
+                parseAndFormatInput();
             }
         });
 
@@ -95,11 +95,11 @@ public class DoubleTextField extends TextField {
         String input = getText();
 
         if (input == null || input.length() == 0) {
-            setNumber(null);
+            number.setValue(null);
             return;
         }
 
-        setNumber(NumberUtil.parse(input));
+        number.setValue(NumberUtil.parse(input));
         selectAll();
     }
 

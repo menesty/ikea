@@ -2,7 +2,6 @@ package org.menesty.ikea.ui.controls.form;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.event.ActionEvent;
@@ -36,8 +35,10 @@ public class TextField extends javafx.scene.control.TextField {
 
             @Override
             public void handle(ActionEvent actionEvent) {
-                if (delayAction != null)
+                if (delayAction != null) {
+                    delayTimeLine.stop();
                     delayAction.handle(actionEvent);
+                }
             }
         }));
 

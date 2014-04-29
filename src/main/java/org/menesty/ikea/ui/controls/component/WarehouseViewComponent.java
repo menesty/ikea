@@ -2,8 +2,12 @@ package org.menesty.ikea.ui.controls.component;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -90,6 +94,8 @@ public class WarehouseViewComponent extends BorderPane {
             tableView.getColumns().add(column);
         }
 
+        tableView.setEditable(true);
+
         VBox controlBox = new VBox();
 
         {
@@ -160,6 +166,21 @@ public class WarehouseViewComponent extends BorderPane {
         public WarehouseItemDtoTableItem(boolean checked, WarehouseItemDto item) {
             this.item = item;
             this.checked = new SimpleBooleanProperty(checked);
+
+            this.checked.addListener(new ChangeListener<Boolean>() {
+                @Override
+                public void changed(ObservableValue<? extends Boolean> observableValue, Boolean oldValue, Boolean newValue) {
+                    System.out.println(oldValue + "=" + newValue);
+                    WarehouseItemDtoTableItem.this.checked.getValue();
+
+                }
+            });
+            this.checked.addListener(new InvalidationListener() {
+                @Override
+                public void invalidated(Observable observable) {
+                    WarehouseItemDtoTableItem.this.checked.getValue();
+                }
+            });
         }
 
         public BooleanProperty checkedProperty() {
