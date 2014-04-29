@@ -24,10 +24,12 @@ import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.menesty.ikea.IkeaApplication;
 import org.menesty.ikea.domain.WarehouseItemDto;
 import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.service.ServiceFacade;
+import org.menesty.ikea.ui.controls.dialog.ParagonManageDialog;
 import org.menesty.ikea.ui.controls.pane.LoadingPane;
 import org.menesty.ikea.ui.controls.search.WarehouseItemSearchData;
 import org.menesty.ikea.ui.controls.search.WarehouseSearchBar;
@@ -48,7 +50,11 @@ public class WarehouseViewComponent extends BorderPane {
 
     private List<WarehouseItemDto> items;
 
+    private ParagonManageDialog paragonManageDialog;
+
     public WarehouseViewComponent() {
+        paragonManageDialog = new ParagonManageDialog();
+
         loadService = new LoadService();
         loadService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<List<WarehouseItemDto>>() {
             @Override
@@ -57,13 +63,11 @@ public class WarehouseViewComponent extends BorderPane {
             }
         });
 
-
         tableView = new TableView<>();
         {
             TableColumn<WarehouseItemDtoTableItem, Boolean> checked = new CheckBoxTableColumn<>();
             checked.setCellValueFactory(new PropertyValueFactory<WarehouseItemDtoTableItem, Boolean>("checked"));
             tableView.getColumns().add(checked);
-
         }
 
         {
@@ -100,14 +104,29 @@ public class WarehouseViewComponent extends BorderPane {
 
         {
             ToolBar control = new ToolBar();
-            Button refresh = new Button(null, ImageFactory.createReload32Icon());
-            refresh.setOnAction(new EventHandler<ActionEvent>() {
-                @Override
-                public void handle(ActionEvent actionEvent) {
-                    load();
-                }
-            });
-            control.getItems().add(refresh);
+
+            {
+                Button button = new Button(null, ImageFactory.createReload32Icon());
+                button.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent actionEvent) {
+                        load();
+                    }
+                });
+                control.getItems().add(button);
+            }
+
+            {
+                Button button = new Button(null, ImageFactory.createAdd32Icon());
+                button.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent actionEvent) {
+                        paragonManageDialog.show(getChecked());
+                        IkeaApplication.get().showPopupDialog(paragonManageDialog);
+                    }
+                });
+                control.getItems().add(button);
+            }
 
             controlBox.getChildren().add(control);
         }
@@ -124,6 +143,16 @@ public class WarehouseViewComponent extends BorderPane {
 
     private void setItems(List<WarehouseItemDto> items) {
         tableView.setItems(FXCollections.observableList(transform(items)));
+    }
+
+    private List<WarehouseItemDto> getChecked() {
+        List<WarehouseItemDto> result = new ArrayList<>();
+
+        for (WarehouseItemDtoTableItem item : tableView.getItems())
+            if (item.isChecked())
+                result.add(item.getItem());
+
+        return result;
     }
 
     private List<WarehouseItemDtoTableItem> transform(List<WarehouseItemDto> items) {
