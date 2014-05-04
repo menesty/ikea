@@ -53,7 +53,12 @@ public class WarehouseViewComponent extends BorderPane {
     private ParagonManageDialog paragonManageDialog;
 
     public WarehouseViewComponent() {
-        paragonManageDialog = new ParagonManageDialog();
+        paragonManageDialog = new ParagonManageDialog() {
+            @Override
+            public void onCreate() {
+                load();
+            }
+        };
 
         loadService = new LoadService();
         loadService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<List<WarehouseItemDto>>() {

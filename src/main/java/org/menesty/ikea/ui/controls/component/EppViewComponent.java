@@ -132,6 +132,27 @@ public abstract class EppViewComponent extends StackPane {
             toolBar.getItems().add(button);
         }
 
+        {
+            Button button = new Button(null, ImageFactory.createPrevious32Icon());
+            button.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent actionEvent) {
+                    List<InvoiceItem> items = invoiceEppInvisibleTableView.getItems();
+
+                    if (items.size() == 0)
+                        return;
+
+                    for (InvoiceItem item : items)
+                        item.setVisible(true);
+
+                    invoiceEppTableView.getItems().addAll(items);
+                    invoiceEppInvisibleTableView.getItems().clear();
+                }
+            });
+
+            toolBar.getItems().add(button);
+        }
+
         pane.setTop(toolBar);
 
         return pane;

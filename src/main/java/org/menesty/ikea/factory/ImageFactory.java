@@ -123,4 +123,8 @@ public class ImageFactory {
     public static ImageView createMoney32Icon() {
         return new ImageView(new Image("/styles/images/icon/money-32x32.png"));
     }
+
+    public static ImageView createPrevious32Icon() {
+        return new ImageView(new Image("/styles/images/icon/previous-32x32.png"));
+    }
 }
