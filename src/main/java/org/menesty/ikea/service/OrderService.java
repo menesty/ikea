@@ -396,20 +396,34 @@ public class OrderService extends Repository<CustomerOrder> {
 
         for (RawInvoiceProductItem item : rawItems) {
             Double count = orderData.get(item.getOriginalArtNumber());
+
             if (count == null) {
                 Double comboPartCount = orderComboData.get(item.getOriginalArtNumber());
                 double overCount = item.getCount();
+
                 if (comboPartCount != null) {
                     overCount = NumberUtil.round(overCount - comboPartCount);
                     orderComboData.remove(item.getOriginalArtNumber());
                 }
+
                 if (overCount > 0)
                     result.add(new StorageLack(item.getProductInfo(), overCount, false));
             } else {
-                if (NumberUtil.round(count - item.getCount()) == 0)
+                double c = NumberUtil.round(count - item.getCount());
+
+                if (c < 0) {
+                    Double comboPartCount = orderComboData.get(item.getOriginalArtNumber());
+
+                    if (comboPartCount != null) {
+                        c = c + comboPartCount;
+                        orderComboData.remove(item.getOriginalArtNumber());
+                    }
+                }
+
+                if (c == 0)
                     orderData.remove(item.getOriginalArtNumber());
                 else
-                    orderData.put(item.getOriginalArtNumber(), NumberUtil.round(count - item.getCount()));
+                    orderData.put(item.getOriginalArtNumber(), c);
             }
 
         }
