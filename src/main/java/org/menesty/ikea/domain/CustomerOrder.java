@@ -1,6 +1,7 @@
 package org.menesty.ikea.domain;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -11,7 +12,7 @@ public class CustomerOrder extends Identifiable {
     @Temporal(TemporalType.DATE)
     private Date createdDate;
     @ElementCollection
-    private List<String> parseWarnings;
+    private List<String> parseWarnings = new ArrayList<>();
 
     @ManyToOne
     private User generalUser;

@@ -55,6 +55,7 @@ public class OrderService extends Repository<CustomerOrder> {
 
             for (XLSReadMessage message : (List<XLSReadMessage>) readStatus.getReadMessages())
                 order.addWarning(message.getMessage());
+
             try {
                 begin();
                 order = ServiceFacade.getOrderService().save(order);
@@ -103,7 +104,7 @@ public class OrderService extends Repository<CustomerOrder> {
                     else
                         orderItem.setType(OrderItem.Type.General);
 
-                    String productArtNumber = getPrepareArtNumber(orderItem.getArtNumber());
+                    String productArtNumber = orderItem.getArtNumber();
 
                     ProductInfo productInfo = productService.findByArtNumber(productArtNumber);
 
@@ -151,7 +152,7 @@ public class OrderService extends Repository<CustomerOrder> {
     }
 
     private String getArtNumber(String artNumber) {
-        Matcher m = artNumberPattern.matcher(artNumber);
+        Matcher m = artNumberPattern.matcher(artNumber.replace(".", ""));
         if (m.find())
             return m.group().trim();
 
