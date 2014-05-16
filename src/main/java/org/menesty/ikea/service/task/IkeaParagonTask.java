@@ -13,9 +13,9 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.menesty.ikea.ApplicationPreference;
 import org.menesty.ikea.db.DatabaseService;
 import org.menesty.ikea.domain.IkeaParagon;
-import org.menesty.ikea.domain.ParagonDto;
 import org.menesty.ikea.service.ServiceFacade;
 
 import java.io.IOException;
@@ -78,8 +78,9 @@ public class IkeaParagonTask extends Task<Boolean> {
         HttpUriRequest firstPage = RequestBuilder.get().setUri("https://www.ikeafamily.eu/Moje-zakupy.aspx").build();
 
         int pageCount = 0;
-        boolean nextPage = false;
+        boolean nextPage;
         Map<String, String> viewState = null;
+
         try (CloseableHttpResponse response = httpClient.execute(firstPage)) {
             Document document = Jsoup.parse(EntityUtils.toString(response.getEntity()));
 
@@ -108,14 +109,6 @@ public class IkeaParagonTask extends Task<Boolean> {
             }
 
             currentPage++;
-        }
-    }
-
-    public static void main(String... arg) {
-        int i = 0;
-        while (i <= 45) {
-            System.out.println(i);
-            i++;
         }
     }
 
@@ -159,7 +152,6 @@ public class IkeaParagonTask extends Task<Boolean> {
                     String shopName = columns.get(3).text();
                     String payment = columns.get(4).text();
 
-                    System.out.println(date + " " + paragonName + " " + shopName + " " + payment);
                     //check if exist in database
                     IkeaParagon paragon = ServiceFacade.getIkeaParagonService().findByName(paragonName);
 
@@ -237,10 +229,12 @@ public class IkeaParagonTask extends Task<Boolean> {
         boolean isLogin;
 
         {
+            ApplicationPreference preference = ServiceFacade.getApplicationPreference();
+
             HttpUriRequest login = RequestBuilder.post()
                     .setUri("https://www.ikeafamily.eu/Logowanie.aspx")
-                    .addParameter("p$lt$ctl00$Logowanie_DuzyBoks$txtLogin", "urbano_rider@yahoo.ca")
-                    .addParameter("p$lt$ctl00$Logowanie_DuzyBoks$txtPassword", "Mature65")
+                    .addParameter("p$lt$ctl00$Logowanie_DuzyBoks$txtLogin", preference.getIkeaUser())
+                    .addParameter("p$lt$ctl00$Logowanie_DuzyBoks$txtPassword", preference.getIkeaPassword())
                     .addParameter("manScript_HiddenField", "")
                     .addParameter("__EVENTARGUMENT", "")
                     .addParameter("__EVENTTARGET", "p$lt$ctl00$Logowanie_DuzyBoks$btnLogin")

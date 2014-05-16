@@ -1,6 +1,8 @@
 package org.menesty.ikea.ui.controls.dialog;
 
 import javafx.scene.control.PasswordField;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
 import org.menesty.ikea.ApplicationPreference;
 import org.menesty.ikea.service.ServiceFacade;
@@ -13,7 +15,9 @@ public class ApplicationPreferenceDialog extends BaseDialog {
     public ApplicationPreferenceDialog() {
         setTitle("Application preferences");
         okBtn.setText("Save");
+
         warehouseForm = new WarehousePreferenceForm();
+
         addRow(warehouseForm, bottomBar);
     }
 
@@ -21,30 +25,63 @@ public class ApplicationPreferenceDialog extends BaseDialog {
     @Override
     public void onOk() {
         ApplicationPreference preference = ServiceFacade.getApplicationPreference();
+
         preference.setWarehouseHost(warehouseForm.getHost());
         preference.setWarehouseLogin(warehouseForm.getUser());
         preference.setWarehousePassword(warehouseForm.getPassword());
-
+        preference.setIkeaUser(warehouseForm.getIkeaUser());
+        preference.setIkeaPassword(warehouseForm.getIkeaPassword());
     }
 
     @Override
     public void onShow() {
         ApplicationPreference preference = ServiceFacade.getApplicationPreference();
+
         warehouseForm.setHost(preference.getWarehouseHost());
         warehouseForm.setPassword(preference.getWarehousePassword());
         warehouseForm.setUser(preference.getWarehouseUser());
+        warehouseForm.setIkeaPassword(preference.getIkeaPassword());
+        warehouseForm.setIkeaUser(preference.getIkeaUser());
     }
 
 
-    class WarehousePreferenceForm extends RowPanel {
+    class WarehousePreferenceForm extends TabPane {
         private final TextField user;
-        private final TextField password;
+        private final PasswordField password;
         private final TextField host;
+        private final TextField ikeaUser;
+        private final PasswordField ikeaPassword;
 
         public WarehousePreferenceForm() {
-            addRow("Host :", host = new TextField());
-            addRow("User :", user = new TextField());
-            addRow("Password :", password = new PasswordField());
+            getStyleClass().add(TabPane.STYLE_CLASS_FLOATING);
+            setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
+
+            {
+                Tab tab = new Tab("General");
+
+                RowPanel panel = new RowPanel();
+
+                panel.addRow("Host :", host = new TextField());
+                panel.addRow("User :", user = new TextField());
+                panel.addRow("Password :", password = new PasswordField());
+
+                tab.setContent(panel);
+
+                getTabs().add(tab);
+            }
+
+            {
+                Tab tab = new Tab("Ikea");
+
+                RowPanel panel = new RowPanel();
+
+                panel.addRow("User :", ikeaUser = new TextField());
+                panel.addRow("Password :", ikeaPassword = new PasswordField());
+
+                tab.setContent(panel);
+
+                getTabs().add(tab);
+            }
         }
 
         public void setUser(String user) {
@@ -69,6 +106,22 @@ public class ApplicationPreferenceDialog extends BaseDialog {
 
         public String getPassword() {
             return password.getText();
+        }
+
+        public String getIkeaPassword() {
+            return ikeaPassword.getText();
+        }
+
+        public void setIkeaPassword(String password) {
+            ikeaPassword.setText(password);
+        }
+
+        public void setIkeaUser(String user) {
+            ikeaUser.setText(user);
+        }
+
+        public String getIkeaUser() {
+            return ikeaUser.getText();
         }
     }
 }

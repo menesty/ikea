@@ -34,7 +34,7 @@ public class ApplicationPreference {
         return preferences.get("warehouse-password", "");
     }
 
-    public String getFileChooseDefaultDir(){
+    public String getFileChooseDefaultDir() {
         return preferences.get("file-choose-default-dir", null);
     }
 
@@ -42,4 +42,19 @@ public class ApplicationPreference {
         preferences.put("file-choose-default-dir", path);
     }
 
+    public void setIkeaUser(String user) {
+        preferences.put("ikea-user", user);
+    }
+
+    public String getIkeaUser() {
+        return preferences.get("ikea-user", "");
+    }
+
+    public String getIkeaPassword() {
+        return preferences.get("ikea-password", "");
+    }
+
+    public void setIkeaPassword(String password) {
+        preferences.put("ikea-password", password);
+    }
 }
