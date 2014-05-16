@@ -127,4 +127,8 @@ public class ImageFactory {
     public static ImageView createPrevious32Icon() {
         return new ImageView(new Image("/styles/images/icon/previous-32x32.png"));
     }
+
+    public static ImageView createIkea72Icon() {
+        return new ImageView(new Image("/styles/images/icon/ikea-72x72.png"));
+    }
 }

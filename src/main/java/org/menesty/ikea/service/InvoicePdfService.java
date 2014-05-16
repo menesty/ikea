@@ -9,6 +9,7 @@ import org.menesty.ikea.exception.ProductFetchException;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.util.NumberUtil;
 
+import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import java.io.File;
@@ -17,6 +18,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.file.Files;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
@@ -36,6 +39,10 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
 
     private final static String INVOICE_NAME_PATTERN = "(\\d+)\\s+(\\d+)/\\s+(\\w+)\\s+/F A K T U R A.*";
 
+    private final static String PARAGON_DATE_PATTERN = "Data sprzedaży: (\\d{4}-\\d{2}-\\d{2})";
+
+    private final static String PARAGON_NAME = "Nr paragonu: (\\d+) / (\\d+)";
+
     private final static Pattern totalPattern = Pattern.compile("DO ZAPŁATY:(.*)");
 
     private ProductService productService;
@@ -44,22 +51,31 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
         productService = new ProductService();
     }
 
-    private List<RawInvoiceProductItem> parseInvoiceItems(final InvoicePdf invoicePdf, final InputStream stream) throws IOException {
-
+    private String parseDocument(final InputStream stream) throws IOException {
         PDDocument p = PDDocument.load(stream);
 
         PDFTextStripper t = new PDFTextStripper();
+
         String content = t.getText(p);
+
         p.close();
+
+        return content;
+    }
+
+    private List<RawInvoiceProductItem> parseInvoiceItems(final InvoicePdf invoicePdf, final InputStream stream) throws IOException {
+        String content = parseDocument(stream);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
         Scanner scanner = new Scanner(content);
 
         List<RawInvoiceProductItem> products = new ArrayList<>();
 
-
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
             Matcher m = linePattern.matcher(line);
+
             if (m.find()) {
                 RawInvoiceProductItem product = new RawInvoiceProductItem();
                 product.setOriginalArtNumber(m.group(2).replace("-", ""));
@@ -82,7 +98,15 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
             } else {
                 if (line.matches(INVOICE_NAME_PATTERN))
                     invoicePdf.setInvoiceNumber(line.replaceAll(INVOICE_NAME_PATTERN, "$1/$3/$2"));
-                else
+                else if (line.matches(PARAGON_DATE_PATTERN)) {
+                    try {
+                        invoicePdf.setParagonDate(sdf.parse(line.replaceAll(PARAGON_DATE_PATTERN, "$1")));
+                    } catch (ParseException e) {
+                        //skip
+                    }
+                } else if (line.matches(PARAGON_NAME)) {
+                    invoicePdf.setParagonName(line.replaceAll(PARAGON_NAME, "$1/$2"));
+                } else
                     System.out.println("!!!!!" + line);
             }
         }
@@ -93,19 +117,39 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
             double price = Double.valueOf(m.group(1).trim().replaceAll("[\\s\\u00A0]+", "").replace(",", "."));
             invoicePdf.setPrice(price);
         }
+
+
         return products;
     }
 
     public static void main(String... arg) throws IOException, InterruptedException, ExecutionException {
         InvoicePdfService service = new InvoicePdfService();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
         try {
-            service.parseInvoiceItems(new InvoicePdf(), new FileInputStream("D:\\tmp\\33654 katow.pdf"));
+            String content = service.parseDocument(new FileInputStream("/Users/andrewhome/Downloads/Informacja_PDF.pdf"));
+
+            Scanner scanner = new Scanner(content);
+
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                if (line.matches(PARAGON_DATE_PATTERN)) {
+                    try {
+                        System.out.println(sdf.parse(line.replaceAll(PARAGON_DATE_PATTERN, "$1")));
+                    } catch (ParseException e) {
+                        //skip
+                    }
+                } else if (line.matches(PARAGON_NAME)) {
+                    System.out.println(line.replaceAll(PARAGON_NAME, "$1/$2"));
+                }
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private InvoicePdf parseInvoice(final CustomerOrder order, final String name, final InputStream stream) throws IOException {
+    private InvoicePdf parseInvoice(final CustomerOrder order, final String name, final InputStream stream)
+            throws IOException {
         try {
             begin();
             InvoicePdf result = new InvoicePdf(name);
@@ -114,6 +158,8 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
             List<RawInvoiceProductItem> products = parseInvoiceItems(result, stream);
 
             result = save(result);
+
+            ServiceFacade.getIkeaParagonService().setUploaded(result.getParagonDate(), result.getParagonName());
 
             List<RawInvoiceProductItem> items = reduce(products);
 
@@ -135,22 +181,26 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
 
         for (RawInvoiceProductItem item : items) {
             RawInvoiceProductItem current = filtered.get(item.getOriginalArtNumber());
+
             if (current == null)
                 filtered.put(item.getOriginalArtNumber(), item);
             else
                 current.setCount(NumberUtil.round(current.getCount() + item.getCount()));
         }
+
         return new ArrayList<>(filtered.values());
 
     }
 
     private ProductInfo loadProductInfo(RawInvoiceProductItem product) {
         ProductInfo productInfo = null;
+
         try {
             productInfo = productService.loadOrCreate(product.getOriginalArtNumber());
         } catch (ProductFetchException e) {
             System.out.println("Problem with open product : " + product.getPrepareArtNumber());
         }
+
         if (productInfo == null) {
             productInfo = new ProductInfo();
             productInfo.setOriginalArtNum(product.getOriginalArtNumber());
@@ -159,8 +209,10 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
             productInfo.getPackageInfo().setBoxCount(1);
             productInfo = save(productInfo);
         }
+
         productInfo.setWat(product.getIntWat());
         productInfo.setPrice(product.getPrice());
+
         return productInfo;
     }
 
@@ -170,22 +222,26 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
         return null;
     }
 
     public List<InvoicePdf> createInvoicePdf(final CustomerOrder order, List<File> files) {
         List<InvoicePdf> result = new ArrayList<>();
+
         for (File file : files)
             try {
                 result.add(createInvoicePdf(order, file.getName(), Files.newInputStream(file.toPath())));
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
         return result;
     }
 
     public void remove(InvoicePdf entity) {
         boolean started = isActive();
+
         try {
             if (!started)
                 begin();
@@ -230,7 +286,6 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
                 query = getEm().createQuery("select entity from " + entityClass.getName() + " entity where entity.customerOrder IS NULL", entityClass);
 
             return query.getResultList();
-
         } finally {
             if (!started)
                 commit();
@@ -252,12 +307,14 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
 
     public List<RawInvoiceProductItem> loadRawInvoiceItemBy(CustomerOrder order) {
         boolean started = isActive();
+
         try {
             if (!started)
                 begin();
 
             TypedQuery<RawInvoiceProductItem> query = getEm().createQuery("select entity from " + RawInvoiceProductItem.class.getName() + " entity left join entity.invoicePdf invoice  where invoice.customerOrder.id = ?1", RawInvoiceProductItem.class);
             query.setParameter(1, order.getId());
+
             return query.getResultList();
         } finally {
             if (!started)
@@ -294,6 +351,30 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
 
         if (!started)
             commit();
+    }
+
+    public InvoicePdf findByParagon(Date date, String name) {
+        boolean started = isActive();
+
+        if (!started)
+            begin();
+
+        InvoicePdf result;
+
+        TypedQuery<InvoicePdf> query = getEm().createQuery("select entity from " + entityClass.getName() + " entity where entity.paragonName = ?1 and entity.paragonDate = ?1", entityClass);
+        query.setParameter(1, name);
+        query.setParameter(2, date);
+        query.setMaxResults(1);
+
+        try {
+            result = query.getSingleResult();
+        } catch (NoResultException e) {
+            result = null;
+        }
+        if (!started)
+            commit();
+
+        return result;
     }
 }
 

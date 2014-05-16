@@ -27,12 +27,16 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Created by Menesty on 5/14/14.
  */
 public class IkeaParagonTask extends Task<Boolean> {
     private SimpleDateFormat sdf;
+
+    private static final Logger logger = Logger.getLogger(IkeaParagonTask.class.getName());
 
     private Gson gson;
 
@@ -69,6 +73,8 @@ public class IkeaParagonTask extends Task<Boolean> {
         } catch (Exception e) {
             DatabaseService.rollback();
             result = false;
+
+            logger.log(Level.SEVERE, "Ikea family parse site problem", e);
         }
 
         return result;
@@ -114,6 +120,7 @@ public class IkeaParagonTask extends Task<Boolean> {
 
     private Map<String, String> getViewState(Document document) {
         Map<String, String> map = new HashMap<>();
+
         map.put("__VIEWSTATE", document.select("#__VIEWSTATE").get(0).val());
         map.put("__VIEWSTATE1", document.select("#__VIEWSTATE1").get(0).val());
         map.put("__VIEWSTATE2", document.select("#__VIEWSTATE2").get(0).val());
@@ -124,6 +131,7 @@ public class IkeaParagonTask extends Task<Boolean> {
         map.put("lng", "pl-PL");
         map.put("query", "");
         map.put("manScript_HiddenField", "");
+
         return map;
     }
 
@@ -184,6 +192,10 @@ public class IkeaParagonTask extends Task<Boolean> {
                         paragon.setPrice(price);
                         paragon.setName(paragonName);
 
+                        boolean uploaded = ServiceFacade.getInvoicePdfService().findByParagon(paragon.getCreatedDate(), paragon.getName()) != null;
+
+                        paragon.setUploaded(uploaded);
+
                         ServiceFacade.getIkeaParagonService().save(paragon);
                     } else
                         return false;
@@ -242,7 +254,6 @@ public class IkeaParagonTask extends Task<Boolean> {
                     .addParameter("lng", "pl-PL")
                     .build();
 
-
             try (CloseableHttpResponse response = httpClient.execute(login)) {
                 Document document = Jsoup.parse(EntityUtils.toString(response.getEntity()));
 
@@ -254,8 +265,6 @@ public class IkeaParagonTask extends Task<Boolean> {
 
         return isLogin;
     }
-
-
 }
 
 class ProductDto {

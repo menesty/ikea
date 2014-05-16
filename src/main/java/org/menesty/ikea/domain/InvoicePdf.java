@@ -41,6 +41,10 @@ public class InvoicePdf extends Identifiable {
 
     private String invoiceNumber;
 
+    private String paragonName;
+    @Temporal(TemporalType.DATE)
+    private Date paragonDate;
+
     private boolean sync;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -52,6 +56,22 @@ public class InvoicePdf extends Identifiable {
 
     @OneToMany(mappedBy = "invoicePdf")
     private List<RawInvoiceProductItem> products;
+
+    public String getParagonName() {
+        return paragonName;
+    }
+
+    public void setParagonName(String paragonName) {
+        this.paragonName = paragonName;
+    }
+
+    public Date getParagonDate() {
+        return paragonDate;
+    }
+
+    public void setParagonDate(Date paragonDate) {
+        this.paragonDate = paragonDate;
+    }
 
     public String getInvoiceNumber() {
         return invoiceNumber;

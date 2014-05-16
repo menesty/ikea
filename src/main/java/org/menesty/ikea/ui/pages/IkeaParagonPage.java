@@ -15,6 +15,7 @@ import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.service.task.IkeaParagonTask;
+import org.menesty.ikea.ui.controls.table.component.BaseTableView;
 import org.menesty.ikea.util.ColumnUtil;
 
 
@@ -73,7 +74,15 @@ public class IkeaParagonPage extends BasePage {
 
         BorderPane main = new BorderPane();
 
-        tableView = new TableView<>();
+        tableView = new BaseTableView<IkeaParagon>() {
+            @Override
+            protected void onRowRender(TableRow<IkeaParagon> row, IkeaParagon item) {
+                row.getStyleClass().remove("greenRow");
+
+                if (item != null && item.isUploaded())
+                    row.getStyleClass().add("greenRow");
+            }
+        };
 
         {
             TableColumn<IkeaParagon, String> column = new TableColumn<>("Date");
@@ -139,6 +148,11 @@ public class IkeaParagonPage extends BasePage {
         loadService.restart();
     }
 
+
+    @Override
+    protected Node createIconContent() {
+        return ImageFactory.createIkea72Icon();
+    }
 
     class LoadService extends AbstractAsyncService<PagingResult<IkeaParagon>> {
         private SimpleIntegerProperty pageIndex = new SimpleIntegerProperty();

@@ -1,10 +1,11 @@
 package org.menesty.ikea.service;
 
 import org.menesty.ikea.domain.IkeaParagon;
-import org.menesty.ikea.processor.invoice.InvoiceItem;
 
 import javax.persistence.NoResultException;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -36,5 +37,22 @@ public class IkeaParagonService extends Repository<IkeaParagon> {
             commit();
 
         return result;
+    }
+
+    public void setUploaded(Date date, String name) {
+        boolean started = isActive();
+
+        if (!started)
+            begin();
+
+        Query query = getEm().createQuery("update " + entityClass.getName() + " entity set entity.uploaded = true where entity.name = ?1 and entity.createdDate = ?2");
+        query.setParameter(1, name);
+        query.setParameter(2, date);
+
+        query.executeUpdate();
+
+        if (!started)
+            commit();
+
     }
 }

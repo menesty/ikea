@@ -22,6 +22,16 @@ public class IkeaParagon extends Identifiable {
 
     private String paymentType;
 
+    private boolean uploaded;
+
+    public boolean isUploaded() {
+        return uploaded;
+    }
+
+    public void setUploaded(boolean uploaded) {
+        this.uploaded = uploaded;
+    }
+
     public String getShopName() {
         return shopName;
     }
