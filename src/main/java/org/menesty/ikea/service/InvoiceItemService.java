@@ -19,8 +19,10 @@ public class InvoiceItemService extends Repository<InvoiceItem> {
         try {
             if (!started)
                 begin();
+
             TypedQuery<InvoiceItem> query = getEm().createQuery("select entity from " + entityClass.getName() + " entity where entity.invoicePdf.id = ?1", entityClass);
             query.setParameter(1, id);
+
             return query.getResultList();
 
         } finally {

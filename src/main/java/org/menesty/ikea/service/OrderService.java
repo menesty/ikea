@@ -11,8 +11,6 @@ import org.menesty.ikea.ui.TaskProgress;
 import org.menesty.ikea.util.NumberUtil;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.net.URI;
@@ -78,10 +76,12 @@ public class OrderService extends Repository<CustomerOrder> {
 
         for (RawOrderItem rawOrderItem : list) {
             itemIndex++;
+
             if (rawOrderItem.getArtNumber() == null || (StringUtils.isNotBlank(rawOrderItem.getCombo()) && rawOrderItem.getPrice() == 0))
                 continue;
 
             String artNumber = getArtNumber(rawOrderItem.getArtNumber());
+
             if (!artNumber.isEmpty()) {
                 String keyPrefix = StringUtils.isNotBlank(rawOrderItem.getComment()) ? "_s" : "";
                 OrderItem orderItem = reduceMap.get(artNumber + keyPrefix);
@@ -135,15 +135,6 @@ public class OrderService extends Repository<CustomerOrder> {
         return new ArrayList<>(reduceMap.values());
     }
 
-    public static void main(String... args) throws FileNotFoundException {
-        OrderService orderService = new OrderService();
-        orderService.createOrder("39", new FileInputStream("C:\\Users\\Menesty\\Downloads/ikea39.xlsx"), new TaskProgress() {
-            @Override
-            public void updateProgress(long l, long l1) {
-            }
-        });
-    }
-
     public static String getPrepareArtNumber(String artNumber) {
         String prepared = StringUtils.leftPad(artNumber.trim(), 8, '0');
         int lastPos = artNumber.length();
@@ -153,6 +144,7 @@ public class OrderService extends Repository<CustomerOrder> {
 
     private String getArtNumber(String artNumber) {
         Matcher m = artNumberPattern.matcher(artNumber.replace(".", ""));
+
         if (m.find())
             return m.group().trim();
 
@@ -243,6 +235,7 @@ public class OrderService extends Repository<CustomerOrder> {
         List<OrderItem> data = getByType(type, typeFilterMap);
         bean.put("orderItems", data);
         double total = getTotal(data);
+
         bean.put("total", total);
         mapBeans.add(bean);
         return total;
@@ -250,6 +243,7 @@ public class OrderService extends Repository<CustomerOrder> {
 
     private List<OrderItem> getByType(OrderItem.Type type, Map<OrderItem.Type, List<OrderItem>> typeFilterMap) {
         List<OrderItem> orderItems = typeFilterMap.get(type);
+
         if (orderItems == null)
             typeFilterMap.put(type, orderItems = new ArrayList<>());
 
@@ -291,6 +285,7 @@ public class OrderService extends Repository<CustomerOrder> {
             {
                 //filter raw items
                 Iterator<RawInvoiceProductItem> iterator = rawItems.iterator();
+
                 while (iterator.hasNext()) {
                     RawInvoiceProductItem item = iterator.next();
 
@@ -304,11 +299,14 @@ public class OrderService extends Repository<CustomerOrder> {
 
             {
                 Iterator<ProductInfo> iterator = singleComboList.iterator();
+
                 while (iterator.hasNext()) {
                     ProductInfo productInfo = iterator.next();
                     boolean allParts = true;
+
                     for (ProductPart part : productInfo.getParts()) {
                         String key = part.getProductInfo().getOriginalArtNum();
+
                         if (!orderComboData.containsKey(key) || orderComboData.get(key) < part.getCount()) {
                             allParts = false;
                             break;
@@ -333,8 +331,10 @@ public class OrderService extends Repository<CustomerOrder> {
             }
 
             List<StorageComboLack> result = new ArrayList<>();
+
             for (ProductInfo productInfo : singleComboList) {
                 StorageComboLack item = new StorageComboLack(productInfo);
+
                 for (ProductPart part : productInfo.getParts()) {
                     String key = part.getProductInfo().getOriginalArtNum();
                     StorageComboPartLack partLack = new StorageComboPartLack(part.getProductInfo(), part.getCount());

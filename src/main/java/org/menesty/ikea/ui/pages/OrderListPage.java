@@ -33,6 +33,7 @@ import org.menesty.ikea.ui.controls.PathProperty;
 import org.menesty.ikea.ui.controls.dialog.Dialog;
 import org.menesty.ikea.ui.controls.dialog.OrderCreateDialog;
 import org.menesty.ikea.ui.controls.dialog.OrderEditDialog;
+import org.menesty.ikea.util.ColumnUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -45,8 +46,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 public class OrderListPage extends BasePage {
-
-    public static final DateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy");
 
     private TableView<OrderTableItem> tableView;
 
@@ -66,7 +65,7 @@ public class OrderListPage extends BasePage {
             @Override
             public void onSucceeded(final PagingResult<CustomerOrder> value) {
                 tableView.getItems().clear();
-                tableView.getItems().addAll(transform((value.getData())));
+                tableView.getItems().addAll(transform(value.getData()));
 
                 pagination.setPageCount(value.getCount() / ITEM_PER_PAGE);
             }
@@ -120,26 +119,13 @@ public class OrderListPage extends BasePage {
 
         orderName.setText("Name");
         orderName.setMinWidth(200);
-        orderName.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderTableItem, String>, ObservableValue<String>>() {
-            @Override
-            public ObservableValue<String> call(TableColumn.CellDataFeatures<OrderTableItem, String> item) {
-                return new PathProperty<>(item.getValue(), "order.name");
-            }
-        });
-
+        orderName.setCellValueFactory(ColumnUtil.<OrderTableItem, String>column("order.name"));
 
         TableColumn<OrderTableItem, String> createdDate = new TableColumn<>();
 
         createdDate.setText("Created Date");
         createdDate.setMinWidth(200);
-        createdDate.setCellValueFactory(
-                new Callback<TableColumn.CellDataFeatures<OrderTableItem, String>, ObservableValue<String>>() {
-                    @Override
-                    public ObservableValue<String> call(TableColumn.CellDataFeatures<OrderTableItem, String> item) {
-                        return new SimpleStringProperty(DATE_FORMAT.format(item.getValue().getOrder().getCreatedDate()));
-                    }
-                }
-        );
+        createdDate.setCellValueFactory(ColumnUtil.<OrderTableItem>dateColumn("order.createdDate"));
 
         TableView<OrderTableItem> tableView = new TableView<>();
 

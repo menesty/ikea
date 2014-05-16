@@ -18,6 +18,8 @@ public class ServiceFacade {
 
     private static InvoiceService invoiceService;
 
+    private static IkeaParagonService ikeaParagonService;
+
     static {
         orderService = new OrderService();
         invoiceItemService = new InvoiceItemService();
@@ -27,6 +29,7 @@ public class ServiceFacade {
         orderItemService = new OrderItemService();
         invoiceService = new InvoiceService();
         ikeaUserService = new IkeaUserService();
+        ikeaParagonService = new IkeaParagonService();
     }
 
     private static IkeaUserService ikeaUserService;
@@ -61,5 +64,9 @@ public class ServiceFacade {
 
     public static IkeaUserService getIkeaUserService() {
         return ikeaUserService;
+    }
+
+    public static IkeaParagonService getIkeaParagonService() {
+        return ikeaParagonService;
     }
 }

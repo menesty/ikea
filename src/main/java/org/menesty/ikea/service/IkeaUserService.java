@@ -29,7 +29,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+//TODO Refactor this
 public class IkeaUserService {
 
     private CloseableHttpClient httpClient;
@@ -46,7 +46,7 @@ public class IkeaUserService {
         fillUser(user, groups, groupMap, null, taskProgressLog);
     }
 
-    public <T extends UserProductInfo> void fillUser(final User user, final Collection<ProductInfo.Group> groups, final Map<ProductInfo.Group, List<T>> groupMap, final Map<ProductInfo.Group, List<T>> subGroupMap, final TaskProgressLog taskProgressLog) throws IOException {
+    private <T extends UserProductInfo> void fillUser(final User user, final Collection<ProductInfo.Group> groups, final Map<ProductInfo.Group, List<T>> groupMap, final Map<ProductInfo.Group, List<T>> subGroupMap, final TaskProgressLog taskProgressLog) throws IOException {
         prepareUserWorkSpace(user, taskProgressLog);
         prepareUserWorkSpace(user, taskProgressLog);
 

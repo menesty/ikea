@@ -39,12 +39,17 @@ public abstract class Repository<T extends Identifiable> {
     }
 
     public List<T> load(int offset, int limit) {
+        return load(offset, limit, new OrderBy("id", OrderBy.Direction.desc));
+    }
+
+    public List<T> load(int offset, int limit, OrderBy orderBy) {
         boolean started = isActive();
 
         if (!started)
             begin();
 
-        String queryString = "select entity from " + entityClass.getName() + " entity order by entity.id desc ";
+        String queryString = "select entity from " + entityClass.getName() + " entity order by entity."
+                + orderBy.field + " " + orderBy.direction.toString() + " ";
         TypedQuery<T> query = getEm().createQuery(queryString, entityClass);
         query.setMaxResults(limit);
         query.setFirstResult(offset);
@@ -57,7 +62,7 @@ public abstract class Repository<T extends Identifiable> {
         return result;
     }
 
-    public long count(){
+    public long count() {
         boolean started = isActive();
 
         if (!started)
@@ -172,5 +177,20 @@ public abstract class Repository<T extends Identifiable> {
 
     protected void rollback() {
         DatabaseService.rollback();
+    }
+
+    static class OrderBy {
+        enum Direction {
+            desc, asc
+        }
+
+        public OrderBy(String field, Direction direction) {
+            this.field = field;
+            this.direction = direction;
+        }
+
+        public String field;
+
+        public Direction direction = Direction.asc;
     }
 }
