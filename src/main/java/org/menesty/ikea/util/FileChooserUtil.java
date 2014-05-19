@@ -9,9 +9,13 @@ import java.io.File;
 public class FileChooserUtil {
 
     public static FileChooser getEpp() {
+        return createFileChooser("Epp location", "Epp file (*.epp)", "*.epp");
+    }
+
+    private static FileChooser createFileChooser(String title, String filterName, String... filters) {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Epp location");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Epp file (*.epp)", "*.epp"));
+        fileChooser.setTitle(title);
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(filterName, filters));
 
         String def = ServiceFacade.getApplicationPreference().getFileChooseDefaultDir();
 
@@ -19,6 +23,10 @@ public class FileChooserUtil {
             fileChooser.setInitialDirectory(new File(def));
 
         return fileChooser;
+    }
+
+    public static FileChooser getXls() {
+        return createFileChooser("Xls location", "Xls file (*.xls)", "*.xls", "*.xlsx");
     }
 
     public static void setDefaultDir(File file) {

@@ -1,6 +1,7 @@
 package org.menesty.ikea.ui.pages;
 
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
@@ -9,14 +10,20 @@ import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
+import javafx.stage.FileChooser;
 import org.menesty.ikea.domain.IkeaParagon;
 import org.menesty.ikea.domain.PagingResult;
 import org.menesty.ikea.factory.ImageFactory;
+import org.menesty.ikea.processor.invoice.InvoiceItem;
 import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.service.task.IkeaParagonTask;
 import org.menesty.ikea.ui.controls.table.component.BaseTableView;
 import org.menesty.ikea.util.ColumnUtil;
+import org.menesty.ikea.util.FileChooserUtil;
+
+import java.io.File;
+import java.util.List;
 
 
 /**
@@ -32,6 +39,8 @@ public class IkeaParagonPage extends BasePage {
     private Pagination pagination;
 
     private TableView<IkeaParagon> tableView;
+
+    private ExportService exportService;
 
     public IkeaParagonPage() {
         super("Ikea paragons");
@@ -54,6 +63,8 @@ public class IkeaParagonPage extends BasePage {
                 pagination.setPageCount(value.getCount() / ITEM_PER_PAGE);
             }
         });
+
+        exportService = new ExportService();
     }
 
     @Override
@@ -69,9 +80,32 @@ public class IkeaParagonPage extends BasePage {
                     parseService.restart();
                 }
             });
+
             control.getItems().add(button);
         }
 
+        {
+            Button button = new Button(null, ImageFactory.createXlsExportIcon());
+            button.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent actionEvent) {
+                    FileChooser fileChooser = FileChooserUtil.getXls();
+
+                    File selectedFile = fileChooser.showSaveDialog(getStage());
+
+                    if (selectedFile != null) {
+                        exportService.setPath(selectedFile.getAbsolutePath());
+                        loadingPane.bindTask(exportService);
+
+                        FileChooserUtil.setDefaultDir(selectedFile);
+
+                        exportService.restart();
+                    }
+                }
+            });
+
+            control.getItems().add(button);
+        }
         BorderPane main = new BorderPane();
 
         tableView = new BaseTableView<IkeaParagon>() {
@@ -181,6 +215,26 @@ public class IkeaParagonPage extends BasePage {
         @Override
         protected Task<Boolean> createTask() {
             return new IkeaParagonTask();
+        }
+    }
+
+    class ExportService extends AbstractAsyncService<Void> {
+        private SimpleStringProperty path = new SimpleStringProperty();
+
+        @Override
+        protected Task<Void> createTask() {
+            final String _path = path.get();
+            return new Task<Void>() {
+                @Override
+                protected Void call() throws Exception {
+                    ServiceFacade.getIkeaParagonService().exportToXls(_path);
+                    return null;
+                }
+            };
+        }
+
+        public void setPath(String path) {
+            this.path.set(path);
         }
     }
 
