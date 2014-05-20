@@ -29,11 +29,13 @@ import org.menesty.ikea.domain.WarehouseItemDto;
 import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.service.ServiceFacade;
+import org.menesty.ikea.ui.controls.dialog.Dialog;
 import org.menesty.ikea.ui.controls.dialog.ParagonManageDialog;
 import org.menesty.ikea.ui.controls.pane.LoadingPane;
 import org.menesty.ikea.ui.controls.search.WarehouseItemSearchData;
 import org.menesty.ikea.ui.controls.search.WarehouseSearchBar;
 import org.menesty.ikea.ui.controls.table.component.CheckBoxTableColumn;
+import org.menesty.ikea.ui.pages.DialogCallback;
 import org.menesty.ikea.util.ColumnUtil;
 import org.menesty.ikea.util.HttpUtil;
 
@@ -52,6 +54,8 @@ public class WarehouseViewComponent extends BorderPane {
 
     private ParagonManageDialog paragonManageDialog;
 
+    private ClearService clearService;
+
     public WarehouseViewComponent() {
         paragonManageDialog = new ParagonManageDialog() {
             @Override
@@ -65,6 +69,14 @@ public class WarehouseViewComponent extends BorderPane {
             @Override
             public void onSucceeded(final List<WarehouseItemDto> value) {
                 setItems(items = value);
+            }
+        });
+
+        clearService = new ClearService();
+        clearService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<Boolean>() {
+            @Override
+            public void onSucceeded(Boolean value) {
+                load();
             }
         });
 
@@ -128,6 +140,28 @@ public class WarehouseViewComponent extends BorderPane {
                     public void handle(ActionEvent actionEvent) {
                         paragonManageDialog.show(getChecked());
                         IkeaApplication.get().showPopupDialog(paragonManageDialog);
+                    }
+                });
+                control.getItems().add(button);
+            }
+
+            {
+                Button button = new Button(null, ImageFactory.createClear32Icon());
+                button.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent actionEvent) {
+                        Dialog.confirm("Are you sure want clear Warehouse ?", new DialogCallback() {
+                            @Override
+                            public void onCancel() {
+
+                            }
+
+                            @Override
+                            public void onYes() {
+                                loadingPane.bindTask(clearService);
+                                clearService.restart();
+                            }
+                        });
                     }
                 });
                 control.getItems().add(button);
@@ -231,6 +265,31 @@ public class WarehouseViewComponent extends BorderPane {
 
     }
 
+    class ClearService extends AbstractAsyncService<Boolean> {
+
+        @Override
+        protected Task<Boolean> createTask() {
+            return new Task<Boolean>() {
+                @Override
+                protected Boolean call() throws Exception {
+                    URL url = new URL(ServiceFacade.getApplicationPreference().getWarehouseHost() + "/storage/clear");
+                    HttpHost targetHost = new HttpHost(url.getHost());
+                    CredentialsProvider credsProvider = HttpUtil.credentialsProvider(targetHost);
+
+                    try (CloseableHttpClient httpClient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build()) {
+                        HttpClientContext localContext = HttpUtil.context(targetHost);
+
+                        try (CloseableHttpResponse response = httpClient.execute(new HttpGet(url.toURI()), localContext)) {
+                            EntityUtils.consume(response.getEntity());
+                        }
+                    }
+
+                    return true;
+                }
+            };
+        }
+    }
+
     class LoadService extends AbstractAsyncService<List<WarehouseItemDto>> {
 
         @Override
@@ -240,16 +299,14 @@ public class WarehouseViewComponent extends BorderPane {
                 protected List<WarehouseItemDto> call() throws Exception {
                     URL url = new URL(ServiceFacade.getApplicationPreference().getWarehouseHost() + "/storage/load");
                     HttpHost targetHost = new HttpHost(url.getHost());
-
                     CredentialsProvider credsProvider = HttpUtil.credentialsProvider(targetHost);
 
                     List<WarehouseItemDto> result = new ArrayList<>();
+
                     try (CloseableHttpClient httpClient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build()) {
                         HttpClientContext localContext = HttpUtil.context(targetHost);
 
-                        HttpGet httpPost = new HttpGet(url.toURI());
-
-                        try (CloseableHttpResponse response = httpClient.execute(httpPost, localContext)) {
+                        try (CloseableHttpResponse response = httpClient.execute(new HttpGet(url.toURI()), localContext)) {
                             String data = EntityUtils.toString(response.getEntity());
 
                             GsonBuilder gson = new GsonBuilder();

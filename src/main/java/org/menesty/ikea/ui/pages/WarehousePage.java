@@ -14,7 +14,6 @@ public class WarehousePage extends BasePage {
 
     public WarehousePage() {
         super("Warehouse");
-
     }
 
     @Override
@@ -27,7 +26,7 @@ public class WarehousePage extends BasePage {
     }
 
     @Override
-    public Node createView() {
+    protected Node createView() {
         warehouseViewComponent = new  WarehouseViewComponent();
         paragonViewComponent = new ParagonViewComponent(getStage());
 

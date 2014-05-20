@@ -4,12 +4,10 @@ import javafx.scene.Node;
 import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TreeItem;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**

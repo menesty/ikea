@@ -30,9 +30,11 @@ import org.menesty.ikea.ui.controls.pane.LoadingPane;
 public abstract class BasePage {
     protected LoadingPane loadingPane;
 
-    String breadCrumbPath;
+    private String breadCrumbPath;
 
-    String name;
+    private String name;
+
+    private boolean initialized;
 
     public BasePage(String name) {
         this.name = name;
@@ -50,7 +52,7 @@ public abstract class BasePage {
         return StringUtils.isNotBlank(breadCrumbPath) ? breadCrumbPath + "/" + getName() : getName();
     }
 
-    public abstract Node createView();
+    protected abstract Node createView();
 
     private StackPane createRoot() {
         StackPane pane = new StackPane() {
@@ -120,8 +122,8 @@ public abstract class BasePage {
 
     private Node getIcon() {
         Node previewIcon = getPreviewIcon();
-        if (previewIcon == null) {
 
+        if (previewIcon == null) {
             ImageView imageView = new ImageView(new Image(IkeaApplication.class.getResource("/styles/images/icon-overlay.png").toString()));
             imageView.setMouseTransparent(true);
             Rectangle overlayHighlight = new Rectangle(-8, -8, 130, 130);
@@ -165,4 +167,16 @@ public abstract class BasePage {
 
     }
 
+    protected void initialize() {
+
+    }
+
+    public Node getView() {
+        if (!initialized) {
+            initialize();
+            initialized = true;
+        }
+
+        return createView();
+    }
 }

@@ -4,7 +4,8 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
 /**
- * Created by Menesty on 12/21/13.
+ * Created by Menesty
+ * on 12/21/13.
  */
 public class ImageFactory {
 
@@ -130,5 +131,21 @@ public class ImageFactory {
 
     public static ImageView createIkea72Icon() {
         return new ImageView(new Image("/styles/images/icon/ikea-72x72.png"));
+    }
+
+    public static ImageView createClear32Icon() {
+        return new ImageView(new Image("/styles/images/icon/clear-32x32.png"));
+    }
+
+    public static ImageView createProducts72Icon() {
+        return new ImageView(new Image("/styles/images/icon/products-72x72.png"));
+    }
+
+    public static ImageView createCsv32Icon() {
+        return new ImageView(new Image("/styles/images/icon/csv-32x32.png"));
+    }
+
+    public static ImageView createImport32Icon() {
+        return new ImageView(new Image("/styles/images/icon/import-32x32.png"));
     }
 }

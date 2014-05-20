@@ -32,11 +32,11 @@ public class PageManager {
             pages.put(page.getBreadCrumb(), page);
     }
 
-    public void goToPage(BasePage page, Object ... params) {
+    public void goToPage(BasePage page, Object... params) {
         goToPage(page, false, true, params);
     }
 
-    public void goToPage(String breadcrumbPath, Object ... params) {
+    public void goToPage(String breadcrumbPath, Object... params) {
         goToPage(pages.get(breadcrumbPath), false, true, params);
     }
 
@@ -47,14 +47,16 @@ public class PageManager {
      * @param force     When true reload page if page is current page
      * @param swapViews If view should be swapped to new page
      */
-    private void goToPage(BasePage page, boolean force, boolean swapViews, Object ... params) {
+    private void goToPage(BasePage page, boolean force, boolean swapViews, Object... params) {
         if (page == null) return;
-        if (!force && page == currentPage) {
-            return;
-        }
+
+        if (!force && page == currentPage) return;
+
         changingPage = true;
+
         if (swapViews) {
-            Node view = page.createView();
+            Node view = page.getView();
+
             if (view == null) view = new Region(); // todo temp workaround
             // replace view in pageArea if new
             if (force || view != currentPageView) {
@@ -72,7 +74,7 @@ public class PageManager {
         changingPage = false;
     }
 
-    public void goToPageByName(String order, Object ... params) {
+    public void goToPageByName(String order, Object... params) {
         for (BasePage entry : pages.values())
             if (entry.getName().equals(order)) {
                 goToPage(entry, params);

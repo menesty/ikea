@@ -14,7 +14,6 @@ import javafx.stage.FileChooser;
 import org.menesty.ikea.domain.IkeaParagon;
 import org.menesty.ikea.domain.PagingResult;
 import org.menesty.ikea.factory.ImageFactory;
-import org.menesty.ikea.processor.invoice.InvoiceItem;
 import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.service.task.IkeaParagonTask;
@@ -23,7 +22,6 @@ import org.menesty.ikea.util.ColumnUtil;
 import org.menesty.ikea.util.FileChooserUtil;
 
 import java.io.File;
-import java.util.List;
 
 
 /**

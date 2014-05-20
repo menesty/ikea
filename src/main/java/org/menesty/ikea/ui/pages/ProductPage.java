@@ -1,26 +1,24 @@
 package org.menesty.ikea.ui.pages;
 
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.util.Callback;
 import org.menesty.ikea.domain.ProductInfo;
+import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.service.ProductService;
 import org.menesty.ikea.ui.controls.MToolBar;
-import org.menesty.ikea.ui.controls.PathProperty;
 import org.menesty.ikea.ui.controls.dialog.ProductDialog;
 import org.menesty.ikea.ui.controls.search.ProductItemSearchBar;
 import org.menesty.ikea.ui.controls.search.ProductItemSearchData;
+import org.menesty.ikea.ui.controls.table.component.BaseTableView;
+import org.menesty.ikea.util.ColumnUtil;
 import org.menesty.ikea.util.NumberUtil;
 
 import java.io.File;
@@ -39,118 +37,110 @@ public class ProductPage extends BasePage {
 
     public ProductPage() {
         super("Products");
-        this.productService = new ProductService();
+    }
+
+    @Override
+    protected void initialize() {
+        productService = new ProductService();
     }
 
     @Override
     public Node createView() {
-        tableView = new TableView<>();
+        tableView = new BaseTableView<ProductInfo>() {
+            @Override
+            protected void onRowDoubleClick(final TableRow<ProductInfo> row) {
+                showPopupDialog(productEditDialog);
+                productEditDialog.bind(row.getItem(), new EntityDialogCallback<ProductInfo>() {
+                    @Override
+                    public void onSave(ProductInfo productInfo, Object[] params) {
+                        productService.save(productInfo);
+
+                        if (!(Boolean) params[0])
+                            hidePopupDialog();
+
+                        row.setItem(null);
+                    }
+
+                    @Override
+                    public void onCancel() {
+                        hidePopupDialog();
+                    }
+                });
+            }
+
+            @Override
+            protected void onRowRender(TableRow<ProductInfo> row, ProductInfo newValue) {
+                row.getStyleClass().remove("productNotVerified");
+
+                if (newValue != null && !newValue.isVerified())
+                    row.getStyleClass().add("productNotVerified");
+            }
+        };
+
         {
-            TableColumn<ProductInfo, String> column = new TableColumn<>();
-            column.setText("Art # ");
+            TableColumn<ProductInfo, String> column = new TableColumn<>("Art # ");
             column.setMinWidth(80);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ProductInfo, String>, ObservableValue<String>>() {
-                @Override
-                public ObservableValue<String> call(TableColumn.CellDataFeatures<ProductInfo, String> item) {
-                    return new PathProperty<>(item.getValue(), "artNumber");
-                }
-            });
+            column.setCellValueFactory(ColumnUtil.<ProductInfo, String>column("artNumber"));
             tableView.getColumns().add(column);
         }
 
         {
-            TableColumn<ProductInfo, String> column = new TableColumn<>();
-            column.setText("O Art #");
+            TableColumn<ProductInfo, String> column = new TableColumn<>("O Art #");
             column.setMinWidth(80);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ProductInfo, String>, ObservableValue<String>>() {
-                @Override
-                public ObservableValue<String> call(TableColumn.CellDataFeatures<ProductInfo, String> item) {
-                    return new PathProperty<>(item.getValue(), "originalArtNum");
-                }
-            });
+            column.setCellValueFactory(ColumnUtil.<ProductInfo, String>column("originalArtNum"));
 
             tableView.getColumns().add(column);
         }
 
         {
-            TableColumn<ProductInfo, String> column = new TableColumn<>();
-            column.setText("Name");
+            TableColumn<ProductInfo, String> column = new TableColumn<>("Name");
             column.setMinWidth(200);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ProductInfo, String>, ObservableValue<String>>() {
-                @Override
-                public ObservableValue<String> call(TableColumn.CellDataFeatures<ProductInfo, String> item) {
-                    return new PathProperty<>(item.getValue(), "name");
-                }
-            });
+            column.setCellValueFactory(ColumnUtil.<ProductInfo, String>column("name"));
 
             tableView.getColumns().add(column);
         }
 
         {
-            TableColumn<ProductInfo, String> column = new TableColumn<>();
-            column.setText("Short name");
+            TableColumn<ProductInfo, String> column = new TableColumn<>("Short name");
             column.setMinWidth(200);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ProductInfo, String>, ObservableValue<String>>() {
-                @Override
-                public ObservableValue<String> call(TableColumn.CellDataFeatures<ProductInfo, String> item) {
-                    return new PathProperty<>(item.getValue(), "shortName");
-                }
-            });
+            column.setCellValueFactory(ColumnUtil.<ProductInfo, String>column("shortName"));
 
             tableView.getColumns().add(column);
         }
 
         {
-            TableColumn<ProductInfo, Double> column = new TableColumn<>();
-            column.setText("Price");
+            TableColumn<ProductInfo, String> column = new TableColumn<>("Price");
             column.setMinWidth(60);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ProductInfo, Double>, ObservableValue<Double>>() {
-                @Override
-                public ObservableValue<Double> call(TableColumn.CellDataFeatures<ProductInfo, Double> item) {
-                    return new PathProperty<>(item.getValue(), "price");
-                }
-            });
+            column.setCellValueFactory(ColumnUtil.<ProductInfo>number("price"));
 
             tableView.getColumns().add(column);
         }
 
         {
-            TableColumn<ProductInfo, ProductInfo.Group> column = new TableColumn<>();
-            column.setText("Group");
+            TableColumn<ProductInfo, ProductInfo.Group> column = new TableColumn<>("Group");
             column.setMinWidth(60);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ProductInfo, ProductInfo.Group>, ObservableValue<ProductInfo.Group>>() {
-                @Override
-                public ObservableValue<ProductInfo.Group> call(TableColumn.CellDataFeatures<ProductInfo, ProductInfo.Group> item) {
-                    return new PathProperty<>(item.getValue(), "group");
-                }
-            });
+            column.setCellValueFactory(ColumnUtil.<ProductInfo, ProductInfo.Group>column("group"));
 
             tableView.getColumns().add(column);
         }
 
         {
-            TableColumn<ProductInfo, Integer> column = new TableColumn<>();
-            column.setText("B count");
+            TableColumn<ProductInfo, Integer> column = new TableColumn<>("B count");
             column.setMinWidth(60);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ProductInfo, Integer>, ObservableValue<Integer>>() {
-                @Override
-                public ObservableValue<Integer> call(TableColumn.CellDataFeatures<ProductInfo, Integer> item) {
-                    return new PathProperty<>(item.getValue(), "packageInfo.boxCount");
-                }
-            });
+            column.setCellValueFactory(ColumnUtil.<ProductInfo, Integer>column("packageInfo.boxCount"));
 
             tableView.getColumns().add(column);
         }
 
         //==============================================
         {
-            TableColumn<ProductInfo, String> column = new TableColumn<>();
-            column.setText("Weight");
+            TableColumn<ProductInfo, String> column = new TableColumn<>("Weight");
             column.setMinWidth(60);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ProductInfo, String>, ObservableValue<String>>() {
                 @Override
                 public ObservableValue<String> call(TableColumn.CellDataFeatures<ProductInfo, String> item) {
                     int value = item.getValue().getPackageInfo().getWeight();
+
                     return NumberUtil.preparePackInfo(value, 1000, "kg");
                 }
             });
@@ -158,13 +148,13 @@ public class ProductPage extends BasePage {
             tableView.getColumns().add(column);
         }
         {
-            TableColumn<ProductInfo, String> column = new TableColumn<>();
-            column.setText("Height");
+            TableColumn<ProductInfo, String> column = new TableColumn<>("Height");
             column.setMinWidth(60);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ProductInfo, String>, ObservableValue<String>>() {
                 @Override
                 public ObservableValue<String> call(TableColumn.CellDataFeatures<ProductInfo, String> item) {
                     int value = item.getValue().getPackageInfo().getHeight();
+
                     return NumberUtil.preparePackInfo(value, 10, "cm");
                 }
             });
@@ -172,13 +162,13 @@ public class ProductPage extends BasePage {
             tableView.getColumns().add(column);
         }
         {
-            TableColumn<ProductInfo, String> column = new TableColumn<>();
-            column.setText("Width");
+            TableColumn<ProductInfo, String> column = new TableColumn<>("Width");
             column.setMinWidth(60);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ProductInfo, String>, ObservableValue<String>>() {
                 @Override
                 public ObservableValue<String> call(TableColumn.CellDataFeatures<ProductInfo, String> item) {
                     int value = item.getValue().getPackageInfo().getWidth();
+
                     return NumberUtil.preparePackInfo(value, 10, "cm");
                 }
             });
@@ -186,8 +176,7 @@ public class ProductPage extends BasePage {
             tableView.getColumns().add(column);
         }
         {
-            TableColumn<ProductInfo, String> column = new TableColumn<>();
-            column.setText("Length");
+            TableColumn<ProductInfo, String> column = new TableColumn<>("Length");
             column.setMinWidth(60);
             column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ProductInfo, String>, ObservableValue<String>>() {
                 @Override
@@ -199,44 +188,6 @@ public class ProductPage extends BasePage {
 
             tableView.getColumns().add(column);
         }
-        tableView.setRowFactory(new Callback<TableView<ProductInfo>, TableRow<ProductInfo>>() {
-            @Override
-            public TableRow<ProductInfo> call(final TableView<ProductInfo> tableView) {
-                final TableRow<ProductInfo> row = new TableRow<>();
-                row.setOnMouseClicked(new EventHandler<MouseEvent>() {
-                    @Override
-                    public void handle(MouseEvent mouseEvent) {
-                        if (mouseEvent.getClickCount() == 2) {
-                            showPopupDialog(productEditDialog);
-                            productEditDialog.bind(row.getItem(), new EntityDialogCallback<ProductInfo>() {
-                                @Override
-                                public void onSave(ProductInfo productInfo, Object[] params) {
-                                    productService.save(productInfo);
-                                    if (!(Boolean) params[0])
-                                        hidePopupDialog();
-                                    row.setItem(null);
-                                }
-
-                                @Override
-                                public void onCancel() {
-                                    hidePopupDialog();
-                                }
-                            });
-                        }
-                    }
-                });
-                row.itemProperty().addListener(new ChangeListener<ProductInfo>() {
-                    @Override
-                    public void changed(ObservableValue<? extends ProductInfo> observableValue, ProductInfo oldValue, ProductInfo newValue) {
-                        row.getStyleClass().remove("productNotVerified");
-                        if (newValue != null && !newValue.isVerified())
-                            row.getStyleClass().add("productNotVerified");
-
-                    }
-                });
-                return row;
-            }
-        });
 
         filter(new ProductItemSearchData());
 
@@ -247,12 +198,10 @@ public class ProductPage extends BasePage {
             }
         };
 
-
         VBox toolBarBox = new VBox();
         ToolBar toolBar = new MToolBar();
 
-        ImageView imageView = new ImageView(new Image("/styles/images/icon/csv-32x32.png"));
-        Button export = new Button(null, imageView);
+        Button export = new Button(null, ImageFactory.createCsv32Icon());
         export.setContentDisplay(ContentDisplay.RIGHT);
         export.setTooltip(new Tooltip("Export Filled products"));
         export.setOnAction(new EventHandler<ActionEvent>() {
@@ -268,8 +217,7 @@ public class ProductPage extends BasePage {
             }
         });
 
-        imageView = new ImageView(new Image("/styles/images/icon/import-32x32.png"));
-        Button importBtn = new Button(null, imageView);
+        Button importBtn = new Button(null, ImageFactory.createImport32Icon());
         importBtn.setContentDisplay(ContentDisplay.RIGHT);
         importBtn.setTooltip(new Tooltip("Import/Update Products"));
         importBtn.setOnAction(new EventHandler<ActionEvent>() {
@@ -285,7 +233,7 @@ public class ProductPage extends BasePage {
             }
         });
 
-        toolBar.getItems().addAll(export,importBtn);
+        toolBar.getItems().addAll(export, importBtn);
 
         toolBarBox.getChildren().addAll(toolBar, searchBar);
         BorderPane container = new BorderPane();
@@ -294,6 +242,7 @@ public class ProductPage extends BasePage {
         container.setCenter(tableView);
 
         productEditDialog = new ProductDialog();
+
         return wrap(container);
     }
 
@@ -301,10 +250,8 @@ public class ProductPage extends BasePage {
         tableView.setItems(FXCollections.observableArrayList(productService.load(data)));
     }
 
-
-
     @Override
     protected Node createIconContent() {
-        return new ImageView(new javafx.scene.image.Image("/styles/images/icon/products-72x72.png"));
+        return ImageFactory.createProducts72Icon();
     }
 }
