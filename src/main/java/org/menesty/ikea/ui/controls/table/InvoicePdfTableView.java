@@ -7,15 +7,16 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.util.Callback;
 import org.menesty.ikea.domain.InvoicePdf;
+import org.menesty.ikea.ui.controls.table.component.BaseTableView;
 import org.menesty.ikea.ui.controls.table.component.CheckBoxTableColumn;
 import org.menesty.ikea.util.ColumnUtil;
 
-public abstract class InvoicePdfTableView extends TableView<InvoicePdfTableView.InvoicePdfTableItem> {
+public abstract class InvoicePdfTableView extends BaseTableView<InvoicePdfTableView.InvoicePdfTableItem> {
 
     public InvoicePdfTableView() {
         {
@@ -65,6 +66,14 @@ public abstract class InvoicePdfTableView extends TableView<InvoicePdfTableView.
         invoiceNumber.setMinWidth(100);
         invoiceNumber.setCellValueFactory(ColumnUtil.<InvoicePdfTableItem, String>column("invoicePdf.invoiceNumber"));
         getColumns().addAll(checked, name, priceColumn, invoiceNumber, createdDate);
+    }
+
+    @Override
+    protected void onRowRender(TableRow<InvoicePdfTableItem> row, InvoicePdfTableItem newValue) {
+        row.getStyleClass().remove("greenRow");
+
+        if (newValue != null && newValue.getInvoicePdf().isSync())
+            row.getStyleClass().add("greenRow");
     }
 
     public abstract void onSave(InvoicePdf invoicePdf);
