@@ -32,5 +32,9 @@ public class FileChooserUtil {
     public static void setDefaultDir(File file) {
         ServiceFacade.getApplicationPreference().setFileChooseDefaultDir(file.getParentFile().getAbsolutePath());
     }
+
+    public static FileChooser getPdf() {
+        return createFileChooser("Invoice PDF location", "Pdf files (*.pdf)", "*.pdf");
+    }
 }
 

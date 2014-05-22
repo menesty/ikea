@@ -44,7 +44,10 @@ public class CustomInvoicePage extends BasePage {
 
     public CustomInvoicePage() {
         super("Invoice");
+    }
 
+    @Override
+    protected void initialize() {
         invoicePdfDialog = new InvoicePdfDialog();
 
         loadService = new LoadService();

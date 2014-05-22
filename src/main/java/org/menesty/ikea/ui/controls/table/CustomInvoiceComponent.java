@@ -23,10 +23,12 @@ import java.math.RoundingMode;
 import java.util.List;
 
 /**
- * Created by Menesty on 4/6/14.
+ * Created by Menesty on
+ * 4/6/14.
  */
 public abstract class CustomInvoiceComponent extends BorderPane {
     private final LoadService loadService;
+
     private final ToolBar invoiceItemToolBar;
 
     private TableView<InvoiceItem> invoiceItemTable;

@@ -7,6 +7,7 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Button;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.ToolBar;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
@@ -27,6 +28,7 @@ import org.menesty.ikea.ui.controls.dialog.InvoicePdfDialog;
 import org.menesty.ikea.ui.controls.table.InvoicePdfTableView;
 import org.menesty.ikea.ui.pages.DialogCallback;
 import org.menesty.ikea.ui.pages.EntityDialogCallback;
+import org.menesty.ikea.util.FileChooserUtil;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -51,13 +53,31 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
 
         invoicePdfTableView = new InvoicePdfTableView() {
             @Override
-            public void onSave(InvoicePdf invoicePdf) {
-                InvoicePdfViewComponent.this.onSave(invoicePdf);
+            public void onUpload(InvoicePdf invoicePdf) {
+                InvoicePdfViewComponent.this.onUpload(invoicePdf);
             }
 
             @Override
             public void onCheck(InvoicePdf invoicePdf, boolean newValue) {
                 deleteBtn.setDisable(getChecked().size() == 0);
+            }
+
+            @Override
+            protected void onRowDoubleClick(TableRow<InvoicePdfTableItem> row) {
+                if (row.getItem() != null) {
+                    invoicePdfDialog.bind(row.getItem().getInvoicePdf(), new EntityDialogCallback<InvoicePdf>() {
+                        @Override
+                        public void onSave(InvoicePdf invoicePdf, Object... params) {
+                            InvoicePdfViewComponent.this.onSave(invoicePdf);
+                            IkeaApplication.get().hidePopupDialog();
+                        }
+
+                        @Override
+                        public void onCancel() {
+                            IkeaApplication.get().hidePopupDialog();
+                        }
+                    });
+                }
             }
         };
 
@@ -87,10 +107,8 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
         uploadInvoice.setTooltip(new Tooltip("Upload Invoice PDF"));
         uploadInvoice.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
-                FileChooser fileChooser = new FileChooser();
-                fileChooser.setTitle("Invoice PDF location");
-                FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("Pdf files (*.pdf)", "*.pdf");
-                fileChooser.getExtensionFilters().add(extFilter);
+                FileChooser fileChooser = FileChooserUtil.getPdf();
+
                 List<File> selectedFile = fileChooser.showOpenMultipleDialog(stage);
 
                 if (selectedFile != null && selectedFile.size() > 0)
@@ -178,6 +196,9 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
 
     public abstract void onImport(List<File> files);
 
+    public abstract void onUpload(InvoicePdf invoicePdf);
+
+
     // public abstract void onCheck(InvoicePdf invoicePdf);
 
     public abstract void onSelect(InvoicePdf invoicePdf);
@@ -187,16 +208,24 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
         updateState();
     }
 
+    public void update(InvoicePdf invoicePdf) {
+        invoicePdfTableView.update(transform(invoicePdf));
+    }
+
     private ObservableList<InvoicePdfTableView.InvoicePdfTableItem> transform(List<InvoicePdf> entities) {
         ObservableList<InvoicePdfTableView.InvoicePdfTableItem> result = FXCollections.observableArrayList();
 
         if (entities == null) return result;
 
         for (InvoicePdf entity : entities)
-            result.add(invoicePdfTableView.new InvoicePdfTableItem(false, entity));
+            result.add(transform(entity));
 
         return result;
 
+    }
+
+    private InvoicePdfTableView.InvoicePdfTableItem transform(InvoicePdf entity) {
+        return invoicePdfTableView.new InvoicePdfTableItem(false, entity);
     }
 
     public List<InvoicePdf> getChecked() {
@@ -223,7 +252,15 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
                 for (InvoicePdfTableView.InvoicePdfTableItem item : invoicePdfTableView.getItems()) {
                     total += item.getInvoicePdf().getPrice();
 
-                    if (allowSync && !ServiceFacade.getInvoiceItemService().hasItems(item.getInvoicePdf()))
+                    boolean hasItems = ServiceFacade.getInvoiceItemService().hasItems(item.getInvoicePdf());
+                    boolean update = item.hasItems() != null && item.hasItems() != hasItems;
+
+                    item.setItems(hasItems);
+
+                    if(update)
+                        invoicePdfTableView.update(item);
+
+                    if (allowSync && !hasItems)
                         allowSync = false;
                 }
 

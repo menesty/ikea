@@ -19,6 +19,7 @@ import org.menesty.ikea.processor.invoice.InvoiceItem;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.service.ServiceFacade;
+import org.menesty.ikea.service.task.InvoicePdfSyncService;
 import org.menesty.ikea.service.task.OrderInvoiceSyncService;
 import org.menesty.ikea.ui.TaskProgress;
 import org.menesty.ikea.ui.controls.component.*;
@@ -72,9 +73,14 @@ public class OrderViewPage extends BasePage {
 
     private RawInvoiceItemSearchComponent rawInvoiceItemSearchComponent;
 
+    private InvoicePdfSyncService invoicePdfSyncService;
+
     public OrderViewPage() {
         super("CustomerOrder");
+    }
 
+    @Override
+    protected void initialize() {
         orderInvoiceSyncService = new OrderInvoiceSyncService();
         orderInvoiceSyncService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<Boolean>() {
             @Override
@@ -121,6 +127,18 @@ public class OrderViewPage extends BasePage {
             }
         });
 
+        invoicePdfSyncService = new InvoicePdfSyncService();
+        invoicePdfSyncService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<Boolean>() {
+            @Override
+            public void onSucceeded(Boolean value) {
+                if (value) {
+                    InvoicePdf invoicePdf = invoicePdfSyncService.getInvoice();
+                    invoicePdf.setSync(true);
+                    ServiceFacade.getInvoicePdfService().save(invoicePdf);
+                    invoicePdfViewComponent.update(invoicePdf);
+                }
+            }
+        });
     }
 
     private void updateInvoiceRawSearchTab() {
@@ -381,12 +399,20 @@ public class OrderViewPage extends BasePage {
             @Override
             public void onSave(InvoicePdf invoicePdf) {
                 ServiceFacade.getOrderService().save(invoicePdf);
+                loadingPane.bindTask(loadService);
                 loadService.restart();
             }
 
             @Override
             public void onImport(List<File> files) {
                 runTask(new CreateInvoicePdfTask(files));
+            }
+
+            @Override
+            public void onUpload(InvoicePdf invoicePdf) {
+                loadingPane.bindTask(invoicePdfSyncService);
+                invoicePdfSyncService.setInvoice(invoicePdf);
+                invoicePdfSyncService.restart();
             }
 
             @Override
@@ -474,8 +500,10 @@ public class OrderViewPage extends BasePage {
     @Override
     public void onActive(Object... params) {
         currentOrder = (CustomerOrder) params[0];
+
         loadingPane.bindTask(loadService);
         loadService.restart();
+
         orderItemViewComponent.disableIkeaExport(currentOrder.getGeneralUser() == null || currentOrder.getComboUser() == null);
         storageLackItemViewComponent.disableIkeaExport(currentOrder.getLackUser() == null);
 
