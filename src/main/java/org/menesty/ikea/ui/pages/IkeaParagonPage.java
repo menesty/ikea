@@ -16,16 +16,16 @@ import org.menesty.ikea.domain.PagingResult;
 import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.service.ServiceFacade;
-import org.menesty.ikea.service.task.IkeaParagonTask;
+import org.menesty.ikea.service.task.IkeaFamilyParagonTask;
 import org.menesty.ikea.ui.controls.table.component.BaseTableView;
 import org.menesty.ikea.util.ColumnUtil;
 import org.menesty.ikea.util.FileChooserUtil;
 
 import java.io.File;
 
-
 /**
- * Created by Menesty on 5/13/14.
+ * Created by Menesty on
+ * 5/13/14.
  */
 public class IkeaParagonPage extends BasePage {
     private static final int ITEM_PER_PAGE = 20;
@@ -110,9 +110,27 @@ public class IkeaParagonPage extends BasePage {
             @Override
             protected void onRowRender(TableRow<IkeaParagon> row, IkeaParagon item) {
                 row.getStyleClass().remove("greenRow");
+                row.setContextMenu(null);
 
                 if (item != null && item.isUploaded())
                     row.getStyleClass().add("greenRow");
+
+                if (item != null && !item.isUploaded()) {
+                    ContextMenu menu = new ContextMenu();
+                    {
+                        MenuItem menuItem = new MenuItem();
+                        menuItem.setOnAction(new EventHandler<ActionEvent>() {
+                            @Override
+                            public void handle(ActionEvent actionEvent) {
+
+                            }
+                        });
+
+                        menu.getItems().add(menuItem);
+                    }
+
+                    row.setContextMenu(menu);
+                }
             }
         };
 
@@ -212,7 +230,7 @@ public class IkeaParagonPage extends BasePage {
     class ParseService extends AbstractAsyncService<Boolean> {
         @Override
         protected Task<Boolean> createTask() {
-            return new IkeaParagonTask();
+            return new IkeaFamilyParagonTask();
         }
     }
 

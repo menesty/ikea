@@ -45,10 +45,7 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
 
     private final static Pattern totalPattern = Pattern.compile("DO ZAPŁATY:(.*)");
 
-    private ProductService productService;
-
     public InvoicePdfService() {
-        productService = new ProductService();
     }
 
     private String parseDocument(final InputStream stream) throws IOException {
@@ -192,11 +189,11 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
 
     }
 
-    private ProductInfo loadProductInfo(RawInvoiceProductItem product) {
+    public ProductInfo loadProductInfo(RawInvoiceProductItem product) {
         ProductInfo productInfo = null;
 
         try {
-            productInfo = productService.loadOrCreate(product.getOriginalArtNumber());
+            productInfo = ServiceFacade.getProductService().loadOrCreate(product.getOriginalArtNumber());
         } catch (ProductFetchException e) {
             System.out.println("Problem with open product : " + product.getPrepareArtNumber());
         }
@@ -361,7 +358,8 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
 
         InvoicePdf result;
 
-        TypedQuery<InvoicePdf> query = getEm().createQuery("select entity from " + entityClass.getName() + " entity where entity.paragonName = ?1 and entity.paragonDate = ?1", entityClass);
+        TypedQuery<InvoicePdf> query = getEm().createQuery("select entity from " + entityClass.getName() +
+                " entity where entity.paragonName = ?1 and entity.paragonDate = ?2", entityClass);
         query.setParameter(1, name);
         query.setParameter(2, date);
         query.setMaxResults(1);

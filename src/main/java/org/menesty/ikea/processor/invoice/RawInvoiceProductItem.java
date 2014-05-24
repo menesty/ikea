@@ -26,7 +26,7 @@ public class RawInvoiceProductItem extends Identifiable {
     }
 
     public RawInvoiceProductItem(InvoicePdf invoicePdf) {
-       this.invoicePdf = invoicePdf;
+        this.invoicePdf = invoicePdf;
     }
 
     private String originalArtNumber;
@@ -114,20 +114,20 @@ public class RawInvoiceProductItem extends Identifiable {
 
     public boolean isSeparate() {
         PackageInfo packageInfo = getProductInfo().getPackageInfo();
-        if (ProductInfo.Group.Textile == getProductInfo().getGroup()) {
-            if (packageInfo.getWeight() > MAX_TEXTILE_WEIGHT || packageInfo.getLength() > MAX_TEXTILE_DIMENSION || packageInfo.getWidth() > MAX_TEXTILE_DIMENSION || packageInfo.getHeight() > MAX_TEXTILE_DIMENSION)
-                return true;
-            return false;
-        }
-        if (packageInfo.getWeight() > MAX_WEIGHT || getPrice() * getCount() > 150 || (
-                packageInfo.getLength() > MAX_DIMENSION || packageInfo.getWidth() > MAX_DIMENSION || packageInfo.getHeight() > MAX_DIMENSION
-        ))
-            return true;
-        return false;
+
+        if (ProductInfo.Group.Textile == getProductInfo().getGroup())
+            return packageInfo.getWeight() > MAX_TEXTILE_WEIGHT || packageInfo.getLength() > MAX_TEXTILE_DIMENSION
+                    || packageInfo.getWidth() > MAX_TEXTILE_DIMENSION || packageInfo.getHeight() > MAX_TEXTILE_DIMENSION;
+
+        return packageInfo.getWeight() > MAX_WEIGHT || getPrice() * getCount() > 150 || (
+                packageInfo.getLength() > MAX_DIMENSION || packageInfo.getWidth() > MAX_DIMENSION
+                        || packageInfo.getHeight() > MAX_DIMENSION
+        );
     }
 
     @Override
     public String toString() {
-        return getPrepareArtNumber() + ";" + name + ";" + count + ";" + wat + ";" + String.valueOf(getPrice()).replace(".", ",") + ";" + String.valueOf(getTotal()).replace(".", ",");
+        return getPrepareArtNumber() + ";" + name + ";" + count + ";" + wat + ";" +
+                String.valueOf(getPrice()).replace(".", ",") + ";" + String.valueOf(getTotal()).replace(".", ",");
     }
 }

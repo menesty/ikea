@@ -1,8 +1,5 @@
 package org.menesty.ikea.service.task;
 
-import com.google.gson.*;
-import com.google.gson.reflect.TypeToken;
-import javafx.concurrent.Task;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
@@ -13,13 +10,11 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.menesty.ikea.ApplicationPreference;
 import org.menesty.ikea.db.DatabaseService;
 import org.menesty.ikea.domain.IkeaParagon;
 import org.menesty.ikea.service.ServiceFacade;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -31,31 +26,22 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Created by Menesty on 5/14/14.
+ * Created by Menesty on
+ * 5/14/14.
  */
-public class IkeaParagonTask extends Task<Boolean> {
+public class IkeaFamilyParagonTask extends BaseIkeaFamilyTask<Boolean> {
     private SimpleDateFormat sdf;
 
-    private static final Logger logger = Logger.getLogger(IkeaParagonTask.class.getName());
+    private static final Logger logger = Logger.getLogger(IkeaFamilyParagonTask.class.getName());
 
-    private Gson gson;
-
-    private Type collectionType;
-
-    public IkeaParagonTask() {
+    public IkeaFamilyParagonTask() {
         sdf = new SimpleDateFormat("dd.MM.yyyy");
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter(ProductDto.class, new ProductDtoAdapter());
 
-        gson = gsonBuilder.create();
-
-        collectionType = new TypeToken<Collection<ProductDto>>() {
-        }.getType();
     }
 
     @Override
     protected Boolean call() throws Exception {
-        boolean result = true;
+        boolean result;
         try {
             DatabaseService.begin();
 
@@ -63,10 +49,8 @@ public class IkeaParagonTask extends Task<Boolean> {
                     .setUserAgent("Mozilla/5.0 (Macintosh; U; PPC Max OS X Mach-O; en-US; rv:1.8.0.7) Gecko/200609211 Camino/1.0.3")
                     .build()) {
 
-                if (login(httpClient))
+                if (result = login(httpClient))
                     start(httpClient);
-                else
-                    result = false;
 
             }
             DatabaseService.commit();
@@ -191,6 +175,7 @@ public class IkeaParagonTask extends Task<Boolean> {
                         paragon.setShopName(shopName);
                         paragon.setPrice(price);
                         paragon.setName(paragonName);
+                        paragon.setDetailUrl(purchaseDetails.getURI().toString());
 
                         boolean uploaded = ServiceFacade.getInvoicePdfService().findByParagon(paragon.getCreatedDate(), paragon.getName()) != null;
 
@@ -212,81 +197,11 @@ public class IkeaParagonTask extends Task<Boolean> {
     private double getPrice(CloseableHttpClient httpClient, HttpUriRequest purchaseDetails) throws IOException {
         BigDecimal result = BigDecimal.ZERO;
 
-        try (CloseableHttpResponse response = httpClient.execute(purchaseDetails)) {
-            String data = EntityUtils.toString(response.getEntity());
-            Collection<ProductDto> dataList = gson.fromJson(data, collectionType);
+        Collection<ProductDto> dataList = getParagonItems(httpClient, purchaseDetails);
 
-            for (ProductDto item : dataList)
-                result = result.add(item.getTotal());
-        }
+        for (ProductDto item : dataList)
+            result = result.add(item.getTotal());
 
         return result.doubleValue();
-    }
-
-    private boolean login(CloseableHttpClient httpClient) throws Exception {
-        String viewState = "";
-        {
-            HttpUriRequest login = RequestBuilder.get().setUri("https://www.ikeafamily.eu/Logowanie.aspx").build();
-
-            try (CloseableHttpResponse response = httpClient.execute(login)) {
-                Document document = Jsoup.parse(EntityUtils.toString(response.getEntity()));
-
-                Elements elements = document.select("#__VIEWSTATE");
-
-                if (elements.size() > 0)
-                    viewState = elements.get(0).val();
-            }
-        }
-
-        boolean isLogin;
-
-        {
-            ApplicationPreference preference = ServiceFacade.getApplicationPreference();
-
-            HttpUriRequest login = RequestBuilder.post()
-                    .setUri("https://www.ikeafamily.eu/Logowanie.aspx")
-                    .addParameter("p$lt$ctl00$Logowanie_DuzyBoks$txtLogin", preference.getIkeaUser())
-                    .addParameter("p$lt$ctl00$Logowanie_DuzyBoks$txtPassword", preference.getIkeaPassword())
-                    .addParameter("manScript_HiddenField", "")
-                    .addParameter("__EVENTARGUMENT", "")
-                    .addParameter("__EVENTTARGET", "p$lt$ctl00$Logowanie_DuzyBoks$btnLogin")
-                    .addParameter("__VIEWSTATE", viewState)
-                    .addParameter("lng", "pl-PL")
-                    .build();
-
-            try (CloseableHttpResponse response = httpClient.execute(login)) {
-                Document document = Jsoup.parse(EntityUtils.toString(response.getEntity()));
-
-                Elements elements = document.select("#p_lt_ctl00_Logowanie_DuzyBoks_divLoginError");
-
-                isLogin = elements.size() == 0;
-            }
-        }
-
-        return isLogin;
-    }
-}
-
-class ProductDto {
-    public double price;
-    public double count;
-
-    public BigDecimal getTotal() {
-        return BigDecimal.valueOf(price).multiply(BigDecimal.valueOf(count)).setScale(3, BigDecimal.ROUND_CEILING);
-    }
-}
-
-class ProductDtoAdapter implements JsonDeserializer<ProductDto> {
-
-    @Override
-    public ProductDto deserialize(JsonElement element, Type type,
-                                  JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
-        JsonObject jsonElement = element.getAsJsonObject();
-
-        ProductDto entity = new ProductDto();
-        entity.price = jsonElement.get("LineItemSaleAmount").getAsDouble();
-        entity.count = jsonElement.get("LineItemQuantity").getAsDouble();
-
-        return entity;
     }
 }

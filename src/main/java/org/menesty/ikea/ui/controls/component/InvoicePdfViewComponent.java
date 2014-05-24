@@ -6,10 +6,8 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.scene.control.Button;
-import javafx.scene.control.TableRow;
-import javafx.scene.control.ToolBar;
-import javafx.scene.control.Tooltip;
+import javafx.geometry.Pos;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -44,7 +42,7 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
 
     private TotalStatusPanel statusPanel;
 
-    private Button syncBtn;
+    private SplitMenuButton syncBtn;
 
     private InvoicePdfDialog invoicePdfDialog;
 
@@ -139,11 +137,27 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        syncBtn = new Button(null, ImageFactory.createSync32Icon());
+        syncBtn = new SplitMenuButton();
+        syncBtn.setGraphic(ImageFactory.createSync32Icon());
+        syncBtn.setAlignment(Pos.CENTER);
+        syncBtn.setText(null);
+
+        {
+            MenuItem item = new MenuItem("Clear & Sync");
+            item.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent actionEvent) {
+                    onSync(true);
+                }
+            });
+
+            syncBtn.getItems().add(item);
+        }
+
         syncBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-                onSync();
+                onSync(false);
             }
         });
         syncBtn.setDisable(true);
@@ -172,7 +186,7 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
         IkeaApplication.get().showPopupDialog(invoicePdfDialog);
     }
 
-    protected abstract void onSync();
+    protected abstract void onSync(boolean clear);
 
     protected abstract CustomerOrder getCustomerOrder();
 
@@ -197,9 +211,6 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
     public abstract void onImport(List<File> files);
 
     public abstract void onUpload(InvoicePdf invoicePdf);
-
-
-    // public abstract void onCheck(InvoicePdf invoicePdf);
 
     public abstract void onSelect(InvoicePdf invoicePdf);
 
@@ -239,7 +250,8 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
     }
 
     public InvoicePdf getSelected() {
-        return invoicePdfTableView.getSelectionModel().getSelectedItem() != null ? invoicePdfTableView.getSelectionModel().getSelectedItem().getInvoicePdf() : null;
+        return invoicePdfTableView.getSelectionModel().getSelectedItem() != null ?
+                invoicePdfTableView.getSelectionModel().getSelectedItem().getInvoicePdf() : null;
     }
 
     public void updateState() {
@@ -257,7 +269,7 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
 
                     item.setItems(hasItems);
 
-                    if(update)
+                    if (update)
                         invoicePdfTableView.update(item);
 
                     if (allowSync && !hasItems)

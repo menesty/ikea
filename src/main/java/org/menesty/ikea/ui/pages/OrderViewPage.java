@@ -377,8 +377,10 @@ public class OrderViewPage extends BasePage {
 
         invoicePdfViewComponent = new InvoicePdfViewComponent(getStage()) {
             @Override
-            protected void onSync() {
+            protected void onSync(boolean clear) {
                 orderInvoiceSyncService.setCustomerOrder(currentOrder);
+                orderInvoiceSyncService.setClear(clear);
+
                 loadingPane.bindTask(orderInvoiceSyncService);
                 orderInvoiceSyncService.restart();
             }

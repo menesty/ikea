@@ -7,7 +7,8 @@ import javax.persistence.TemporalType;
 import java.util.Date;
 
 /**
- * Created by Menesty on 5/13/14.
+ * Created by Menesty on
+ * 5/13/14.
  */
 @Entity
 public class IkeaParagon extends Identifiable {
@@ -23,6 +24,17 @@ public class IkeaParagon extends Identifiable {
     private String paymentType;
 
     private boolean uploaded;
+
+    @Column(length = 300)
+    private String detailUrl;
+
+    public String getDetailUrl() {
+        return detailUrl;
+    }
+
+    public void setDetailUrl(String detailUrl) {
+        this.detailUrl = detailUrl;
+    }
 
     public boolean isUploaded() {
         return uploaded;
