@@ -124,7 +124,7 @@ public abstract class InvoicePdfTableView extends BaseTableView<InvoicePdfTableV
 
             InvoicePdfTableItem that = (InvoicePdfTableItem) o;
 
-            return !invoicePdf.equals(that.invoicePdf);
+            return invoicePdf.equals(that.invoicePdf);
         }
 
         public Boolean hasItems() {

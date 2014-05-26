@@ -10,6 +10,7 @@ import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.ui.TaskProgress;
 import org.menesty.ikea.util.NumberUtil;
 
+import javax.persistence.TypedQuery;
 import java.io.File;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -439,6 +440,22 @@ public class OrderService extends Repository<CustomerOrder> {
         Double currentValue = data.get(key);
         currentValue = currentValue == null ? value : NumberUtil.round(currentValue + value);
         data.put(key, currentValue);
+    }
+
+    public CustomerOrder getLatest() {
+        begin();
+
+        TypedQuery<CustomerOrder> query = getEm().createQuery("select entity from " + entityClass.getName() + " entity order by entity.id desc", entityClass);
+        query.setMaxResults(1);
+
+        List<CustomerOrder> result = query.getResultList();
+
+        commit();
+
+        if (result.size() == 0)
+            return null;
+
+        return result.get(0);
     }
 
 

@@ -22,14 +22,14 @@ import java.util.logging.Logger;
  * Created by Menesty on
  * 5/23/14.
  */
-public class IkeaFamilyMoveParagonTask extends BaseIkeaFamilyTask<Boolean> {
+public class IkeaFamilyExportParagonTask extends BaseIkeaFamilyTask<Boolean> {
     private final IkeaParagon paragon;
 
     private final CustomerOrder customerOrder;
 
-    private static final Logger logger = Logger.getLogger(IkeaFamilyMoveParagonTask.class.getName());
+    private static final Logger logger = Logger.getLogger(IkeaFamilyExportParagonTask.class.getName());
 
-    public IkeaFamilyMoveParagonTask(IkeaParagon paragon, CustomerOrder customerOrder) {
+    public IkeaFamilyExportParagonTask(IkeaParagon paragon, CustomerOrder customerOrder) {
         this.paragon = paragon;
         this.customerOrder = customerOrder;
     }
@@ -69,8 +69,7 @@ public class IkeaFamilyMoveParagonTask extends BaseIkeaFamilyTask<Boolean> {
         invoicePdf.setParagonDate(paragon.getCreatedDate());
         invoicePdf.setPrice(paragon.getPrice());
         invoicePdf.setName("Ikea Family " + paragon.getName());
-
-        //invoicePdf.setInvoiceNumber();
+        invoicePdf.setInvoiceNumber("Ikea Family");
 
         Collection<ProductDto> items = getParagonItems(httpClient, RequestBuilder.get().setUri(paragon.getDetailUrl()).build());
 
@@ -83,6 +82,7 @@ public class IkeaFamilyMoveParagonTask extends BaseIkeaFamilyTask<Boolean> {
             product.setPrice(item.price);
             product.setCount(item.count);
             product.setName(item.description);
+            product.setWat("23");
             product.setProductInfo(ServiceFacade.getInvoicePdfService().loadProductInfo(product));
             product.invoicePdf = invoicePdf;
 
@@ -90,9 +90,9 @@ public class IkeaFamilyMoveParagonTask extends BaseIkeaFamilyTask<Boolean> {
         }
 
         if (products.size() != 0) {
-            ServiceFacade.getInvoicePdfService().save(invoicePdf);
+            invoicePdf = ServiceFacade.getInvoicePdfService().save(invoicePdf);
             products = InvoicePdfService.reduce(products);
-            ServiceFacade.getInvoicePdfService().save(products);
+            invoicePdf.setProducts(ServiceFacade.getInvoicePdfService().save(products));
         }
 
         return products.size() != 0;

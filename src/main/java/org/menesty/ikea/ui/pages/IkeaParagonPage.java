@@ -1,6 +1,7 @@
 package org.menesty.ikea.ui.pages;
 
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -11,11 +12,13 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.FileChooser;
+import org.menesty.ikea.domain.CustomerOrder;
 import org.menesty.ikea.domain.IkeaParagon;
 import org.menesty.ikea.domain.PagingResult;
 import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.service.ServiceFacade;
+import org.menesty.ikea.service.task.IkeaFamilyExportParagonTask;
 import org.menesty.ikea.service.task.IkeaFamilyParagonTask;
 import org.menesty.ikea.ui.controls.table.component.BaseTableView;
 import org.menesty.ikea.util.ColumnUtil;
@@ -36,13 +39,18 @@ public class IkeaParagonPage extends BasePage {
 
     private Pagination pagination;
 
-    private TableView<IkeaParagon> tableView;
+    private BaseTableView<IkeaParagon> tableView;
 
     private ExportService exportService;
 
+    private ExportParagonService exportParagonService;
+
     public IkeaParagonPage() {
         super("Ikea paragons");
+    }
 
+    @Override
+    protected void initialize() {
         parseService = new ParseService();
         parseService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<Boolean>() {
             @Override
@@ -63,11 +71,22 @@ public class IkeaParagonPage extends BasePage {
         });
 
         exportService = new ExportService();
+
+
+        exportParagonService = new ExportParagonService();
+        exportParagonService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<Boolean>() {
+            @Override
+            public void onSucceeded(Boolean value) {
+                tableView.update(exportParagonService.getParagon());
+            }
+        });
     }
 
     @Override
     public Node createView() {
         ToolBar control = new ToolBar();
+
+        final CustomerOrder order = ServiceFacade.getOrderService().getLatest();
 
         {
             Button button = new Button(null, ImageFactory.createReload32Icon());
@@ -108,21 +127,25 @@ public class IkeaParagonPage extends BasePage {
 
         tableView = new BaseTableView<IkeaParagon>() {
             @Override
-            protected void onRowRender(TableRow<IkeaParagon> row, IkeaParagon item) {
+            protected void onRowRender(TableRow<IkeaParagon> row, final IkeaParagon item) {
                 row.getStyleClass().remove("greenRow");
                 row.setContextMenu(null);
 
                 if (item != null && item.isUploaded())
                     row.getStyleClass().add("greenRow");
 
-                if (item != null && !item.isUploaded()) {
+                if (item != null && !item.isUploaded() && order != null) {
                     ContextMenu menu = new ContextMenu();
                     {
-                        MenuItem menuItem = new MenuItem();
+                        MenuItem menuItem = new MenuItem("Export to Order");
                         menuItem.setOnAction(new EventHandler<ActionEvent>() {
                             @Override
                             public void handle(ActionEvent actionEvent) {
+                                exportParagonService.setParagon(item);
+                                exportParagonService.setOrder(order);
 
+                                loadingPane.bindTask(exportParagonService);
+                                exportParagonService.restart();
                             }
                         });
 
@@ -251,6 +274,31 @@ public class IkeaParagonPage extends BasePage {
 
         public void setPath(String path) {
             this.path.set(path);
+        }
+    }
+
+    class ExportParagonService extends AbstractAsyncService<Boolean> {
+        private SimpleObjectProperty<IkeaParagon> paragon = new SimpleObjectProperty<>();
+        private SimpleObjectProperty<CustomerOrder> order = new SimpleObjectProperty<>();
+
+        @Override
+        protected Task<Boolean> createTask() {
+            final IkeaParagon _paragon = paragon.get();
+            final CustomerOrder _order = order.get();
+
+            return new IkeaFamilyExportParagonTask(_paragon, _order);
+        }
+
+        public void setParagon(IkeaParagon paragon) {
+            this.paragon.set(paragon);
+        }
+
+        public void setOrder(CustomerOrder order) {
+            this.order.set(order);
+        }
+
+        public IkeaParagon getParagon() {
+            return paragon.get();
         }
     }
 
