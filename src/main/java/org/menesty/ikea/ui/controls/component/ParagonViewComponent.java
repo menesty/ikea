@@ -229,6 +229,13 @@ public class ParagonViewComponent extends BorderPane {
             tableView.getColumns().add(column);
         }
 
+        {
+            TableColumn<ParagonDto, Integer> column = new TableColumn<>("Paragon ID");
+            column.setMinWidth(180);
+            column.setCellValueFactory(ColumnUtil.<ParagonDto, Integer>column("id"));
+            tableView.getColumns().add(column);
+        }
+
         ToolBar control = new ToolBar();
         Button refresh = new Button(null, ImageFactory.createReload32Icon());
         refresh.setOnAction(new EventHandler<ActionEvent>() {
@@ -275,7 +282,8 @@ public class ParagonViewComponent extends BorderPane {
                             _paragonDto.setDownloaded(true);
                             tableView.update(_paragonDto);
 
-                            return new Result("paragon_" + _paragonDto.getPrice() + ".epp", EntityUtils.toString(response.getEntity(), "ISO-8859-2"));
+                            return new Result("paragon_" + _paragonDto.getId() + "_" + _paragonDto.getPrice() + ".epp",
+                                    EntityUtils.toString(response.getEntity(), "ISO-8859-2"));
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
