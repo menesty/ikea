@@ -14,6 +14,7 @@
         <class>org.menesty.ikea.processor.invoice.RawInvoiceProductItem</class>
         <class>org.menesty.ikea.processor.invoice.InvoiceItem</class>
         <class>org.menesty.ikea.domain.IkeaParagon</class>
+        <class>org.menesty.ikea.domain.IkeaShop</class>
 
         <properties>
             <property name="eclipselink.ddl-generation" value="create-or-extend-tables"/>

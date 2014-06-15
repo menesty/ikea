@@ -23,7 +23,7 @@ public class NumberTextField extends TextField {
     private final NumberFormat nf;
     private ObjectProperty<BigDecimal> number = new SimpleObjectProperty<>();
 
-    private boolean allowDouble;
+    private boolean allowDouble = true;
 
     public final BigDecimal getNumber() {
         return number.get();
@@ -31,38 +31,46 @@ public class NumberTextField extends TextField {
 
     public final void setNumber(BigDecimal value) {
         number.set(value);
+        updateView();
     }
 
     public ObjectProperty<BigDecimal> numberProperty() {
         return number;
     }
 
-    public NumberTextField() {
-        this(BigDecimal.ZERO);
+    public NumberTextField(String label, boolean allowBlank) {
+        this(BigDecimal.ZERO, label, allowBlank);
     }
 
-    public NumberTextField(boolean allowDouble) {
-        this();
-        allowDouble = allowDouble;
+    public NumberTextField(BigDecimal value, String label, boolean allowBlank) {
+        this(value, NumberFormat.getInstance(), label, allowBlank);
     }
 
-    public NumberTextField(BigDecimal value) {
-        this(value, NumberFormat.getInstance());
-        initHandlers();
+    public void setAllowDouble(boolean allowDouble) {
+        this.allowDouble = allowDouble;
     }
 
-    public NumberTextField(BigDecimal value, NumberFormat nf) {
+    public NumberTextField(BigDecimal value, NumberFormat nf, String label, boolean allowBlank) {
         super();
         this.nf = nf;
-        initHandlers();
         setNumber(value);
+        setLabel(label);
+        setAllowBlank(allowBlank);
+        initHandlers();
+    }
+
+    private void updateView() {
+        BigDecimal newValue = getNumber();
+
+        if (newValue != null)
+            setText((allowDouble ? newValue.doubleValue() : newValue.intValue()) + "");
+        else
+            setText("0");
     }
 
     private void initHandlers() {
-
         // try to parse when focus is lost or RETURN is hit
         setOnAction(new EventHandler<ActionEvent>() {
-
             @Override
             public void handle(ActionEvent arg0) {
                 parseAndFormatInput();
@@ -70,12 +78,10 @@ public class NumberTextField extends TextField {
         });
 
         focusedProperty().addListener(new ChangeListener<Boolean>() {
-
             @Override
             public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                if (!newValue.booleanValue()) {
+                if (!newValue)
                     parseAndFormatInput();
-                }
             }
         });
 
@@ -83,7 +89,7 @@ public class NumberTextField extends TextField {
         numberProperty().addListener(new ChangeListener<BigDecimal>() {
             @Override
             public void changed(ObservableValue<? extends BigDecimal> obserable, BigDecimal oldValue, BigDecimal newValue) {
-                setText((allowDouble ? newValue.doubleValue() : newValue.intValue()) + "");
+                updateView();
             }
         });
 
@@ -93,7 +99,10 @@ public class NumberTextField extends TextField {
                     event.consume();
                     return;
                 }
-                String newValue = getText().substring(0, getSelection().getStart()) + event.getCharacter() + getText().substring(getSelection().getEnd(), getText().length());
+
+                String newValue = getText().substring(0, getSelection().getStart()) + event.getCharacter() +
+                        getText().substring(getSelection().getEnd(), getText().length());
+
                 if (!NumberUtils.isNumber(newValue))
                     event.consume();
             }
@@ -108,11 +117,12 @@ public class NumberTextField extends TextField {
     private void parseAndFormatInput() {
         try {
             String input = getText();
-            if (input == null || input.length() == 0) {
+
+            if (input == null || input.length() == 0)
                 return;
-            }
+
             Number parsedNumber = nf.parse(input);
-            BigDecimal newValue = new BigDecimal(parsedNumber.toString());
+            BigDecimal newValue = new BigDecimal(allowDouble ? parsedNumber.doubleValue() : parsedNumber.intValue());
             setNumber(newValue);
             selectAll();
         } catch (ParseException ex) {

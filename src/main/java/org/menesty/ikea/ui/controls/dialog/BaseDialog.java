@@ -13,14 +13,16 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.menesty.ikea.IkeaApplication;
+import org.menesty.ikea.domain.CustomerOrder;
 import org.menesty.ikea.ui.controls.pane.LoadingPane;
+import org.menesty.ikea.ui.pages.EntityDialogCallback;
 
 /**
  * User: Menesty
  * Date: 10/14/13
  * Time: 1:11 PM
  */
-public class BaseDialog extends StackPane {
+public class BaseDialog<T> extends StackPane {
 
     protected final HBox bottomBar;
 
@@ -35,6 +37,8 @@ public class BaseDialog extends StackPane {
     private VBox content;
 
     private Label title;
+
+    private EntityDialogCallback<T> callback;
 
     public BaseDialog() {
         super();

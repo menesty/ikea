@@ -1,7 +1,7 @@
 package org.menesty.ikea.ui.pages;
 
 public enum Pages {
-    ORDERS("Orders");
+    ORDERS("Orders"), SHOPS("Shops");
 
     private final String title;
 

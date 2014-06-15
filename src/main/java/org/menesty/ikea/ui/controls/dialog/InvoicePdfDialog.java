@@ -59,12 +59,8 @@ public class InvoicePdfDialog extends BaseDialog {
         TextField invoiceNumber;
 
         public InvoiceForm() {
-            add(name = new TextField(null, "Name"));
-            name.setAllowBlank(false);
-
-            add(invoiceNumber = new TextField(null, "Invoice Number"));
-            invoiceNumber.setAllowBlank(false);
-
+            add(name = new TextField(null, "Name", false));
+            add(invoiceNumber = new TextField(null, "Invoice Number", false));
             add(price = new DoubleTextField("Price"));
         }
 

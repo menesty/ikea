@@ -156,7 +156,7 @@ public class IkeaApplication extends Application {
 
         OrderListPage orderListPage = new OrderListPage();
         pageManager.register(new CategoryPage("IKEA", orderListPage, new ProductPage(), new UserPage(),
-                new WarehousePage(), new CustomInvoicePage(), new IkeaParagonPage()));
+                new WarehousePage(), new CustomInvoicePage(), new IkeaParagonPage(), new IkeaShopPage()));
 
         OrderViewPage orderViewPage = new OrderViewPage();
         orderViewPage.setBreadCrumbPath(orderListPage.getBreadCrumb());

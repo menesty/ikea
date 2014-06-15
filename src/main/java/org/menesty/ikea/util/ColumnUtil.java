@@ -45,8 +45,8 @@ public class ColumnUtil {
         return new Callback<TableColumn.CellDataFeatures<Entity, String>, ObservableValue<String>>() {
             @Override
             public ObservableValue<String> call(TableColumn.CellDataFeatures<Entity, String> item) {
-                Double number = new PathProperty<Entity, Double>(item.getValue(), propertyName).get();
-                return new SimpleStringProperty(NumberUtil.toString(number));
+                Number number = new PathProperty<Entity, Number>(item.getValue(), propertyName).get();
+                return new SimpleStringProperty(NumberUtil.toString(number.doubleValue()));
             }
         };
     }

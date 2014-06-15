@@ -148,4 +148,8 @@ public class ImageFactory {
     public static ImageView createImport32Icon() {
         return new ImageView(new Image("/styles/images/icon/import-32x32.png"));
     }
+
+    public static ImageView createShopIcon72() {
+        return new ImageView(new Image("/styles/images/icon/shop-72x72.png"));
+    }
 }

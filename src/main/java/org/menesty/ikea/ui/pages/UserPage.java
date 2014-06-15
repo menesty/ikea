@@ -5,15 +5,12 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
-import javafx.util.Callback;
 import org.menesty.ikea.domain.User;
 import org.menesty.ikea.factory.ImageFactory;
-import org.menesty.ikea.service.UserService;
+import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.ui.controls.dialog.UserDialog;
+import org.menesty.ikea.ui.controls.table.component.BaseTableView;
 import org.menesty.ikea.util.ColumnUtil;
 
 
@@ -21,17 +18,32 @@ public class UserPage extends BasePage {
 
     private UserDialog userDialog;
 
-    private UserService userService;
-
     public UserPage() {
         super("Users");
-        userService = new UserService();
     }
 
     @Override
     public Node createView() {
 
-        final TableView<User> tableView = new TableView<>();
+        final TableView<User> tableView = new BaseTableView<User>() {
+            @Override
+            protected void onRowDoubleClick(TableRow<User> row) {
+                showPopupDialog(userDialog);
+                userDialog.bind(row.getItem(), new EntityDialogCallback<User>() {
+                    @Override
+                    public void onSave(User user, Object... params) {
+                        ServiceFacade.getUserService().save(user);
+                        hidePopupDialog();
+                        update(user);
+                    }
+
+                    @Override
+                    public void onCancel() {
+                        hidePopupDialog();
+                    }
+                });
+            }
+        };
         {
             TableColumn<User, String> column = new TableColumn<>("Login");
             column.setMinWidth(200);
@@ -46,35 +58,8 @@ public class UserPage extends BasePage {
             tableView.getColumns().add(column);
         }
 
-        tableView.setRowFactory(new Callback<TableView<User>, TableRow<User>>() {
-            @Override
-            public TableRow<User> call(final TableView<User> rawInvoiceProductItemTableView) {
-                final TableRow<User> row = new TableRow<>();
-                row.setOnMouseClicked(new EventHandler<MouseEvent>() {
-                    @Override
-                    public void handle(MouseEvent mouseEvent) {
-                        if (mouseEvent.getClickCount() == 2)
-                            showPopupDialog(userDialog);
-                        userDialog.bind(row.getItem(), new EntityDialogCallback<User>() {
-                            @Override
-                            public void onSave(User user, Object... params) {
-                                userService.save(user);
-                                hidePopupDialog();
-                                row.setItem(null);
-                            }
 
-                            @Override
-                            public void onCancel() {
-                                hidePopupDialog();
-                            }
-                        });
-                    }
-                });
-                return row;
-            }
-        });
-
-        tableView.setItems(FXCollections.observableArrayList(userService.load()));
+        tableView.setItems(FXCollections.observableArrayList(ServiceFacade.getUserService().load()));
 
         userDialog = new UserDialog();
 
@@ -83,10 +68,8 @@ public class UserPage extends BasePage {
 
 
         ToolBar control = new ToolBar();
-        ImageView imageView = new ImageView(new Image("/styles/images/icon/add1-48x48.png"));
 
-        Button createUser = new Button(null, imageView);
-        createUser.setContentDisplay(ContentDisplay.RIGHT);
+        Button createUser = new Button(null, ImageFactory.createAdd48Icon());
 
         createUser.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
@@ -94,8 +77,8 @@ public class UserPage extends BasePage {
                 userDialog.bind(new User(), new EntityDialogCallback<User>() {
                     @Override
                     public void onSave(User user, Object... params) {
-                        userService.save(user);
-                        tableView.setItems(FXCollections.observableArrayList(userService.load()));
+                        ServiceFacade.getUserService().save(user);
+                        tableView.setItems(FXCollections.observableArrayList(ServiceFacade.getUserService().load()));
                         hidePopupDialog();
                     }
 

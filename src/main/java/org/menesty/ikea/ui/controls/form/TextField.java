@@ -25,9 +25,14 @@ public class TextField extends javafx.scene.control.TextField {
         super();
     }
 
-    public TextField(String s, String label) {
+    public TextField(String s, String label, boolean allowBlank) {
         super(s);
         this.label = label;
+        this.allowBlank = allowBlank;
+    }
+
+    public TextField(String s, String label) {
+        this(s, label, true);
     }
 
     public void setDelay(int sec) {

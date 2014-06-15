@@ -159,8 +159,7 @@ public abstract class OrderItemViewComponent extends BorderPane {
         toolBar.getItems().add(exportOrder);
 
         ImageView imageView = new ImageView(new Image("/styles/images/icon/ikea-32x32.png"));
-        exportToIkeaBtn = new Button("", imageView);
-        exportToIkeaBtn.setContentDisplay(ContentDisplay.RIGHT);
+        exportToIkeaBtn = new Button(null, imageView);
         exportToIkeaBtn.setTooltip(new Tooltip("Export CustomerOrder to IKEA"));
         exportToIkeaBtn.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {

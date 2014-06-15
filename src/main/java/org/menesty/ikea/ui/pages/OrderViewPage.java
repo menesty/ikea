@@ -199,7 +199,10 @@ public class OrderViewPage extends BasePage {
                     @Override
                     protected Void call() throws Exception {
                         try {
-                            ServiceFacade.getIkeaUserService().fillUser(currentOrder.getLackUser(), ProductInfo.Group.general(), ServiceFacade.getIkeaUserService().groupItems(storageLacks), logDialog);
+                            ServiceFacade.getIkeaUserService().fillUser(
+                                    currentOrder.getLackUser(), ProductInfo.Group.general(),
+                                    ServiceFacade.getIkeaUserService().groupItems(storageLacks), logDialog);
+
                         } catch (LoginIkeaException e) {
                             logDialog.addLog(e.getMessage());
                         } catch (IOException e) {
