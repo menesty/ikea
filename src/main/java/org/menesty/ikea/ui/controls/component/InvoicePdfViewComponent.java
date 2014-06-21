@@ -143,7 +143,17 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
         syncBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-                onSync(true);
+                Dialog.confirm("Warning", "Remote warehouse will be updated with new data.", new DialogCallback() {
+                    @Override
+                    public void onCancel() {
+
+                    }
+
+                    @Override
+                    public void onYes() {
+                        onSync(true);
+                    }
+                });
             }
         });
         syncBtn.setDisable(true);

@@ -38,13 +38,6 @@ public class IkeaUserService {
         }
     }
 
-    private <T extends UserProductInfo> void fillUser(CloseableHttpClient httpClient, final User user,
-                                                      final Collection<ProductInfo.Group> groups,
-                                                      final Map<ProductInfo.Group, List<T>> groupMap,
-                                                      final TaskProgressLog taskProgressLog) throws IOException {
-        fillUser(httpClient, user, groups, groupMap, null, taskProgressLog);
-    }
-
     private <T extends UserProductInfo> void fillUser(CloseableHttpClient httpClient,
                                                       final User user,
                                                       final Collection<ProductInfo.Group> groups,
@@ -52,7 +45,6 @@ public class IkeaUserService {
                                                       final Map<ProductInfo.Group, List<T>> subGroupMap,
                                                       final TaskProgressLog taskProgressLog) throws IOException {
 
-        prepareUserWorkSpace(httpClient, user, taskProgressLog);
         prepareUserWorkSpace(httpClient, user, taskProgressLog);
 
         taskProgressLog.addLog("Create list of categories ...");
@@ -72,17 +64,18 @@ public class IkeaUserService {
         logout(httpClient);
     }
 
-    public void fillOrder(CustomerOrder order, TaskProgressLog taskProgressLog) {
+   /* public void fillOrder(CustomerOrder order, TaskProgressLog taskProgressLog) {
         try (CloseableHttpClient httpClient = HttpClients.custom().build()) {
             try {
                 List<OrderItem> orderItems = ServiceFacade.getOrderItemService().loadBy(order);
 
-                Map<ProductInfo.Group, List<OrderItem>> groupMap = groupItems(OrderItemService.getByType(orderItems, OrderItem.Type.General));
+                Map<ProductInfo.Group, List<OrderItem>> groupMap = groupItems(OrderItemService.getByType(orderItems, Arrays.asList(OrderItem.Type.General)));
                 Map<ProductInfo.Group, List<OrderItem>> subGroupMap = new HashMap<>();
+
 
                 fillUser(httpClient, order.getGeneralUser(), ProductInfo.Group.general(), groupMap, subGroupMap, taskProgressLog);
 
-                subGroupMap.put(ProductInfo.Group.Combo, OrderItemService.getByType(orderItems, OrderItem.Type.Combo));
+                subGroupMap.put(ProductInfo.Group.Combo, OrderItemService.getByType(orderItems, Arrays.asList(OrderItem.Type.Combo)));
 
                 fillUser(httpClient, order.getComboUser(), subGroupMap.keySet(), subGroupMap, taskProgressLog);
 
@@ -97,7 +90,7 @@ public class IkeaUserService {
             e.printStackTrace();
         }
         taskProgressLog.done();
-    }
+    }*/
 
     private <T extends UserProductInfo> List<T> fillListWithProduct(CloseableHttpClient httpClient,
                                                                     final Category category, final List<T> list,
@@ -114,12 +107,14 @@ public class IkeaUserService {
             addProductToList(httpClient, category.id, prepareArtNumber(item.getArtNumber()), item.getCount());
 
         }
+
         return list.size() > 99 ? list.subList(99, list.size()) : null;
     }
 
     private String prepareArtNumber(String artNumber) {
         if (Character.isAlphabetic(artNumber.charAt(0)))
             return artNumber.substring(1);
+
         return artNumber;
     }
 
@@ -183,6 +178,7 @@ public class IkeaUserService {
 
     private void deleteList(CloseableHttpClient httpClient, String listId) throws IOException {
         HttpGet request = new HttpGet("http://www.ikea.com/webapp/wcs/stores/servlet/IrwDeleteShoppingList?langId=-27&storeId=19&slId=" + listId);
+
         try (CloseableHttpResponse response = httpClient.execute(request)) {
             EntityUtils.consume(response.getEntity());
         }
@@ -195,14 +191,13 @@ public class IkeaUserService {
 
         for (Element link : categories) {
             Matcher m = LIST_ID_PATTERN.matcher(link.attr("href"));
+
             if (m.find())
                 result.add(m.group(1));
-
         }
 
         return result;
     }
-
 
     private List<Category> createList(CloseableHttpClient httpClient, Collection<ProductInfo.Group> groups) throws IOException {
         for (ProductInfo.Group group : groups) {
@@ -221,19 +216,16 @@ public class IkeaUserService {
             List<String> ids = getCategoriesIds(html);
             Document document = Jsoup.parse(html);
 
-            for (String id : ids) {
+            for (String id : ids)
                 try {
                     ProductInfo.Group group = ProductInfo.Group.valueOf(document.select("#listId" + id).text());
                     categories.add(new Category(group, id));
-
                 } catch (Exception e) {
-
+                    //skip
                 }
-            }
         }
 
         return categories;
-
     }
 
     private void logout(CloseableHttpClient httpClient) throws IOException {

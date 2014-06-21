@@ -301,12 +301,13 @@ public class OrderViewPage extends BasePage {
                         hidePopupDialog();
                     }
                 };
+
                 OrderViewPage.this.showPopupDialog(logDialog);
                 try {
                     new Thread(new Task<Void>() {
                         @Override
                         protected Void call() throws Exception {
-                            ServiceFacade.getIkeaUserService().fillOrder(currentOrder, logDialog);
+                            ServiceFacade.getNewOrderFillService().fillOrder(currentOrder, logDialog);
                             return null;
                         }
                     }).start();
@@ -509,7 +510,7 @@ public class OrderViewPage extends BasePage {
         loadingPane.bindTask(loadService);
         loadService.restart();
 
-        orderItemViewComponent.disableIkeaExport(currentOrder.getGeneralUser() == null || currentOrder.getComboUser() == null);
+        orderItemViewComponent.disableIkeaExport(currentOrder.getUsers().size() == 0);
         storageLackItemViewComponent.disableIkeaExport(currentOrder.getLackUser() == null);
 
         orderItemTab.setText(currentOrder.getName() + " - " + orderItemTab.getText());

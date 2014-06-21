@@ -163,8 +163,6 @@ public class ProductDialog extends BaseDialog {
         private TextField uaName;
 
         public ProductForm() {
-
-
             addRow("Product Id", productIdField = new ProductIdField());
             productIdField.getField().setDisable(true);
 
@@ -179,6 +177,7 @@ public class ProductDialog extends BaseDialog {
                     shortNameCount.setText(shortName.getText().length() + "");
                 }
             });
+
             HBox.setHgrow(shortName, Priority.ALWAYS);
             hbox.getChildren().addAll(shortName, shortNameCount = new Label());
             shortNameCount.setMaxWidth(20);
@@ -209,11 +208,26 @@ public class ProductDialog extends BaseDialog {
             priceBox.getChildren().addAll(price, back);
             addRow("Price", priceBox);
 
-
             group = new ComboBox<>();
             group.setId("uneditable-combobox");
             group.setPromptText("Select group");
-            group.setItems(FXCollections.observableArrayList(ProductInfo.Group.values()));
+
+
+            group.setCellFactory(new Callback<ListView<ProductInfo.Group>, ListCell<ProductInfo.Group>>() {
+                @Override
+                public ListCell<ProductInfo.Group> call(ListView<ProductInfo.Group> groupListView) {
+                    return new ListCell<ProductInfo.Group>() {
+                        @Override
+                        protected void updateItem(ProductInfo.Group group, boolean b) {
+                            super.updateItem(group, b);
+
+                            if (group != null)
+                                setText(group.getTitle());
+                        }
+                    };
+                }
+            });
+            group.setItems(FXCollections.observableArrayList(ProductInfo.Group.general()));
             group.setMinWidth(200);
             addRow("Group", group);
 
@@ -339,8 +353,8 @@ public class ProductDialog extends BaseDialog {
         if (hasParts) {
             subProductTableView.setItems(FXCollections.observableArrayList(productInfo.getParts()));
             subProductTableView.getItems().add(0, new ProductPart(0, currentProductInfo));
-            if(!containRaw(subProductTableView))
-            addRow(rowCount() - 1, subProductTableView);
+            if (!containRaw(subProductTableView))
+                addRow(rowCount() - 1, subProductTableView);
         } else
             removeRow(subProductTableView);
 

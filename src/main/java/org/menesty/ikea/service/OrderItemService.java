@@ -34,11 +34,11 @@ public class OrderItemService extends Repository<OrderItem> {
             commit();
     }
 
-    public static List<OrderItem> getByType(List<OrderItem> orderItems, OrderItem.Type type) {
+    public static List<OrderItem> getByType(List<OrderItem> orderItems, List<OrderItem.Type> types) {
         List<OrderItem> result = new ArrayList<>();
 
         for (OrderItem orderItem : orderItems)
-            if (type == orderItem.getType())
+            if (types.contains(orderItem.getType()))
                 result.add(orderItem);
 
         return result;

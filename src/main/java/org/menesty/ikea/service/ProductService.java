@@ -242,7 +242,7 @@ public class ProductService extends Repository<ProductInfo> {
                 breadCrumbs.contains("Łyżka do butów") ||
                 breadCrumbs.contains("Pojemnik na ubran") || breadCrumbs.contains("Budzik") || breadCrumbs.contains("Okablowanie i akcesoria")
                 )
-            return ProductInfo.Group.Storing;
+            return ProductInfo.Group.BathroomStoring;
         else if (breadCrumbs.contains("Dekor") || breadCrumbs.contains("dekor") || breadCrumbs.contains("Karneciki") || breadCrumbs.contains("Lustra"))
             return ProductInfo.Group.Decor;
 
@@ -251,15 +251,15 @@ public class ProductService extends Repository<ProductInfo> {
                 breadCrumbs.contains("tekstylia do jadalni ") || breadCrumbs.contains("ciast"))
             return ProductInfo.Group.Kitchen;
         else if (breadCrumbs.contains("łazienk") || breadCrumbs.contains("Łazienka"))
-            return ProductInfo.Group.Bathroom;
+            return ProductInfo.Group.BathroomStoring;
         else if (breadCrumbs.contains("Poduszki") || breadCrumbs.contains("poszewki") || breadCrumbs.contains("Dywany") ||
                 breadCrumbs.contains("Kołdry") || breadCrumbs.contains("Pościel") || breadCrumbs.contains("Narzuty") ||
                 breadCrumbs.contains("Tkanin") || breadCrumbs.contains("Zasłony i rolety") || breadCrumbs.contains("Koce") || breadCrumbs.contains("Ochraniacze na materace"))
             return ProductInfo.Group.Textile;
         else if (breadCrumbs.contains("Bezpieczeństwo") || breadCrumbs.contains("IKEA FAMILY") || breadCrumbs.contains("AGD / Przechow") || breadCrumbs.contains("Rozwiązania mobilne") || breadCrumbs.contains("Rozwiązania na ścian"))
-            return ProductInfo.Group.Family;
+            return ProductInfo.Group.FamilyKids;
         else if (content.contains("dziec"))
-            return ProductInfo.Group.Kids;
+            return ProductInfo.Group.FamilyKids;
         else if (content.contains("Dekor") || content.contains("dekor"))
             return ProductInfo.Group.Decor;
         else if (weight != 0 && weight > 5) return ProductInfo.Group.Full;

@@ -1,3 +1,4 @@
+
 /*
  * Copyright (c) 2008, 2012 Oracle and/or its affiliates.
  * All rights reserved. Use is subject to license terms.
@@ -717,6 +718,9 @@
 .white-border {
     -fx-border-color: #ffffff;
     -fx-border-radius: 2, 2, 2, 2;
+}
+.gray-border {
+    -fx-border-color: #919191;
 }
 
 .pagination{

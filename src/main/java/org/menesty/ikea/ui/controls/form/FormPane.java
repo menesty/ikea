@@ -1,14 +1,20 @@
 package org.menesty.ikea.ui.controls.form;
 
+import javafx.scene.Node;
 import org.menesty.ikea.ui.layout.RowPanel;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class FormPane extends RowPanel {
-    private List<TextField> fields = new ArrayList<>();
+    private List<Field> fields = new ArrayList<>();
 
-    public void add(TextField field) {
+    public <T extends Node & Field> void add(T field, int span) {
+        fields.add(field);
+        addRow(field, span);
+    }
+
+    public <T extends Node & Field> void add(T field) {
         fields.add(field);
         addRow(field.getLabel(), field);
     }
@@ -16,7 +22,7 @@ public class FormPane extends RowPanel {
     public boolean isValid() {
         boolean result = true;
 
-        for (TextField field : fields)
+        for (Field field : fields)
             if (!field.isValid())
                 result = false;
 
@@ -24,7 +30,7 @@ public class FormPane extends RowPanel {
     }
 
     public void reset() {
-        for (TextField field : fields)
+        for (Field field : fields)
             field.reset();
     }
 }

@@ -152,4 +152,12 @@ public class ImageFactory {
     public static ImageView createShopIcon72() {
         return new ImageView(new Image("/styles/images/icon/shop-72x72.png"));
     }
+
+    public static ImageView createAdd16Icon() {
+        return new ImageView(new Image("/styles/images/icon/add-16x16.png"));
+    }
+
+    public static ImageView createDelete16Icon() {
+        return new ImageView(new Image("/styles/images/icon/delete-16x16.png"));
+    }
 }

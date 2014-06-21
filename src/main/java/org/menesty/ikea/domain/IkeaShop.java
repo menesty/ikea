@@ -29,4 +29,19 @@ public class IkeaShop extends Identifiable {
     public void setShopId(int shopId) {
         this.shopId = shopId;
     }
+
+    @Override
+    public String toString() {
+        return name;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Identifiable)) return false;
+
+        Identifiable that = (Identifiable) o;
+
+        return !getId().equals(that.getId());
+    }
 }

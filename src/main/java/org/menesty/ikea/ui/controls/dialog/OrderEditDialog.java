@@ -4,29 +4,23 @@ import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.TextField;
+import org.menesty.ikea.db.DatabaseService;
 import org.menesty.ikea.domain.CustomerOrder;
+import org.menesty.ikea.domain.IkeaShop;
 import org.menesty.ikea.domain.User;
-import org.menesty.ikea.service.UserService;
-import org.menesty.ikea.ui.layout.RowPanel;
-import org.menesty.ikea.ui.pages.EntityDialogCallback;
+import org.menesty.ikea.service.ServiceFacade;
+import org.menesty.ikea.ui.controls.BaseEntityDialog;
+import org.menesty.ikea.ui.controls.form.FormPane;
+import org.menesty.ikea.ui.controls.form.ListEditField;
+import org.menesty.ikea.ui.controls.form.TextField;
 
 import java.util.List;
+import java.util.concurrent.Callable;
 
-public class OrderEditDialog extends BaseDialog {
-
+public class OrderEditDialog extends BaseEntityDialog<CustomerOrder> {
     private OrderForm form;
 
-    private UserService userService;
-
-    private CustomerOrder currentEntity;
-
-    private EntityDialogCallback<CustomerOrder> callback;
-
-
     public OrderEditDialog() {
-        userService = new UserService();
-
         okBtn.setDisable(true);
         setTitle("Edit order");
 
@@ -36,79 +30,101 @@ public class OrderEditDialog extends BaseDialog {
     }
 
     @Override
-    public void onOk() {
-        currentEntity.setName(form.getOrderName());
-        currentEntity.setGeneralUser(form.getGeneralUser());
-        currentEntity.setComboUser(form.getComboUser());
-        currentEntity.setLackUser(form.getLackUser());
-        onSave(currentEntity);
+    protected CustomerOrder collect() {
+        entityValue.setName(form.getOrderName());
+        entityValue.setUsers(form.getUsers());
+        entityValue.setIkeaShops(form.getShops());
+        entityValue.setLackUser(form.getLackUser());
+        return entityValue;
     }
 
     @Override
-    public void onCancel() {
-        if (callback != null)
-            callback.onCancel();
-    }
+    protected void populate(CustomerOrder entityValue) {
+        form.setOrderName(entityValue.getName());
+        form.setUsers(entityValue.getUsers());
+        form.setShops(entityValue.getIkeaShops());
+        form.setLackUser(entityValue.getLackUser());
 
-    public void bind(CustomerOrder entity, EntityDialogCallback<CustomerOrder> callback) {
-        currentEntity = entity;
-        form.setOrderName(entity.getName());
-        form.setComboUser(entity.getComboUser());
-        form.setGeneralUser(entity.getGeneralUser());
-        form.setLackUser(entity.getLackUser());
-        this.callback = callback;
+        DatabaseService.runInTransaction(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                form.setChoiceUsers(ServiceFacade.getUserService().load(false));
+                form.setChoiceShops(ServiceFacade.getIkeaShopService().load());
+                form.setLackUsers(ServiceFacade.getUserService().load(false));
+                return null;
+            }
+        });
     }
 
     @Override
-    public void onShow() {
-        form.setGeneralUsers(userService.load(false));
-        form.setComboUsers(userService.load(true));
-        form.setLackUsers(userService.load(false));
+    public boolean isValid() {
+        return form.isValid();
     }
 
-    private void onSave(CustomerOrder currentEntity) {
-        if (callback != null)
-            callback.onSave(currentEntity);
+    @Override
+    public void reset() {
+        form.reset();
     }
 
-    private class OrderForm extends RowPanel {
-        private final ComboBox<User> generalUsers;
-        private final ComboBox<User> comboUsers;
+    private class OrderForm extends FormPane {
+        private final ListEditField<User> userListView;
+        private final ListEditField<IkeaShop> ikeaShopView;
+
         private final ComboBox<User> lackUsers;
 
         TextField orderName;
 
-
-        public void setGeneralUsers(List<User> list) {
-            generalUsers.setItems(FXCollections.observableArrayList(list));
+        public void setChoiceUsers(List<User> list) {
+            userListView.setChoiceList(list);
         }
 
-        public void setComboUsers(List<User> list) {
-            comboUsers.setItems(FXCollections.observableArrayList(list));
+        public void setChoiceShops(List<IkeaShop> shops) {
+            ikeaShopView.setChoiceList(shops);
         }
 
         public void setLackUsers(List<User> list) {
             lackUsers.setItems(FXCollections.observableArrayList(list));
         }
 
+        public void setUsers(List<User> users) {
+            userListView.setValue(users);
+        }
+
+        public void setShops(List<IkeaShop> shops) {
+            ikeaShopView.setValue(shops);
+        }
+
+        public List<User> getUsers() {
+            return userListView.getValues();
+        }
+
+        public List<IkeaShop> getShops() {
+            return ikeaShopView.getValues();
+        }
+
         public String getOrderName() {
             return orderName.getText();
         }
 
-
         public OrderForm() {
-            addRow("Name", orderName = new TextField());
+            add(orderName = new TextField(null, "Name", false));
             orderName.setPrefColumnCount(20);
 
-            addRow("General User", generalUsers = new ComboBox<>());
-            generalUsers.setId("uneditable-combobox");
-            generalUsers.setPromptText("Select user");
-            generalUsers.setPrefWidth(200);
+            add(userListView = new ListEditField<User>("Users", false) {
+                @Override
+                public boolean isValid() {
+                    boolean result = super.isValid();
 
-            addRow("Combo User", comboUsers = new ComboBox<>());
-            comboUsers.setId("uneditable-combobox");
-            comboUsers.setPromptText("Select user");
-            comboUsers.setPrefWidth(200);
+                    if (result)
+                        super.setValid(result = this.getValues().size() >= ikeaShopView.getValues().size());
+
+                    return result;
+                }
+            }, 2);
+            userListView.setMaxHeight(120);
+
+            add(ikeaShopView = new ListEditField<>("Shops", false), 2);
+            ikeaShopView.setMaxHeight(120);
 
             addRow("Lack User", lackUsers = new ComboBox<>());
             lackUsers.setId("uneditable-combobox");
@@ -123,15 +139,6 @@ public class OrderEditDialog extends BaseDialog {
                     );
                 }
             });
-
-        }
-
-        public User getComboUser() {
-            return comboUsers.getSelectionModel().getSelectedItem();
-        }
-
-        public User getGeneralUser() {
-            return generalUsers.getSelectionModel().getSelectedItem();
         }
 
         public User getLackUser() {
@@ -142,18 +149,9 @@ public class OrderEditDialog extends BaseDialog {
             this.orderName.setText(orderName);
         }
 
-        public void setComboUser(User user) {
-            this.comboUsers.getSelectionModel().select(user);
-        }
-
-        public void setGeneralUser(User user) {
-            this.generalUsers.getSelectionModel().select(user);
-        }
-
-        public void setLackUser(User user){
+        public void setLackUser(User user) {
             this.lackUsers.getSelectionModel().select(user);
         }
-
 
     }
 

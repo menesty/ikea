@@ -16,4 +16,5 @@ public class Identifiable {
     public void setId(Integer id) {
         this.id = id;
     }
+
 }

@@ -14,10 +14,11 @@ public class CustomerOrder extends Identifiable {
     @ElementCollection
     private List<String> parseWarnings = new ArrayList<>();
 
-    @ManyToOne
-    private User generalUser;
-    @ManyToOne
-    private User comboUser;
+    @OneToMany
+    private List<User> users;
+    @OneToMany
+    private List<IkeaShop> ikeaShops;
+
     @ManyToOne
     private User lackUser;
 
@@ -67,20 +68,19 @@ public class CustomerOrder extends Identifiable {
         this.name = name;
     }
 
-    public User getGeneralUser() {
-        return generalUser;
+    public List<User> getUsers() {
+        return users;
     }
 
-    public void setGeneralUser(User generalUser) {
-        this.generalUser = generalUser;
+    public void setUsers(List<User> users) {
+        this.users = users;
     }
 
-    public User getComboUser() {
-        return comboUser;
+    public List<IkeaShop> getIkeaShops() {
+        return ikeaShops;
     }
 
-    public void setComboUser(User comboUser) {
-        this.comboUser = comboUser;
+    public void setIkeaShops(List<IkeaShop> ikeaShops) {
+        this.ikeaShops = ikeaShops;
     }
-
 }

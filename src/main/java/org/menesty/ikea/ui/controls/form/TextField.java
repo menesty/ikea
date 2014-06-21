@@ -9,7 +9,7 @@ import javafx.event.EventHandler;
 import javafx.util.Duration;
 import org.apache.commons.lang.StringUtils;
 
-public class TextField extends javafx.scene.control.TextField {
+public class TextField extends javafx.scene.control.TextField implements Field {
 
     private Timeline delayTimeLine;
 
@@ -60,21 +60,28 @@ public class TextField extends javafx.scene.control.TextField {
         textProperty().addListener(invalidationListener);
     }
 
+    @Override
     public boolean isValid() {
         boolean result = true;
         getStyleClass().removeAll("validation-succeed", "validation-error");
 
         if (!allowBlank) {
-            result = StringUtils.isNotBlank(getText());
+            setValid(result = StringUtils.isNotBlank(getText()));
             getStyleClass().remove("white-border");
-
-            if (result)
-                getStyleClass().add("validation-succeed");
-            else
-                getStyleClass().add("validation-error");
         }
 
         return result;
+    }
+
+    public void setValid(boolean valid) {
+        getStyleClass().removeAll("validation-succeed", "validation-error");
+        getStyleClass().remove("white-border");
+
+        if (valid)
+            getStyleClass().add("validation-succeed");
+        else
+            getStyleClass().add("validation-error");
+
     }
 
     public void setAllowBlank(boolean allowBlank) {
@@ -102,6 +109,7 @@ public class TextField extends javafx.scene.control.TextField {
         this.label = label;
     }
 
+    @Override
     public void reset() {
         setText(null);
 

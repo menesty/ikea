@@ -3,7 +3,7 @@ package org.menesty.ikea.domain;
 import javax.persistence.*;
 
 @Entity
-public class User extends Identifiable{
+public class User extends Identifiable {
 
 
     private String login;
@@ -48,5 +48,15 @@ public class User extends Identifiable{
     @Override
     public String toString() {
         return login;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Identifiable)) return false;
+
+        Identifiable that = (Identifiable) o;
+
+        return (!getId().equals(that.getId()));
     }
 }

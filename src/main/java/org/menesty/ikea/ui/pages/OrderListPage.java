@@ -15,7 +15,6 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.util.Callback;
 import org.menesty.ikea.IkeaApplication;
@@ -31,6 +30,7 @@ import org.menesty.ikea.ui.controls.MToolBar;
 import org.menesty.ikea.ui.controls.dialog.Dialog;
 import org.menesty.ikea.ui.controls.dialog.OrderCreateDialog;
 import org.menesty.ikea.ui.controls.dialog.OrderEditDialog;
+import org.menesty.ikea.ui.controls.table.component.BaseTableView;
 import org.menesty.ikea.util.ColumnUtil;
 
 import java.io.File;
@@ -123,36 +123,25 @@ public class OrderListPage extends BasePage {
         createdDate.setMinWidth(200);
         createdDate.setCellValueFactory(ColumnUtil.<OrderTableItem>dateColumn("order.createdDate"));
 
-        TableView<OrderTableItem> tableView = new TableView<>();
-
-        tableView.setRowFactory(new Callback<TableView<OrderTableItem>, TableRow<OrderTableItem>>() {
+        TableView<OrderTableItem> tableView = new BaseTableView<OrderTableItem>() {
             @Override
-            public TableRow<OrderTableItem> call(final TableView<OrderTableItem> tableView) {
-                final TableRow<OrderTableItem> row = new TableRow<>();
-                row.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            protected void onRowDoubleClick(final TableRow<OrderTableItem> row) {
+                showPopupDialog(getEditDialog());
+                getEditDialog().bind(row.getItem().getOrder(), new EntityDialogCallback<CustomerOrder>() {
                     @Override
-                    public void handle(MouseEvent mouseEvent) {
-                        if (mouseEvent.getClickCount() == 2 && row.getItem() != null) {
-                            showPopupDialog(getEditDialog());
-                            getEditDialog().bind(row.getItem().getOrder(), new EntityDialogCallback<CustomerOrder>() {
-                                @Override
-                                public void onSave(CustomerOrder user, Object... params) {
-                                    ServiceFacade.getOrderService().save(user);
-                                    hidePopupDialog();
-                                    row.setItem(null);
-                                }
+                    public void onSave(CustomerOrder entity, Object... params) {
+                        row.getItem().setOrder(ServiceFacade.getOrderService().save(entity));
+                        hidePopupDialog();
+                        update(row.getItem());
+                    }
 
-                                @Override
-                                public void onCancel() {
-                                    hidePopupDialog();
-                                }
-                            });
-                        }
+                    @Override
+                    public void onCancel() {
+                        hidePopupDialog();
                     }
                 });
-                return row;
             }
-        });
+        };
 
         tableView.getColumns().addAll(checked, orderName, createdDate);
 

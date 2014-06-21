@@ -13,16 +13,14 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.menesty.ikea.IkeaApplication;
-import org.menesty.ikea.domain.CustomerOrder;
 import org.menesty.ikea.ui.controls.pane.LoadingPane;
-import org.menesty.ikea.ui.pages.EntityDialogCallback;
 
 /**
  * User: Menesty
  * Date: 10/14/13
  * Time: 1:11 PM
  */
-public class BaseDialog<T> extends StackPane {
+public class BaseDialog extends StackPane {
 
     protected final HBox bottomBar;
 
@@ -38,16 +36,19 @@ public class BaseDialog<T> extends StackPane {
 
     private Label title;
 
-    private EntityDialogCallback<T> callback;
-
     public BaseDialog() {
+        this(true);
+    }
+
+    public BaseDialog(boolean showTitle) {
         super();
         content = new VBox();
 
         setId("ProxyDialog");
         setMaxSize(430, USE_PREF_SIZE);
 
-        addRow(title = createTitle(null));
+        if (showTitle)
+            addRow(title = createTitle(null));
         // block mouse clicks
         setOnMouseClicked(new EventHandler<MouseEvent>() {
             public void handle(MouseEvent t) {
@@ -147,5 +148,6 @@ public class BaseDialog<T> extends StackPane {
     public void setTitle(String title) {
         this.title.setText(title);
     }
+
 }
 

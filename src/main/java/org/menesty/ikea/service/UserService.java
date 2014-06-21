@@ -8,14 +8,18 @@ import java.util.List;
 public class UserService extends Repository<User> {
 
     public List<User> load(boolean comboUser) {
-        try {
-            begin();
-            TypedQuery<User> query = getEm().createQuery("select entity from " + entityClass.getName() + " entity where entity.comboUser = ?1", entityClass);
-            query.setParameter(1, comboUser);
-            return query.getResultList();
-        } finally {
-            commit();
-        }
+        boolean started = isActive();
 
+        if (!started)
+            begin();
+
+        TypedQuery<User> query = getEm().createQuery("select entity from " + entityClass.getName() + " entity where entity.comboUser = ?1", entityClass);
+        query.setParameter(1, comboUser);
+        List<User> result = query.getResultList();
+
+        if (!started)
+            commit();
+
+        return result;
     }
 }

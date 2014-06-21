@@ -12,11 +12,12 @@ public class IkeaUserFillProgressDialog extends BaseDialog implements TaskProgre
     private Label activeItem;
 
     public IkeaUserFillProgressDialog() {
+        super(false);
+
         setAllowAutoHide(false);
         cancelBtn.setVisible(false);
         okBtn.setVisible(false);
         addRow(logBox = new VBox(), bottomBar);
-
     }
 
 
