@@ -14,6 +14,7 @@ import org.menesty.ikea.ui.controls.search.ProductItemSearchData;
 import org.menesty.ikea.util.NumberUtil;
 
 import javax.persistence.NoResultException;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -220,7 +221,7 @@ public class ProductService extends Repository<ProductInfo> {
         String content = productDetails.select(".rightContent").text();
 
         if (breadCrumbs.contains("dziec"))
-            return ProductInfo.Group.Kids;
+            return ProductInfo.Group.FamilyKids;
         else if (breadCrumbs.contains("Oświe") || breadCrumbs.contains("Lamp") || breadCrumbs.contains("Klosz") || breadCrumbs.contains("Kabl") || breadCrumbs.contains("Żarówk"))
             return ProductInfo.Group.Lights;
         else if (breadCrumbs.contains("kosz") ||
@@ -518,6 +519,24 @@ public class ProductService extends Repository<ProductInfo> {
             rollback();
             return null;
         }
+    }
 
+    public void changeGroup(ProductInfo.Group fromGroup, ProductInfo.Group toGroup) {
+        boolean started = isActive();
+        try {
+            if (!started)
+                begin();
+
+            Query query = getEm().createQuery("update " + entityClass.getName() + " entity set entity.group = ?1 where entity.group = ?2");
+            query.setParameter(1, toGroup);
+            query.setParameter(2, fromGroup);
+
+            query.executeUpdate();
+
+            if (!started)
+                commit();
+        } catch (Exception e) {
+            rollback();
+        }
     }
 }

@@ -39,6 +39,13 @@ public class DatabaseService {
         }
     };
 
+    public static void setEntityManagerFactory(EntityManagerFactory entityManagerFactory) {
+        DatabaseService.entityManagerFactory = entityManagerFactory;
+
+        if (entityManagerFactory != null)
+            initialized = 1;
+    }
+
     public static Task<Void> init() {
         if (initialized >= 0)
             throw new RuntimeException("Already initialized or initialization in progress");

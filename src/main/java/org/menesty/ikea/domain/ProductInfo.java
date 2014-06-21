@@ -24,8 +24,8 @@ public class ProductInfo extends Identifiable {
     }
 
     public enum Group {
-        Regal("Regal"), Decor("Dekoracja"), Lights("Oświetlenie"), Kitchen("Kuchnia"), Bathroom("Łazienka", false),
-        Textile("Tekstylia"), Full(), Storing("Przechowywanie", false), Family("Family", false), Kids("dla Dzieci", false),
+        Regal("Regal"), Decor("Dekoracja"), Lights("Oświetlenie"), Kitchen("Kuchnia"), /*Bathroom("Łazienka", false),*/
+        Textile("Tekstylia"), Full(), /*Storing("Przechowywanie", false), Family("Family", false), Kids("dla Dzieci", false),*/
         FamilyKids("Family&Dzieci"), BathroomStoring("Łazienka&Przechowywanie"),
         Combo(), Unknown("Unknown", false);
 
