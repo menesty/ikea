@@ -42,6 +42,6 @@ public class IkeaShop extends Identifiable {
 
         Identifiable that = (Identifiable) o;
 
-        return !getId().equals(that.getId());
+        return getId().equals(that.getId());
     }
 }

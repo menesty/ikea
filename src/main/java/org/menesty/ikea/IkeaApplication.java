@@ -202,7 +202,11 @@ public class IkeaApplication extends Application {
     }
 
     public void hidePopupDialog() {
-        modalDimmer.hideModalMessage();
+        hidePopupDialog(true);
+    }
+
+    public void hidePopupDialog(boolean animate) {
+        modalDimmer.hideModalMessage(animate);
     }
 
     public Stage getStage() {

@@ -52,8 +52,8 @@ public class ListEditField<T> extends VBox implements Field {
                     T item = choiceComboBox.getSelectionModel().getSelectedItem();
 
                     if (item != null) {
-                        listView.getItems().add(item);
                         choiceComboBox.getItems().remove(item);
+                        listView.getItems().add(item);
                     }
                 }
             });

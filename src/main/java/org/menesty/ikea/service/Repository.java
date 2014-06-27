@@ -11,7 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Menesty on 12/21/13.
+ * Created by Menesty
+ * on 12/21/13.
  */
 public abstract class Repository<T extends Identifiable> {
     protected final Class<T> entityClass;
@@ -151,16 +152,21 @@ public abstract class Repository<T extends Identifiable> {
 
     public <E extends Identifiable> void remove(E entity, Class<E> clazz) {
         boolean started = isActive();
+        try {
+            if (!started)
+                begin();
 
-        if (!started)
-            begin();
+            Query query = getEm().createQuery("delete from " + clazz.getName() + " entity where entity.id=?1");
+            query.setParameter(1, entity.getId());
+            query.executeUpdate();
 
-        Query query = getEm().createQuery("delete from " + clazz.getName() + " entity where entity.id=?1");
-        query.setParameter(1, entity.getId());
-        query.executeUpdate();
+            if (!started)
+                commit();
 
-        if (!started)
-            commit();
+        } catch (Exception e) {
+            rollback();
+            throw new RuntimeException("Can not delete item");
+        }
     }
 
     protected void begin() {

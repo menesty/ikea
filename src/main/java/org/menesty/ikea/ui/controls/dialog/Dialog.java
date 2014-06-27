@@ -11,6 +11,7 @@ import org.menesty.ikea.ui.pages.DialogCallback;
  */
 public class Dialog {
     private static ConfirmDialog confirmDialog;
+    private static AlertDialog alertDialog;
 
     public static ConfirmDialog confirm(String message, DialogCallback callback) {
         return confirm("Warning", message, callback);
@@ -24,10 +25,40 @@ public class Dialog {
         return confirmDialog;
     }
 
-    static class ConfirmDialog extends BaseDialog {
+    public static void alert(String title, String message) {
+        if (alertDialog == null)
+            alertDialog = new AlertDialog();
+
+        alertDialog.show(title, message);
+    }
+
+    static class AlertDialog extends BaseDialog {
         private Label message;
 
-        private boolean isReleased = true;
+        public AlertDialog() {
+            setTitle("Warning");
+            okBtn.setText("Ok");
+            cancelBtn.setVisible(false);
+            addRow(message = new Label(), bottomBar);
+            okBtn.setDefaultButton(true);
+            setAllowAutoHide(false);
+        }
+
+        @Override
+        public void onOk() {
+            IkeaApplication.get().hidePopupDialog(false);
+        }
+
+        public void show(String title, String message) {
+            setTitle(title);
+            this.message.setText(message);
+
+            IkeaApplication.get().showPopupDialog(this);
+        }
+    }
+
+    static class ConfirmDialog extends BaseDialog {
+        private Label message;
 
         private DialogCallback callback;
 
@@ -38,6 +69,7 @@ public class Dialog {
             addRow(message = new Label(), bottomBar);
             cancelBtn.setDefaultButton(true);
             okBtn.setDefaultButton(false);
+            setAllowAutoHide(false);
         }
 
 
@@ -45,25 +77,24 @@ public class Dialog {
             setTitle(title);
             this.message.setText(message);
             this.callback = callback;
-            isReleased = false;
 
             IkeaApplication.get().showPopupDialog(this);
         }
 
         @Override
         public void onCancel() {
+            IkeaApplication.get().hidePopupDialog(false);
+
             if (callback != null) callback.onCancel();
-            isReleased = true;
-            IkeaApplication.get().hidePopupDialog();
+
         }
 
         @Override
         public void onOk() {
-            if (callback != null) callback.onYes();
-            isReleased = true;
-            IkeaApplication.get().hidePopupDialog();
-        }
+            IkeaApplication.get().hidePopupDialog(false);
 
+            if (callback != null) callback.onYes();
+        }
     }
 }
 

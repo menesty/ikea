@@ -5,7 +5,6 @@ import javax.persistence.*;
 @Entity
 public class User extends Identifiable {
 
-
     private String login;
 
     private String password;
@@ -57,6 +56,6 @@ public class User extends Identifiable {
 
         Identifiable that = (Identifiable) o;
 
-        return (!getId().equals(that.getId()));
+        return getId().equals(that.getId());
     }
 }
