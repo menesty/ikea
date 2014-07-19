@@ -116,7 +116,7 @@ public class OrderEditDialog extends BaseEntityDialog<CustomerOrder> {
                     boolean result = super.isValid();
 
                     if (result)
-                        super.setValid(result = this.getValues().size() >= ikeaShopView.getValues().size());
+                        super.setValid(result = this.getValues().size() > 1);
 
                     return result;
                 }

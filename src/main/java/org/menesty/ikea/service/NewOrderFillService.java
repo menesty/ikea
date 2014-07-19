@@ -86,15 +86,25 @@ public class NewOrderFillService {
 
         List<Map<String, List<StockItem>>> reduceResult = new ArrayList<>();
 
-        for (IkeaShop shop : shops) {
-            List<Map<String, List<StockItem>>> shopDataByUser = splitByGroupCount(getShopData(shop, data));
-            reduceResult.addAll(shopDataByUser);
-            needUsers += shopDataByUser.size();
+        Iterator<IkeaShop> shopIterator = shops.iterator();
+        List<Map<String, List<StockItem>>> shopDataByUser = splitByGroupCount(getShopData(shopIterator.next(), data));
+        reduceResult.addAll(shopDataByUser);
+
+
+        Map<String, List<StockItem>> joinShopData = new HashMap<>();
+
+        while (shopIterator.hasNext()) {
+            IkeaShop shop = shopIterator.next();
+            joinShopData.putAll(reduceGroups(shop.getName(), getShopData(shop, data)));
         }
 
-        if (needUsers > users.size()) {
+        if (data.size() != 0)
+            joinShopData.putAll(reduceGroups("unknown", convert(data)));
+
+        reduceResult.addAll(splitByGroupCount(joinShopData));
+
+        if (needUsers > users.size())
             throw new Exception("not enough users assign more user to this order");
-        }
 
         Iterator<User> userIterator = users.iterator();
 
@@ -102,6 +112,21 @@ public class NewOrderFillService {
             fillUser(httpClient, userIterator.next(), item, taskProgressLog);
 
     }
+
+    private Map<String, List<StockItem>> convert(Map<ProductInfo.Group, List<ProductAvailabilityInfo>> data) {
+        Map<String, List<StockItem>> result = new HashMap<>();
+        for (Map.Entry<ProductInfo.Group, List<ProductAvailabilityInfo>> entry : data.entrySet()) {
+            List<StockItem> targetResult = new ArrayList<>();
+
+            for (ProductAvailabilityInfo item : entry.getValue())
+                targetResult.add(item.getStockItem());
+
+            result.put(entry.getKey().getTitle(), targetResult);
+        }
+
+        return result;
+    }
+
 
     private void fillUser(CloseableHttpClient httpClient,
                           final User user,
@@ -126,6 +151,9 @@ public class NewOrderFillService {
     private void fillListWithProduct(CloseableHttpClient httpClient,
                                      final Category category, final List<StockItem> list,
                                      final TaskProgressLog taskProgressLog) throws IOException {
+        if (list == null)
+            return;
+
         int index = 0;
         taskProgressLog.addLog("Next group");
 
@@ -320,14 +348,14 @@ public class NewOrderFillService {
 
 
     private Map<String, List<StockItem>> getShopData(IkeaShop shop, Map<ProductInfo.Group, List<ProductAvailabilityInfo>> data) {
-
         Map<String, List<StockItem>> preparedData = new HashMap<>();
+        List<StockItem> extraGroupItems = new ArrayList<>();
 
         for (Map.Entry<ProductInfo.Group, List<ProductAvailabilityInfo>> entry : data.entrySet()) {
             List<List<ProductAvailabilityInfo>> groupList = splitList(entry.getValue(), 99);
 
             for (int i = 0; i < groupList.size(); i++) {
-                String keyGroupName = entry.getKey().name() + (i != 0 ? "_" + i : "");
+                String keyGroupName = entry.getKey().getTitle() + (i != 0 ? "_" + i : "");
 
                 List<StockItem> groupItems = new ArrayList<>();
                 preparedData.put(keyGroupName, groupItems);
@@ -336,18 +364,28 @@ public class NewOrderFillService {
                     double shopCount = info.getStockCount(shop.getShopId());
 
                     if (shopCount != 0) {
-                        if (info.getStockItem().count > shopCount) {
-                            groupItems.add(new StockItem(info.getStockItem().artNumber, shopCount));
+                        double currentCount = info.getStockItem().count > shopCount ? shopCount : info.getStockItem().count;
+
+                        List<StockItem> items = splitStockItem(info.getStockItem().artNumber, currentCount);
+
+                        groupItems.add(items.get(0));
+                        items.remove(0);
+
+                        if (items.size() != 0)
+                            extraGroupItems.addAll(items);
+
+                        if (info.getStockItem().count > shopCount)
                             info.setStockItem(new StockItem(info.getStockItem().artNumber, info.getStockItem().count - shopCount));
-                        } else {
-                            groupItems.add(new StockItem(info.getStockItem().artNumber, info.getStockItem().count));
-                            //remove from list
+                        else
                             entry.getValue().remove(info);
-                        }
+
                     }
                 }
             }
         }
+
+        if (extraGroupItems.size() != 0)
+            preparedData.put("ExtraGroup", extraGroupItems);
 
         //clean up map from empty list
         for (ProductInfo.Group key : new ArrayList<>(data.keySet()))
@@ -355,6 +393,20 @@ public class NewOrderFillService {
                 data.remove(key);
 
         return preparedData;
+    }
+
+    private List<StockItem> splitStockItem(String artNumber, double itemCount) {
+        List<StockItem> items = new ArrayList<>();
+        int count = (int) Math.ceil(itemCount / 99);
+
+        for (int i = 0; i < count; i++) {
+            int r = (i + 1) * 99;
+            double newCount = r > itemCount ? itemCount - i * 99 : 99;
+            StockItem item = new StockItem(artNumber, newCount);
+            items.add(item);
+        }
+
+        return items;
     }
 
     private <T> List<List<T>> splitList(List<T> data, int itemCount) {
@@ -448,8 +500,90 @@ public class NewOrderFillService {
         return result;
     }
 
-    public static void main(String... arg) throws IOException {
+    public static void main(String... arg) throws Exception {
+        NewOrderFillService service = new NewOrderFillService();
+        List<IkeaShop> ikeaShops = new ArrayList<>();
+        {
+            IkeaShop ikeaShop = new IkeaShop();
+            ikeaShop.setShopId(204);
+            ikeaShop.setName("Krakow");
+            ikeaShops.add(ikeaShop);
+        }
+        User user = new User();
+        user.setLogin("kra96@gmail.com");
+        user.setPassword("Mature65");
 
+        Map<ProductInfo.Group, List<OrderItem>> inputData = new HashMap<>();
+        List<OrderItem> orderItems = new ArrayList<>();
+        OrderItem item = new OrderItem();
+        item.setArtNumber("00133123");
+        item.setCount(120);
+        orderItems.add(item);
+
+        inputData.put(ProductInfo.Group.Kitchen, orderItems);
+
+
+        try (CloseableHttpClient httpClient = HttpClients.custom().build()) {
+            service.start(httpClient, ikeaShops, Arrays.asList(user), inputData, new TaskProgressLog() {
+                @Override
+                public void addLog(String log) {
+
+                }
+
+                @Override
+                public void updateLog(String log) {
+
+                }
+
+                @Override
+                public void done() {
+
+                }
+            });
+        }
+    }
+
+    private Map<String, List<StockItem>> reduceGroups(String groupName, Map<String, List<StockItem>> data) {
+        List<List<StockItem>> joinData = new ArrayList<>();
+
+        List<StockItem> currentList = new ArrayList<>();
+        List<StockItem> nextList = new ArrayList<>();
+        List<StockItem> unsorted = new ArrayList<>();
+        for (Map.Entry<String, List<StockItem>> entry : data.entrySet()) {
+            for (StockItem item : entry.getValue()) {
+                if (!currentList.contains(item))
+                    currentList.add(item);
+                else if (!nextList.contains(item))
+                    nextList.add(item);
+                else
+                    unsorted.add(item);
+
+                if (currentList.size() == 99) {
+                    joinData.add(currentList);
+                    currentList = nextList;
+                    nextList = new ArrayList<>();
+                }
+
+                if (nextList.size() == 99) {
+                    joinData.add(nextList);
+                    nextList = new ArrayList<>();
+                }
+            }
+        }
+        if (currentList.size() != 0)
+            joinData.add(currentList);
+        if (nextList.size() != 0)
+            joinData.add(nextList);
+
+        Map<String, List<StockItem>> newData = new HashMap<>();
+        int index = 0;
+
+        for (List<StockItem> list : joinData) {
+            index++;
+            newData.put(groupName + "_" + index, list);
+        }
+
+        return newData;
     }
 
     static class StockItem {
@@ -463,6 +597,16 @@ public class NewOrderFillService {
 
         public double getCount() {
             return count;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            StockItem stockItem = (StockItem) o;
+
+            return artNumber != null ? artNumber.equals(stockItem.artNumber) : stockItem.artNumber == null;
         }
     }
 

@@ -55,7 +55,10 @@ public class OrderListPage extends BasePage {
 
     public OrderListPage() {
         super(Pages.ORDERS.getTitle());
+    }
 
+    @Override
+    protected void initialize() {
         loadService = new LoadService();
         loadService.setOnSucceededListener(new SucceededListener<PagingResult<CustomerOrder>>() {
             @Override
@@ -99,8 +102,6 @@ public class OrderListPage extends BasePage {
     }
 
     private TableView<OrderTableItem> createTableView() {
-
-
         TableColumn<OrderTableItem, Boolean> checked = new TableColumn<>();
 
         checked.setMinWidth(50);
@@ -292,7 +293,6 @@ public class OrderListPage extends BasePage {
                     }
                 });
 
-
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -302,6 +302,7 @@ public class OrderListPage extends BasePage {
 
     private List<OrderTableItem> transform(List<CustomerOrder> orders) {
         List<OrderTableItem> result = new ArrayList<>();
+
         for (CustomerOrder order : orders)
             result.add(new OrderTableItem(false, order));
 
