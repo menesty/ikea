@@ -17,6 +17,8 @@ import org.menesty.ikea.ui.controls.dialog.ProductDialog;
 import org.menesty.ikea.util.ColumnUtil;
 import org.menesty.ikea.util.NumberUtil;
 
+import java.text.SimpleDateFormat;
+
 public class OrderItemTableView extends TableView<OrderItem> {
 
     public OrderItemTableView() {
@@ -126,6 +128,24 @@ public class OrderItemTableView extends TableView<OrderItem> {
                 public ObservableValue<Double> call(TableColumn.CellDataFeatures<OrderItem, Double> item) {
                     if (item.getValue().getProductInfo() != null)
                         return new PathProperty<>(item.getValue(), "productInfo.price");
+
+                    return new SimpleObjectProperty<>(null);
+                }
+            });
+
+            getColumns().add(column);
+        }
+
+        {
+            TableColumn<OrderItem, String> column = new TableColumn<>("Updated Price");
+            column.setMinWidth(80);
+            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<OrderItem, String>, ObservableValue<String>>() {
+                @Override
+                public ObservableValue<String> call(TableColumn.CellDataFeatures<OrderItem, String> item) {
+                    if (item.getValue().getProductInfo() != null && item.getValue().getProductInfo().getUpdatedPriceDate() != null) {
+                        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+                        return new SimpleStringProperty(sdf.format(item.getValue().getProductInfo().getUpdatedPriceDate()));
+                    }
 
                     return new SimpleObjectProperty<>(null);
                 }

@@ -45,6 +45,8 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
 
     private final static Pattern totalPattern = Pattern.compile("DO ZAPŁATY:(.*)");
 
+    private final BigDecimal MARGIN = BigDecimal.valueOf(1.02);
+
     public InvoicePdfService() {
     }
 
@@ -87,7 +89,9 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
 
                 double price = Double.valueOf(m.group(6).trim().replaceAll("[\\s\\u00A0]+", "").replace(",", "."));
 
-                product.setPrice(price);
+                product.setBasePrice(price);
+                double marginPrice = NumberUtil.round(BigDecimal.valueOf(price).multiply(MARGIN).doubleValue());
+                product.setPrice(marginPrice);
                 product.setWat(m.group(7));
                 product.setProductInfo(loadProductInfo(product));
                 product.invoicePdf = invoicePdf;

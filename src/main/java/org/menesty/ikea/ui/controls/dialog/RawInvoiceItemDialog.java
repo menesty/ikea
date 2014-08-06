@@ -196,6 +196,7 @@ public class RawInvoiceItemDialog extends BaseDialog {
     public void onOk() {
         currentItem.setOriginalArtNumber(form.getProductId());
         currentItem.setPrice(form.getPrice());
+        currentItem.setBasePrice(form.getPrice());
         currentItem.setName(form.getName());
         currentItem.setCount(form.getCount());
         currentItem.setProductInfo(form.getProductInfo());

@@ -434,6 +434,16 @@ public class OrderViewPage extends BasePage {
 
         rawInvoiceItemViewComponent = new RawInvoiceItemViewComponent(getStage()) {
             @Override
+            protected String getOrderName() {
+                return currentOrder.getName();
+            }
+
+            @Override
+            protected void exportEpp(String filePath) {
+                ServiceFacade.getInvoiceService().exportToEpp(currentOrder, filePath);
+            }
+
+            @Override
             protected void onSave(RawInvoiceProductItem item) {
                 ServiceFacade.getInvoicePdfService().save(item);
                 //reload InvoicePdf items

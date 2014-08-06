@@ -3,8 +3,14 @@ package org.menesty.ikea.ui.controls.component;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.TableRow;
+import javafx.scene.control.ToolBar;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.menesty.ikea.IkeaApplication;
@@ -15,6 +21,7 @@ import org.menesty.ikea.ui.controls.TotalStatusPanel;
 import org.menesty.ikea.ui.controls.dialog.RawInvoiceItemDialog;
 import org.menesty.ikea.ui.controls.table.RawInvoiceTableView;
 import org.menesty.ikea.ui.pages.EntityDialogCallback;
+import org.menesty.ikea.util.FileChooserUtil;
 
 import java.io.File;
 import java.math.BigDecimal;
@@ -34,55 +41,77 @@ public abstract class RawInvoiceItemViewComponent extends BorderPane {
         rawInvoiceItemDialog = new RawInvoiceItemDialog();
 
         ToolBar rawInvoiceControl = new ToolBar();
+        {
+            Button createRawInvoice = new Button(null, ImageFactory.createAdd32Icon());
+            createRawInvoice.setTooltip(new Tooltip("Create Invoice Item"));
+            createRawInvoice.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent actionEvent) {
+                    InvoicePdf invoicePdf = getInvoicePdf();
 
-        Button createRawInvoice = new Button(null, ImageFactory.createAdd32Icon());
-        createRawInvoice.setTooltip(new Tooltip("Create Invoice"));
-        createRawInvoice.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                InvoicePdf invoicePdf = getInvoicePdf();
+                    if (invoicePdf == null)
+                        return;
 
-                if(invoicePdf == null)
-                    return;
+                    rawInvoiceItemDialog.bind(new RawInvoiceProductItem(invoicePdf), new EntityDialogCallback<RawInvoiceProductItem>() {
+                        @Override
+                        public void onSave(RawInvoiceProductItem item, Object... params) {
+                            RawInvoiceItemViewComponent.this.onSave(item);
+                            IkeaApplication.get().hidePopupDialog();
+                        }
 
-                rawInvoiceItemDialog.bind(new RawInvoiceProductItem(invoicePdf), new EntityDialogCallback<RawInvoiceProductItem>() {
-                    @Override
-                    public void onSave(RawInvoiceProductItem item, Object... params) {
-                        RawInvoiceItemViewComponent.this.onSave(item);
-                        IkeaApplication.get().hidePopupDialog();
+                        @Override
+                        public void onCancel() {
+                            IkeaApplication.get().hidePopupDialog();
+                        }
+                    });
+
+                    IkeaApplication.get().showPopupDialog(rawInvoiceItemDialog);
+                }
+            });
+            rawInvoiceControl.getItems().add(createRawInvoice);
+        }
+        {
+            Button export = new Button(null, ImageFactory.createXlsExportIcon());
+            export.setTooltip(new Tooltip("Export to XLS"));
+            export.setOnAction(new EventHandler<ActionEvent>() {
+                public void handle(ActionEvent event) {
+                    FileChooser fileChooser = FileChooserUtil.getXls();
+                    //Show save file dialog
+                    File file = fileChooser.showSaveDialog(stage);
+
+                    if (file != null)
+                        onExport(rawInvoiceItemTableView.getItems(), file.getAbsolutePath());
+                }
+            });
+            rawInvoiceControl.getItems().add(export);
+        }
+
+        {
+            Region spacer = new Region();
+            HBox.setHgrow(spacer, Priority.ALWAYS);
+            rawInvoiceControl.getItems().add(spacer);
+        }
+
+        {
+            Button button = new Button(null, ImageFactory.createEppExport32Icon());
+            button.setTooltip(new Tooltip("Export All Invoice Items to EPP"));
+            button.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent actionEvent) {
+                    FileChooser fileChooser = FileChooserUtil.getEpp();
+                    fileChooser.setInitialFileName(getOrderName().replaceAll("[/-]", "_") + ".epp");
+
+                    File selectedFile = fileChooser.showSaveDialog(stage);
+
+                    if (selectedFile != null) {
+                        exportEpp(selectedFile.getAbsolutePath());
+                        FileChooserUtil.setDefaultDir(selectedFile);
                     }
+                }
+            });
+            rawInvoiceControl.getItems().add(button);
+        }
 
-                    @Override
-                    public void onCancel() {
-                        IkeaApplication.get().hidePopupDialog();
-                    }
-                });
-
-                IkeaApplication.get().showPopupDialog(rawInvoiceItemDialog);
-            }
-        });
-        rawInvoiceControl.getItems().add(createRawInvoice);
-
-
-        Button export = new Button(null, ImageFactory.createXlsExportIcon());
-        export.setContentDisplay(ContentDisplay.RIGHT);
-        export.setTooltip(new Tooltip("Export to XLS"));
-        export.setOnAction(new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent event) {
-                FileChooser fileChooser = new FileChooser();
-                //Set extension filter
-                FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("Xls (*.xlsx)", "*.xlsx");
-                fileChooser.getExtensionFilters().add(extFilter);
-                //Show save file dialog
-                File file = fileChooser.showSaveDialog(stage);
-
-                if (file != null)
-                    onExport(rawInvoiceItemTableView.getItems(), file.getAbsolutePath());
-            }
-        });
-
-
-        rawInvoiceControl.getItems().add(export);
 
         rawInvoiceItemTableView = new RawInvoiceTableView() {
             @Override
@@ -96,6 +125,10 @@ public abstract class RawInvoiceItemViewComponent extends BorderPane {
         setCenter(rawInvoiceItemTableView);
         setBottom(totalStatusPanel = new TotalStatusPanel());
     }
+
+    protected abstract String getOrderName();
+
+    protected abstract void exportEpp(String filePath);
 
     protected abstract void onSave(RawInvoiceProductItem item);
 

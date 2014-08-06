@@ -35,6 +35,8 @@ public class RawInvoiceProductItem extends Identifiable {
     @Column(name = "count_items", scale = 8, precision = 2)
     private double count;
 
+    private double basePrice;
+
     private double price;
 
     private String wat;
@@ -74,6 +76,14 @@ public class RawInvoiceProductItem extends Identifiable {
 
     public double getTotal() {
         return BigDecimal.valueOf(getPrice()).multiply(BigDecimal.valueOf(count)).setScale(2, RoundingMode.CEILING).doubleValue();
+    }
+
+    public double getBasePrice() {
+        return basePrice;
+    }
+
+    public void setBasePrice(double basePrice) {
+        this.basePrice = basePrice;
     }
 
     public String getWat() {

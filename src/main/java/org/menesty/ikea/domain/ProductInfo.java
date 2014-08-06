@@ -2,6 +2,7 @@ package org.menesty.ikea.domain;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -26,7 +27,7 @@ public class ProductInfo extends Identifiable {
     public enum Group {
         Regal("Regal"), Decor("Dekoracja"), Lights("Oświetlenie"), Kitchen("Kuchnia"), /*Bathroom("Łazienka", false),*/
         Textile("Tekstylia"), Full(), /*Storing("Przechowywanie", false), Family("Family", false), Kids("dla Dzieci", false),*/
-        FamilyKids("Family&Dzieci"), BathroomStoring("Łazienka&Przechowywanie"),
+        FamilyKids("Family_Dzieci"), BathroomStoring("Łazienka_Przechowywanie"),
         Combo(), Unknown("Unknown", false);
 
         private final boolean defaults;
@@ -73,6 +74,9 @@ public class ProductInfo extends Identifiable {
 
     private String uaName;
 
+    @Temporal(TemporalType.DATE)
+    private Date updatedPriceDate;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "group_item")
     private Group group = Group.Unknown;
@@ -109,6 +113,14 @@ public class ProductInfo extends Identifiable {
         for (ProductPart item : parts)
             item.parent = this;
         this.parts = parts;
+    }
+
+    public Date getUpdatedPriceDate() {
+        return updatedPriceDate;
+    }
+
+    public void setUpdatedPriceDate(Date updatedPriceDate) {
+        this.updatedPriceDate = updatedPriceDate;
     }
 
     public PackageInfo getPackageInfo() {
@@ -192,6 +204,7 @@ public class ProductInfo extends Identifiable {
 
     public void setPrice(double price) {
         this.price = price;
+        setUpdatedPriceDate(new Date());
     }
 
     public double getPrice() {

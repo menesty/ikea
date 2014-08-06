@@ -3,6 +3,7 @@ package org.menesty.ikea.service;
 import net.sf.jxls.transformer.XLSTransformer;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.menesty.ikea.domain.CustomerOrder;
 import org.menesty.ikea.processor.invoice.InvoiceItem;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.mvel.integration.VariableResolverFactory;
@@ -33,7 +34,7 @@ public class InvoiceService {
 
         try (Scanner scanner = new Scanner(getClass().getResourceAsStream(templateFile), "ISO-8859-2")) {
             while (scanner.hasNextLine())
-                text.append(scanner.nextLine() + NL);
+                text.append(scanner.nextLine()).append(NL);
 
             String template = new String(text.toString().getBytes("utf8"));
             Map<String, Object> map = new HashMap<>();
@@ -82,5 +83,15 @@ public class InvoiceService {
         } catch (InvalidFormatException | IOException e) {
             logger.log(Level.SEVERE, "exportToXls", e);
         }
+    }
+
+    public void exportToEpp(CustomerOrder order, String filePath) {
+        List<InvoiceItem> items = ServiceFacade.getInvoiceItemService().loadBy(order);
+        int index = 0;
+
+        for (InvoiceItem item : items)
+            item.setIndex(++index);
+
+        exportToEpp(order.getName(), items, filePath);
     }
 }
