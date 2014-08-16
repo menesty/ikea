@@ -22,6 +22,8 @@ public class CustomerOrder extends Identifiable {
     @ManyToOne
     private User lackUser;
 
+    private boolean synthetic;
+
     public boolean isOnline;
 
     public User getLackUser() {
@@ -45,6 +47,19 @@ public class CustomerOrder extends Identifiable {
 
     public void addWarning(String message) {
         parseWarnings.add(message);
+    }
+
+    public CustomerOrder(String name) {
+        this(name, new Date());
+    }
+
+    public boolean isSynthetic() {
+        return synthetic;
+    }
+
+    public CustomerOrder setSynthetic(boolean synthetic) {
+        this.synthetic = synthetic;
+        return this;
     }
 
     public CustomerOrder(String name, Date createdDate) {

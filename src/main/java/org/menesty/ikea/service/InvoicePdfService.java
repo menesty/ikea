@@ -7,6 +7,7 @@ import org.menesty.ikea.domain.InvoicePdf;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.exception.ProductFetchException;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
+import org.menesty.ikea.ui.CallBack;
 import org.menesty.ikea.util.NumberUtil;
 
 import javax.persistence.NoResultException;
@@ -227,16 +228,21 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
         return null;
     }
 
-    public List<InvoicePdf> createInvoicePdf(final CustomerOrder order, List<File> files) {
+    public List<InvoicePdf> createInvoicePdf(final CustomerOrder order, List<File> files,
+                                             CallBack<List<RawInvoiceProductItem>> callBack) {
         List<InvoicePdf> result = new ArrayList<>();
+        final List<RawInvoiceProductItem> itemResult = new ArrayList<>();
 
         for (File file : files)
             try {
-                result.add(createInvoicePdf(order, file.getName(), Files.newInputStream(file.toPath())));
+                InvoicePdf item = createInvoicePdf(order, file.getName(), Files.newInputStream(file.toPath()));
+                itemResult.addAll(item.getProducts());
+                result.add(item);
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
+        callBack.onResult(itemResult);
         return result;
     }
 

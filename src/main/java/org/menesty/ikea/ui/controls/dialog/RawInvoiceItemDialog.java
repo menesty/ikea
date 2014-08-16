@@ -2,7 +2,10 @@ package org.menesty.ikea.ui.controls.dialog;
 
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
 import org.apache.commons.lang.math.NumberUtils;
@@ -39,6 +42,8 @@ public class RawInvoiceItemDialog extends BaseDialog {
 
         private TextField name;
 
+        private CheckBox ikeaProduct;
+
         private DoubleTextField price;
 
         private DoubleTextField count;
@@ -50,49 +55,17 @@ public class RawInvoiceItemDialog extends BaseDialog {
         private ProductInfo productInfo;
 
         public RawInvoiceItemForm() {
-            addRow("Product Id", productIdField = new ProductIdField());
-
-            productIdField.setChangeListener(new InvalidationListener() {
+            final InvalidationListener invalidationListener = initListener();
+            addRow("Ikea Product", ikeaProduct = new CheckBox());
+            ikeaProduct.selectedProperty().addListener(new ChangeListener<Boolean>() {
                 @Override
-                public void invalidated(Observable observable) {
-                    if (silent)
-                        return;
-
-                    if (productIdField.getProductId() != null && productIdField.getProductId().length() == 8) {
-                        loadingPane.show();
-
-                        ProductInfo productInfo = null;
-
-                        try {
-                            productInfo = ServiceFacade.getProductService().loadOrCreate(productIdField.getProductId());
-                        } catch (ProductFetchException e) {
-                            Toast.makeText("Product not found", Toast.DURATION_LONG).show(getStage());
-                        }
-
-                        if (productInfo != null) {
-                            name.setText(productInfo.getName());
-                            price.setNumber(productInfo.getPrice());
-                            wat.setNumber(23);
-                        }
-
-                        RawInvoiceItemForm.this.productInfo = productInfo;
-
-                        loadingPane.hide();
-
-                    }
-
-                    String productId = productIdField.getProductId();
-
-                    if (productInfo == null || productId == null || productId.length() < 8) {
-                        detailPane.setDisable(true);
-                        okBtn.setDisable(true);
-                    } else {
-                        detailPane.setDisable(false);
-                        okBtn.setDisable(false);
-                    }
-
+                public void changed(ObservableValue<? extends Boolean> observableValue, Boolean aBoolean, Boolean aBoolean2) {
+                    invalidationListener.invalidated(null);
                 }
             });
+            addRow("Product Id", productIdField = new ProductIdField());
+
+            productIdField.setChangeListener(invalidationListener);
             productIdField.getField().addEventFilter(KeyEvent.KEY_TYPED, new EventHandler<KeyEvent>() {
                 public void handle(KeyEvent event) {
                     TextField field = productIdField.getField();
@@ -119,6 +92,55 @@ public class RawInvoiceItemDialog extends BaseDialog {
 
         }
 
+        private InvalidationListener initListener(){
+            return new InvalidationListener() {
+                @Override
+                public void invalidated(Observable observable) {
+                    if (silent)
+                        return;
+
+                    if (ikeaProduct.isSelected()) {
+                        if (productIdField.getProductId() != null && productIdField.getProductId().length() == 8) {
+                            loadingPane.show();
+
+                            ProductInfo productInfo = null;
+
+                            try {
+                                productInfo = ServiceFacade.getProductService().loadOrCreate(productIdField.getProductId());
+                            } catch (ProductFetchException e) {
+                                Toast.makeText("Product not found", Toast.DURATION_LONG).show(getStage());
+                            }
+
+                            if (productInfo != null) {
+                                name.setText(productInfo.getName());
+                                price.setNumber(productInfo.getPrice());
+                                wat.setNumber(23);
+                            }
+
+                            RawInvoiceItemForm.this.productInfo = productInfo;
+
+                            loadingPane.hide();
+
+                        }
+
+                        String productId = productIdField.getProductId();
+
+                        if (productInfo == null || productId == null || productId.length() < 8) {
+                            detailPane.setDisable(true);
+                            okBtn.setDisable(true);
+                        } else {
+                            detailPane.setDisable(false);
+                            okBtn.setDisable(false);
+                        }
+                    } else {
+                        detailPane.setDisable(false);
+                        okBtn.setDisable(false);
+                    }
+
+                }
+            };
+        }
+
         public void reset() {
             productInfo = null;
 
@@ -127,6 +149,7 @@ public class RawInvoiceItemDialog extends BaseDialog {
             price.setNumber(0d);
             name.setText(null);
             wat.setNumber(23);
+            ikeaProduct.setSelected(true);
 
         }
 
@@ -158,6 +181,10 @@ public class RawInvoiceItemDialog extends BaseDialog {
 
         double getCount() {
             return this.count.getNumber();
+        }
+
+        boolean isIkeaProduct() {
+            return ikeaProduct.isSelected();
         }
 
         int getWat() {
@@ -201,6 +228,7 @@ public class RawInvoiceItemDialog extends BaseDialog {
         currentItem.setCount(form.getCount());
         currentItem.setProductInfo(form.getProductInfo());
         currentItem.setWat(form.getWat() + "");
+        currentItem.setSynthetic(!form.isIkeaProduct());
 
         if (callback != null)
             callback.onSave(currentItem);

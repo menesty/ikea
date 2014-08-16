@@ -279,4 +279,8 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
             }
         });
     }
+
+    public Button getSyncBtn() {
+        return syncBtn;
+    }
 }

@@ -493,7 +493,7 @@ public abstract class EppViewComponent extends StackPane {
         String name = String.format("Zestaw IKEA %1$s", subName);
         String artNumber = artPrefix + "_" + subName.substring(0, 2) + "_" + (index + 1);
 
-        return InvoiceItem.get(artNumber, null, name, name, price, 23, "", 1, 1, 1, 1).setZestav(true);
+        return InvoiceItem.get(artNumber, "IKEA", null, name, name, price, 23, "", 1, 1, 1, 1).setZestav(true);
     }
 
     class LoadService extends AbstractAsyncService<List<InvoiceItem>> {

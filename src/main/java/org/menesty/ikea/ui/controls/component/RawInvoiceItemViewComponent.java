@@ -37,10 +37,13 @@ public abstract class RawInvoiceItemViewComponent extends BorderPane {
 
     private RawInvoiceItemDialog rawInvoiceItemDialog;
 
+    private ToolBar rawInvoiceControl;
+
+
     public RawInvoiceItemViewComponent(final Stage stage) {
         rawInvoiceItemDialog = new RawInvoiceItemDialog();
 
-        ToolBar rawInvoiceControl = new ToolBar();
+         rawInvoiceControl = new ToolBar();
         {
             Button createRawInvoice = new Button(null, ImageFactory.createAdd32Icon());
             createRawInvoice.setTooltip(new Tooltip("Create Invoice Item"));
@@ -85,6 +88,8 @@ public abstract class RawInvoiceItemViewComponent extends BorderPane {
             });
             rawInvoiceControl.getItems().add(export);
         }
+
+        disableControls(true);
 
         {
             Region spacer = new Region();
@@ -157,4 +162,8 @@ public abstract class RawInvoiceItemViewComponent extends BorderPane {
         this.artPrefix = artPrefix;
     }
 
+
+    public void disableControls(boolean disable) {
+        rawInvoiceControl.setDisable(disable);
+    }
 }

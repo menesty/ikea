@@ -126,7 +126,18 @@ public class OrderListPage extends BasePage {
 
         TableView<OrderTableItem> tableView = new BaseTableView<OrderTableItem>() {
             @Override
+            protected void onRowRender(TableRow<OrderTableItem> row, OrderTableItem newValue) {
+                row.getStyleClass().remove("productNotVerified");
+
+                if (newValue != null && row.getItem().getOrder().isSynthetic())
+                    row.getStyleClass().add("productNotVerified");
+            }
+
+            @Override
             protected void onRowDoubleClick(final TableRow<OrderTableItem> row) {
+                if (row.getItem().getOrder().isSynthetic())
+                    return;
+
                 showPopupDialog(getEditDialog());
                 getEditDialog().bind(row.getItem().getOrder(), new EntityDialogCallback<CustomerOrder>() {
                     @Override
@@ -221,11 +232,16 @@ public class OrderListPage extends BasePage {
             @Override
             public void onCreate(String orderName, String filePath) {
                 hidePopupDialog();
-                try {
-                    runTask(new CreateOrderTask(orderName, new FileInputStream(new File(filePath))));
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
+
+                if (filePath == null) {
+                    ServiceFacade.getOrderService().save(new CustomerOrder(orderName).setSynthetic(true));
+                    loadService.restart();
+                } else
+                    try {
+                        runTask(new CreateOrderTask(orderName, new FileInputStream(new File(filePath))));
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    }
             }
         });
     }

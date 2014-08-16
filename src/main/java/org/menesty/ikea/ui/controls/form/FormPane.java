@@ -9,6 +9,8 @@ import java.util.List;
 public class FormPane extends RowPanel {
     private List<Field> fields = new ArrayList<>();
 
+    private boolean showLabels = true;
+
     public <T extends Node & Field> void add(T field, int span) {
         fields.add(field);
         addRow(field, span);
@@ -16,7 +18,15 @@ public class FormPane extends RowPanel {
 
     public <T extends Node & Field> void add(T field) {
         fields.add(field);
-        addRow(field.getLabel(), field);
+
+        if (showLabels)
+            addRow(field.getLabel(), field);
+        else
+            addRow(field);
+    }
+
+    public void setShowLabels(boolean showLabels) {
+        this.showLabels = showLabels;
     }
 
     public boolean isValid() {

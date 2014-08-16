@@ -134,7 +134,12 @@ public class InvoiceItem extends Identifiable {
     }
 
     public double getMarginPercent() {
-        return round((getMargin() / getRetail()) * 100);
+        double result = getMargin() / getRetail();
+
+        if (Double.isNaN(result))
+            return 0;
+
+        return round(result * 100);
     }
 
     public double getMargin() {
@@ -230,14 +235,21 @@ public class InvoiceItem extends Identifiable {
 
 
     public static InvoiceItem get(ProductInfo productInfo, String artSuffix, double count, int box, int boxes) {
-        return get(productInfo.getOriginalArtNum(), artSuffix, productInfo.getName(), productInfo.getShortName(), productInfo.getPrice(), productInfo.getWat(), productInfo.getPackageInfo().size(), convertToKg(productInfo.getPackageInfo().getWeight()), count, box, boxes);
+        return get(productInfo.getOriginalArtNum(), "IKEA", artSuffix, productInfo.getName(), productInfo.getShortName(),
+                productInfo.getPrice(), productInfo.getWat(), productInfo.getPackageInfo().size(), convertToKg(productInfo.getPackageInfo().getWeight()), count, box, boxes);
     }
 
-    public static InvoiceItem get(String artNumber, String artSuffix, String name, String shortName, double price, int wat, String size, double weight, double count, int box, int boxes) {
+    public static InvoiceItem get(String artNumber, String artPrefix, String artSuffix, String name, String shortName,
+                                  double price, int wat, String size, double weight, double count, int box, int boxes) {
         InvoiceItem invoiceItem = new InvoiceItem();
         invoiceItem.setVisible(true);
         invoiceItem.name = name;
-        invoiceItem.artNumber = "IKEA_" + artNumber;
+
+        if (artSuffix != null && !artSuffix.isEmpty())
+            invoiceItem.artNumber = artPrefix + "_" + artNumber;
+        else
+            invoiceItem.artNumber = artNumber;
+
         invoiceItem.originArtNumber = artNumber;
         invoiceItem.shortName = shortName;
         invoiceItem.weight = weight;

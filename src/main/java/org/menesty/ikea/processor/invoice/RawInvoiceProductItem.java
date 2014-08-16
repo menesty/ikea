@@ -43,6 +43,8 @@ public class RawInvoiceProductItem extends Identifiable {
     @ManyToOne(fetch = FetchType.LAZY)
     public InvoicePdf invoicePdf;
 
+    private boolean synthetic;
+
     @ManyToOne
     private ProductInfo productInfo;
 
@@ -53,6 +55,14 @@ public class RawInvoiceProductItem extends Identifiable {
     private static final int MAX_DIMENSION = 450;
 
     private static final int MAX_WEIGHT = 3000;
+
+    public boolean isSynthetic() {
+        return synthetic;
+    }
+
+    public void setSynthetic(boolean synthetic) {
+        this.synthetic = synthetic;
+    }
 
     public ProductInfo getProductInfo() {
         return productInfo;
@@ -123,6 +133,9 @@ public class RawInvoiceProductItem extends Identifiable {
     }
 
     public boolean isSeparate() {
+        if (isSynthetic())
+            return true;
+
         PackageInfo packageInfo = getProductInfo().getPackageInfo();
 
         if (ProductInfo.Group.Textile == getProductInfo().getGroup())

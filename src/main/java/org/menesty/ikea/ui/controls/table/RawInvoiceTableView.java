@@ -121,9 +121,10 @@ public class RawInvoiceTableView extends TableView<RawInvoiceProductItem> {
                     @Override
                     public void changed(ObservableValue<? extends RawInvoiceProductItem> observableValue, RawInvoiceProductItem rawInvoiceProductItem, RawInvoiceProductItem newValue) {
                         row.getStyleClass().remove("productNotVerified");
-                        if (newValue != null)
-                            if (!newValue.getProductInfo().isVerified())
-                                row.getStyleClass().add("productNotVerified");
+
+                        if (newValue != null && newValue.getProductInfo() != null
+                                && !newValue.getProductInfo().isVerified())
+                            row.getStyleClass().add("productNotVerified");
                     }
                 });
                 return row;

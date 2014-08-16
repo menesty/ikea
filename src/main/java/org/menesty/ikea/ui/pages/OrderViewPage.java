@@ -5,27 +5,23 @@ import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
-import javafx.geometry.Orientation;
 import javafx.scene.Node;
-import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
-import javafx.scene.control.TableRow;
 import org.apache.commons.lang.StringUtils;
 import org.menesty.ikea.db.DatabaseService;
 import org.menesty.ikea.domain.*;
 import org.menesty.ikea.exception.LoginIkeaException;
-import org.menesty.ikea.processor.invoice.InvoiceItem;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.service.task.InvoicePdfSyncService;
 import org.menesty.ikea.service.task.OrderInvoiceSyncService;
+import org.menesty.ikea.ui.CallBack;
 import org.menesty.ikea.ui.TaskProgress;
 import org.menesty.ikea.ui.controls.component.*;
 import org.menesty.ikea.ui.controls.dialog.BaseDialog;
 import org.menesty.ikea.ui.controls.dialog.IkeaUserFillProgressDialog;
-import org.menesty.ikea.ui.controls.dialog.ProductDialog;
 import org.menesty.ikea.ui.controls.search.OrderItemSearchData;
 import org.menesty.ikea.util.NumberUtil;
 
@@ -47,17 +43,7 @@ public class OrderViewPage extends BasePage {
 
     private CustomerOrder currentOrder;
 
-    private InvoicePdfViewComponent invoicePdfViewComponent;
-
-    private ProductDialog productEditDialog;
-
-    private RawInvoiceItemViewComponent rawInvoiceItemViewComponent;
-
     private StorageLackItemViewComponent storageLackItemViewComponent;
-
-    private Tab orderItemTab;
-
-    private EppViewComponent eppViewComponent;
 
     private OrderInvoiceSyncService orderInvoiceSyncService;
 
@@ -74,6 +60,13 @@ public class OrderViewPage extends BasePage {
     private RawInvoiceItemSearchComponent rawInvoiceItemSearchComponent;
 
     private InvoicePdfSyncService invoicePdfSyncService;
+
+    private Tab storageTab;
+    private Tab storageComboTab;
+    private Tab orderItemTab;
+    private TabPane tabPanel;
+    private InvoiceComponent invoiceComponent;
+    private TabPane tabPane;
 
     public OrderViewPage() {
         super("CustomerOrder");
@@ -101,11 +94,10 @@ public class OrderViewPage extends BasePage {
             public void onSucceeded(final OrderData value) {
                 OrderViewPage.this.orderData = value;
 
+                invoiceComponent.setOrderData(orderData);
                 orderItemViewComponent.setItems(orderData.orderItems);
-                invoicePdfViewComponent.setItems(orderData.invoicePdfs);
 
                 updateInvoiceRawSearchTab();
-                updateRawInvoiceTableView();
             }
         });
 
@@ -135,7 +127,7 @@ public class OrderViewPage extends BasePage {
                     InvoicePdf invoicePdf = invoicePdfSyncService.getInvoice();
                     invoicePdf.setSync(true);
                     ServiceFacade.getInvoicePdfService().save(invoicePdf);
-                    invoicePdfViewComponent.update(invoicePdf);
+                    invoiceComponent.update(invoicePdf);
                 }
             }
         });
@@ -152,8 +144,8 @@ public class OrderViewPage extends BasePage {
 
     @Override
     public Node createView() {
-        productEditDialog = new ProductDialog();
-        return wrap(createInvoiceView());
+
+        return wrap(tabPanel = createInvoiceView());
     }
 
     private Tab createStorageComboTab() {
@@ -374,14 +366,19 @@ public class OrderViewPage extends BasePage {
     }
 
     private TabPane createInvoiceView() {
-        final TabPane tabPane = new TabPane();
+        tabPane = new TabPane();
 
         Tab invoiceTab = new Tab("Invoice");
         invoiceTab.setClosable(false);
-
-        invoicePdfViewComponent = new InvoicePdfViewComponent(getStage()) {
+        invoiceTab.setContent(invoiceComponent = new InvoiceComponent(getStage()) {
             @Override
-            protected void onSync(boolean clear) {
+            protected CustomerOrder getCustomerOrder() {
+                return currentOrder;
+            }
+        });
+        invoiceComponent.setListener(new InvoiceComponent.InvoiceComponentListener() {
+            @Override
+            public void onSync(boolean clear) {
                 orderInvoiceSyncService.setCustomerOrder(currentOrder);
                 orderInvoiceSyncService.setClear(clear);
 
@@ -390,28 +387,14 @@ public class OrderViewPage extends BasePage {
             }
 
             @Override
-            protected CustomerOrder getCustomerOrder() {
-                return currentOrder;
-            }
-
-            @Override
-            public void onDelete(List<InvoicePdf> items) {
-                ServiceFacade.getInvoicePdfService().removeAll(items);
-                orderData.invoicePdfs.removeAll(items);
-                invoicePdfViewComponent.setItems(orderData.invoicePdfs);
-                updateRawInvoiceTableView();
-            }
-
-            @Override
             public void onSave(InvoicePdf invoicePdf) {
-                ServiceFacade.getOrderService().save(invoicePdf);
                 loadingPane.bindTask(loadService);
                 loadService.restart();
             }
 
             @Override
-            public void onImport(List<File> files) {
-                runTask(new CreateInvoicePdfTask(files));
+            public void onImport(List<File> files, CallBack<List<RawInvoiceProductItem>> callBack) {
+                runTask(new CreateInvoicePdfTask(files, callBack));
             }
 
             @Override
@@ -422,93 +405,15 @@ public class OrderViewPage extends BasePage {
             }
 
             @Override
-            public void onSelect(InvoicePdf invoicePdf) {
-                updateRawInvoiceTableView(invoicePdf);
-            }
-        };
-
-        SplitPane splitPane = new SplitPane();
-        splitPane.setId("page-splitpane");
-        //splitPane.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-        splitPane.setOrientation(Orientation.VERTICAL);
-
-        rawInvoiceItemViewComponent = new RawInvoiceItemViewComponent(getStage()) {
-            @Override
-            protected String getOrderName() {
-                return currentOrder.getName();
-            }
-
-            @Override
-            protected void exportEpp(String filePath) {
-                ServiceFacade.getInvoiceService().exportToEpp(currentOrder, filePath);
-            }
-
-            @Override
-            protected void onSave(RawInvoiceProductItem item) {
-                ServiceFacade.getInvoicePdfService().save(item);
-                //reload InvoicePdf items
-                ServiceFacade.getInvoicePdfService().reloadProducts(getInvoicePdf());
-
+            public void onRawItemsUpdate() {
                 updateInvoiceRawSearchTab();
-                updateRawInvoiceTableView(getInvoicePdf());
             }
+        });
 
-            @Override
-            protected InvoicePdf getInvoicePdf() {
-                return invoicePdfViewComponent.getSelected();
-            }
+        tabPane.getTabs().addAll(orderItemTab = createOrderItemTab(), invoiceTab,
+                createInvoiceRawItemSearchTab(), storageTab = createStorageTab(),
+                storageComboTab = createStorageComboTab());
 
-            @Override
-            public void onExport(List<RawInvoiceProductItem> items, String path) {
-                ServiceFacade.getInvoiceService().exportToXls(items, path);
-            }
-
-            @Override
-            public void onRowDoubleClick(final TableRow<RawInvoiceProductItem> row) {
-                showPopupDialog(productEditDialog);
-                productEditDialog.bind(row.getItem().getProductInfo(), new EntityDialogCallback<ProductInfo>() {
-                    @Override
-                    public void onSave(ProductInfo productInfo, Object[] params) {
-                        ServiceFacade.getProductService().save(productInfo);
-
-                        if (!(Boolean) params[0])
-                            hidePopupDialog();
-
-                        row.setItem(null);
-                    }
-
-                    @Override
-                    public void onCancel() {
-                        hidePopupDialog();
-                    }
-                });
-            }
-
-        };
-
-        eppViewComponent = new EppViewComponent(getStage()) {
-            @Override
-            public void onChange(InvoicePdf invoicePdf) {
-                invoicePdfViewComponent.updateState();
-            }
-
-            @Override
-            public void export(String invoiceNumber, List<InvoiceItem> items, String path) {
-                ServiceFacade.getInvoiceService().exportToEpp(invoiceNumber, items, path);
-            }
-        };
-
-        SplitPane top = new SplitPane();
-        top.setDividerPosition(1, 0.40);
-        top.setOrientation(Orientation.HORIZONTAL);
-        top.getItems().addAll(invoicePdfViewComponent, rawInvoiceItemViewComponent);
-
-        splitPane.setDividerPosition(1, 0.40);
-        splitPane.getItems().addAll(top, eppViewComponent);
-
-        invoiceTab.setContent(splitPane);
-
-        tabPane.getTabs().addAll(orderItemTab = createOrderItemTab(), invoiceTab, createInvoiceRawItemSearchTab(), createStorageTab(), createStorageComboTab());
         return tabPane;
     }
 
@@ -524,30 +429,35 @@ public class OrderViewPage extends BasePage {
         storageLackItemViewComponent.disableIkeaExport(currentOrder.getLackUser() == null);
 
         orderItemTab.setText(currentOrder.getName() + " - " + orderItemTab.getText());
-        rawInvoiceItemViewComponent.setEppPrefix(((int) NumberUtil.parse(currentOrder.getName())) + "");
+        invoiceComponent.setEppPrefix(((int) NumberUtil.parse(currentOrder.getName())) + "");
+        invoiceComponent.updateView();
+
+        if (currentOrder.isSynthetic())
+            tabPane.getTabs().removeAll(orderItemTab, storageTab, storageComboTab);
     }
 
 
     class CreateInvoicePdfTask extends Task<Void> {
 
         private final List<File> files;
+        private final CallBack<List<RawInvoiceProductItem>> callBack;
 
-        public CreateInvoicePdfTask(List<File> files) {
+        public CreateInvoicePdfTask(List<File> files, CallBack<List<RawInvoiceProductItem>> callBack) {
             this.files = files;
+            this.callBack = callBack;
         }
 
         @Override
         protected Void call() throws Exception {
             try {
-                List<InvoicePdf> entities = ServiceFacade.getInvoicePdfService().createInvoicePdf(currentOrder, files);
+                List<InvoicePdf> entities = ServiceFacade.getInvoicePdfService().createInvoicePdf(currentOrder, files, callBack);
                 orderData.invoicePdfs.addAll(entities);
                 ServiceFacade.getOrderService().save(currentOrder);
 
                 Platform.runLater(new Runnable() {
                     @Override
                     public void run() {
-                        invoicePdfViewComponent.setItems(orderData.invoicePdfs);
-                        updateRawInvoiceTableView();
+                        invoiceComponent.refreshInvoicePdfs();
                     }
                 });
             } catch (Exception e) {
@@ -614,19 +524,6 @@ public class OrderViewPage extends BasePage {
         }
     }
 
-    private void updateRawInvoiceTableView() {
-        updateRawInvoiceTableView(invoicePdfViewComponent.getSelected());
-    }
-
-    private void updateRawInvoiceTableView(InvoicePdf selected) {
-        if (selected != null)
-            rawInvoiceItemViewComponent.setItems(selected.getProducts());
-        else
-            rawInvoiceItemViewComponent.setItems(Collections.<RawInvoiceProductItem>emptyList());
-
-        eppViewComponent.setActive(selected);
-    }
-
 
     class LoadService extends AbstractAsyncService<OrderData> {
         @Override
@@ -680,8 +577,8 @@ public class OrderViewPage extends BasePage {
         }
     }
 
-    class OrderData {
-        List<OrderItem> orderItems;
-        List<InvoicePdf> invoicePdfs;
+    public static class OrderData {
+        public List<OrderItem> orderItems;
+        public List<InvoicePdf> invoicePdfs;
     }
 }
