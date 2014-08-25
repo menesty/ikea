@@ -18,12 +18,18 @@ import java.util.List;
  * 6/20/14.
  * 18:56.
  */
-public class ListEditField<T> extends VBox implements Field {
+public class ListEditField<T, Choice> extends VBox implements Field {
+    public static interface Converter<T, Choice> {
+        public T convertChoice(Choice choice, List<T> initValues);
+
+        public Choice convertValueToChoice(T value);
+    }
+
     private ListView<T> listView;
 
-    private ComboBox<T> choiceComboBox;
+    private ComboBox<Choice> choiceComboBox;
 
-    private List<T> choiceList;
+    private List<Choice> choiceList;
 
     private List<T> values;
 
@@ -31,9 +37,24 @@ public class ListEditField<T> extends VBox implements Field {
 
     private boolean allowBlank;
 
+    private Converter<T, Choice> convertChoice;
+
     public ListEditField(String label, boolean allowBlank) {
         this.label = label;
         this.allowBlank = allowBlank;
+
+        convertChoice = new Converter<T, Choice>() {
+            @Override
+            public T convertChoice(Choice choice, List<T> initValues) {
+                return (T) choice;
+            }
+
+            @Override
+            public Choice convertValueToChoice(T value) {
+                return (Choice) value;
+            }
+        };
+
 
         listView = new ListView<>();
 
@@ -49,11 +70,11 @@ public class ListEditField<T> extends VBox implements Field {
             button.setOnAction(new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(ActionEvent actionEvent) {
-                    T item = choiceComboBox.getSelectionModel().getSelectedItem();
+                    Choice item = choiceComboBox.getSelectionModel().getSelectedItem();
 
                     if (item != null) {
                         choiceComboBox.getItems().remove(item);
-                        listView.getItems().add(item);
+                        listView.getItems().add(convertChoice.convertChoice(item, values));
                     }
                 }
             });
@@ -69,7 +90,7 @@ public class ListEditField<T> extends VBox implements Field {
 
                     if (item != null) {
                         listView.getItems().remove(item);
-                        choiceComboBox.getItems().add(item);
+                        choiceComboBox.getItems().add(convertChoice.convertValueToChoice(item));
                     }
                 }
             });
@@ -81,7 +102,11 @@ public class ListEditField<T> extends VBox implements Field {
 
     }
 
-    public void setChoiceList(List<T> choiceList) {
+    public void setConvertChoice(Converter<T, Choice> convertChoice) {
+        this.convertChoice = convertChoice;
+    }
+
+    public void setChoiceList(List<Choice> choiceList) {
         this.choiceList = new ArrayList<>(choiceList);
 
         choiceComboBox.getItems().clear();
@@ -89,6 +114,7 @@ public class ListEditField<T> extends VBox implements Field {
 
         updateChoiceList();
     }
+
 
     public void setValue(List<T> value) {
         values = (value == null ? new ArrayList<T>() : new ArrayList<>(value));
@@ -100,7 +126,16 @@ public class ListEditField<T> extends VBox implements Field {
 
     private void updateChoiceList() {
         if (values != null)
-            choiceComboBox.getItems().removeAll(values);
+            choiceComboBox.getItems().removeAll(convert(values));
+    }
+
+    private List<Choice> convert(List<T> values) {
+        List<Choice> result = new ArrayList<>(values.size());
+
+        for (T value : values)
+            result.add(convertChoice.convertValueToChoice(value));
+
+        return result;
     }
 
     public List<T> getValues() {

@@ -42,7 +42,7 @@ public class NewOrderFillService {
 
                 taskProgressLog.addLog("finish prepare data");
 
-                start(httpClient, order.getIkeaShops(), order.getUsers(), data, taskProgressLog);
+                start(httpClient, order.getOrderShops(), order.getUsers(), data, taskProgressLog);
 
                 taskProgressLog.addLog("Finish");
             } catch (LoginIkeaException e) {
@@ -76,7 +76,7 @@ public class NewOrderFillService {
         return groupMap;
     }
 
-    private void start(CloseableHttpClient httpClient, List<IkeaShop> shops, List<User> users, Map<ProductInfo.Group,
+    private void start(CloseableHttpClient httpClient, List<OrderShop> shops, List<User> users, Map<ProductInfo.Group,
             List<OrderItem>> inputData, final TaskProgressLog taskProgressLog
     ) throws Exception {
         int needUsers = 0;
@@ -86,15 +86,15 @@ public class NewOrderFillService {
 
         List<Map<String, List<StockItem>>> reduceResult = new ArrayList<>();
 
-        Iterator<IkeaShop> shopIterator = shops.iterator();
-        List<Map<String, List<StockItem>>> shopDataByUser = splitByGroupCount(getShopData(shopIterator.next(), data));
+        Iterator<OrderShop> shopIterator = shops.iterator();
+        List<Map<String, List<StockItem>>> shopDataByUser = splitByGroupCount(getShopData(shopIterator.next().getIkeaShop(), data));
         reduceResult.addAll(shopDataByUser);
 
 
         Map<String, List<StockItem>> joinShopData = new HashMap<>();
 
         while (shopIterator.hasNext()) {
-            IkeaShop shop = shopIterator.next();
+            IkeaShop shop = shopIterator.next().getIkeaShop();
             joinShopData.putAll(reduceGroups(shop.getName(), getShopData(shop, data)));
         }
 
@@ -500,55 +500,12 @@ public class NewOrderFillService {
         return result;
     }
 
-    public static void main(String... arg) throws Exception {
-        NewOrderFillService service = new NewOrderFillService();
-        List<IkeaShop> ikeaShops = new ArrayList<>();
-        {
-            IkeaShop ikeaShop = new IkeaShop();
-            ikeaShop.setShopId(204);
-            ikeaShop.setName("Krakow");
-            ikeaShops.add(ikeaShop);
-        }
-        User user = new User();
-        user.setLogin("kra96@gmail.com");
-        user.setPassword("Mature65");
-
-        Map<ProductInfo.Group, List<OrderItem>> inputData = new HashMap<>();
-        List<OrderItem> orderItems = new ArrayList<>();
-        OrderItem item = new OrderItem();
-        item.setArtNumber("00133123");
-        item.setCount(120);
-        orderItems.add(item);
-
-        inputData.put(ProductInfo.Group.Kitchen, orderItems);
-
-
-        try (CloseableHttpClient httpClient = HttpClients.custom().build()) {
-            service.start(httpClient, ikeaShops, Arrays.asList(user), inputData, new TaskProgressLog() {
-                @Override
-                public void addLog(String log) {
-
-                }
-
-                @Override
-                public void updateLog(String log) {
-
-                }
-
-                @Override
-                public void done() {
-
-                }
-            });
-        }
-    }
-
     private Map<String, List<StockItem>> reduceGroups(String groupName, Map<String, List<StockItem>> data) {
         List<List<StockItem>> joinData = new ArrayList<>();
-
         List<StockItem> currentList = new ArrayList<>();
         List<StockItem> nextList = new ArrayList<>();
         List<StockItem> unsorted = new ArrayList<>();
+
         for (Map.Entry<String, List<StockItem>> entry : data.entrySet()) {
             for (StockItem item : entry.getValue()) {
                 if (!currentList.contains(item))

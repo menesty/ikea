@@ -93,5 +93,27 @@ public class InvoiceService {
             item.setIndex(++index);
 
         exportToEpp(order.getName(), items, filePath);
+        exportToXls(order.getName(), items, filePath);
+    }
+
+    private void exportToXls(String invoiceName, List<InvoiceItem> items, String path){
+        XLSTransformer transformer = new XLSTransformer();
+        Map<String, Object> bean = new HashMap<>();
+        bean.put("items", items);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+        bean.put("date", sdf.format(new Date()));
+
+        if (!path.endsWith(".xls"))
+            path = path.concat(".xls");
+
+        try {
+            Workbook workbook = transformer.transformXLS(getClass().getResourceAsStream("/config/outgoing-facture.xlsx"), bean);
+
+            workbook.write(Files.newOutputStream(FileSystems.getDefault().getPath(path), StandardOpenOption.CREATE_NEW));
+
+        } catch (InvalidFormatException | IOException e) {
+            logger.log(Level.SEVERE, "exportToXls", e);
+        }
     }
 }

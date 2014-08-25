@@ -51,6 +51,8 @@ public abstract class InvoicePdfTableView extends BaseTableView<InvoicePdfTableV
         invoiceNumber.setMinWidth(100);
         invoiceNumber.setCellValueFactory(ColumnUtil.<InvoicePdfTableItem, String>column("invoicePdf.invoiceNumber"));
         getColumns().addAll(checked, name, priceColumn, invoiceNumber, createdDate);
+
+        setEditable(true);
     }
 
     @Override

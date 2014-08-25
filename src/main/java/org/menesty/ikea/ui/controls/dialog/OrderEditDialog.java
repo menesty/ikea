@@ -7,6 +7,7 @@ import javafx.scene.control.ComboBox;
 import org.menesty.ikea.db.DatabaseService;
 import org.menesty.ikea.domain.CustomerOrder;
 import org.menesty.ikea.domain.IkeaShop;
+import org.menesty.ikea.domain.OrderShop;
 import org.menesty.ikea.domain.User;
 import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.ui.controls.BaseEntityDialog;
@@ -33,7 +34,7 @@ public class OrderEditDialog extends BaseEntityDialog<CustomerOrder> {
     protected CustomerOrder collect() {
         entityValue.setName(form.getOrderName());
         entityValue.setUsers(form.getUsers());
-        entityValue.setIkeaShops(form.getShops());
+        entityValue.setOrderShops(form.getShops());
         entityValue.setLackUser(form.getLackUser());
         return entityValue;
     }
@@ -42,7 +43,7 @@ public class OrderEditDialog extends BaseEntityDialog<CustomerOrder> {
     protected void populate(CustomerOrder entityValue) {
         form.setOrderName(entityValue.getName());
         form.setUsers(entityValue.getUsers());
-        form.setShops(entityValue.getIkeaShops());
+        form.setShops(entityValue.getOrderShops());
         form.setLackUser(entityValue.getLackUser());
 
         DatabaseService.runInTransaction(new Callable<Void>() {
@@ -67,8 +68,8 @@ public class OrderEditDialog extends BaseEntityDialog<CustomerOrder> {
     }
 
     private class OrderForm extends FormPane {
-        private final ListEditField<User> userListView;
-        private final ListEditField<IkeaShop> ikeaShopView;
+        private final ListEditField<User, User> userListView;
+        private final ListEditField<OrderShop, IkeaShop> ikeaShopView;
 
         private final ComboBox<User> lackUsers;
 
@@ -90,7 +91,7 @@ public class OrderEditDialog extends BaseEntityDialog<CustomerOrder> {
             userListView.setValue(users);
         }
 
-        public void setShops(List<IkeaShop> shops) {
+        public void setShops(List<OrderShop> shops) {
             ikeaShopView.setValue(shops);
         }
 
@@ -98,7 +99,7 @@ public class OrderEditDialog extends BaseEntityDialog<CustomerOrder> {
             return userListView.getValues();
         }
 
-        public List<IkeaShop> getShops() {
+        public List<OrderShop> getShops() {
             return ikeaShopView.getValues();
         }
 
@@ -110,7 +111,7 @@ public class OrderEditDialog extends BaseEntityDialog<CustomerOrder> {
             add(orderName = new TextField(null, "Name", false));
             orderName.setPrefColumnCount(20);
 
-            add(userListView = new ListEditField<User>("Users", false) {
+            add(userListView = new ListEditField<User, User>("Users", false) {
                 @Override
                 public boolean isValid() {
                     boolean result = super.isValid();
@@ -124,6 +125,22 @@ public class OrderEditDialog extends BaseEntityDialog<CustomerOrder> {
             userListView.setMaxHeight(120);
 
             add(ikeaShopView = new ListEditField<>("Shops", false), 2);
+            ikeaShopView.setConvertChoice(new ListEditField.Converter<OrderShop, IkeaShop>() {
+                @Override
+                public OrderShop convertChoice(IkeaShop ikeaShop, List<OrderShop> initValues) {
+                    //search if already exist
+                    for (OrderShop orderShop : initValues)
+                        if (orderShop.getIkeaShop().equals(ikeaShop))
+                            return orderShop;
+
+                    return new OrderShop(entityValue, ikeaShop);
+                }
+
+                @Override
+                public IkeaShop convertValueToChoice(OrderShop value) {
+                    return value.getIkeaShop();
+                }
+            });
             ikeaShopView.setMaxHeight(120);
 
             addRow("Lack User", lackUsers = new ComboBox<>());

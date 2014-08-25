@@ -71,6 +71,47 @@ public class OrderService extends Repository<CustomerOrder> {
         return null;
     }
 
+    public CustomerOrder save(CustomerOrder entity) {
+        boolean started = isActive();
+        try {
+            if (!started)
+                begin();
+
+            //get assign order items
+            if (entity.getId() != null) {
+                List<OrderShop> orderShopsAssigned = getOrderShops(entity);
+
+                for (OrderShop orderShop : orderShopsAssigned)
+                    if (!entity.getOrderShops().contains(orderShop))
+                        getEm().remove(orderShop);
+
+            }
+
+            int index = 0;
+
+            for (OrderShop orderShop : entity.getOrderShops())
+                orderShop.setOrderIndex(index++);
+
+            entity = super.save(entity);
+
+            if (!started)
+                commit();
+
+        } catch (Exception e) {
+            rollback();
+            throw new RuntimeException("Can not delete item");
+        }
+
+        return entity;
+    }
+
+    private List<OrderShop> getOrderShops(CustomerOrder order) {
+        TypedQuery<OrderShop> query = getEm().createQuery("select entity from " + OrderShop.class.getName() +
+                " entity where entity.customerOrder.id=:id", OrderShop.class);
+        query.setParameter("id", order.getId());
+        return query.getResultList();
+    }
+
     private List<OrderItem> reduce(CustomerOrder order, List<RawOrderItem> list, TaskProgress taskProgress) {
         Map<String, OrderItem> reduceMap = new HashMap<>();
         int itemIndex = 0;

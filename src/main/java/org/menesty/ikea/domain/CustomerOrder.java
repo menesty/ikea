@@ -16,8 +16,10 @@ public class CustomerOrder extends Identifiable {
 
     @OneToMany
     private List<User> users;
-    @OneToMany
-    private List<IkeaShop> ikeaShops;
+
+    @OneToMany(cascade = CascadeType.ALL)
+    @OrderBy("orderIndex")
+    private List<OrderShop> orderShops = new ArrayList<>();
 
     @ManyToOne
     private User lackUser;
@@ -25,6 +27,14 @@ public class CustomerOrder extends Identifiable {
     private boolean synthetic;
 
     public boolean isOnline;
+
+    public List<OrderShop> getOrderShops() {
+        return orderShops;
+    }
+
+    public void setOrderShops(List<OrderShop> orderShops) {
+        this.orderShops = orderShops;
+    }
 
     public User getLackUser() {
         return lackUser;
@@ -91,11 +101,4 @@ public class CustomerOrder extends Identifiable {
         this.users = users;
     }
 
-    public List<IkeaShop> getIkeaShops() {
-        return ikeaShops;
-    }
-
-    public void setIkeaShops(List<IkeaShop> ikeaShops) {
-        this.ikeaShops = ikeaShops;
-    }
 }

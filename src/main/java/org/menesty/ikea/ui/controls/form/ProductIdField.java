@@ -3,7 +3,6 @@ package org.menesty.ikea.ui.controls.form;
 import javafx.beans.InvalidationListener;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
-import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
@@ -11,11 +10,18 @@ import javafx.scene.layout.Priority;
 import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.ui.controls.dialog.ProductDialog;
 
-public class ProductIdField extends HBox {
+public class ProductIdField extends HBox implements Field {
     private TextField productId;
+    private ImageView imageView;
+
+    public ProductIdField(String label, boolean allowBlank) {
+        this();
+        productId.setLabel(label);
+        productId.setAllowBlank(allowBlank);
+    }
 
     public ProductIdField() {
-        ImageView imageView = ImageFactory.createWeb16Icon();
+        imageView = ImageFactory.createWeb16Icon();
         imageView.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent mouseEvent) {
@@ -28,6 +34,10 @@ public class ProductIdField extends HBox {
         productId = new TextField();
         HBox.setHgrow(productId, Priority.ALWAYS);
         getChildren().addAll(productId, imageView);
+    }
+
+    public void enableBrowse(boolean enable) {
+        imageView.setVisible(enable);
     }
 
     public void setEditable(boolean editable) {
@@ -51,12 +61,7 @@ public class ProductIdField extends HBox {
     }
 
     public void setInvalid(boolean invalid) {
-        productId.getStyleClass().remove("validation-error");
-        productId.getStyleClass().remove("validation-succeed");
-        if (invalid)
-            productId.getStyleClass().add("validation-error");
-        else
-            productId.getStyleClass().add("validation-succeed");
+        productId.setValid(!invalid);
 
     }
 
@@ -67,5 +72,20 @@ public class ProductIdField extends HBox {
 
     public void setChangeListener(InvalidationListener listener) {
         productId.textProperty().addListener(listener);
+    }
+
+    @Override
+    public boolean isValid() {
+        return productId.isValid();
+    }
+
+    @Override
+    public void reset() {
+        productId.setText(null);
+    }
+
+    @Override
+    public String getLabel() {
+        return productId.getLabel();
     }
 }

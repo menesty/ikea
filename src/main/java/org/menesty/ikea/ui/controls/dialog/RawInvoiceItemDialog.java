@@ -6,7 +6,6 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.scene.control.CheckBox;
-import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
 import org.apache.commons.lang.math.NumberUtils;
 import org.menesty.ikea.domain.ProductInfo;
@@ -14,15 +13,10 @@ import org.menesty.ikea.exception.ProductFetchException;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.ui.Toast;
-import org.menesty.ikea.ui.controls.form.DoubleTextField;
-import org.menesty.ikea.ui.controls.form.IntegerTextField;
-import org.menesty.ikea.ui.controls.form.ProductIdField;
-import org.menesty.ikea.ui.layout.RowPanel;
-import org.menesty.ikea.ui.pages.EntityDialogCallback;
+import org.menesty.ikea.ui.controls.BaseEntityDialog;
+import org.menesty.ikea.ui.controls.form.*;
 
-public class RawInvoiceItemDialog extends BaseDialog {
-    private RawInvoiceProductItem currentItem;
-
+public class RawInvoiceItemDialog extends BaseEntityDialog<RawInvoiceProductItem> {
     private RawInvoiceItemForm form;
 
     public RawInvoiceItemDialog() {
@@ -32,13 +26,10 @@ public class RawInvoiceItemDialog extends BaseDialog {
         okBtn.setText("Save");
     }
 
-
-    private EntityDialogCallback<RawInvoiceProductItem> callback;
-
-    private class RawInvoiceItemForm extends RowPanel {
+    private class RawInvoiceItemForm extends FormPane {
         private ProductIdField productIdField;
 
-        private RowPanel detailPane;
+        private FormPane detailPane;
 
         private TextField name;
 
@@ -63,7 +54,7 @@ public class RawInvoiceItemDialog extends BaseDialog {
                     invalidationListener.invalidated(null);
                 }
             });
-            addRow("Product Id", productIdField = new ProductIdField());
+            add(productIdField = new ProductIdField("Product Id", false));
 
             productIdField.setChangeListener(invalidationListener);
             productIdField.getField().addEventFilter(KeyEvent.KEY_TYPED, new EventHandler<KeyEvent>() {
@@ -83,16 +74,16 @@ public class RawInvoiceItemDialog extends BaseDialog {
                 }
             });
 
-            addRow(detailPane = new RowPanel(), 2);
+            addRow(detailPane = new FormPane(), 2);
 
-            detailPane.addRow("Name", name = new TextField());
-            detailPane.addRow("Count", count = new DoubleTextField());
-            detailPane.addRow("Price", price = new DoubleTextField());
+            detailPane.add(name = new TextField(null, "Name", false));
+            detailPane.add(count = new DoubleTextField("Count"));
+            detailPane.add(price = new DoubleTextField("Price"));
             detailPane.addRow("Wat", wat = new IntegerTextField());
 
         }
 
-        private InvalidationListener initListener(){
+        private InvalidationListener initListener() {
             return new InvalidationListener() {
                 @Override
                 public void invalidated(Observable observable) {
@@ -137,20 +128,24 @@ public class RawInvoiceItemDialog extends BaseDialog {
                         okBtn.setDisable(false);
                     }
 
+                    productIdField.enableBrowse(ikeaProduct.isSelected());
+
                 }
             };
         }
 
+        @Override
         public void reset() {
             productInfo = null;
-
-            productIdField.setProductId(null);
-            count.setNumber(0d);
-            price.setNumber(0d);
-            name.setText(null);
+            super.reset();
+            detailPane.reset();
             wat.setNumber(23);
             ikeaProduct.setSelected(true);
+        }
 
+        @Override
+        public boolean isValid() {
+            return super.isValid() && detailPane.isValid();
         }
 
         void setPrice(double price) {
@@ -206,37 +201,35 @@ public class RawInvoiceItemDialog extends BaseDialog {
         }
     }
 
-    public void bind(RawInvoiceProductItem item, EntityDialogCallback<RawInvoiceProductItem> callback) {
-        currentItem = item;
-        this.callback = callback;
+    @Override
+    protected RawInvoiceProductItem collect() {
+        entityValue.setOriginalArtNumber(form.getProductId());
+        entityValue.setPrice(form.getPrice());
+        entityValue.setBasePrice(form.getPrice());
+        entityValue.setName(form.getName());
+        entityValue.setCount(form.getCount());
+        entityValue.setProductInfo(form.getProductInfo());
+        entityValue.setWat(form.getWat() + "");
+        entityValue.setSynthetic(!form.isIkeaProduct());
+        return entityValue;
+    }
 
+    @Override
+    protected void populate(RawInvoiceProductItem entityValue) {
+        form.setProductId(entityValue.getOriginalArtNumber());
+        form.setPrice(entityValue.getPrice());
+        form.setName(entityValue.getName());
+        form.setCount(entityValue.getCount());
+        form.setProductInfo(entityValue.getProductInfo());
+    }
+
+    @Override
+    public boolean isValid() {
+        return form.isValid();
+    }
+
+    @Override
+    public void reset() {
         form.reset();
-
-        form.setProductId(item.getOriginalArtNumber());
-        form.setPrice(item.getPrice());
-        form.setName(item.getName());
-        form.setCount(item.getCount());
-        form.setProductInfo(item.getProductInfo());
-    }
-
-    @Override
-    public void onOk() {
-        currentItem.setOriginalArtNumber(form.getProductId());
-        currentItem.setPrice(form.getPrice());
-        currentItem.setBasePrice(form.getPrice());
-        currentItem.setName(form.getName());
-        currentItem.setCount(form.getCount());
-        currentItem.setProductInfo(form.getProductInfo());
-        currentItem.setWat(form.getWat() + "");
-        currentItem.setSynthetic(!form.isIkeaProduct());
-
-        if (callback != null)
-            callback.onSave(currentItem);
-    }
-
-    @Override
-    public void onCancel() {
-        if (callback != null)
-            callback.onCancel();
     }
 }
