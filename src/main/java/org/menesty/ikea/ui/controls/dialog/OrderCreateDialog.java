@@ -9,15 +9,18 @@ import javafx.geometry.Insets;
 import javafx.geometry.VPos;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.stage.Window;
 import org.menesty.ikea.ui.controls.form.FormPane;
+import org.menesty.ikea.ui.controls.form.NumberTextField;
 import org.menesty.ikea.ui.controls.form.TextField;
 import org.menesty.ikea.ui.layout.RowPanel;
 import org.menesty.ikea.util.FileChooserUtil;
 
 import java.io.File;
+import java.math.BigDecimal;
 
 public class OrderCreateDialog extends BaseDialog {
 
@@ -38,10 +41,11 @@ public class OrderCreateDialog extends BaseDialog {
 
     @Override
     public void onOk() {
-        onCreate(orderForm.getOrderName(), orderForm.isSynthetic() ? null : orderForm.getFilePath());
+        onCreate(orderForm.getOrderName(), orderForm.getMargin(),
+                orderForm.isSynthetic() ? null : orderForm.getFilePath());
     }
 
-    public void onCreate(String orderName, String filePath) {
+    public void onCreate(String orderName, int margin, String filePath) {
 
     }
 
@@ -49,6 +53,8 @@ public class OrderCreateDialog extends BaseDialog {
         TextField orderName;
         TextField textField;
         CheckBox synthetic;
+        NumberTextField marginField;
+
         RowPanel filePanel = new RowPanel();
 
         public String getOrderName() {
@@ -59,12 +65,17 @@ public class OrderCreateDialog extends BaseDialog {
             return textField.getText();
         }
 
+        public int getMargin() {
+            return marginField.getNumber().intValue();
+        }
+
         public boolean isSynthetic() {
             return synthetic.isSelected();
         }
 
         public OrderForm() {
-            setShowLabels(false);
+            setShowLabels(true);
+            setLabelWidth(60);
             filePanel.setPadding(new Insets(0));
             final ChangeListener<String> textListener = new ChangeListener<String>() {
                 public void changed(ObservableValue<? extends String> ov, String t, String t1) {
@@ -87,23 +98,26 @@ public class OrderCreateDialog extends BaseDialog {
                 }
             });
 
-            addRow("Name");
-            orderName = new TextField();
-            orderName.setAllowBlank(false);
+            add(orderName = new TextField(null, "Name", false));
             orderName.setPrefColumnCount(20);
-            add(orderName);
 
-            filePanel.addRow("File");
+            add(marginField = new NumberTextField(BigDecimal.valueOf(2), "Margin", false));
+            marginField.setAllowDouble(false);
 
             int rowIndex = filePanel.nextRow();
+            Label label;
+            GridPane.setConstraints(label = new Label("File"), 0, rowIndex);
+            label.setPrefWidth(60);
+
+
             textField = new TextField();
             textField.setEditable(false);
-            GridPane.setConstraints(textField, 0, rowIndex, 1, 1, HPos.CENTER, VPos.CENTER, Priority.ALWAYS, Priority.NEVER);
+            GridPane.setConstraints(textField, 1, rowIndex, 1, 1, HPos.CENTER, VPos.CENTER, Priority.ALWAYS, Priority.NEVER);
 
             Button button = new Button("Browse...");
             button.setId("browseButton");
             button.setMinWidth(USE_PREF_SIZE);
-            GridPane.setConstraints(button, 1, rowIndex);
+            GridPane.setConstraints(button, 2, rowIndex);
 
             button.setOnAction(new EventHandler<ActionEvent>() {
                 @Override
@@ -116,10 +130,10 @@ public class OrderCreateDialog extends BaseDialog {
                         textField.setText(selectedFile.getAbsolutePath());
                 }
             });
-            filePanel.getChildren().addAll(textField, button);
 
-            addRow(filePanel);
+            filePanel.getChildren().addAll(label, textField, button);
 
+            addRow(filePanel, 2);
 
             orderName.textProperty().addListener(textListener);
             textField.textProperty().addListener(textListener);

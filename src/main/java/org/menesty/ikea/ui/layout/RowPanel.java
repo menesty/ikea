@@ -11,6 +11,7 @@ import javafx.scene.layout.Priority;
 public class RowPanel extends GridPane {
 
     private int currentRow = 0;
+    private double labelWidth = 0;
 
     public RowPanel() {
         setPadding(new Insets(8));
@@ -19,9 +20,17 @@ public class RowPanel extends GridPane {
         setPrefWidth(USE_PREF_SIZE);
     }
 
+    public void setLabelWidth(double labelWidth) {
+        this.labelWidth = labelWidth;
+    }
+
     public void addRow(String labelText, Node field) {
         Label label = new Label(labelText);
         label.setId("proxy-dialog-label");
+
+        if (labelWidth != 0)
+            label.setPrefWidth(labelWidth);
+
         GridPane.setConstraints(label, 0, getCurrentRow());
 
         GridPane.setConstraints(field, 1, getCurrentRow(), 1, 1, HPos.LEFT, VPos.CENTER, Priority.ALWAYS, Priority.NEVER);

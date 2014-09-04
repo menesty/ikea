@@ -48,14 +48,15 @@ public class NumberTextField extends TextField {
 
     public void setAllowDouble(boolean allowDouble) {
         this.allowDouble = allowDouble;
+        updateView();
     }
 
     public NumberTextField(BigDecimal value, NumberFormat nf, String label, boolean allowBlank) {
         super();
         this.nf = nf;
+        setAllowBlank(allowBlank);
         setNumber(value);
         setLabel(label);
-        setAllowBlank(allowBlank);
         initHandlers();
     }
 
@@ -63,7 +64,7 @@ public class NumberTextField extends TextField {
         BigDecimal newValue = getNumber();
 
         if (newValue != null)
-            setText((allowDouble ? newValue.doubleValue() : newValue.intValue()) + "");
+            setText((allowDouble ? newValue.doubleValue()+ "" : newValue.intValue()+ ""));
         else
             setText("0");
     }

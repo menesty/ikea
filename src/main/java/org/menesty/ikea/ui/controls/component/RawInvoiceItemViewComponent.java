@@ -54,7 +54,7 @@ public abstract class RawInvoiceItemViewComponent extends BorderPane {
 
                     if (invoicePdf == null)
                         return;
-
+                    rawInvoiceItemDialog.setPriceMargin(invoicePdf.customerOrder.getMargin());
                     rawInvoiceItemDialog.bind(new RawInvoiceProductItem(invoicePdf), new EntityDialogCallback<RawInvoiceProductItem>() {
                         @Override
                         public void onSave(RawInvoiceProductItem item, Object... params) {

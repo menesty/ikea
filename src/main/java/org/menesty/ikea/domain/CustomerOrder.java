@@ -28,6 +28,17 @@ public class CustomerOrder extends Identifiable {
 
     public boolean isOnline;
 
+    private int margin = 2;
+
+    public int getMargin() {
+        return margin;
+    }
+
+    public CustomerOrder setMargin(int margin) {
+        this.margin = margin;
+        return this;
+    }
+
     public List<OrderShop> getOrderShops() {
         return orderShops;
     }

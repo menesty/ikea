@@ -15,15 +15,23 @@ import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.ui.Toast;
 import org.menesty.ikea.ui.controls.BaseEntityDialog;
 import org.menesty.ikea.ui.controls.form.*;
+import org.menesty.ikea.util.NumberUtil;
+
+import java.math.BigDecimal;
 
 public class RawInvoiceItemDialog extends BaseEntityDialog<RawInvoiceProductItem> {
     private RawInvoiceItemForm form;
+    private BigDecimal priceMargin;
 
     public RawInvoiceItemDialog() {
         setTitle("Create Invoice item");
 
         addRow(form = new RawInvoiceItemForm(), bottomBar);
         okBtn.setText("Save");
+    }
+
+    public void setPriceMargin(int priceMargin) {
+        this.priceMargin = BigDecimal.valueOf((double) (priceMargin == 0 ? 2 :priceMargin) / 100 + 1);
     }
 
     private class RawInvoiceItemForm extends FormPane {
@@ -48,12 +56,14 @@ public class RawInvoiceItemDialog extends BaseEntityDialog<RawInvoiceProductItem
         public RawInvoiceItemForm() {
             final InvalidationListener invalidationListener = initListener();
             addRow("Ikea Product", ikeaProduct = new CheckBox());
+
             ikeaProduct.selectedProperty().addListener(new ChangeListener<Boolean>() {
                 @Override
                 public void changed(ObservableValue<? extends Boolean> observableValue, Boolean aBoolean, Boolean aBoolean2) {
                     invalidationListener.invalidated(null);
                 }
             });
+
             add(productIdField = new ProductIdField("Product Id", false));
 
             productIdField.setChangeListener(invalidationListener);
@@ -204,7 +214,9 @@ public class RawInvoiceItemDialog extends BaseEntityDialog<RawInvoiceProductItem
     @Override
     protected RawInvoiceProductItem collect() {
         entityValue.setOriginalArtNumber(form.getProductId());
-        entityValue.setPrice(form.getPrice());
+
+        double marginPrice = NumberUtil.round(BigDecimal.valueOf(form.getPrice()).multiply(priceMargin).doubleValue());
+        entityValue.setPrice(marginPrice);
         entityValue.setBasePrice(form.getPrice());
         entityValue.setName(form.getName());
         entityValue.setCount(form.getCount());

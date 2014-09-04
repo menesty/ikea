@@ -3,17 +3,17 @@ package org.menesty.ikea.service;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.menesty.ikea.db.DatabaseTestCase;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.domain.ProductPart;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
  * Created by Menesty on 2/21/14.
  */
-public class ProductServiceTest extends DatabaseTestCase {
+public class ProductServiceTest /*extends DatabaseTestCase */{
 
     @Ignore
     @Test
@@ -47,5 +47,10 @@ public class ProductServiceTest extends DatabaseTestCase {
 
         Assert.assertEquals(2, commod.getCount());
 
+    }
+    @Test
+    public void test(){
+        int margin = 2;
+        System.out.println(BigDecimal.valueOf((double) margin / 100 + 1));
     }
 }

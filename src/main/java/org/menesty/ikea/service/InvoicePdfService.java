@@ -46,7 +46,7 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
 
     private final static Pattern totalPattern = Pattern.compile("DO ZAPŁATY:(.*)");
 
-    private final BigDecimal MARGIN = BigDecimal.valueOf(1.02);
+    private final int MARGIN = 2;
 
     public InvoicePdfService() {
     }
@@ -63,7 +63,9 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
         return content;
     }
 
-    private List<RawInvoiceProductItem> parseInvoiceItems(final InvoicePdf invoicePdf, final InputStream stream) throws IOException {
+    private List<RawInvoiceProductItem> parseInvoiceItems(final int margin, final InvoicePdf invoicePdf, final InputStream stream) throws IOException {
+        BigDecimal marginM = BigDecimal.valueOf((double) margin / 100 + 1);
+
         String content = parseDocument(stream);
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -91,7 +93,9 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
                 double price = Double.valueOf(m.group(6).trim().replaceAll("[\\s\\u00A0]+", "").replace(",", "."));
 
                 product.setBasePrice(price);
-                double marginPrice = NumberUtil.round(BigDecimal.valueOf(price).multiply(MARGIN).doubleValue());
+
+
+                double marginPrice = NumberUtil.round(BigDecimal.valueOf(price).multiply(marginM).doubleValue());
                 product.setPrice(marginPrice);
                 product.setWat(m.group(7));
                 product.setProductInfo(loadProductInfo(product));
@@ -157,7 +161,7 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
             InvoicePdf result = new InvoicePdf(name);
             result.customerOrder = order;
 
-            List<RawInvoiceProductItem> products = parseInvoiceItems(result, stream);
+            List<RawInvoiceProductItem> products = parseInvoiceItems(order.getMargin() == 0? MARGIN : order.getMargin(), result, stream);
 
             result = save(result);
 
@@ -319,7 +323,8 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
             if (!started)
                 begin();
 
-            TypedQuery<RawInvoiceProductItem> query = getEm().createQuery("select entity from " + RawInvoiceProductItem.class.getName() + " entity left join entity.invoicePdf invoice  where invoice.customerOrder.id = ?1", RawInvoiceProductItem.class);
+            TypedQuery<RawInvoiceProductItem> query = getEm().
+                    createQuery("select entity from " + RawInvoiceProductItem.class.getName() + " entity left join entity.invoicePdf invoice  where invoice.customerOrder.id = ?1", RawInvoiceProductItem.class);
             query.setParameter(1, order.getId());
 
             return query.getResultList();

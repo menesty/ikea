@@ -230,11 +230,11 @@ public class OrderListPage extends BasePage {
             }
 
             @Override
-            public void onCreate(String orderName, String filePath) {
+            public void onCreate(String orderName, int margin, String filePath) {
                 hidePopupDialog();
 
                 if (filePath == null) {
-                    ServiceFacade.getOrderService().save(new CustomerOrder(orderName).setSynthetic(true));
+                    ServiceFacade.getOrderService().save(new CustomerOrder(orderName).setSynthetic(true).setMargin(margin));
                     loadService.restart();
                 } else
                     try {
