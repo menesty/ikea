@@ -41,8 +41,9 @@ public class OrderCreateDialog extends BaseDialog {
 
     @Override
     public void onOk() {
-        onCreate(orderForm.getOrderName(), orderForm.getMargin(),
-                orderForm.isSynthetic() ? null : orderForm.getFilePath());
+        if (orderForm.isValid())
+            onCreate(orderForm.getOrderName(), orderForm.getMargin(),
+                    orderForm.isSynthetic() ? null : orderForm.getFilePath());
     }
 
     public void onCreate(String orderName, int margin, String filePath) {
