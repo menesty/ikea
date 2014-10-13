@@ -161,7 +161,7 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
             InvoicePdf result = new InvoicePdf(name);
             result.customerOrder = order;
 
-            List<RawInvoiceProductItem> products = parseInvoiceItems(order.getMargin() == 0? MARGIN : order.getMargin(), result, stream);
+            List<RawInvoiceProductItem> products = parseInvoiceItems(order.getMargin() == 0 ? MARGIN : order.getMargin(), result, stream);
 
             result = save(result);
 

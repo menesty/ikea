@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <workbook>
     <worksheet idx="0">
-        <loop startRow="0" endRow="0" items="rawProductItems" var="item" varType="org.menesty.ikea.processor.invoice.RawInvoiceProductItem">
+        <loop startRow="0" endRow="0" items="rawProductItems" var="item"
+              varType="org.menesty.ikea.processor.invoice.RawInvoiceProductItem">
             <section startRow="0" endRow="0">
                 <mapping row="0" col="0">item.originalArtNumber</mapping>
                 <mapping row="0" col="1">item.artNumber</mapping>
@@ -13,10 +14,10 @@
             </section>
             <loopbreakcondition>
                 <rowcheck offset="0">
-                    <cellcheck offset="0" />
-                    <cellcheck offset="1" />
-                    <cellcheck offset="2" />
-                    <cellcheck offset="3" />
+                    <cellcheck offset="0"/>
+                    <cellcheck offset="1"/>
+                    <cellcheck offset="2"/>
+                    <cellcheck offset="3"/>
                 </rowcheck>
             </loopbreakcondition>
         </loop>

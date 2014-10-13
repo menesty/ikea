@@ -64,7 +64,7 @@ public class NumberTextField extends TextField {
         BigDecimal newValue = getNumber();
 
         if (newValue != null)
-            setText((allowDouble ? newValue.doubleValue()+ "" : newValue.intValue()+ ""));
+            setText((allowDouble ? newValue.doubleValue() + "" : newValue.intValue() + ""));
         else
             setText("0");
     }

@@ -151,7 +151,7 @@ public class InvoiceItem extends Identifiable {
     }
 
     public double getPrice() {
-        return round(price / getWatCof());
+        return NumberUtil.round(price / getWatCof(), 2, BigDecimal.ROUND_HALF_UP);
     }
 
     public double getTaxPay() {

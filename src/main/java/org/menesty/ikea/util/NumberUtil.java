@@ -13,18 +13,22 @@ public class NumberUtil {
 
     public static double parse(String value, double defaultValue) {
         try {
-            return Double.valueOf(value.replaceAll("[a-zA-z\\u00A0\\s#]", "").replace(",", "."));
+            return Double.valueOf(value.replaceAll("[a-zA-z\\u00A0\\s#€\\-.]", "").replace(",", "."));
         } catch (NumberFormatException e) {
             return defaultValue;
         }
     }
 
-    public static double round(double value) {
-        return round(value, 2);
+    public static double round(double value, int roundingMode) {
+        return round(value, 2, roundingMode);
     }
 
-    public static double round(double value, int scale) {
-        return BigDecimal.valueOf(value).setScale(scale, BigDecimal.ROUND_CEILING).doubleValue();
+    public static double round(double value) {
+        return round(value, 2, BigDecimal.ROUND_CEILING);
+    }
+
+    public static double round(double value, int scale, int roundingMode) {
+        return BigDecimal.valueOf(value).setScale(scale, roundingMode).doubleValue();
     }
 
     public static String toString(double value) {

@@ -2,7 +2,7 @@
 "1.05",3,1250,"Subiekt GT","olia","10-11","10-11",,,,"2314543267","#43","43",,,1,@{createDate},@{createDate},"Szef Olia",@{createDate},"Polska","PL",,0
 
 [NAGLOWEK]
-"FZ",1,0,2,"@{invoiceName}",,"2/2013",,,,,"YAR HUS","Yaroslav Husar","Yaroslav Husar","Kraków","30-348","ul. Drukarska, 8/36","6762478016","Zakup","Zakup towarów lub usług","Katowice",@{createDate},@{createDate},@{createDate},7,0,"Specjalna",@{totalItem.format(totalItem.price)},@{totalItem.format(totalItem.taxPay)},@{totalItem.format(totalItem.priceWat)},1665.8900,,0.0000,,@{createDate},@{totalItem.format(totalItem.priceWat)},@{totalItem.format(totalItem.priceWat)},0,0,1,3,,"Olia Szef",,0.0000,0.0000,"PLN",1.0000,,,,,0,0,0,,0.0000,,0.0000,"Polska","PL",0
+"FZ",1,0,2,"@{invoiceName}",,"2/2013",,,,,"YAR HUS","Yaroslav Husar","Yaroslav Husar","Kraków","31-159","al. Juliusza Słowackiego 1 lok. 6","6762478016","Zakup","Zakup towarów lub usług","Kraków",@{createDate},@{createDate},@{createDate},7,0,"Specjalna",@{totalItem.format(totalItem.price)},@{totalItem.format(totalItem.taxPay)},@{totalItem.format(totalItem.priceWat)},1665.8900,,0.0000,,@{createDate},@{totalItem.format(totalItem.priceWat)},@{totalItem.format(totalItem.priceWat)},0,0,1,3,,"Olia Szef",,0.0000,0.0000,"PLN",1.0000,,,,,0,0,0,,0.0000,,0.0000,"Polska","PL",0
 
 [ZAWARTOSC]
 @foreach{item : invoiceItems}@{item.index},@{item.isZestav() ? '8' : '1'},"@{item.artNumber}",1,0,0,1,0.0000,0.0000,"szt.",@{item.count},@{item.count},0.0000,@{item.format(item.price)},@{item.format(item.priceWat)},23.0000,@{item.format(item.priceWatTotal)},@{item.format(item.taxPay)},@{item.format(item.priceTotal)},@{item.format(item.priceWatTotal)},,
@@ -12,7 +12,7 @@
 "KONTRAHENCI"
 
 [ZAWARTOSC]
-0,"YAR HUS","Yaroslav Husar","Kraków","30-348","ul. Drukarska, 8/36","6762478016","123171918",,,,,,,,,,,,,,,,,,,"Polska","PL",0
+0,"YAR HUS","Yaroslav Husar","Kraków","31-159","al. Juliusza Słowackiego 1 lok. 6","6762478016","123171918",,,,,,,,,,,,,,,,,,,"Polska","PL",0
 
 [NAGLOWEK]
 "GRUPYKONTRAHENTOW"

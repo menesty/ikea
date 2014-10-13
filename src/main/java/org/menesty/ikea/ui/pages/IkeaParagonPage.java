@@ -222,11 +222,6 @@ public class IkeaParagonPage extends BasePage {
     }
 
 
-    @Override
-    protected Node createIconContent() {
-        return ImageFactory.createIkea72Icon();
-    }
-
     class LoadService extends AbstractAsyncService<PagingResult<IkeaParagon>> {
         private SimpleIntegerProperty pageIndex = new SimpleIntegerProperty();
 

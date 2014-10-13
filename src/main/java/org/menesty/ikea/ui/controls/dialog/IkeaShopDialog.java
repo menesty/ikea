@@ -1,5 +1,6 @@
 package org.menesty.ikea.ui.controls.dialog;
 
+import javafx.stage.Stage;
 import org.menesty.ikea.domain.IkeaShop;
 import org.menesty.ikea.ui.controls.BaseEntityDialog;
 import org.menesty.ikea.ui.controls.form.FormPane;
@@ -16,7 +17,8 @@ import java.math.BigDecimal;
 public class IkeaShopDialog extends BaseEntityDialog<IkeaShop> {
     private IkeaShopForm form;
 
-    public IkeaShopDialog() {
+    public IkeaShopDialog(Stage stage) {
+        super(stage);
         addRow(form = new IkeaShopForm(), bottomBar);
         okBtn.setText("Save");
     }

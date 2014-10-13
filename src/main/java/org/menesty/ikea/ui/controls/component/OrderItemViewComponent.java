@@ -49,9 +49,9 @@ public abstract class OrderItemViewComponent extends BorderPane {
     private Button editBtn;
 
     public OrderItemViewComponent(final Stage stage) {
-        productEditDialog = new ProductDialog();
+        productEditDialog = new ProductDialog(stage);
 
-        orderItemDialog = new OrderItemDialog();
+        orderItemDialog = new OrderItemDialog(stage);
 
         orderItemTableView = new OrderItemTableView() {
             @Override

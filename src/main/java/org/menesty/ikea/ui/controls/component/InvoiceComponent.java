@@ -3,7 +3,8 @@ package org.menesty.ikea.ui.controls.component;
 import javafx.geometry.Orientation;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableRow;
-import javafx.stage.Stage;
+import javafx.scene.layout.BorderPane;
+import org.menesty.ikea.core.component.DialogSupport;
 import org.menesty.ikea.domain.CustomerOrder;
 import org.menesty.ikea.domain.InvoicePdf;
 import org.menesty.ikea.domain.ProductInfo;
@@ -12,7 +13,6 @@ import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.ui.CallBack;
 import org.menesty.ikea.ui.controls.dialog.ProductDialog;
-import org.menesty.ikea.ui.controls.pane.BaseBorderPane;
 import org.menesty.ikea.ui.pages.EntityDialogCallback;
 import org.menesty.ikea.ui.pages.OrderViewPage;
 import org.menesty.ikea.util.NumberUtil;
@@ -27,7 +27,7 @@ import java.util.List;
  * 8/13/14.
  * 7:23.
  */
-public abstract class InvoiceComponent extends BaseBorderPane {
+public abstract class InvoiceComponent extends BorderPane {
 
     private final InvoicePdfViewComponent invoicePdfViewComponent;
     private final RawInvoiceItemViewComponent rawInvoiceItemViewComponent;
@@ -37,7 +37,7 @@ public abstract class InvoiceComponent extends BaseBorderPane {
     private ProductDialog productEditDialog;
     private InvoiceComponentListener listener;
 
-    public InvoiceComponent(Stage stage) {
+    public InvoiceComponent(final DialogSupport dialogSupport) {
         final CallBack<List<RawInvoiceProductItem>> importCallBack = new CallBack<List<RawInvoiceProductItem>>() {
             @Override
             public void onResult(List<RawInvoiceProductItem> data) {
@@ -58,8 +58,8 @@ public abstract class InvoiceComponent extends BaseBorderPane {
             }
         };
 
-        productEditDialog = new ProductDialog();
-        invoicePdfViewComponent = new InvoicePdfViewComponent(stage) {
+        productEditDialog = new ProductDialog(dialogSupport.getStage());
+        invoicePdfViewComponent = new InvoicePdfViewComponent(dialogSupport) {
             @Override
             protected void onSync(boolean clear) {
                 listener.onSync(clear);
@@ -107,7 +107,7 @@ public abstract class InvoiceComponent extends BaseBorderPane {
         //splitPane.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         invoiceSplitPane.setOrientation(Orientation.VERTICAL);
 
-        rawInvoiceItemViewComponent = new RawInvoiceItemViewComponent(stage) {
+        rawInvoiceItemViewComponent = new RawInvoiceItemViewComponent(dialogSupport) {
             @Override
             protected String getOrderName() {
                 return getCustomerOrder().getName();
@@ -140,28 +140,28 @@ public abstract class InvoiceComponent extends BaseBorderPane {
 
             @Override
             public void onRowDoubleClick(final TableRow<RawInvoiceProductItem> row) {
-                showPopupDialog(productEditDialog);
+                dialogSupport.showPopupDialog(productEditDialog);
                 productEditDialog.bind(row.getItem().getProductInfo(), new EntityDialogCallback<ProductInfo>() {
                     @Override
                     public void onSave(ProductInfo productInfo, Object[] params) {
                         ServiceFacade.getProductService().save(productInfo);
 
                         if (!(Boolean) params[0])
-                            hidePopupDialog();
+                            dialogSupport.hidePopupDialog();
 
                         row.setItem(null);
                     }
 
                     @Override
                     public void onCancel() {
-                        hidePopupDialog();
+                        dialogSupport.hidePopupDialog();
                     }
                 });
             }
 
         };
 
-        eppViewComponent = new EppViewComponent(stage) {
+        eppViewComponent = new EppViewComponent(dialogSupport) {
             @Override
             public void onChange(InvoicePdf invoicePdf) {
                 invoicePdfViewComponent.updateState();

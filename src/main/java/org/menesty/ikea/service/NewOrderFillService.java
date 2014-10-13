@@ -483,7 +483,7 @@ public class NewOrderFillService {
 
                         if (forcasts.size() > 1) {
                             stock.setAvailable(Integer.valueOf(forcasts.get(0).html()));
-                            stock.setNextAvailable(Integer.valueOf(forcasts.get(0).html()));
+                            stock.setNextAvailable(Integer.valueOf(forcasts.get(1).html()));
                         }
 
                         result.put(stock.getShopId(), stock);

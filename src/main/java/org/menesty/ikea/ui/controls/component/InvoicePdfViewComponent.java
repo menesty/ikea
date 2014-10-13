@@ -6,21 +6,19 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.scene.control.Button;
-import javafx.scene.control.TableRow;
-import javafx.scene.control.ToolBar;
-import javafx.scene.control.Tooltip;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.stage.FileChooser;
-import javafx.stage.Stage;
-import org.menesty.ikea.IkeaApplication;
+import org.menesty.ikea.core.component.DialogSupport;
 import org.menesty.ikea.db.DatabaseService;
 import org.menesty.ikea.domain.CustomerOrder;
 import org.menesty.ikea.domain.InvoicePdf;
+import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.factory.ImageFactory;
+import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.ui.controls.TotalStatusPanel;
 import org.menesty.ikea.ui.controls.dialog.Dialog;
@@ -29,8 +27,10 @@ import org.menesty.ikea.ui.controls.table.InvoicePdfTableView;
 import org.menesty.ikea.ui.pages.DialogCallback;
 import org.menesty.ikea.ui.pages.EntityDialogCallback;
 import org.menesty.ikea.util.FileChooserUtil;
+import org.menesty.ikea.util.NumberUtil;
 
 import java.io.File;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -42,14 +42,14 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
 
     private InvoicePdfTableView invoicePdfTableView;
 
-    private TotalStatusPanel statusPanel;
+    private WeightStatusPanel statusPanel;
 
     private Button syncBtn;
 
     private InvoicePdfDialog invoicePdfDialog;
 
-    public InvoicePdfViewComponent(final Stage stage) {
-        invoicePdfDialog = new InvoicePdfDialog();
+    public InvoicePdfViewComponent(final DialogSupport dialogSupport) {
+        invoicePdfDialog = new InvoicePdfDialog(dialogSupport.getStage());
 
         invoicePdfTableView = new InvoicePdfTableView() {
             @Override
@@ -69,12 +69,12 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
                         @Override
                         public void onSave(InvoicePdf invoicePdf, Object... params) {
                             InvoicePdfViewComponent.this.onSave(invoicePdf);
-                            IkeaApplication.get().hidePopupDialog();
+                            dialogSupport.hidePopupDialog();
                         }
 
                         @Override
                         public void onCancel() {
-                            IkeaApplication.get().hidePopupDialog();
+                            dialogSupport.hidePopupDialog();
                         }
                     });
                 }
@@ -96,7 +96,7 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
             button.setOnAction(new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(ActionEvent actionEvent) {
-                    showAddEditDialog(new InvoicePdf(getCustomerOrder()));
+                    showAddEditDialog(dialogSupport, new InvoicePdf(getCustomerOrder()));
                 }
             });
 
@@ -109,7 +109,7 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
             public void handle(ActionEvent event) {
                 FileChooser fileChooser = FileChooserUtil.getPdf();
 
-                List<File> selectedFile = fileChooser.showOpenMultipleDialog(stage);
+                List<File> selectedFile = fileChooser.showOpenMultipleDialog(dialogSupport.getStage());
 
                 if (selectedFile != null && selectedFile.size() > 0)
                     onImport(filter(selectedFile));
@@ -123,7 +123,7 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
         deleteBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-                Dialog.confirm("Are you sure to delete items", new DialogCallback() {
+                Dialog.confirm(dialogSupport, "Are you sure to delete items", new DialogCallback() {
                     @Override
                     public void onCancel() {
                     }
@@ -143,7 +143,7 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
         syncBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-                Dialog.confirm("Warning", "Remote warehouse will be updated with new data.", new DialogCallback() {
+                Dialog.confirm(dialogSupport, "Warning", "Remote warehouse will be updated with new data.", new DialogCallback() {
                     @Override
                     public void onCancel() {
 
@@ -162,24 +162,24 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
 
         setTop(pdfToolBar);
         setCenter(invoicePdfTableView);
-        setBottom(statusPanel = new TotalStatusPanel());
+        setBottom(statusPanel = new WeightStatusPanel());
     }
 
-    private void showAddEditDialog(InvoicePdf invoicePdf) {
+    private void showAddEditDialog(final DialogSupport dialogSupport, InvoicePdf invoicePdf) {
         invoicePdfDialog.bind(invoicePdf, new EntityDialogCallback<InvoicePdf>() {
             @Override
             public void onSave(InvoicePdf invoicePdf, Object... params) {
                 InvoicePdfViewComponent.this.onSave(invoicePdf);
-                IkeaApplication.get().hidePopupDialog();
+                dialogSupport.hidePopupDialog();
             }
 
             @Override
             public void onCancel() {
-                IkeaApplication.get().hidePopupDialog();
+                dialogSupport.hidePopupDialog();
             }
         });
 
-        IkeaApplication.get().showPopupDialog(invoicePdfDialog);
+        dialogSupport.showPopupDialog(invoicePdfDialog);
     }
 
     protected abstract void onSync(boolean clear);
@@ -256,9 +256,18 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
             public Void call() throws Exception {
                 boolean allowSync = true;
                 double total = 0d;
+                double weight = 0d;
 
                 for (InvoicePdfTableView.InvoicePdfTableItem item : invoicePdfTableView.getItems()) {
                     total += item.getInvoicePdf().getPrice();
+
+                    for (RawInvoiceProductItem rawItem : item.getInvoicePdf().getProducts()) {
+                        ProductInfo productInfo = rawItem.getProductInfo();
+
+                        if (productInfo != null)
+                            weight += rawItem.getCount() * productInfo.getPackageInfo().getWeight();
+
+                    }
 
                     boolean hasItems = ServiceFacade.getInvoiceItemService().hasItems(item.getInvoicePdf());
                     boolean update = item.hasItems() != null && item.hasItems() != hasItems;
@@ -275,6 +284,8 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
                 syncBtn.setDisable(!allowSync);
                 statusPanel.setTotal(total);
 
+                statusPanel.setWeight(weight / 1000);
+
                 return null;
             }
         });
@@ -282,5 +293,20 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
 
     public Button getSyncBtn() {
         return syncBtn;
+    }
+}
+
+class WeightStatusPanel extends TotalStatusPanel {
+    private Label weightLabel;
+
+    public WeightStatusPanel() {
+        Region space = new Region();
+        HBox.setHgrow(space, Priority.ALWAYS);
+
+        getItems().addAll(space, new Label("Weight :"), weightLabel = new Label());
+    }
+
+    public void setWeight(double weight) {
+        weightLabel.setText(NumberFormat.getNumberInstance().format(NumberUtil.round(weight)));
     }
 }

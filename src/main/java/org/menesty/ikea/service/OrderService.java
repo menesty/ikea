@@ -3,15 +3,18 @@ package org.menesty.ikea.service;
 import net.sf.jxls.reader.*;
 import net.sf.jxls.transformer.XLSTransformer;
 import org.apache.commons.lang.StringUtils;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.menesty.ikea.domain.*;
 import org.menesty.ikea.exception.ProductFetchException;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.ui.TaskProgress;
 import org.menesty.ikea.util.NumberUtil;
+import org.xml.sax.SAXException;
 
 import javax.persistence.TypedQuery;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.net.URI;
@@ -40,25 +43,14 @@ public class OrderService extends Repository<CustomerOrder> {
             order.setName(name);
             order.setCreatedDate(new Date());
 
-            InputStream inputXML = getClass().getResourceAsStream("/config/config.xml");
-            XLSReader mainReader = ReaderBuilder.buildFromXML(inputXML);
-            ReaderConfig.getInstance().setUseDefaultValuesForPrimitiveTypes(true);
+            OrderParseResult parseResult = parseOrder(is, taskProgress);
 
-            List<RawOrderItem> rawOrderItems = new ArrayList<>();
-            Map<String, Object> beans = new HashMap<>();
-            beans.put("rawOrderItems", rawOrderItems);
-
-            taskProgress.updateProgress(5, 100);
-            XLSReadStatus readStatus = mainReader.read(is, beans);
-            taskProgress.updateProgress(20, 100);
-
-            for (XLSReadMessage message : (List<XLSReadMessage>) readStatus.getReadMessages())
-                order.addWarning(message.getMessage());
+            order.setParseWarnings(parseResult.getParseWarnings());
 
             try {
                 begin();
                 order = ServiceFacade.getOrderService().save(order);
-                ServiceFacade.getOrderService().save(reduce(order, rawOrderItems, taskProgress));
+                ServiceFacade.getOrderService().save(reduce(order, parseResult.getRawOrderItems(), taskProgress));
                 commit();
                 return order;
 
@@ -69,6 +61,34 @@ public class OrderService extends Repository<CustomerOrder> {
             e.printStackTrace();
         }
         return null;
+    }
+    @SuppressWarnings("unchecked")
+    protected OrderParseResult parseOrder(InputStream is, TaskProgress taskProgress) throws IOException,
+            SAXException, InvalidFormatException {
+
+        OrderParseResult result = new OrderParseResult();
+
+        InputStream inputXML = getClass().getResourceAsStream("/config/config.xml");
+        XLSReader mainReader = ReaderBuilder.buildFromXML(inputXML);
+        ReaderConfig.getInstance().setUseDefaultValuesForPrimitiveTypes(true);
+
+        List<RawOrderItem> rawOrderItems = new ArrayList<>();
+        List<String> warnings = new ArrayList<>();
+
+        result.setParseWarnings(warnings);
+        result.setRawOrderItems(rawOrderItems);
+
+        Map<String, Object> beans = new HashMap<>();
+        beans.put("rawOrderItems", rawOrderItems);
+
+        taskProgress.updateProgress(5, 100);
+        XLSReadStatus readStatus = mainReader.read(is, beans);
+        taskProgress.updateProgress(20, 100);
+
+        for (XLSReadMessage message : (List<XLSReadMessage>) readStatus.getReadMessages())
+            warnings.add(message.getMessage());
+
+        return result;
     }
 
     public CustomerOrder save(CustomerOrder entity) {
@@ -112,7 +132,7 @@ public class OrderService extends Repository<CustomerOrder> {
         return query.getResultList();
     }
 
-    private List<OrderItem> reduce(CustomerOrder order, List<RawOrderItem> list, TaskProgress taskProgress) {
+    List<OrderItem> reduce(CustomerOrder order, List<RawOrderItem> list, TaskProgress taskProgress) {
         Map<String, OrderItem> reduceMap = new HashMap<>();
         int itemIndex = 0;
 
@@ -184,7 +204,7 @@ public class OrderService extends Repository<CustomerOrder> {
         return prepared;
     }
 
-    private String getArtNumber(String artNumber) {
+    String getArtNumber(String artNumber) {
         Matcher m = artNumberPattern.matcher(artNumber.replace(".", ""));
 
         if (m.find())
@@ -509,6 +529,28 @@ public class OrderService extends Repository<CustomerOrder> {
             commit();
         } catch (Exception e) {
             rollback();
+        }
+    }
+
+    public static class OrderParseResult {
+        private List<RawOrderItem> rawOrderItems;
+
+        private List<String> parseWarnings;
+
+        public List<RawOrderItem> getRawOrderItems() {
+            return rawOrderItems;
+        }
+
+        public void setRawOrderItems(List<RawOrderItem> rawOrderItems) {
+            this.rawOrderItems = rawOrderItems;
+        }
+
+        public List<String> getParseWarnings() {
+            return parseWarnings;
+        }
+
+        public void setParseWarnings(List<String> parseWarnings) {
+            this.parseWarnings = parseWarnings;
         }
     }
 }

@@ -160,4 +160,8 @@ public class ImageFactory {
     public static ImageView createDelete16Icon() {
         return new ImageView(new Image("/styles/images/icon/delete-16x16.png"));
     }
+
+    public static ImageView createHome24Icon() {
+        return new ImageView(new Image("/styles/images/icon/home-20x20.png"));
+    }
 }

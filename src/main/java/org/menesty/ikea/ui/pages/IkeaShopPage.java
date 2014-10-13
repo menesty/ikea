@@ -41,7 +41,7 @@ public class IkeaShopPage extends BasePage {
             }
         });
 
-        dialog = new IkeaShopDialog();
+        dialog = new IkeaShopDialog(getStage());
     }
 
     @Override
@@ -126,10 +126,6 @@ public class IkeaShopPage extends BasePage {
         loadService.restart();
     }
 
-    @Override
-    protected Node createIconContent() {
-        return ImageFactory.createShopIcon72();
-    }
 }
 
 class LoadService extends AbstractAsyncService<List<IkeaShop>> {

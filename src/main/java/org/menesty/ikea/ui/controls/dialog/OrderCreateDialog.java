@@ -12,7 +12,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
-import javafx.stage.Window;
+import javafx.stage.Stage;
 import org.menesty.ikea.ui.controls.form.FormPane;
 import org.menesty.ikea.ui.controls.form.NumberTextField;
 import org.menesty.ikea.ui.controls.form.TextField;
@@ -26,10 +26,9 @@ public class OrderCreateDialog extends BaseDialog {
 
     private OrderForm orderForm;
 
-    private final Window owner;
 
-    public OrderCreateDialog(final Window owner) {
-        this.owner = owner;
+    public OrderCreateDialog(final Stage stage) {
+        super(stage);
 
         okBtn.setDisable(true);
         setTitle("New order from customer");
@@ -123,7 +122,7 @@ public class OrderCreateDialog extends BaseDialog {
             button.setOnAction(new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(ActionEvent actionEvent) {
-                    File selectedFile = FileChooserUtil.getXls().showOpenDialog(owner);
+                    File selectedFile = FileChooserUtil.getXls().showOpenDialog(getStage());
 
                     okBtn.setDisable(selectedFile == null);
 

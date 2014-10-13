@@ -4,6 +4,7 @@ import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
+import javafx.stage.Stage;
 import org.apache.commons.lang.StringUtils;
 import org.menesty.ikea.domain.OrderItem;
 import org.menesty.ikea.domain.ProductInfo;
@@ -20,7 +21,9 @@ public class OrderItemDialog extends BaseDialog {
     private OrderItem currentOrderItem;
     private EntityDialogCallback<OrderItem> callback;
 
-    public OrderItemDialog() {
+    public OrderItemDialog(Stage stage) {
+        super(stage);
+
         setTitle("Create/Edit OrderItem");
         orderItemForm = new OrderItemForm();
 

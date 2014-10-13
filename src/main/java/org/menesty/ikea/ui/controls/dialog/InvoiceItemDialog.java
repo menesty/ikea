@@ -1,6 +1,7 @@
 package org.menesty.ikea.ui.controls.dialog;
 
 import javafx.scene.control.TextField;
+import javafx.stage.Stage;
 import org.menesty.ikea.processor.invoice.InvoiceItem;
 import org.menesty.ikea.ui.controls.form.DoubleTextField;
 import org.menesty.ikea.ui.layout.RowPanel;
@@ -16,7 +17,8 @@ public class InvoiceItemDialog extends BaseDialog {
 
     private InvoiceItemForm form;
 
-    public InvoiceItemDialog() {
+    public InvoiceItemDialog(Stage stage) {
+        super(stage);
         setTitle("Create invoice");
 
         addRow(form = new InvoiceItemForm(), bottomBar);

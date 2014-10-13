@@ -1,18 +1,30 @@
 package org.menesty.ikea.ui.controls.pane;
 
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.concurrent.Worker;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * Created by Menesty on 12/18/13.
+ * Created by Menesty
+ * on 12/18/13.
  */
 public class LoadingPane extends StackPane {
 
     private Region maskRegion;
 
     private ProgressIndicator progressIndicator;
+
+    private TaskRunningMonitorProperty taskRunningMonitorProperty;
+    private SimpleDoubleProperty progressProperty = new SimpleDoubleProperty(-1);
 
     public LoadingPane() {
         maskRegion = new Region();
@@ -23,6 +35,8 @@ public class LoadingPane extends StackPane {
         progressIndicator.setVisible(false);
         getChildren().addAll(maskRegion, progressIndicator);
         setVisible(false);
+
+        taskRunningMonitorProperty = new TaskRunningMonitorProperty();
     }
 
     private void unbind() {
@@ -30,15 +44,20 @@ public class LoadingPane extends StackPane {
         maskRegion.visibleProperty().unbind();
         visibleProperty().unbind();
         progressIndicator.visibleProperty().unbind();
+        taskRunningMonitorProperty.unbind();
     }
 
-    public void bindTask(Worker<?> task) {
+    public void bindTask(Worker<?>... task) {
         unbind();
 
-        progressIndicator.progressProperty().bind(task.progressProperty());
-        maskRegion.visibleProperty().bind(task.runningProperty());
-        visibleProperty().bind(task.runningProperty());
-        progressIndicator.visibleProperty().bind(task.runningProperty());
+        for (Worker<?> worker : task) {
+            taskRunningMonitorProperty.setProperties(worker.runningProperty());
+        }
+
+        progressIndicator.progressProperty().bind(progressProperty);
+        maskRegion.visibleProperty().bind(taskRunningMonitorProperty);
+        visibleProperty().bind(taskRunningMonitorProperty);
+        progressIndicator.visibleProperty().bind(taskRunningMonitorProperty);
     }
 
     public void show() {
@@ -55,5 +74,47 @@ public class LoadingPane extends StackPane {
         maskRegion.visibleProperty().setValue(false);
         visibleProperty().setValue(false);
         progressIndicator.visibleProperty().setValue(false);
+    }
+}
+
+class TaskRunningMonitorProperty extends SimpleBooleanProperty {
+    private List<ReadOnlyBooleanProperty> properties = new ArrayList<>();
+
+    private InvalidationListener invalidationListener;
+
+    public TaskRunningMonitorProperty() {
+        invalidationListener = new InvalidationListener() {
+            @Override
+            public void invalidated(Observable observable) {
+                boolean running = false;
+                for (ReadOnlyBooleanProperty property : properties) {
+                    if (property.get()) {
+                        running = true;
+                        break;
+                    }
+                }
+                TaskRunningMonitorProperty.this.set(running);
+            }
+        };
+    }
+
+    public void setProperties(ReadOnlyBooleanProperty... properties) {
+        unbind();
+
+        for (ReadOnlyBooleanProperty property : properties) {
+            property.addListener(invalidationListener);
+            this.properties.add(property);
+        }
+    }
+
+    @Override
+    public void unbind() {
+        super.unbind();
+
+        for (ReadOnlyBooleanProperty property : properties) {
+            property.removeListener(invalidationListener);
+        }
+
+        properties.clear();
     }
 }

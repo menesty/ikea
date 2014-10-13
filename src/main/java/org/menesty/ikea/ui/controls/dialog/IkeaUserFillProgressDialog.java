@@ -3,6 +3,7 @@ package org.menesty.ikea.ui.controls.dialog;
 import javafx.application.Platform;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 import org.menesty.ikea.ui.TaskProgressLog;
 
 public class IkeaUserFillProgressDialog extends BaseDialog implements TaskProgressLog {
@@ -11,8 +12,8 @@ public class IkeaUserFillProgressDialog extends BaseDialog implements TaskProgre
 
     private Label activeItem;
 
-    public IkeaUserFillProgressDialog() {
-        super(false);
+    public IkeaUserFillProgressDialog(Stage stage) {
+        super(stage, false);
 
         setAllowAutoHide(false);
         cancelBtn.setVisible(false);

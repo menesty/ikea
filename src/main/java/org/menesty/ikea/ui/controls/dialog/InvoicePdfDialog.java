@@ -1,5 +1,6 @@
 package org.menesty.ikea.ui.controls.dialog;
 
+import javafx.stage.Stage;
 import org.menesty.ikea.domain.InvoicePdf;
 import org.menesty.ikea.ui.controls.form.DoubleTextField;
 import org.menesty.ikea.ui.controls.form.FormPane;
@@ -13,7 +14,8 @@ public class InvoicePdfDialog extends BaseDialog {
 
     private EntityDialogCallback<InvoicePdf> callback;
 
-    public InvoicePdfDialog() {
+    public InvoicePdfDialog(Stage stage) {
+        super(stage);
         addRow(form = new InvoiceForm(), bottomBar);
         okBtn.setText("Save");
     }

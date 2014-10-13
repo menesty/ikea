@@ -4,6 +4,7 @@ import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.scene.control.ComboBox;
+import javafx.stage.Stage;
 import org.menesty.ikea.db.DatabaseService;
 import org.menesty.ikea.domain.CustomerOrder;
 import org.menesty.ikea.domain.IkeaShop;
@@ -21,7 +22,9 @@ import java.util.concurrent.Callable;
 public class OrderEditDialog extends BaseEntityDialog<CustomerOrder> {
     private OrderForm form;
 
-    public OrderEditDialog() {
+    public OrderEditDialog(Stage stage) {
+        super(stage);
+
         okBtn.setDisable(true);
         setTitle("Edit order");
 

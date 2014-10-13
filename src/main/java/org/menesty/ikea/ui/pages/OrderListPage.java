@@ -17,7 +17,6 @@ import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
 import javafx.util.Callback;
-import org.menesty.ikea.IkeaApplication;
 import org.menesty.ikea.db.DatabaseService;
 import org.menesty.ikea.domain.CustomerOrder;
 import org.menesty.ikea.domain.PagingResult;
@@ -74,6 +73,7 @@ public class OrderListPage extends BasePage {
     @Override
     public Node createView() {
         tableView = createTableView();
+        //      tableView.setPrefHeight(Double.MAX_VALUE);
 
         ToolBar control = createToolBar();
 
@@ -86,6 +86,11 @@ public class OrderListPage extends BasePage {
                 loadService.restart();
             }
         });
+
+        /*pagination.setMaxHeight(60);
+        pagination.setPrefHeight(60);
+        pagination.setMinHeight(60);
+*/
 
         BorderPane borderPane = new BorderPane();
         borderPane.setCenter(tableView);
@@ -163,7 +168,7 @@ public class OrderListPage extends BasePage {
 
     private OrderEditDialog getEditDialog() {
         if (editDialog == null)
-            editDialog = new OrderEditDialog();
+            editDialog = new OrderEditDialog(getStage());
 
         return editDialog;
     }
@@ -182,9 +187,10 @@ public class OrderListPage extends BasePage {
         final Button editOrder = new Button(null, ImageFactory.creteInfo48Icon());
         editOrder.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
-                IkeaApplication.getPageManager().goToPageByName("CustomerOrder", tableView.getSelectionModel().getSelectedItem().getOrder());
+                navigate(OrderViewPage.class, tableView.getSelectionModel().getSelectedItem().getOrder());
             }
         });
+
         editOrder.setTooltip(new Tooltip("View order"));
         editOrder.setDisable(true);
 
@@ -192,7 +198,7 @@ public class OrderListPage extends BasePage {
         deleteBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-                Dialog.confirm("Are you sure want delete selected Order", new DialogCallback() {
+                Dialog.confirm(getDialogSupport(), "Are you sure want delete selected Order", new DialogCallback() {
                     @Override
                     public void onCancel() {
 
@@ -325,12 +331,6 @@ public class OrderListPage extends BasePage {
         return result;
 
     }
-
-    @Override
-    protected Node createIconContent() {
-        return ImageFactory.createOrders72Icon();
-    }
-
 
     class LoadService extends AbstractAsyncService<PagingResult<CustomerOrder>> {
         private SimpleIntegerProperty pageIndex = new SimpleIntegerProperty();

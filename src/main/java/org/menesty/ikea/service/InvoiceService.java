@@ -96,7 +96,7 @@ public class InvoiceService {
         exportToXls(order.getName(), items, filePath);
     }
 
-    private void exportToXls(String invoiceName, List<InvoiceItem> items, String path){
+    private void exportToXls(String invoiceName, List<InvoiceItem> items, String path) {
         XLSTransformer transformer = new XLSTransformer();
         Map<String, Object> bean = new HashMap<>();
         bean.put("items", items);
