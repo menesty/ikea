@@ -29,7 +29,6 @@
 * *
 ******************************************************************************/
 
-
 /*******************************************************************************
 * *
 * Dialogs *
@@ -88,7 +87,7 @@
 }
 
 .dialog:active .window-button:hover {
-    -fx-background-color: linear-gradient(#505050,#2d2d2d),
+    -fx-background-color: linear-gradient(#505050, #2d2d2d),
     linear-gradient(#a3a3a3, #8b8b8b 34%, #777777 36%, #777777 63%, #8b8b8b 65%, #adadad);
 }
 
@@ -97,7 +96,7 @@
 }
 
 .dialog .window-button:pressed {
-    -fx-background-color: linear-gradient(#515151,#202020),
+    -fx-background-color: linear-gradient(#515151, #202020),
     linear-gradient(#a3a3a3, #8b8b8b 34%, #777777 36%, #777777 63%, #8b8b8b 65%, #adadad);
 }
 
@@ -134,7 +133,7 @@
 
 .dialog .top-panel {
     -fx-padding: 10 14 10 14;
-    -fx-background-color: linear-gradient(#e2e2e2,#e2e2e2,#eeeeee);
+    -fx-background-color: linear-gradient(#e2e2e2, #e2e2e2, #eeeeee);
 }
 
 .dialog .masthead-label-1 {
@@ -151,7 +150,7 @@
 .dialog .center-panel {
     -fx-padding: 16 16 14 28;
     -fx-spacing: 14;
-    -fx-background-color: linear-gradient(#ffffff,#f3f3f4);
+    -fx-background-color: linear-gradient(#ffffff, #f3f3f4);
     -fx-border-width: 1 1 1 1;
     -fx-border-color: #b4b4b4 white #b4b4b4 white;
     -fx-font: 13px "Amble Cn";
@@ -165,7 +164,7 @@
 .dialog .bottom-panel {
     -fx-padding: 14 14 14 14;
     -fx-spacing: 14;
-    -fx-background-color: linear-gradient(#eeeeee,#e2e2e2,#e2e2e2);
+    -fx-background-color: linear-gradient(#eeeeee, #e2e2e2, #e2e2e2);
     -fx-alignment: center-left;
 }
 

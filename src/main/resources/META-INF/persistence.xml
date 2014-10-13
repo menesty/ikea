@@ -22,7 +22,7 @@
             <property name="javax.persistence.jdbc.driver" value="org.h2.Driver"/>
             <property name="javax.persistence.jdbc.url" value="jdbc:h2:data/db/ikea"/>
             <property name="javax.persistence.jdbc.user" value="menesty"/>
-           <!-- <property name="eclipselink.logging.level" value="FINE"/>-->
+            <!-- <property name="eclipselink.logging.level" value="FINE"/>-->
             <property name="javax.persistence.jdbc.password" value="ikea-desktop-1"/>
         </properties>
     </persistence-unit>

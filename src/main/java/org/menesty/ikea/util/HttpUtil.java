@@ -26,7 +26,7 @@ public class HttpUtil {
         return credsProvider;
     }
 
-    public static HttpClientContext context(final HttpHost targetHost){
+    public static HttpClientContext context(final HttpHost targetHost) {
         AuthCache authCache = new BasicAuthCache();
         DigestScheme digestAuth = new DigestScheme();
         digestAuth.overrideParamter("realm", "Authentication require");

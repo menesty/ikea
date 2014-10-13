@@ -6,6 +6,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Task;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.stage.Stage;
 import org.apache.http.HttpHost;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -32,7 +33,8 @@ public class ParagonViewDialog extends BaseDialog {
 
     private LoadService loadService;
 
-    public ParagonViewDialog() {
+    public ParagonViewDialog(Stage stage) {
+        super(stage);
         setMinWidth(530);
         loadService = new LoadService();
         loadService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<List<ParagonItemDto>>() {

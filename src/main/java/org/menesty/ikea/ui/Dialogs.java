@@ -1,18 +1,5 @@
 package org.menesty.ikea.ui;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.net.URL;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.security.PrivilegedExceptionAction;
-import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
-
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.property.Property;
@@ -33,29 +20,22 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import javafx.stage.Modality;
-import javafx.stage.Screen;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
-import javafx.stage.Window;
+import javafx.stage.*;
 import javafx.util.Callback;
 
-import com.sun.javafx.css.StyleManager;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.net.URL;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.security.PrivilegedExceptionAction;
+import java.text.MessageFormat;
+import java.util.*;
 
-import static org.menesty.ikea.ui.Dialogs.DialogResources.getIcon;
-import static org.menesty.ikea.ui.Dialogs.DialogResources.getMessage;
-import static org.menesty.ikea.ui.Dialogs.DialogResources.getString;
-
+import static org.menesty.ikea.ui.Dialogs.DialogResources.*;
 
 
 /**
@@ -143,17 +123,17 @@ public class Dialogs {
     }
 
 
-
-    /***************************************************************************
+    /**
+     * ************************************************************************
      * *
      * Constructors *
      * *
-     **************************************************************************/
+     * ************************************************************************
+     */
 
     private Dialogs() {
         // no-op as we don't want people creating instances of this class
     }
-
 
 
     /***************************************************************************
@@ -204,12 +184,13 @@ public class Dialogs {
     }
 
 
-
-    /***************************************************************************
+    /**
+     * ************************************************************************
      * *
      * Information Dialogs *
      * *
-     **************************************************************************/
+     * ************************************************************************
+     */
 
     public static void showInformationDialog(final Stage owner,
                                              final String message) {
@@ -219,7 +200,7 @@ public class Dialogs {
     }
 
     public static void showInformationDialog(final Stage owner, final String message,
-                                             final String masthead){
+                                             final String masthead) {
         showInformationDialog(owner,
                 message,
                 masthead,
@@ -234,7 +215,7 @@ public class Dialogs {
 * text and title strings are already translated strings.
 */
     public static void showInformationDialog(final Stage owner, final String message,
-                                             final String masthead, final String title){
+                                             final String masthead, final String title) {
         showSimpleContentDialog(owner,
                 title,
                 masthead,
@@ -242,7 +223,6 @@ public class Dialogs {
                 DialogType.INFORMATION,
                 DialogType.INFORMATION.getDefaultOptions());
     }
-
 
 
     /***************************************************************************
@@ -257,10 +237,8 @@ public class Dialogs {
      * and message that is displayed in the middle part
      * of the dialog. No bullet is displayed.
      *
-     *
-     * @param owner - Component to parent the dialog to
+     * @param owner   - Component to parent the dialog to
      * @param message - question to display in the middle part
-     *
      */
     public static DialogResponse showWarningDialog(final Stage owner, final String message) {
         return showWarningDialog(owner,
@@ -297,12 +275,13 @@ public class Dialogs {
     }
 
 
-
-    /***************************************************************************
+    /**
+     * ************************************************************************
      * *
      * Exception / Error Dialogs *
      * *
-     **************************************************************************/
+     * ************************************************************************
+     */
 
     public static DialogResponse showErrorDialog(final Stage owner, final String message) {
         return showErrorDialog(owner,
@@ -348,12 +327,13 @@ public class Dialogs {
     }
 
 
-
-    /***************************************************************************
+    /**
+     * ************************************************************************
      * *
      * User Input Dialogs *
      * *
-     **************************************************************************/
+     * ************************************************************************
+     */
 
     public static String showInputDialog(final Stage owner, final String message) {
         return showInputDialog(owner, message, "Masthead");
@@ -389,11 +369,13 @@ public class Dialogs {
         return showUserInputDialog(template);
     }
 
-    /***************************************************************************
+    /**
+     * ************************************************************************
      * *
      * Custom Content Dialog *
      * *
-     **************************************************************************/
+     * ************************************************************************
+     */
 
     //Provided Pane is inserted in the content panel. Provided callback is added to buttons' onAction handler.
     public static <T> DialogResponse showCustomDialog(final Stage owner, final Pane customContentPanel, final String masthead, final String title, DialogOptions options, Callback<DialogResponse, Boolean> callback) {
@@ -404,33 +386,51 @@ public class Dialogs {
     }
 
 
-
-
-    /***************************************************************************
+    /**
+     * ************************************************************************
      * *
      * Private API *
      * *
-     **************************************************************************/
+     * ************************************************************************
+     */
 
     // NOT PUBLIC API
     static enum DialogType {
         ERROR(DialogOptions.OK, "error48.image") {
-            @Override public String getDefaultMasthead() { return "Error"; }
+            @Override
+            public String getDefaultMasthead() {
+                return "Error";
+            }
         },
         INFORMATION(DialogOptions.OK, "info48.image") {
-            @Override public String getDefaultMasthead() { return "Message"; }
+            @Override
+            public String getDefaultMasthead() {
+                return "Message";
+            }
         },
         WARNING(DialogOptions.OK, "warning48.image") {
-            @Override public String getDefaultMasthead() { return "Warning"; }
+            @Override
+            public String getDefaultMasthead() {
+                return "Warning";
+            }
         },
         CONFIRMATION(DialogOptions.YES_NO_CANCEL, "confirm48.image") {
-            @Override public String getDefaultMasthead() { return "Select an Option"; }
+            @Override
+            public String getDefaultMasthead() {
+                return "Select an Option";
+            }
         },
         INPUT(DialogOptions.OK_CANCEL, "confirm48.image") {
-            @Override public String getDefaultMasthead() { return "Select an Option"; }
+            @Override
+            public String getDefaultMasthead() {
+                return "Select an Option";
+            }
         },
         CUSTOM(DialogOptions.OK, "info48.image") {
-            @Override public String getDefaultMasthead() { return "Message"; }
+            @Override
+            public String getDefaultMasthead() {
+                return "Message";
+            }
         };
 
         private final DialogOptions defaultOptions;
@@ -502,8 +502,8 @@ public class Dialogs {
 // return null;
 // }
     }
+
     /**
-     *
      * @param <T> The type for user input
      */
     private static class DialogTemplate<T> {
@@ -574,12 +574,13 @@ public class Dialogs {
         private Callback<DialogResponse, Boolean> callback;
 
 
-
-        /***************************************************************************
+        /**
+         * ************************************************************************
          * *
          * Constructors *
          * *
-         **************************************************************************/
+         * ************************************************************************
+         */
 
         DialogTemplate(Stage owner, String title, String masthead, DialogOptions options) {
             this.dialog = new FXDialog(title, owner, true);
@@ -601,13 +602,13 @@ public class Dialogs {
         }
 
 
-
-
-        /***************************************************************************
+        /**
+         * ************************************************************************
          * *
          * Dialog construction API *
          * *
-         **************************************************************************/
+         * ************************************************************************
+         */
 
         void setSimpleContent(String contentString, DialogType dialogType) {
             setSimpleContent(contentString, dialogType, null, true);
@@ -620,7 +621,7 @@ public class Dialogs {
 
             this.dialogType = dialogType == null ? DialogType.WARNING : dialogType;
             if (infoString != null) {
-                String[] strs = { infoString };
+                String[] strs = {infoString};
                 if (useWarningIcon) {
                     this.alertStrs = strs;
                 } else {
@@ -674,7 +675,7 @@ public class Dialogs {
             dialog.setResizable(false);
         }
 
-        void setCustomContent(Pane customContent){
+        void setCustomContent(Pane customContent) {
             this.style = DialogStyle.CUSTOM;
             this.customContentPanel = customContent;
 
@@ -690,12 +691,13 @@ public class Dialogs {
         }
 
 
-
-        /***************************************************************************
+        /**
+         * ************************************************************************
          * *
          * 'Public' API *
          * *
-         **************************************************************************/
+         * ************************************************************************
+         */
 
         public FXDialog getDialog() {
             return dialog;
@@ -711,6 +713,7 @@ public class Dialogs {
 
         /**
          * gets the response from the user.
+         *
          * @return the response
          */
         public DialogResponse getResponse() {
@@ -727,12 +730,13 @@ public class Dialogs {
         }
 
 
-
-        /***************************************************************************
+        /**
+         * ************************************************************************
          * *
          * Implementation *
          * *
-         **************************************************************************/
+         * ************************************************************************
+         */
 
         /*
 * top part of the dialog contains short informative message, and either
@@ -778,7 +782,8 @@ public class Dialogs {
             }
 
             FlowPane buttonsPanel = new FlowPane(6, 0) {
-                @Override protected void layoutChildren() {
+                @Override
+                protected void layoutChildren() {
                     /*
 * According to UI guidelines, all buttons should have the same length.
 * This function is to define the longest button in the array of buttons
@@ -836,7 +841,8 @@ public class Dialogs {
                     final TextField textField = new TextField();
                     userInputResponse.bind((ObservableValue<T>) textField.textProperty());
                     textField.setOnAction(new EventHandler<ActionEvent>() {
-                        @Override public void handle(ActionEvent t) {
+                        @Override
+                        public void handle(ActionEvent t) {
                             userResponse = DialogResponse.OK;
                             hide();
                         }
@@ -875,7 +881,7 @@ public class Dialogs {
 
                 HBox hbox = new HBox(10);
 
-                if (contentString != null && ! contentString.isEmpty()) {
+                if (contentString != null && !contentString.isEmpty()) {
                     Label label = new Label(contentString);
                     hbox.getChildren().add(label);
                 }
@@ -885,7 +891,7 @@ public class Dialogs {
                 }
 
                 return hbox;
-            } else if(style == DialogStyle.CUSTOM){
+            } else if (style == DialogStyle.CUSTOM) {
                 return customContentPanel;
             }
 
@@ -905,7 +911,8 @@ public class Dialogs {
 
                     Button detailsBtn = new Button((detailBtnStr == null) ? "" : getMessage(detailBtnStr));
                     detailsBtn.setOnAction(new EventHandler<ActionEvent>() {
-                        @Override public void handle(ActionEvent ae) {
+                        @Override
+                        public void handle(ActionEvent ae) {
                             new ExceptionDialog(dialog, throwable).show();
                         }
                     });
@@ -932,14 +939,15 @@ public class Dialogs {
                                     final boolean isDefault, final boolean isCancel) {
             Button btn = new Button((extLabel == null) ? "" : getMessage(extLabel));
             btn.setOnAction(new EventHandler<ActionEvent>() {
-                @Override public void handle(ActionEvent ae) {
+                @Override
+                public void handle(ActionEvent ae) {
                     userResponse = response;
 
                     //If callback provided for custom dialog - call it.
-                    if(callback != null){
-                       Boolean result =  callback.call(response);
-                       if(result != null && result)
-                           hide();
+                    if (callback != null) {
+                        Boolean result = callback.call(response);
+                        if (result != null && result)
+                            hide();
                     }
 
                     // hide the dialog. We'll return from the dialog,
@@ -1007,7 +1015,6 @@ public class Dialogs {
     }
 
 
-
     private static class UITextArea extends Label {
         double preferred_width = 360;
 
@@ -1034,7 +1041,6 @@ public class Dialogs {
             setWrapText(true);
         }
     }
-
 
 
     /**
@@ -1075,7 +1081,8 @@ public class Dialogs {
             }
 
             resizableProperty().addListener(new InvalidationListener() {
-                @Override public void invalidated(Observable valueModel) {
+                @Override
+                public void invalidated(Observable valueModel) {
                     resizeCorner.setVisible(isResizable());
                     maxButton.setVisible(isResizable());
 
@@ -1102,7 +1109,8 @@ public class Dialogs {
             // *** The rest is for adding window decorations ***
 
             decoratedRoot = new RootPane() {
-                @Override protected void layoutChildren() {
+                @Override
+                protected void layoutChildren() {
                     super.layoutChildren();
                     if (resizeCorner != null) {
                         resizeCorner.relocate(getWidth() - 20, getHeight() - 20);
@@ -1113,7 +1121,8 @@ public class Dialogs {
             scene = new Scene(decoratedRoot);
             // !CHANGE START!
             String css = (String) AccessController.doPrivileged(new PrivilegedAction() {
-                @Override public Object run() {
+                @Override
+                public Object run() {
                     return DIALOGS_CSS_URL.toExternalForm();
                 }
             });
@@ -1125,7 +1134,8 @@ public class Dialogs {
             decoratedRoot.getStyleClass().addAll("dialog", "decorated-root");
 
             focusedProperty().addListener(new InvalidationListener() {
-                @Override public void invalidated(Observable valueModel) {
+                @Override
+                public void invalidated(Observable valueModel) {
                     //decoratedRoot.pseudoClassStateChanged("active");
                 }
             });
@@ -1138,13 +1148,15 @@ public class Dialogs {
 
             // add window dragging
             toolBar.setOnMousePressed(new EventHandler<MouseEvent>() {
-                @Override public void handle(MouseEvent event) {
+                @Override
+                public void handle(MouseEvent event) {
                     mouseDragOffsetX = event.getSceneX();
                     mouseDragOffsetY = event.getSceneY();
                 }
             });
             toolBar.setOnMouseDragged(new EventHandler<MouseEvent>() {
-                @Override public void handle(MouseEvent event) {
+                @Override
+                public void handle(MouseEvent event) {
                     setX(event.getScreenX() - mouseDragOffsetX);
                     setY(event.getScreenY() - mouseDragOffsetY);
                 }
@@ -1155,7 +1167,8 @@ public class Dialogs {
             titleLabel.setText(getTitle());
 
             titleProperty().addListener(new InvalidationListener() {
-                @Override public void invalidated(Observable valueModel) {
+                @Override
+                public void invalidated(Observable valueModel) {
                     titleLabel.setText(getTitle());
                 }
             });
@@ -1166,13 +1179,15 @@ public class Dialogs {
             // add close min max
             Button closeButton = createWindowButton("close");
             closeButton.setOnAction(new EventHandler() {
-                @Override public void handle(Event event) {
+                @Override
+                public void handle(Event event) {
                     FXDialog.this.hide();
                 }
             });
             minButton = createWindowButton("minimize");
             minButton.setOnAction(new EventHandler() {
-                @Override public void handle(Event event) {
+                @Override
+                public void handle(Event event) {
                     setIconified(!isIconified());
                 }
             });
@@ -1184,7 +1199,8 @@ public class Dialogs {
                 private double restoreW;
                 private double restoreH;
 
-                @Override public void handle(Event event) {
+                @Override
+                public void handle(Event event) {
                     Screen screen = Screen.getPrimary(); // todo something more sensible
                     double minX = screen.getVisualBounds().getMinX();
                     double minY = screen.getVisualBounds().getMinY();
@@ -1225,7 +1241,8 @@ public class Dialogs {
                 private double height;
                 private Point2D dragAnchor;
 
-                @Override public void handle(MouseEvent event) {
+                @Override
+                public void handle(MouseEvent event) {
                     EventType type = event.getEventType();
 
                     if (type == MouseEvent.MOUSE_PRESSED) {
@@ -1262,13 +1279,12 @@ public class Dialogs {
 
             Button button = new Button();
             button.getStyleClass().setAll("window-button");
-            button.getStyleClass().add("window-"+name+"-button");
+            button.getStyleClass().add("window-" + name + "-button");
             button.setGraphic(graphic);
             button.setMinSize(17, 17);
             button.setPrefSize(17, 17);
             return button;
         }
-
 
 
         private static class RootPane extends StackPane {
@@ -1339,7 +1355,8 @@ public class Dialogs {
             Button dismissBtn = new Button(getMessage("common.close.btn"));
             dismissBtn.setPrefWidth(80);
             dismissBtn.setOnAction(new EventHandler<ActionEvent>() {
-                @Override public void handle(ActionEvent e) {
+                @Override
+                public void handle(ActionEvent e) {
                     hide();
                 }
             });
@@ -1353,7 +1370,6 @@ public class Dialogs {
             // --- initComponents
         }
     }
-
 
 
     static class DialogResources {
@@ -1403,7 +1419,8 @@ public class Dialogs {
             try {
                 return AccessController.doPrivileged(
                         new PrivilegedExceptionAction<ImageView>() {
-                            @Override public ImageView run() {
+                            @Override
+                            public ImageView run() {
                                 String resourceName = getString(key);
                                 URL url = DialogResources.class.getResource(resourceName);
                                 if (url == null) {

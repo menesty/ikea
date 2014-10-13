@@ -11,8 +11,7 @@ import javafx.geometry.Orientation;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
-import javafx.stage.Stage;
-import org.menesty.ikea.IkeaApplication;
+import org.menesty.ikea.core.component.DialogSupport;
 import org.menesty.ikea.domain.InvoicePdf;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.factory.ImageFactory;
@@ -70,10 +69,10 @@ public abstract class EppViewComponent extends StackPane {
 
     private static final int MAX_ZESTAV_PRICE = 460;
 
-    public EppViewComponent(final Stage stage) {
+    public EppViewComponent(final DialogSupport dialogSupport) {
         loadingPane = new LoadingPane();
         loadService = new LoadService();
-        invoiceItemDialog = new InvoiceItemDialog();
+        invoiceItemDialog = new InvoiceItemDialog(dialogSupport.getStage());
 
         SplitPane splitPane = new SplitPane();
         loadingPane.bindTask(loadService);
@@ -88,7 +87,7 @@ public abstract class EppViewComponent extends StackPane {
         splitPane.setOrientation(Orientation.HORIZONTAL);
         splitPane.setDividerPosition(1, 0.40);
 
-        splitPane.getItems().addAll(initInvoiceEppTableView(stage), initInvoiceEppInvisible());
+        splitPane.getItems().addAll(initInvoiceEppTableView(dialogSupport), initInvoiceEppInvisible());
 
         getChildren().addAll(splitPane, loadingPane);
     }
@@ -158,7 +157,7 @@ public abstract class EppViewComponent extends StackPane {
         return pane;
     }
 
-    private BorderPane initInvoiceEppTableView(final Stage stage) {
+    private BorderPane initInvoiceEppTableView(final DialogSupport dialogSupport) {
         invoiceEppTableView = new InvoiceEppTableView() {
 
             @Override
@@ -171,16 +170,16 @@ public abstract class EppViewComponent extends StackPane {
                     public void onSave(InvoiceItem invoiceItem, Object... params) {
                         saveBtn.setDisable(false);
                         invoiceEppTableView.update(invoiceItem);
-                        IkeaApplication.get().hidePopupDialog();
+                        dialogSupport.hidePopupDialog();
                     }
 
                     @Override
                     public void onCancel() {
-                        IkeaApplication.get().hidePopupDialog();
+                        dialogSupport.hidePopupDialog();
                     }
                 });
 
-                IkeaApplication.get().showPopupDialog(invoiceItemDialog);
+                dialogSupport.showPopupDialog(invoiceItemDialog);
             }
         };
 
@@ -212,7 +211,7 @@ public abstract class EppViewComponent extends StackPane {
                 FileChooser fileChooser = FileChooserUtil.getEpp();
                 fileChooser.setInitialFileName(currentInvoicePdf.getInvoiceNumber().replaceAll("[/-]", "_") + ".epp");
 
-                File selectedFile = fileChooser.showSaveDialog(stage);
+                File selectedFile = fileChooser.showSaveDialog(dialogSupport.getStage());
 
                 if (selectedFile != null) {
                     List<InvoiceItem> list = invoiceEppTableView.getItems();
@@ -246,16 +245,16 @@ public abstract class EppViewComponent extends StackPane {
                     @Override
                     public void onSave(InvoiceItem invoiceItem, Object... params) {
                         invoiceEppTableView.getItems().add(invoiceItem);
-                        IkeaApplication.get().hidePopupDialog();
+                        dialogSupport.hidePopupDialog();
                     }
 
                     @Override
                     public void onCancel() {
-                        IkeaApplication.get().hidePopupDialog();
+                        dialogSupport.hidePopupDialog();
                     }
                 });
 
-                IkeaApplication.get().showPopupDialog(invoiceItemDialog);
+                dialogSupport.showPopupDialog(invoiceItemDialog);
 
             }
         });
@@ -341,7 +340,7 @@ public abstract class EppViewComponent extends StackPane {
         reloadBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-                Dialog.confirm("All balanced items will be deleted", new DialogCallback() {
+                Dialog.confirm(dialogSupport, "All balanced items will be deleted", new DialogCallback() {
                     @Override
                     public void onCancel() {
                     }

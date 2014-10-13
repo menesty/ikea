@@ -13,7 +13,6 @@ import javafx.event.EventHandler;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.FileChooser;
-import javafx.stage.Stage;
 import javafx.util.Callback;
 import org.apache.http.HttpHost;
 import org.apache.http.client.CredentialsProvider;
@@ -23,7 +22,7 @@ import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.menesty.ikea.IkeaApplication;
+import org.menesty.ikea.core.component.DialogSupport;
 import org.menesty.ikea.domain.ParagonDto;
 import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.service.AbstractAsyncService;
@@ -62,7 +61,7 @@ public class ParagonViewComponent extends BorderPane {
 
     private ParagonViewDialog paragonViewDialog;
 
-    public ParagonViewComponent(final Stage stage) {
+    public ParagonViewComponent(final DialogSupport dialogSupport) {
         loadService = new LoadService();
         loadService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<List<ParagonDto>>() {
             @Override
@@ -88,7 +87,7 @@ public class ParagonViewComponent extends BorderPane {
                 FileChooser fileChooser = FileChooserUtil.getEpp();
                 fileChooser.setInitialFileName(value.name);
 
-                File selectedFile = fileChooser.showSaveDialog(stage);
+                File selectedFile = fileChooser.showSaveDialog(dialogSupport.getStage());
 
                 if (selectedFile != null) {
                     String fileName = selectedFile.getAbsolutePath();
@@ -109,10 +108,10 @@ public class ParagonViewComponent extends BorderPane {
 
         paragonEmailService = new ParagonEmailService();
 
-        paragonViewDialog = new ParagonViewDialog() {
+        paragonViewDialog = new ParagonViewDialog(dialogSupport.getStage()) {
             @Override
             public void onOk() {
-                IkeaApplication.get().hidePopupDialog();
+                dialogSupport.hidePopupDialog();
             }
         };
 
@@ -120,7 +119,7 @@ public class ParagonViewComponent extends BorderPane {
             @Override
             protected void onRowDoubleClick(TableRow<ParagonDto> row) {
                 if (row.getItem() != null) {
-                    IkeaApplication.get().showPopupDialog(paragonViewDialog);
+                    dialogSupport.showPopupDialog(paragonViewDialog);
                     paragonViewDialog.show(row.getItem());
                 }
             }

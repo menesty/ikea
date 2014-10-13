@@ -64,7 +64,6 @@ public class OrderViewPage extends BasePage {
     private Tab storageTab;
     private Tab storageComboTab;
     private Tab orderItemTab;
-    private TabPane tabPanel;
     private InvoiceComponent invoiceComponent;
     private TabPane tabPane;
 
@@ -145,7 +144,7 @@ public class OrderViewPage extends BasePage {
     @Override
     public Node createView() {
 
-        return wrap(tabPanel = createInvoiceView());
+        return wrap(createInvoiceView());
     }
 
     private Tab createStorageComboTab() {
@@ -179,7 +178,7 @@ public class OrderViewPage extends BasePage {
                     if (!iterator.next().isExist())
                         iterator.remove();
 
-                final IkeaUserFillProgressDialog logDialog = new IkeaUserFillProgressDialog() {
+                final IkeaUserFillProgressDialog logDialog = new IkeaUserFillProgressDialog(getStage()) {
                     @Override
                     public void onOk() {
                         hidePopupDialog();
@@ -287,7 +286,7 @@ public class OrderViewPage extends BasePage {
 
             @Override
             protected void onExportToIkea() {
-                final IkeaUserFillProgressDialog logDialog = new IkeaUserFillProgressDialog() {
+                final IkeaUserFillProgressDialog logDialog = new IkeaUserFillProgressDialog(getStage()) {
                     @Override
                     public void onOk() {
                         hidePopupDialog();
@@ -370,7 +369,7 @@ public class OrderViewPage extends BasePage {
 
         Tab invoiceTab = new Tab("Invoice");
         invoiceTab.setClosable(false);
-        invoiceTab.setContent(invoiceComponent = new InvoiceComponent(getStage()) {
+        invoiceTab.setContent(invoiceComponent = new InvoiceComponent(getDialogSupport()) {
             @Override
             protected CustomerOrder getCustomerOrder() {
                 return currentOrder;

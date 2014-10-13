@@ -10,6 +10,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.ToolBar;
 import javafx.scene.layout.BorderPane;
+import javafx.stage.Stage;
 import org.apache.http.HttpHost;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -32,14 +33,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Menesty on 4/29/14.
+ * Created by Menesty
+ * on 4/29/14.
  */
 public abstract class ParagonManageDialog extends BaseDialog {
     private TableView<WarehouseItemDto> tableView;
 
     private UploadTaskService uploadTaskService;
 
-    public ParagonManageDialog() {
+    public ParagonManageDialog(Stage stage) {
+        super(stage);
         setMinWidth(530);
 
         BorderPane content = new BorderPane();

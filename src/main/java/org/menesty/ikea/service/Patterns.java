@@ -14,7 +14,7 @@ public class Patterns {
 
     public static final Pattern PACKAGE_INFO_PATTERN = Pattern.compile("\"quantity\":\"(\\d+)\",\"length\":(\\d+),\"width\":(\\d+),\"articleNumber\":\"\\d+\",\"weight\":(\\d+),\"height\":(\\d+)");
 
-    public static final Pattern HEIGHT_PATTERN =  Pattern.compile("Wysokość: (\\d+{0,}\\.{0,}\\d+)");
+    public static final Pattern HEIGHT_PATTERN = Pattern.compile("Wysokość: (\\d+{0,}\\.{0,}\\d+)");
 
     public static final Pattern WIDTH_PATTERN = Pattern.compile("Szerokość: (\\d+{0,}\\.{0,}\\d+)");
 

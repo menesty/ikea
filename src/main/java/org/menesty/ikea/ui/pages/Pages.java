@@ -1,7 +1,8 @@
 package org.menesty.ikea.ui.pages;
 
 public enum Pages {
-    ORDERS("Orders"), SHOPS("Shops");
+    ORDERS("Orders"), SHOPS("Shops"), PRODUCTS("Products"), USERS("Users"), WAREHOUSE("Warehouse"), INVOICE("Invoice"),
+    IKEA_PARAGONS("Ikea paragons"), CUSTOMER_ORDER("Customer Order");
 
     private final String title;
 
@@ -9,7 +10,8 @@ public enum Pages {
         this.title = title;
 
     }
-    public String getTitle(){
+
+    public String getTitle() {
         return title;
     }
 }
