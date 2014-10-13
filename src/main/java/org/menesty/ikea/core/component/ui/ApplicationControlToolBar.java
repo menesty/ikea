@@ -1,4 +1,4 @@
-package org.menesty.ikea.ui.controls;
+package org.menesty.ikea.core.component.ui;
 
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -11,23 +11,22 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.stage.Stage;
+import org.menesty.ikea.ui.controls.WindowButtons;
 
 /**
  * User: Menesty
  * Date: 10/9/13
  * Time: 6:58 PM
  */
-public class MainToolBar extends ToolBar {
+public class ApplicationControlToolBar extends ToolBar {
 
     private double mouseDragOffsetX = 0;
 
     private double mouseDragOffsetY = 0;
 
-    public MainToolBar(final Stage stage) {
-        // create main toolbar
-
+    public ApplicationControlToolBar(final Stage stage) {
         setId("mainToolBar");
-        ImageView logo = new ImageView(new Image(MainToolBar.class.getResourceAsStream("/styles/images/logo.png")));
+        ImageView logo = new ImageView(new Image(ApplicationControlToolBar.class.getResourceAsStream("/styles/images/logo.png")));
         HBox.setMargin(logo, new Insets(0, 0, 0, 5));
         getItems().add(logo);
         Region spacer = new Region();
@@ -47,7 +46,7 @@ public class MainToolBar extends ToolBar {
             @Override
             public void handle(MouseEvent event) {
                 if (event.getClickCount() == 2)
-                    windowButtons.toogleMaximized();
+                    windowButtons.toggleMaximized();
             }
         });
         // add window dragging
@@ -58,6 +57,7 @@ public class MainToolBar extends ToolBar {
                 mouseDragOffsetY = event.getSceneY();
             }
         });
+
         setOnMouseDragged(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {

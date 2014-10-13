@@ -1,5 +1,6 @@
 package org.menesty.ikea.ui.controls;
 
+import javafx.stage.Stage;
 import org.menesty.ikea.ui.controls.dialog.BaseDialog;
 import org.menesty.ikea.ui.pages.EntityDialogCallback;
 
@@ -13,6 +14,10 @@ public abstract class BaseEntityDialog<Entity> extends BaseDialog implements For
     private EntityDialogCallback<Entity> callback;
 
     protected Entity entityValue;
+
+    public BaseEntityDialog(Stage stage) {
+        super(stage);
+    }
 
     public void setCallback(EntityDialogCallback<Entity> callback) {
         this.callback = callback;

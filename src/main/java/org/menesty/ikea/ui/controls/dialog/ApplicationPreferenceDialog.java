@@ -4,6 +4,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
+import javafx.stage.Stage;
 import org.menesty.ikea.ApplicationPreference;
 import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.ui.layout.RowPanel;
@@ -12,7 +13,8 @@ public class ApplicationPreferenceDialog extends BaseDialog {
 
     private WarehousePreferenceForm warehouseForm;
 
-    public ApplicationPreferenceDialog() {
+    public ApplicationPreferenceDialog(Stage stage) {
+        super(stage);
         setTitle("Application preferences");
         okBtn.setText("Save");
 

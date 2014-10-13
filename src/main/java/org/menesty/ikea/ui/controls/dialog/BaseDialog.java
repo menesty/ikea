@@ -12,7 +12,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import org.menesty.ikea.IkeaApplication;
 import org.menesty.ikea.ui.controls.pane.LoadingPane;
 
 /**
@@ -21,6 +20,9 @@ import org.menesty.ikea.ui.controls.pane.LoadingPane;
  * Time: 1:11 PM
  */
 public class BaseDialog extends StackPane {
+    public interface DefaultAction {
+        void defaultAction(BaseDialog baseDialog);
+    }
 
     protected final HBox bottomBar;
 
@@ -36,12 +38,17 @@ public class BaseDialog extends StackPane {
 
     private Label title;
 
-    public BaseDialog() {
-        this(true);
+    private DefaultAction defaultAction;
+
+    private Stage stage;
+
+    public BaseDialog(Stage stage) {
+        this(stage, true);
     }
 
-    public BaseDialog(boolean showTitle) {
+    public BaseDialog(Stage stage, boolean showTitle) {
         super();
+        this.stage = stage;
         content = new VBox();
 
         setId("ProxyDialog");
@@ -66,6 +73,9 @@ public class BaseDialog extends StackPane {
         cancelBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
+                if (defaultAction != null)
+                    defaultAction.defaultAction(BaseDialog.this);
+
                 onCancel();
             }
         });
@@ -79,8 +89,10 @@ public class BaseDialog extends StackPane {
         okBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-                onOk();
+                if (defaultAction != null)
+                    defaultAction.defaultAction(BaseDialog.this);
 
+                onOk();
             }
         });
         okBtn.setMinWidth(74);
@@ -93,7 +105,7 @@ public class BaseDialog extends StackPane {
     }
 
     public Stage getStage() {
-        return IkeaApplication.get().getStage();
+        return stage;
     }
 
     public void addRow(Node... rows) {
@@ -149,5 +161,8 @@ public class BaseDialog extends StackPane {
         this.title.setText(title);
     }
 
+    public void setDefaultAction(DefaultAction defaultAction) {
+        this.defaultAction = defaultAction;
+    }
 }
 
