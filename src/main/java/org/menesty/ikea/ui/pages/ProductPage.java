@@ -241,17 +241,12 @@ public class ProductPage extends BasePage {
         container.setTop(toolBarBox);
         container.setCenter(tableView);
 
-        productEditDialog = new ProductDialog();
+        productEditDialog = new ProductDialog(getStage());
 
         return wrap(container);
     }
 
     private void filter(ProductItemSearchData data) {
         tableView.setItems(FXCollections.observableArrayList(productService.load(data)));
-    }
-
-    @Override
-    protected Node createIconContent() {
-        return ImageFactory.createProducts72Icon();
     }
 }

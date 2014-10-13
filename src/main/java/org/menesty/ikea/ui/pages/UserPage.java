@@ -87,7 +87,7 @@ public class UserPage extends BasePage {
             tableView.getColumns().add(column);
         }
 
-        userDialog = new UserDialog();
+        userDialog = new UserDialog(getStage());
 
         BorderPane borderPane = new BorderPane();
         borderPane.setCenter(tableView);
@@ -128,7 +128,7 @@ public class UserPage extends BasePage {
                     if (item == null)
                         return;
 
-                    Dialog.confirm("Warning", "Are you sure that you want to delete this item ?", new DialogCallback() {
+                    Dialog.confirm(getDialogSupport(), "Warning", "Are you sure that you want to delete this item ?", new DialogCallback() {
                         @Override
                         public void onCancel() {
                         }
@@ -139,7 +139,7 @@ public class UserPage extends BasePage {
                                 ServiceFacade.getUserService().remove(item);
                                 load();
                             } catch (Exception e) {
-                                Dialog.alert("Waring", "Can not delete selected user it is used");
+                                Dialog.alert(getDialogSupport(), "Waring", "Can not delete selected user it is used");
                             }
 
                         }
@@ -153,11 +153,6 @@ public class UserPage extends BasePage {
         borderPane.setTop(control);
 
         return wrap(borderPane);
-    }
-
-    @Override
-    protected Node createIconContent() {
-        return ImageFactory.createUsersIcon64();
     }
 
     @Override

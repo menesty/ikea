@@ -2,6 +2,7 @@ package org.menesty.ikea.ui.controls.dialog;
 
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
+import javafx.stage.Stage;
 import org.menesty.ikea.domain.User;
 import org.menesty.ikea.ui.layout.RowPanel;
 import org.menesty.ikea.ui.pages.EntityDialogCallback;
@@ -11,7 +12,8 @@ public class UserDialog extends BaseDialog {
     private EntityDialogCallback<User> callback;
     private User currentEntity;
 
-    public UserDialog() {
+    public UserDialog(Stage stage) {
+        super(stage);
         addRow(form = new UserForm(), bottomBar);
     }
 

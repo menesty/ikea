@@ -21,7 +21,7 @@ public class WarehouseSearchBar extends ToolBar {
         getItems().add(price);
     }
 
-    private WarehouseItemSearchData collectData(){
+    private WarehouseItemSearchData collectData() {
         WarehouseItemSearchData data = new WarehouseItemSearchData();
         data.price = this.price.getNumber();
         return data;

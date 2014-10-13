@@ -12,7 +12,10 @@ import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.ToolBar;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
@@ -24,7 +27,7 @@ import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.menesty.ikea.IkeaApplication;
+import org.menesty.ikea.core.component.DialogSupport;
 import org.menesty.ikea.domain.WarehouseItemDto;
 import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.service.AbstractAsyncService;
@@ -56,8 +59,8 @@ public class WarehouseViewComponent extends BorderPane {
 
     private ClearService clearService;
 
-    public WarehouseViewComponent() {
-        paragonManageDialog = new ParagonManageDialog() {
+    public WarehouseViewComponent(final DialogSupport dialogSupport) {
+        paragonManageDialog = new ParagonManageDialog(dialogSupport.getStage()) {
             @Override
             public void onCreate() {
                 load();
@@ -139,7 +142,7 @@ public class WarehouseViewComponent extends BorderPane {
                     @Override
                     public void handle(ActionEvent actionEvent) {
                         paragonManageDialog.show(getChecked());
-                        IkeaApplication.get().showPopupDialog(paragonManageDialog);
+                        dialogSupport.showPopupDialog(paragonManageDialog);
                     }
                 });
                 control.getItems().add(button);
@@ -150,7 +153,7 @@ public class WarehouseViewComponent extends BorderPane {
                 button.setOnAction(new EventHandler<ActionEvent>() {
                     @Override
                     public void handle(ActionEvent actionEvent) {
-                        Dialog.confirm("Are you sure want clear Warehouse ?", new DialogCallback() {
+                        Dialog.confirm(dialogSupport, "Are you sure want clear Warehouse ?", new DialogCallback() {
                             @Override
                             public void onCancel() {
 

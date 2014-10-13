@@ -7,6 +7,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.scene.control.CheckBox;
 import javafx.scene.input.KeyEvent;
+import javafx.stage.Stage;
 import org.apache.commons.lang.math.NumberUtils;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.exception.ProductFetchException;
@@ -23,7 +24,8 @@ public class RawInvoiceItemDialog extends BaseEntityDialog<RawInvoiceProductItem
     private RawInvoiceItemForm form;
     private BigDecimal priceMargin;
 
-    public RawInvoiceItemDialog() {
+    public RawInvoiceItemDialog(Stage stage) {
+        super(stage);
         setTitle("Create Invoice item");
 
         addRow(form = new RawInvoiceItemForm(), bottomBar);
@@ -31,7 +33,7 @@ public class RawInvoiceItemDialog extends BaseEntityDialog<RawInvoiceProductItem
     }
 
     public void setPriceMargin(int priceMargin) {
-        this.priceMargin = BigDecimal.valueOf((double) (priceMargin == 0 ? 2 :priceMargin) / 100 + 1);
+        this.priceMargin = BigDecimal.valueOf((double) (priceMargin == 0 ? 2 : priceMargin) / 100 + 1);
     }
 
     private class RawInvoiceItemForm extends FormPane {

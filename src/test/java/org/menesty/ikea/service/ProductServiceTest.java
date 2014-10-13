@@ -11,9 +11,10 @@ import java.math.BigDecimal;
 import java.util.List;
 
 /**
- * Created by Menesty on 2/21/14.
+ * Created by Menesty
+ * on 2/21/14.
  */
-public class ProductServiceTest /*extends DatabaseTestCase */{
+public class ProductServiceTest /*extends DatabaseTestCase */ {
 
     @Ignore
     @Test
@@ -30,6 +31,7 @@ public class ProductServiceTest /*extends DatabaseTestCase */{
         Assert.assertEquals(410.0, productInfo.getPrice(), 0);
         Assert.assertEquals(5, productInfo.getParts().size());
     }
+
     @Ignore
     @Test
     public void comboPartParseTest() throws IOException {
@@ -48,8 +50,9 @@ public class ProductServiceTest /*extends DatabaseTestCase */{
         Assert.assertEquals(2, commod.getCount());
 
     }
+
     @Test
-    public void test(){
+    public void test() {
         int margin = 2;
         System.out.println(BigDecimal.valueOf((double) margin / 100 + 1));
     }

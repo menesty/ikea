@@ -18,6 +18,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
+import javafx.stage.Stage;
 import javafx.util.Callback;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.domain.ProductPart;
@@ -61,7 +62,8 @@ public class ProductDialog extends BaseDialog {
     private final TabPane options;
 
 
-    public ProductDialog() {
+    public ProductDialog(Stage stage) {
+        super(stage);
         setTitle("Create new order from customer");
         okBtn.setText("Save");
 

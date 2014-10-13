@@ -12,8 +12,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.stage.FileChooser;
-import javafx.stage.Stage;
-import org.menesty.ikea.IkeaApplication;
+import org.menesty.ikea.core.component.DialogSupport;
 import org.menesty.ikea.domain.InvoicePdf;
 import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
@@ -40,10 +39,10 @@ public abstract class RawInvoiceItemViewComponent extends BorderPane {
     private ToolBar rawInvoiceControl;
 
 
-    public RawInvoiceItemViewComponent(final Stage stage) {
-        rawInvoiceItemDialog = new RawInvoiceItemDialog();
+    public RawInvoiceItemViewComponent(final DialogSupport dialogSupport) {
+        rawInvoiceItemDialog = new RawInvoiceItemDialog(dialogSupport.getStage());
 
-         rawInvoiceControl = new ToolBar();
+        rawInvoiceControl = new ToolBar();
         {
             Button createRawInvoice = new Button(null, ImageFactory.createAdd32Icon());
             createRawInvoice.setTooltip(new Tooltip("Create Invoice Item"));
@@ -59,16 +58,16 @@ public abstract class RawInvoiceItemViewComponent extends BorderPane {
                         @Override
                         public void onSave(RawInvoiceProductItem item, Object... params) {
                             RawInvoiceItemViewComponent.this.onSave(item);
-                            IkeaApplication.get().hidePopupDialog();
+                            dialogSupport.hidePopupDialog();
                         }
 
                         @Override
                         public void onCancel() {
-                            IkeaApplication.get().hidePopupDialog();
+                            dialogSupport.hidePopupDialog();
                         }
                     });
 
-                    IkeaApplication.get().showPopupDialog(rawInvoiceItemDialog);
+                    dialogSupport.showPopupDialog(rawInvoiceItemDialog);
                 }
             });
             rawInvoiceControl.getItems().add(createRawInvoice);
@@ -80,7 +79,7 @@ public abstract class RawInvoiceItemViewComponent extends BorderPane {
                 public void handle(ActionEvent event) {
                     FileChooser fileChooser = FileChooserUtil.getXls();
                     //Show save file dialog
-                    File file = fileChooser.showSaveDialog(stage);
+                    File file = fileChooser.showSaveDialog(dialogSupport.getStage());
 
                     if (file != null)
                         onExport(rawInvoiceItemTableView.getItems(), file.getAbsolutePath());
@@ -106,7 +105,7 @@ public abstract class RawInvoiceItemViewComponent extends BorderPane {
                     FileChooser fileChooser = FileChooserUtil.getEpp();
                     fileChooser.setInitialFileName(getOrderName().replaceAll("[/-]", "_") + ".epp");
 
-                    File selectedFile = fileChooser.showSaveDialog(stage);
+                    File selectedFile = fileChooser.showSaveDialog(dialogSupport.getStage());
 
                     if (selectedFile != null) {
                         exportEpp(selectedFile.getAbsolutePath());

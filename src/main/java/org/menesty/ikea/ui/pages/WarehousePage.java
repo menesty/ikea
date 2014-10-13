@@ -3,7 +3,6 @@ package org.menesty.ikea.ui.pages;
 import javafx.scene.Node;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
-import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.ui.controls.component.ParagonViewComponent;
 import org.menesty.ikea.ui.controls.component.WarehouseViewComponent;
 
@@ -27,8 +26,8 @@ public class WarehousePage extends BasePage {
 
     @Override
     protected Node createView() {
-        warehouseViewComponent = new  WarehouseViewComponent();
-        paragonViewComponent = new ParagonViewComponent(getStage());
+        warehouseViewComponent = new WarehouseViewComponent(getDialogSupport());
+        paragonViewComponent = new ParagonViewComponent(getDialogSupport());
 
         TabPane tabPane = new TabPane();
 
@@ -47,10 +46,5 @@ public class WarehousePage extends BasePage {
         }
 
         return wrap(tabPane);
-    }
-
-    @Override
-    protected Node createIconContent() {
-        return ImageFactory.createWarehouseIcon72();
     }
 }

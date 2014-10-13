@@ -20,13 +20,16 @@ import org.menesty.ikea.util.NumberUtil;
  * Time: 6:01 PM
  */
 public class RawInvoiceTableView extends TableView<RawInvoiceProductItem> {
-
-    public RawInvoiceTableView() {
+    public RawInvoiceTableView(boolean invoiceNameVisible) {
         super();
-        initColumns();
+        initColumns(invoiceNameVisible);
     }
 
-    private void initColumns() {
+    public RawInvoiceTableView() {
+        this(false);
+    }
+
+    private void initColumns(boolean invoiceNameVisible) {
         {
             TableColumn<RawInvoiceProductItem, Number> column = new TableColumn<>();
             column.setMaxWidth(45);
@@ -44,6 +47,19 @@ public class RawInvoiceTableView extends TableView<RawInvoiceProductItem> {
             TableColumn<RawInvoiceProductItem, String> column = new TableColumn<>("Name");
             column.setMinWidth(200);
             column.setCellValueFactory(ColumnUtil.<RawInvoiceProductItem, String>column("name"));
+
+            getColumns().add(column);
+        }
+
+        if (invoiceNameVisible) {
+            TableColumn<RawInvoiceProductItem, String> column = new TableColumn<>("Invoice Name");
+            column.setMinWidth(160);
+            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<RawInvoiceProductItem, String>, ObservableValue<String>>() {
+                @Override
+                public ObservableValue<String> call(TableColumn.CellDataFeatures<RawInvoiceProductItem, String> item) {
+                    return new SimpleStringProperty(item.getValue().invoicePdf.getInvoiceNumber());
+                }
+            });
 
             getColumns().add(column);
         }

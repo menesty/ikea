@@ -36,7 +36,7 @@ public class RawInvoiceItemSearchComponent extends BorderPane {
 
         setTop(toolBar);
 
-        rawInvoiceTableView = new RawInvoiceTableView();
+        rawInvoiceTableView = new RawInvoiceTableView(true);
 
         setCenter(rawInvoiceTableView);
     }
