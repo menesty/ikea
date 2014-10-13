@@ -6,7 +6,8 @@ import org.junit.Before;
 import javax.persistence.Persistence;
 
 /**
- * Created by Menesty on 2/21/14.
+ * Created by Menesty
+ * on 2/21/14.
  */
 public class DatabaseTestCase {
     @Before
@@ -16,7 +17,7 @@ public class DatabaseTestCase {
     }
 
     @After
-    public void close(){
+    public void close() {
         DatabaseService.close();
     }
 }

@@ -7,7 +7,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
-import org.menesty.ikea.IkeaApplication;
+import org.menesty.ikea.core.component.DialogSupport;
 import org.menesty.ikea.domain.InvoicePdf;
 import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.processor.invoice.InvoiceItem;
@@ -37,8 +37,8 @@ public abstract class CustomInvoiceComponent extends BorderPane {
 
     private InvoicePdf invoicePdf;
 
-    public CustomInvoiceComponent() {
-        invoiceItemDialog = new InvoiceItemDialog();
+    public CustomInvoiceComponent(final DialogSupport dialogSupport) {
+        invoiceItemDialog = new InvoiceItemDialog(dialogSupport.getStage());
 
         loadService = new LoadService();
         loadService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<List<InvoiceItem>>() {
@@ -51,7 +51,7 @@ public abstract class CustomInvoiceComponent extends BorderPane {
         final EntityDialogCallback<InvoiceItem> saveHandler = new EntityDialogCallback<InvoiceItem>() {
             @Override
             public void onSave(InvoiceItem invoiceItem, Object... params) {
-                IkeaApplication.get().hidePopupDialog();
+                dialogSupport.hidePopupDialog();
 
                 startWork();
                 ServiceFacade.getInvoiceItemService().save(invoiceItem);
@@ -73,7 +73,7 @@ public abstract class CustomInvoiceComponent extends BorderPane {
 
             @Override
             public void onCancel() {
-                IkeaApplication.get().hidePopupDialog();
+                dialogSupport.hidePopupDialog();
             }
         };
 
@@ -92,7 +92,7 @@ public abstract class CustomInvoiceComponent extends BorderPane {
 
                     invoiceItemDialog.bind(item, saveHandler);
 
-                    IkeaApplication.get().showPopupDialog(invoiceItemDialog);
+                    dialogSupport.showPopupDialog(invoiceItemDialog);
                 }
             });
 
@@ -107,7 +107,7 @@ public abstract class CustomInvoiceComponent extends BorderPane {
 
                 invoiceItemDialog.bind(row.getItem(), saveHandler);
 
-                IkeaApplication.get().showPopupDialog(invoiceItemDialog);
+                dialogSupport.showPopupDialog(invoiceItemDialog);
             }
         };
 
@@ -172,7 +172,6 @@ public abstract class CustomInvoiceComponent extends BorderPane {
             invoiceItemTable.getItems().clear();
         }
     }
-
 
 
     public void setItems(List<InvoiceItem> items) {

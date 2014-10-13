@@ -18,8 +18,8 @@ import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.service.task.InvoicePdfSyncService;
 import org.menesty.ikea.ui.controls.dialog.Dialog;
 import org.menesty.ikea.ui.controls.dialog.InvoicePdfDialog;
-import org.menesty.ikea.ui.controls.table.component.BaseTableView;
 import org.menesty.ikea.ui.controls.table.CustomInvoiceComponent;
+import org.menesty.ikea.ui.controls.table.component.BaseTableView;
 import org.menesty.ikea.util.ColumnUtil;
 import org.menesty.ikea.util.FileChooserUtil;
 
@@ -48,7 +48,7 @@ public class CustomInvoicePage extends BasePage {
 
     @Override
     protected void initialize() {
-        invoicePdfDialog = new InvoicePdfDialog();
+        invoicePdfDialog = new InvoicePdfDialog(getStage());
 
         loadService = new LoadService();
         loadService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<List<InvoicePdf>>() {
@@ -79,7 +79,7 @@ public class CustomInvoicePage extends BasePage {
         BorderPane container = new BorderPane();
         container.setCenter(createInvoicePdfPane());
 
-        customInvoiceComponent = new CustomInvoiceComponent() {
+        customInvoiceComponent = new CustomInvoiceComponent(getDialogSupport()) {
             @Override
             protected void update(InvoicePdf invoicePdf) {
                 invoicePdfTable.update(invoicePdf);
@@ -160,7 +160,7 @@ public class CustomInvoicePage extends BasePage {
         deleteButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-                Dialog.confirm("Warning", "Are you sure want delete selected Invoice", new DialogCallback() {
+                Dialog.confirm(getDialogSupport(), "Warning", "Are you sure want delete selected Invoice", new DialogCallback() {
                     @Override
                     public void onCancel() {
 
@@ -302,11 +302,6 @@ public class CustomInvoicePage extends BasePage {
         customInvoiceComponent.setInvoicePdf(null);
         loadingPane.bindTask(loadService);
         loadService.restart();
-    }
-
-    @Override
-    protected Node createIconContent() {
-        return ImageFactory.createInvoice72Icon();
     }
 
     class LoadService extends AbstractAsyncService<List<InvoicePdf>> {
