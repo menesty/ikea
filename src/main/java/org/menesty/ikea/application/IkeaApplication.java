@@ -5,7 +5,6 @@ import javafx.application.ConditionalFeature;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
-import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.Scene;
@@ -29,6 +28,7 @@ import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.ui.controls.PopupDialog;
 import org.menesty.ikea.ui.controls.dialog.ApplicationPreferenceDialog;
 import org.menesty.ikea.ui.controls.dialog.BaseDialog;
+import org.menesty.ikea.ui.controls.dialog.InfoDialog;
 import org.menesty.ikea.ui.controls.pane.LoadingPane;
 import org.menesty.ikea.ui.pages.*;
 
@@ -64,10 +64,15 @@ public class IkeaApplication extends Application implements DialogSupport {
 
         pageArea.addCategory(createIkeaCategoryGroup());
 
-
-        EventHandler<ActionEvent> settingsListener = new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent event) {
+        BreadCrumbToolBar.ControlActionListener controlActionListener = new BreadCrumbToolBar.ControlActionListener() {
+            @Override
+            public void onSetting() {
                 showPopupDialog(getPreferenceDialog());
+            }
+
+            @Override
+            public void onInfo() {
+                showPopupDialog(getInfoDialog());
             }
         };
 
@@ -78,7 +83,7 @@ public class IkeaApplication extends Application implements DialogSupport {
             }
         };
 
-        BreadCrumbToolBar breadCrumbToolBar = new BreadCrumbToolBar(breadCrumb, settingsListener, changeListener);
+        BreadCrumbToolBar breadCrumbToolBar = new BreadCrumbToolBar(breadCrumb, controlActionListener, changeListener);
 
 
         BorderPane pagePane = new BorderPane();
@@ -123,6 +128,8 @@ public class IkeaApplication extends Application implements DialogSupport {
         group.add(new PageDescription(Pages.INVOICE.getTitle(), ImageFactory.createInvoice72Icon(), CustomInvoicePage.class));
         group.add(new PageDescription(Pages.IKEA_PARAGONS.getTitle(), ImageFactory.createIkea72Icon(), IkeaParagonPage.class));
         group.add(new PageDescription(Pages.SHOPS.getTitle(), ImageFactory.createShopIcon72(), IkeaShopPage.class));
+        group.add(new PageDescription(Pages.INVOICE_ITEM_SEARCH.getTitle(), ImageFactory.createSearch72Icon(), InvoicePdfItemSearchPage.class));
+
 
         return group;
     }
@@ -151,6 +158,18 @@ public class IkeaApplication extends Application implements DialogSupport {
         });
 
         return preferenceDialog;
+    }
+
+    private BaseDialog getInfoDialog() {
+        InfoDialog dialog = new InfoDialog(getStage());
+        dialog.setDefaultAction(new BaseDialog.DefaultAction() {
+            @Override
+            public void defaultAction(BaseDialog dialog) {
+                dialog.setDefaultAction(null);
+                hidePopupDialog();
+            }
+        });
+        return dialog;
     }
 
     @Override

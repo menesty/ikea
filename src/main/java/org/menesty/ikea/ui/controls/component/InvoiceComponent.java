@@ -41,11 +41,11 @@ public abstract class InvoiceComponent extends BorderPane {
         final CallBack<List<RawInvoiceProductItem>> importCallBack = new CallBack<List<RawInvoiceProductItem>>() {
             @Override
             public void onResult(List<RawInvoiceProductItem> data) {
-                if (getCustomerOrder().isSynthetic()) {
-                    String artSufix = ((int) NumberUtil.parse(getCustomerOrder().getName())) + "";
-                    for (RawInvoiceProductItem item : data) {
-                        String prefix = item.getProductInfo() != null ? "IKEA" : "SYN";
+                String artSufix = ((int) NumberUtil.parse(getCustomerOrder().getName())) + "";
+                for (RawInvoiceProductItem item : data) {
+                    String prefix = item.getProductInfo() != null ? "IKEA" : "SYN";
 
+                    if (item.getProductInfo() == null) {
                         InvoiceItem invoiceItem = InvoiceItem.get(item.getOriginalArtNumber(), prefix, artSufix,
                                 item.getName(), item.getName(),
                                 item.getPrice(), item.getIntWat(), "", 1, item.getCount(), 1, 1);
@@ -53,6 +53,15 @@ public abstract class InvoiceComponent extends BorderPane {
                         invoiceItem.invoicePdf = item.invoicePdf;
 
                         ServiceFacade.getInvoiceItemService().save(invoiceItem);
+                    } else {
+                        String artPrefix = ((int) NumberUtil.parse(item.invoicePdf.customerOrder.getName())) + "";
+                        List<InvoiceItem> items = InvoiceItem.get(item.getProductInfo(), artPrefix, item.getCount());
+
+                        for (InvoiceItem invoiceItem : items) {
+                            invoiceItem.invoicePdf = item.invoicePdf;
+                        }
+
+                        ServiceFacade.getInvoiceItemService().save(items);
                     }
                 }
             }

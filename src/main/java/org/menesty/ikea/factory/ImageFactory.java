@@ -164,4 +164,12 @@ public class ImageFactory {
     public static ImageView createHome24Icon() {
         return new ImageView(new Image("/styles/images/icon/home-20x20.png"));
     }
+
+    public static ImageView createInfo22Icon() {
+        return new ImageView(new Image("/styles/images/info-22x22.png"));
+    }
+
+    public static ImageView createSearch72Icon(){
+        return  new ImageView(new Image("/styles/images/icon/search-72x72.png"));
+    }
 }

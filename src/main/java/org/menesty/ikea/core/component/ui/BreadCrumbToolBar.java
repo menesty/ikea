@@ -18,9 +18,17 @@ import org.menesty.ikea.factory.ImageFactory;
  * 10:46.
  */
 public class BreadCrumbToolBar extends ToolBar {
+    public interface ControlActionListener {
+        void onSetting();
 
-    public BreadCrumbToolBar(BreadCrumb breadCrumb, EventHandler<ActionEvent> settingListener,
+        void onInfo();
+    }
+
+    private final ControlActionListener controlActionListener;
+
+    public BreadCrumbToolBar(BreadCrumb breadCrumb, final ControlActionListener controlActionListener,
                              BreadCrumbView.OnBreadCrumbItemClickListener changeListener) {
+        this.controlActionListener = controlActionListener;
         setId("page-toolbar");
         setMinHeight(29);
         setMaxSize(Double.MAX_VALUE, Control.USE_PREF_SIZE);
@@ -34,12 +42,28 @@ public class BreadCrumbToolBar extends ToolBar {
         settingsButton.setId("SettingsButton");
         settingsButton.setMaxHeight(Double.MAX_VALUE);
 
-        settingsButton.setOnAction(settingListener);
+        settingsButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                controlActionListener.onSetting();
+            }
+        });
+
+        Button iconButton = new Button(null, ImageFactory.createInfo22Icon());
+        iconButton.setId("infoButton");
+        iconButton.setMaxHeight(Double.MAX_VALUE);
+        iconButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                controlActionListener.onInfo();
+            }
+        });
+
 
         BreadCrumbView breadCrumbView = new BreadCrumbView();
         breadCrumbView.setListener(changeListener);
         breadCrumbView.register(breadCrumb);
 
-        getItems().addAll(breadCrumbView, spacer, settingsButton);
+        getItems().addAll(breadCrumbView, spacer, settingsButton, iconButton);
     }
 }

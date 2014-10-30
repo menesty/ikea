@@ -255,6 +255,11 @@
     -fx-border-insets: 0, 0 1 0 1;
 }
 
+#page-toolbar #infoButton {
+    -fx-border-color: transparent transparent transparent #6e737d, transparent transparent transparent rgba(255, 255, 255, 0.3);
+    -fx-border-insets: 0, 0 1 0 1;
+}
+
 #page-toolbar .button:hover {
     -fx-background-color: rgba(255, 255, 255, 0.4);
 }

@@ -28,7 +28,7 @@ public class CustomerOrder extends Identifiable {
 
     public boolean isOnline;
 
-    private int margin = 2;
+    private int margin;
 
     public int getMargin() {
         return margin;
