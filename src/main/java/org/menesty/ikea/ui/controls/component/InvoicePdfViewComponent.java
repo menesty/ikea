@@ -284,7 +284,7 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
                 syncBtn.setDisable(!allowSync);
                 statusPanel.setTotal(total);
 
-                statusPanel.setWeight(weight / 1000);
+                statusPanel.setWeight(weight);
 
                 return null;
             }
@@ -307,6 +307,6 @@ class WeightStatusPanel extends TotalStatusPanel {
     }
 
     public void setWeight(double weight) {
-        weightLabel.setText(NumberFormat.getNumberInstance().format(NumberUtil.round(weight)));
+        weightLabel.setText(NumberFormat.getNumberInstance().format(NumberUtil.convertToKg(weight)));
     }
 }

@@ -30,6 +30,8 @@
 
     <properties>
         <slf4j.version>1.6.1</slf4j.version>
+        <timestamp>${maven.build.timestamp}</timestamp>
+        <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
     </properties>
 
     <build>
@@ -65,7 +67,17 @@
                 </configuration>
             </plugin>
 
+
         </plugins>
+        <resources>
+            <resource>
+                <directory>${basedir}/src/main/resources</directory>
+                <filtering>true</filtering>
+                <!--<includes>
+                    <include>${basedir}/src/main/java/resources/**.**</include>
+                </includes>-->
+            </resource>
+        </resources>
     </build>
 
 

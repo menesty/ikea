@@ -57,6 +57,10 @@ public class NumberUtil {
         return BigDecimal.valueOf(value).divide(BigDecimal.valueOf(1000)).setScale(3).doubleValue();
     }
 
+    public static double convertToKg(double value) {
+        return BigDecimal.valueOf(value).divide(BigDecimal.valueOf(1000)).setScale(3).doubleValue();
+    }
+
     public static int convertToGr(double value) {
         return BigDecimal.valueOf(value).multiply(BigDecimal.valueOf(1000)).intValue();
     }

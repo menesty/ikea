@@ -88,6 +88,10 @@ public class RawInvoiceProductItem extends Identifiable {
         return BigDecimal.valueOf(getPrice()).multiply(BigDecimal.valueOf(count)).setScale(2, RoundingMode.CEILING).doubleValue();
     }
 
+    public InvoicePdf getInvoicePdf() {
+        return invoicePdf;
+    }
+
     public double getBasePrice() {
         return basePrice;
     }

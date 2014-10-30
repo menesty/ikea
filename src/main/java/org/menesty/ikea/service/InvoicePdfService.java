@@ -389,6 +389,26 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
 
         return result;
     }
+
+    public List<RawInvoiceProductItem> searchItemsByArtNumber(final String artNumber) {
+        if (artNumber == null) {
+            return new ArrayList<>();
+        }
+
+        begin();
+        String preparedValue = "%" + artNumber + "%";
+
+        TypedQuery<RawInvoiceProductItem> query = getEm().createQuery("select entity from "
+                + RawInvoiceProductItem.class.getName() + " entity left join fetch entity.invoicePdf where entity.originalArtNumber like ?1 ", RawInvoiceProductItem.class);
+
+        query.setParameter(1, preparedValue);
+
+        List<RawInvoiceProductItem> result = query.getResultList();
+
+        commit();
+
+        return result;
+    }
 }
 
 

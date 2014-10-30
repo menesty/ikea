@@ -10,8 +10,7 @@ import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.templates.TemplateRuntime;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.math.BigDecimal;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -60,6 +59,7 @@ public class InvoiceService {
             if (!fileName.endsWith(".epp"))
                 fileName += ".epp";
 
+            //new BufferedOutputStream(new ObjectOutputStream())
             new FileOutputStream(fileName).write(result.getBytes("ISO-8859-2"));
 
         } catch (IOException e) {
@@ -75,8 +75,8 @@ public class InvoiceService {
         if (!path.endsWith(".xlsx"))
             path = path.concat(".xlsx");
 
-        try {
-            Workbook workbook = transformer.transformXLS(getClass().getResourceAsStream("/config/invoice.xlsx"), bean);
+        try (InputStream in = getClass().getResourceAsStream("/config/invoice.xlsx")) {
+            Workbook workbook = transformer.transformXLS(in, bean);
 
             workbook.write(Files.newOutputStream(FileSystems.getDefault().getPath(path), StandardOpenOption.CREATE_NEW));
 
