@@ -217,7 +217,7 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
         }
 
         productInfo.setWat(product.getIntWat());
-        productInfo.setPrice(product.getPrice());
+        productInfo.setPrice(product.getBasePrice());
 
         return productInfo;
     }

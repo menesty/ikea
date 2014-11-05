@@ -120,7 +120,7 @@ public class ProductService extends Repository<ProductInfo> {
                 product.setOriginalArtNum(invoiceItem.getOriginalArtNumber());
             }
 
-            product.setPrice(invoiceItem.getPrice());
+            product.setPrice(invoiceItem.getBasePrice());
             return save(product);
         } catch (IOException e) {
             e.printStackTrace();
