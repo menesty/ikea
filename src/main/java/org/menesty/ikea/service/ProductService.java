@@ -42,7 +42,7 @@ public class ProductService extends Repository<ProductInfo> {
 
     private static final String PRODUCT_AVAILABLE_URL = "http://www.ikea.com/pl/pl/iows/catalog/availability/";
 
-    private static final String KATOWICE = "306";
+    private static final String KRAKOW  = "204";
 
     public ProductService() {
     }
@@ -201,7 +201,7 @@ public class ProductService extends Repository<ProductInfo> {
 
     private ProductInfo.Group resolveGroup(String artNumber, Document productDetails) throws IOException {
         Document doc = Jsoup.connect(PRODUCT_AVAILABLE_URL + artNumber).get();
-        Elements elements = doc.select("localStore[buCode=" + KATOWICE + "] findIt type");
+        Elements elements = doc.select("localStore[buCode=" + KRAKOW + "] findIt type");
 
         if (!elements.isEmpty())
             if ("BOX_SHELF".equals(elements.get(0).text()))

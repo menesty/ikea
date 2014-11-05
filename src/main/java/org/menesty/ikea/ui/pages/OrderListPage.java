@@ -244,7 +244,7 @@ public class OrderListPage extends BasePage {
                     loadService.restart();
                 } else
                     try {
-                        runTask(new CreateOrderTask(orderName, new FileInputStream(new File(filePath))));
+                        runTask(new CreateOrderTask(orderName, margin, new FileInputStream(new File(filePath))));
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
                     }
@@ -293,15 +293,18 @@ public class OrderListPage extends BasePage {
 
         private InputStream is;
 
-        public CreateOrderTask(String orderName, InputStream is) {
+        private int margin;
+
+        public CreateOrderTask(String orderName, int margin, InputStream is) {
             this.orderName = orderName;
             this.is = is;
+            this.margin = margin;
         }
 
         @Override
         protected Void call() throws InterruptedException {
             try {
-                ServiceFacade.getOrderService().createOrder(orderName, is, new TaskProgress() {
+                ServiceFacade.getOrderService().createOrder(orderName, margin, is, new TaskProgress() {
                     @Override
                     public void updateProgress(long l, long l1) {
                         CreateOrderTask.this.updateProgress(l, l1);

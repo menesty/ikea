@@ -99,7 +99,7 @@ public class DoubleTextField extends TextField {
             return;
         }
 
-        number.setValue(NumberUtil.parse(input));
+        number.setValue(NumberUtils.createDouble(input));
         selectAll();
     }
 

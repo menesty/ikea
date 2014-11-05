@@ -36,12 +36,13 @@ public class OrderService extends Repository<CustomerOrder> {
         this.productService = new ProductService();
     }
 
-    public CustomerOrder createOrder(String name, InputStream is, TaskProgress taskProgress) {
+    public CustomerOrder createOrder(String name, int margin, InputStream is, TaskProgress taskProgress) {
 
         try {
             CustomerOrder order = new CustomerOrder();
             order.setName(name);
             order.setCreatedDate(new Date());
+            order.setMargin(margin);
 
             OrderParseResult parseResult = parseOrder(is, taskProgress);
 
