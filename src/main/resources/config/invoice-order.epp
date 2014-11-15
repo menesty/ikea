@@ -49,4 +49,5 @@
 "CECHYTOWAROW"
 
 [ZAWARTOSC]
-
+@foreach{item : invoiceItems}"@{item.artNumber}","@{item.section}",
+@end{}

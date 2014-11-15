@@ -432,19 +432,21 @@ public abstract class EppViewComponent extends StackPane {
 
     private List<InvoiceItem> prepareData(List<RawInvoiceProductItem> items) {
         List<InvoiceItem> result = new ArrayList<>();
-        List<RawInvoiceProductItem> filtered = new ArrayList<>();
+        //List<RawInvoiceProductItem> filtered = new ArrayList<>();
 
         for (RawInvoiceProductItem item : items)
-            if (item.isSeparate())
+           // if (item.isSeparate())
                 result.addAll(InvoiceItem.get(item.getProductInfo(), artPrefix, item.getCount()));
-            else {
+           /* else {
                 filtered.add(item);
                 InvoiceItem invoiceItem = InvoiceItem.get(item.getProductInfo(), artPrefix, item.getCount(), 1, 1);
                 invoiceItem.setVisible(false);
 
                 result.add(invoiceItem);
             }
+*/
 
+        /*
         BigDecimal totalPrice = BigDecimal.ZERO;
 
         Map<ProductInfo.Group, Integer> groupMap = new HashMap<>();
@@ -473,9 +475,9 @@ public abstract class EppViewComponent extends StackPane {
         if (diff.doubleValue() > 0)
             result.add(createZestav(groupMap, zestavCount, diff.doubleValue()));
 
+*/
         for (InvoiceItem item : result)
             item.invoicePdf = currentInvoicePdf;
-
         return result;
     }
 

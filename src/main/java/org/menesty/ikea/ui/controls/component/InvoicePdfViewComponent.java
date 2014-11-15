@@ -307,6 +307,6 @@ class WeightStatusPanel extends TotalStatusPanel {
     }
 
     public void setWeight(double weight) {
-        weightLabel.setText(NumberFormat.getNumberInstance().format(NumberUtil.convertToKg(weight)));
+        //weightLabel.setText(NumberFormat.getNumberInstance().format(NumberUtil.convertToKg(weight)));
     }
 }

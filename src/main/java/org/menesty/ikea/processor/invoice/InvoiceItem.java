@@ -48,6 +48,16 @@ public class InvoiceItem extends Identifiable {
 
     private boolean visible;
 
+    private String section;
+
+    public String getSection() {
+        return section;
+    }
+
+    public void setSection(String section) {
+        this.section = section;
+    }
+
     public String getOriginArtNumber() {
         return originArtNumber;
     }
@@ -235,8 +245,11 @@ public class InvoiceItem extends Identifiable {
 
 
     public static InvoiceItem get(ProductInfo productInfo, String artSuffix, double count, int box, int boxes) {
-        return get(productInfo.getOriginalArtNum(), "IKEA", artSuffix, productInfo.getName(), productInfo.getShortName(),
+        InvoiceItem item = get(productInfo.getOriginalArtNum(), "IKEA", artSuffix, productInfo.getName(), productInfo.getShortName(),
                 productInfo.getPrice(), productInfo.getWat(), productInfo.getPackageInfo().size(), convertToKg(productInfo.getPackageInfo().getWeight()), count, box, boxes);
+
+        item.setSection(productInfo.getGroup().getTitle());
+        return item;
     }
 
     public static InvoiceItem get(String artNumber, String artPrefix, String artSuffix, String name, String shortName,
