@@ -42,7 +42,7 @@ public class ProductService extends Repository<ProductInfo> {
 
     private static final String PRODUCT_AVAILABLE_URL = "http://www.ikea.com/pl/pl/iows/catalog/availability/";
 
-    private static final String KRAKOW  = "204";
+    private static final String KRAKOW = "204";
 
     public ProductService() {
     }
@@ -305,14 +305,18 @@ public class ProductService extends Repository<ProductInfo> {
         List<ProductPart> parts = new ArrayList<>();
         String content = doc.html();
 
-        Document rowDetailsDoc = Jsoup.connect("http://www.ikea.com/pl/pl/catalog/packagepopup/" + artNumber).get();
-        Elements rows = rowDetailsDoc.select(".rowContainerPackage .colArticle");
+        try {
+            Document rowDetailsDoc = Jsoup.connect("http://www.ikea.com/pl/pl/catalog/packagepopup/" + artNumber).get();
+            Elements rows = rowDetailsDoc.select(".rowContainerPackage .colArticle");
 
-        for (Element row : rows) {
-            Matcher m = Patterns.ART_NUMBER_PART_PATTERN.matcher(row.html());
+            for (Element row : rows) {
+                Matcher m = Patterns.ART_NUMBER_PART_PATTERN.matcher(row.html());
 
-            if (m.find())
-                parts.add(parsePartDetails(m.group(1).replace(".", ""), content));
+                if (m.find())
+                    parts.add(parsePartDetails(m.group(1).replace(".", ""), content));
+            }
+        } catch (Exception e) {
+            //skip
         }
 
         combo.setParts(parts);

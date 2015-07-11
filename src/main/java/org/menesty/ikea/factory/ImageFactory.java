@@ -172,4 +172,8 @@ public class ImageFactory {
     public static ImageView createSearch72Icon(){
         return  new ImageView(new Image("/styles/images/icon/search-72x72.png"));
     }
+
+    public static ImageView createSiteOrders72Icon() {
+        return new ImageView(new Image("/styles/images/icon/site-order-72x72.png"));
+    }
 }

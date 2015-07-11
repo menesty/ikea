@@ -25,12 +25,15 @@ import org.menesty.ikea.core.component.ui.BreadCrumbToolBar;
 import org.menesty.ikea.core.component.ui.WorkspaceArea;
 import org.menesty.ikea.db.DatabaseService;
 import org.menesty.ikea.factory.ImageFactory;
+import org.menesty.ikea.i18n.I18n;
 import org.menesty.ikea.ui.controls.PopupDialog;
 import org.menesty.ikea.ui.controls.dialog.ApplicationPreferenceDialog;
 import org.menesty.ikea.ui.controls.dialog.BaseDialog;
 import org.menesty.ikea.ui.controls.dialog.InfoDialog;
 import org.menesty.ikea.ui.controls.pane.LoadingPane;
 import org.menesty.ikea.ui.pages.*;
+
+import java.util.Locale;
 
 /**
  * Created by Menesty on
@@ -122,6 +125,7 @@ public class IkeaApplication extends Application implements DialogSupport {
         orderList.addPage(new PageDescription(Pages.CUSTOMER_ORDER.getTitle(), OrderViewPage.class, false));
 
         group.add(orderList);
+        group.add(new PageDescription(Pages.SITE_ORDERS.getTitle(), ImageFactory.createSiteOrders72Icon(), SiteOrderPage.class));
         group.add(new PageDescription(Pages.PRODUCTS.getTitle(), ImageFactory.createProducts72Icon(), ProductPage.class));
         group.add(new PageDescription(Pages.USERS.getTitle(), ImageFactory.createUsersIcon64(), UserPage.class));
         group.add(new PageDescription(Pages.WAREHOUSE.getTitle(), ImageFactory.createWarehouseIcon72(), WarehousePage.class));

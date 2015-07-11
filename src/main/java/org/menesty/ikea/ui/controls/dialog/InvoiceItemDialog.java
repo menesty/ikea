@@ -31,6 +31,7 @@ public class InvoiceItemDialog extends BaseDialog {
         currentItem.basePrice = form.getPrice();
         currentItem.setName(form.getName());
         currentItem.setShortName(form.getShortName());
+        currentItem.setCount(form.getCount());
 
         if (currentItem.getId() == null)
             currentItem.setOriginArtNumber(UUID.randomUUID().toString());
@@ -56,6 +57,7 @@ public class InvoiceItemDialog extends BaseDialog {
         form.setName(invoiceItem.getName());
         form.setShortName(invoiceItem.getShortName());
         form.setOriginalArtNumber(invoiceItem.getArtNumber());
+        form.setCount(invoiceItem.getCount());
 
     }
 
@@ -64,6 +66,8 @@ public class InvoiceItemDialog extends BaseDialog {
         private TextField originalArtNumber;
 
         private DoubleTextField basePrice;
+
+        private DoubleTextField count;
 
         private TextField shortName;
 
@@ -75,6 +79,7 @@ public class InvoiceItemDialog extends BaseDialog {
             addRow("Name", name = new TextField());
             addRow("Short name", shortName = new TextField());
             addRow("Price", basePrice = new DoubleTextField());
+            addRow("Count", count = new DoubleTextField());
         }
 
         void setShortName(String shortName) {
@@ -97,8 +102,16 @@ public class InvoiceItemDialog extends BaseDialog {
             basePrice.setNumber(price);
         }
 
+        void setCount(double count) {
+            this.count.setNumber(count);
+        }
+
         double getPrice() {
             return basePrice.getNumber();
+        }
+
+        double getCount(){
+            return count.getNumber();
         }
 
         void setName(String name) {
@@ -114,6 +127,7 @@ public class InvoiceItemDialog extends BaseDialog {
             basePrice.clear();
             shortName.clear();
             name.clear();
+            count.clear();
         }
     }
 }

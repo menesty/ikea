@@ -49,6 +49,8 @@ public class InvoiceItem extends Identifiable {
     private boolean visible;
 
     private String section;
+    @Transient
+    private double retailPercentage = 0.02;
 
     public String getSection() {
         return section;
@@ -118,6 +120,10 @@ public class InvoiceItem extends Identifiable {
         return zestav;
     }
 
+    public double getRetailPercentage() {
+        return retailPercentage * 100;
+    }
+
     public InvoiceItem setZestav(boolean zestav) {
         this.zestav = zestav;
         return this;
@@ -140,7 +146,7 @@ public class InvoiceItem extends Identifiable {
     }
 
     public double getRetail() {
-        return round(getPrice() * 1.02);
+        return round(getPrice() * (retailPercentage + 1));
     }
 
     public double getMarginPercent() {

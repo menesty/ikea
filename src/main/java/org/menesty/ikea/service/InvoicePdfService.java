@@ -46,7 +46,7 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
 
     private final static Pattern totalPattern = Pattern.compile("DO ZAPŁATY:(.*)");
 
-    private final int MARGIN = 2;
+    private final int MARGIN = 0;
 
     public InvoicePdfService() {
     }

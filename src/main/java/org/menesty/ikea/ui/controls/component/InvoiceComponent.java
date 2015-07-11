@@ -5,11 +5,10 @@ import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableRow;
 import javafx.scene.layout.BorderPane;
 import org.menesty.ikea.core.component.DialogSupport;
-import org.menesty.ikea.domain.CustomerOrder;
-import org.menesty.ikea.domain.InvoicePdf;
-import org.menesty.ikea.domain.ProductInfo;
+import org.menesty.ikea.domain.*;
 import org.menesty.ikea.processor.invoice.InvoiceItem;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
+import org.menesty.ikea.service.OrderItemService;
 import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.ui.CallBack;
 import org.menesty.ikea.ui.controls.dialog.ProductDialog;
@@ -69,6 +68,32 @@ public abstract class InvoiceComponent extends BorderPane {
 
         productEditDialog = new ProductDialog(dialogSupport.getStage());
         invoicePdfViewComponent = new InvoicePdfViewComponent(dialogSupport) {
+            @Override
+            protected void onFake(List<InvoicePdf> checked) {
+                if (!checked.isEmpty()) {
+                    InvoicePdf invoicePdf = checked.get(0);
+                    List<OrderItem> orderItems = ServiceFacade.getOrderItemService().loadBy(getCustomerOrder());
+
+                    for (OrderItem orderItem : orderItems) {
+                        if (orderItem.getProductInfo() == null) {
+                            continue;
+                        }
+
+                        RawInvoiceProductItem rawOrderItem = new RawInvoiceProductItem(invoicePdf);
+                        rawOrderItem.setProductInfo(orderItem.getProductInfo());
+                        rawOrderItem.setSynthetic(false);
+                        rawOrderItem.setPrice(orderItem.getProductInfo().getPrice());
+                        rawOrderItem.setCount(orderItem.getCount());
+                        rawOrderItem.setOriginalArtNumber(orderItem.getProductInfo().getOriginalArtNum());
+                        rawOrderItem.setWat("23,00%");
+                        rawOrderItem.setName(orderItem.getProductInfo().getShortName() != null ? orderItem.getProductInfo().getShortName().replaceAll("-", "")
+                                : orderItem.getProductInfo().getName());
+
+                        ServiceFacade.getOrderItemService().save(rawOrderItem);
+                    }
+                }
+            }
+
             @Override
             protected void onSync(boolean clear) {
                 listener.onSync(clear);

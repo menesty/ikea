@@ -28,6 +28,9 @@ public class PageFactory {
             return new IkeaShopPage();
         else if (InvoicePdfItemSearchPage.class.equals(page))
             return new InvoicePdfItemSearchPage();
+        else if (SiteOrderPage.class.equals(page)) {
+            return new SiteOrderPage();
+        }
 
         throw new RuntimeException(String.format("Requested page not defined for creation: %s, please add it to Page factory", page.getName()));
     }

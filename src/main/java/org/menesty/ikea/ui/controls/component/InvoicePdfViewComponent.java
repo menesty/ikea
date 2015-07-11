@@ -46,6 +46,8 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
 
     private Button syncBtn;
 
+    //private Button fakePdf;
+
     private InvoicePdfDialog invoicePdfDialog;
 
     public InvoicePdfViewComponent(final DialogSupport dialogSupport) {
@@ -158,12 +160,34 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
         });
         syncBtn.setDisable(true);
 
-        pdfToolBar.getItems().addAll(uploadInvoice, deleteBtn, spacer, syncBtn);
+        /*fakePdf = new Button(null, ImageFactory.createBalance32Icon());
+        fakePdf.setTooltip(new Tooltip("Fake pdf"));
+        fakePdf.setDisable(false);
+        fakePdf.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                Dialog.confirm(dialogSupport, "Are you sure to create Fake items", new DialogCallback() {
+                    @Override
+                    public void onCancel() {
+                    }
+
+                    @Override
+                    public void onYes() {
+                        onFake(getChecked());
+                    }
+                });
+            }
+        });*/
+
+
+        pdfToolBar.getItems().addAll(uploadInvoice, deleteBtn, spacer, syncBtn/*, fakePdf*/);
 
         setTop(pdfToolBar);
         setCenter(invoicePdfTableView);
         setBottom(statusPanel = new WeightStatusPanel());
     }
+
+    protected abstract void onFake(List<InvoicePdf> checked);
 
     private void showAddEditDialog(final DialogSupport dialogSupport, InvoicePdf invoicePdf) {
         invoicePdfDialog.bind(invoicePdf, new EntityDialogCallback<InvoicePdf>() {

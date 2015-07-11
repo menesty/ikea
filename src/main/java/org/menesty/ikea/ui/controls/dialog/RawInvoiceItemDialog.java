@@ -33,7 +33,7 @@ public class RawInvoiceItemDialog extends BaseEntityDialog<RawInvoiceProductItem
     }
 
     public void setPriceMargin(int priceMargin) {
-        this.priceMargin = BigDecimal.valueOf((double) (priceMargin == 0 ? 2 : priceMargin) / 100 + 1);
+        this.priceMargin = BigDecimal.valueOf((double) (priceMargin == 0 ? 0 : priceMargin) / 100 + 1);
     }
 
     private class RawInvoiceItemForm extends FormPane {

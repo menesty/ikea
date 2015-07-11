@@ -35,8 +35,8 @@
 "CENNIK"
 
 [ZAWARTOSC]
-@foreach{item : invoiceItems}"@{item.artNumber}","Detaliczna",@{item.format(item.retail)},@{item.format(item.retailWat)},2.0000,@{item.format(item.marginPercent)},@{item.format(item.margin)}
-"@{item.artNumber}","Hurtowa",@{item.format(item.retail)},@{item.format(item.retailWat)},2.0000,@{item.format(item.marginPercent)},@{item.format(item.margin)}
+@foreach{item : invoiceItems}"@{item.artNumber}","Detaliczna",@{item.format(item.retail)},@{item.format(item.retailWat)},@{item.format(item.retailPercentage)},@{item.format(item.marginPercent)},@{item.format(item.margin)}
+"@{item.artNumber}","Hurtowa",@{item.format(item.retail)},@{item.format(item.retailWat)},@{item.format(item.retailPercentage)},@{item.format(item.marginPercent)},@{item.format(item.margin)}
 "@{item.artNumber}","Specjalna",@{item.format(item.price)},@{item.format(item.priceWat)},0.0000,0.0000,0.0000
 @end{}
 [NAGLOWEK]

@@ -18,7 +18,7 @@
         <class>org.menesty.ikea.domain.OrderShop</class>
 
         <properties>
-            <property name="eclipselink.ddl-generation" value="create-or-extend-tables"/>
+            <!--<property name="eclipselink.ddl-generation" value="create-or-extend-tables"/>-->
             <property name="javax.persistence.jdbc.driver" value="org.h2.Driver"/>
             <property name="javax.persistence.jdbc.url" value="jdbc:h2:data/db/ikea"/>
             <property name="javax.persistence.jdbc.user" value="menesty"/>
