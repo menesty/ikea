@@ -80,20 +80,17 @@ public abstract class CustomInvoiceComponent extends BorderPane {
         invoiceItemToolBar = new ToolBar();
         {
             Button button = new Button(null, ImageFactory.createAdd32Icon());
-            button.setOnAction(new EventHandler<ActionEvent>() {
-                @Override
-                public void handle(ActionEvent actionEvent) {
-                    InvoiceItem item = new InvoiceItem();
+            button.setOnAction(actionEvent -> {
+                InvoiceItem item = new InvoiceItem();
 
-                    item.invoicePdf = getInvoicePdf();
-                    item.setZestav(true);
-                    item.setVisible(true);
-                    item.setCount(1);
+                item.invoicePdf = getInvoicePdf();
+                item.setZestav(true);
+                item.setVisible(true);
+                item.setCount(1);
 
-                    invoiceItemDialog.bind(item, saveHandler);
+                invoiceItemDialog.bind(item, saveHandler);
 
-                    dialogSupport.showPopupDialog(invoiceItemDialog);
-                }
+                dialogSupport.showPopupDialog(invoiceItemDialog);
             });
 
             invoiceItemToolBar.getItems().add(button);

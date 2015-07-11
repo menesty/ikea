@@ -33,14 +33,6 @@ public abstract class BasePage {
         return name;
     }
 
-    public void setBreadCrumbPath(String path) {
-        breadCrumbPath = path;
-    }
-
-    public String getBreadCrumb() {
-        return StringUtils.isNotBlank(breadCrumbPath) ? breadCrumbPath + "/" + getName() : getName();
-    }
-
     protected abstract Node createView();
 
     private StackPane createRoot() {

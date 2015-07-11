@@ -51,25 +51,19 @@ public class CustomInvoicePage extends BasePage {
         invoicePdfDialog = new InvoicePdfDialog(getStage());
 
         loadService = new LoadService();
-        loadService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<List<InvoicePdf>>() {
-            @Override
-            public void onSucceeded(List<InvoicePdf> value) {
-                invoicePdfTable.getItems().clear();
-                invoicePdfTable.getItems().addAll(value);
-            }
+        loadService.setOnSucceededListener(value -> {
+            invoicePdfTable.getItems().clear();
+            invoicePdfTable.getItems().addAll(value);
         });
 
 
         invoicePdfSyncService = new InvoicePdfSyncService();
-        invoicePdfSyncService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<Boolean>() {
-            @Override
-            public void onSucceeded(Boolean value) {
-                if (value) {
-                    InvoicePdf invoicePdf = invoicePdfSyncService.getInvoice();
-                    invoicePdf.setSync(true);
-                    ServiceFacade.getInvoicePdfService().save(invoicePdf);
-                    invoicePdfTable.update(invoicePdf);
-                }
+        invoicePdfSyncService.setOnSucceededListener(value -> {
+            if (value) {
+                InvoicePdf invoicePdf = invoicePdfSyncService.getInvoice();
+                invoicePdf.setSync(true);
+                ServiceFacade.getInvoicePdfService().save(invoicePdf);
+                invoicePdfTable.update(invoicePdf);
             }
         });
     }
