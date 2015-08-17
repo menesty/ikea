@@ -9,6 +9,11 @@ import org.menesty.ikea.domain.PackageInfo;
 import org.menesty.ikea.domain.ProductInfo;
 import org.menesty.ikea.domain.ProductPart;
 import org.menesty.ikea.exception.ProductFetchException;
+import org.menesty.ikea.lib.dto.ikea.JsonPkgInfo;
+import org.menesty.ikea.lib.dto.ikea.JsonPkgInfoArr;
+import org.menesty.ikea.lib.dto.ikea.JsonProduct;
+import org.menesty.ikea.lib.dto.ikea.JsonProductItem;
+import org.menesty.ikea.lib.util.DownloadProductTask;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.ui.controls.search.ProductItemSearchData;
 import org.menesty.ikea.util.NumberUtil;
@@ -38,7 +43,7 @@ public class ProductService extends Repository<ProductInfo> {
 
     private static final Logger logger = Logger.getLogger(ProductService.class.getName());
 
-    private static final String PRODUCT_DETAIL_URL = "http://www.ikea.com/pl/pl/catalog/products/";
+    private static final String PRODUCT_DETAIL_URL_1 = "http://www.ikea.com/pl/pl/catalog/products/";
 
     private static final String PRODUCT_AVAILABLE_URL = "http://www.ikea.com/pl/pl/iows/catalog/availability/";
 
@@ -85,10 +90,15 @@ public class ProductService extends Repository<ProductInfo> {
 
     public Double loadProductPrice(String artNumber) {
         try {
-            String requestUrl = PRODUCT_DETAIL_URL + artNumber;
-            Document doc = Jsoup.connect(requestUrl).get();
-            return NumberUtil.parse(doc.select("#price1").text());
-        } catch (IOException e) {
+            DownloadProductTask downloadProductTask = new DownloadProductTask(artNumber, 2000);
+            JsonProduct jsonProduct = downloadProductTask.call();
+
+            if (jsonProduct == null) {
+                return null;
+            }
+
+            return jsonProduct.getActiveProductItem().getPrice().doubleValue();
+        } catch (Exception e) {
             return null;
         }
     }
@@ -129,56 +139,37 @@ public class ProductService extends Repository<ProductInfo> {
     }
 
 
-    private ProductInfo loadFromIkea(String artNumber) throws IOException {
-        String requestUrl = PRODUCT_DETAIL_URL + artNumber;
-        Document doc = Jsoup.connect(requestUrl).get();
+    public ProductInfo loadFromIkea(String artNumber) throws IOException {
+        DownloadProductTask downloadProductTask = new DownloadProductTask(artNumber, 5000);
 
-        String name = getProductName(doc);
+        try {
+            JsonProduct product = downloadProductTask.call();
 
-        if (name == null) {
-            logger.info(String.format("Product not found on site : %1$s url: %2$s", artNumber, requestUrl));
+            if (product == null) {
+                return null;
+            }
+
+
+            JsonProductItem activeProductItem = product.getActiveProductItem();
+
+
+            ProductInfo productInfo = new ProductInfo();
+            productInfo.setOriginalArtNum(artNumber);
+            productInfo.setPackageInfo(parseProductPackageInfo(activeProductItem));
+            productInfo.setName(activeProductItem.getName());
+            productInfo.setShortName(generateShortName(activeProductItem.getType(), artNumber, productInfo.getPackageInfo().getBoxCount()));
+            productInfo.setGroup(resolveGroup(artNumber, product.getSource()));
+            productInfo.setPrice(activeProductItem.getPrice().doubleValue());
+
+            return productInfo;
+
+        } catch (Exception e) {
             return null;
         }
-
-        ProductInfo productInfo = new ProductInfo();
-        productInfo.setOriginalArtNum(artNumber);
-        productInfo.setPackageInfo(parseProductPackageInfo(doc));
-        productInfo.setName(name);
-        productInfo.setShortName(generateShortName(name, artNumber, productInfo.getPackageInfo().getBoxCount()));
-        productInfo.setGroup(resolveGroup(artNumber, doc));
-        productInfo.setPrice(NumberUtil.parse(doc.select("#price1").text()));
-
-        return productInfo;
     }
 
-    private PackageInfo parseProductPackageInfo(Document document) {
-        PackageInfo packageInfo = parsePartPackageInfo(document.html());
-        packageInfo.setBoxCount(getBoxCount(document));
-
-        if (!packageInfo.hasAllSize()) {
-            String productSize = document.select("#measuresPart #metric").text();
-
-            if (packageInfo.getHeight() == 0) {
-                Matcher m = Patterns.HEIGHT_PATTERN.matcher(productSize);
-                if (m.find())
-                    packageInfo.setHeight((int) ((Double.valueOf(m.group(1)) * 10)));
-            }
-
-            if (packageInfo.getWidth() == 0) {
-                Matcher m = Patterns.WIDTH_PATTERN.matcher(productSize);
-                if (m.find())
-                    packageInfo.setWidth((int) ((Double.valueOf(m.group(1)) * 10)));
-            }
-
-            if (packageInfo.getLength() == 0) {
-                Matcher m = Patterns.LENGHT_PATTERN.matcher(productSize);
-                if (m.find())
-                    packageInfo.setLength((int) ((Double.valueOf(m.group(2)) * 10)));
-            }
-
-        }
-
-        return packageInfo;
+    private PackageInfo parseProductPackageInfo(JsonProductItem activeProductItem) {
+        return parsePartPackageInfo(activeProductItem.getActiveJsonPkgInfo());
     }
 
     private String getProductName(Document doc) {
@@ -286,82 +277,68 @@ public class ProductService extends Repository<ProductInfo> {
 
     public ProductInfo loadComboProduct(String artNumber) throws IOException {
         artNumber = ProductInfo.cleanProductId(artNumber);
-        Document doc = Jsoup.connect(PRODUCT_DETAIL_URL + artNumber).get();
-        String name = getProductName(doc);
-
-        if (name == null) {
-            System.out.println("Product not found on site " + artNumber + " " + PRODUCT_DETAIL_URL + artNumber);
-            return null;
-        }
-
-        ProductInfo combo = new ProductInfo();
-        combo.setOriginalArtNum(artNumber);
-        combo.setName(name);
-        combo.setShortName(name);
-        combo.setGroup(ProductInfo.Group.Combo);
-        combo.setPackageInfo(parseProductPackageInfo(doc));
-        combo.setPrice(NumberUtil.parse(doc.select("#price1").text()));
-
-        List<ProductPart> parts = new ArrayList<>();
-        String content = doc.html();
+        DownloadProductTask downloadProductTask = new DownloadProductTask(artNumber, 5000);
 
         try {
-            Document rowDetailsDoc = Jsoup.connect("http://www.ikea.com/pl/pl/catalog/packagepopup/" + artNumber).get();
-            Elements rows = rowDetailsDoc.select(".rowContainerPackage .colArticle");
+            JsonProduct jsonProduct = downloadProductTask.call();
 
-            for (Element row : rows) {
-                Matcher m = Patterns.ART_NUMBER_PART_PATTERN.matcher(row.html());
-
-                if (m.find())
-                    parts.add(parsePartDetails(m.group(1).replace(".", ""), content));
+            if (jsonProduct == null) {
+                return null;
             }
-        } catch (Exception e) {
-            //skip
-        }
 
-        combo.setParts(parts);
+            JsonProductItem productItem = jsonProduct.getActiveProductItem();
 
-        return combo;
-    }
+            ProductInfo combo = new ProductInfo();
+            combo.setOriginalArtNum(artNumber);
+            combo.setName(productItem.getName());
+            combo.setShortName(productItem.getName());
+            combo.setGroup(ProductInfo.Group.Combo);
+            combo.setPackageInfo(parseProductPackageInfo(productItem));
+            combo.setPrice(productItem.getPrice().doubleValue());
 
-    private ProductPart parsePartDetails(String artNumber, String content) {
-        ProductPart productPart = new ProductPart();
-        String originalArtNumber = ProductInfo.cleanProductId(artNumber);
-        ProductInfo part = findByArtNumber(artNumber);
+            List<ProductPart> parts = new ArrayList<>();
 
-        if (part == null)
             try {
-                part = loadFromIkea(artNumber);
-            } catch (IOException e) {
-                logger.log(Level.SEVERE, "Load from Ikea server", e);
+                for (JsonPkgInfoArr part : productItem.getPkgInfoArr()) {
+                    ProductInfo productPartInfo = null;// findByArtNumber(part.getArticleNumber());
+                    if (productPartInfo == null)
+                        try {
+                            productPartInfo = loadFromIkea(part.getArticleNumber());
+                        } catch (IOException e) {
+                            logger.log(Level.SEVERE, "Load from Ikea server", e);
+                        }
+
+                    ProductPart productPart = new ProductPart();
+
+                    if (productPartInfo == null) {
+                        PackageInfo packageInfo = parsePartPackageInfo(part.getPkgInfo());
+                        productPartInfo = new ProductInfo();
+                        productPartInfo.setOriginalArtNum(part.getArticleNumber());
+                        productPartInfo.setPackageInfo(packageInfo);
+                        productPartInfo.setName(part.getArticleNumber());
+                        productPartInfo.setShortName(part.getArticleNumber());
+
+                    }
+
+                    productPart.setProductInfo(productPartInfo);
+                    productPart.setCount(part.getPkgInfo().get(0).getQuantity());
+
+                    parts.add(productPart);
+                }
+            } catch (Exception e) {
+                //skip
             }
 
-        Pattern p = Pattern.compile("metricPackageInfo.*\\{(.*?" + originalArtNumber + ".*?)\\}");
-        Matcher m = p.matcher(content);
-
-        PackageInfo packageInfo = new PackageInfo();
-
-        if (m.find())
-            packageInfo = parsePartPackageInfo(m.group(1));
-
-        if (part == null) {
-            part = new ProductInfo();
-
-            part.setPackageInfo(packageInfo);
-            part.setOriginalArtNum(originalArtNumber);
-            part.setName(parsePartName(part.getArtNumber(), content));
-            part.setShortName(generateShortName(part.getName(), part.getArtNumber(), part.getPackageInfo().getBoxCount()));
-
-            productPart.setCount(packageInfo.getBoxCount());
-            part.getPackageInfo().setBoxCount(1);
-        } else
-            productPart.setCount(packageInfo.getBoxCount());
+            combo.setParts(parts);
 
 
-        productPart.setProductInfo(part);
+            return combo;
 
-        return productPart;
+        } catch (Exception e) {
+            return null;
+        }
     }
+
 
     private String parsePartName(String artNumber, String content) {
         Pattern partNamePattern = Pattern.compile("\\{\"attachmentName\":\"([\\w\\sążźćńłśęóĄÅŻŹĆŃŁŚĘÓ]+)\",\"articleNumber\":\"" + artNumber + "\".*?\\}");
@@ -373,18 +350,17 @@ public class ProductService extends Repository<ProductInfo> {
         return "";
     }
 
-    private PackageInfo parsePartPackageInfo(String content) {
+    private PackageInfo parsePartPackageInfo(List<JsonPkgInfo> jsonPkgInfos) {
         PackageInfo packageInfo = new PackageInfo();
 
-        Matcher m = Patterns.PACKAGE_INFO_PATTERN.matcher(content);
+        if (jsonPkgInfos != null && !jsonPkgInfos.isEmpty()) {
+            JsonPkgInfo jsonPkgInfo = jsonPkgInfos.get(0);
 
-        if (m.find()) {
-            System.out.println(m.group());
-            packageInfo.setBoxCount(Integer.valueOf(m.group(1)));
-            packageInfo.setLength(Integer.valueOf(m.group(2)));
-            packageInfo.setWidth(Integer.valueOf(m.group(3)));
-            packageInfo.setWeight(Integer.valueOf(m.group(4)));
-            packageInfo.setHeight(Integer.valueOf(m.group(5)));
+            packageInfo.setBoxCount(jsonPkgInfos.size());
+            packageInfo.setLength(jsonPkgInfo.getLength());
+            packageInfo.setWidth(jsonPkgInfo.getWidth());
+            packageInfo.setWeight(jsonPkgInfo.getWeigh());
+            packageInfo.setHeight(jsonPkgInfo.getHeight());
         }
 
         return packageInfo;

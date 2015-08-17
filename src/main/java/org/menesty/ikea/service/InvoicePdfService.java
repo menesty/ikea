@@ -131,24 +131,28 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
     public static void main(String... arg) throws IOException, InterruptedException, ExecutionException {
         InvoicePdfService service = new InvoicePdfService();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        List<RawInvoiceProductItem> products = new ArrayList<>();
 
         try {
-            String content = service.parseDocument(new FileInputStream("/Users/andrewhome/Downloads/Informacja_PDF.pdf"));
+            String content = service.parseDocument(new FileInputStream("/Users/andrewhome/Downloads/Dokup_201.pdf"));
 
             Scanner scanner = new Scanner(content);
 
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
-                if (line.matches(PARAGON_DATE_PATTERN)) {
-                    try {
-                        System.out.println(sdf.parse(line.replaceAll(PARAGON_DATE_PATTERN, "$1")));
-                    } catch (ParseException e) {
-                        //skip
-                    }
-                } else if (line.matches(PARAGON_NAME)) {
-                    System.out.println(line.replaceAll(PARAGON_NAME, "$1/$2"));
+
+                if (line.equals("Numer artykułu:")) {
+                    String artNumber = scanner.nextLine();
+                    String countPrice = scanner.nextLine();
+
+                    System.out.println(artNumber + "||||||" + countPrice);
+                } else {
+                    System.out.println(line);
                 }
+
             }
+
+            System.out.println(products);
         } catch (IOException e) {
             e.printStackTrace();
         }

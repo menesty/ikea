@@ -37,8 +37,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 
 public class OrderListPage extends BasePage {
 
@@ -79,18 +81,10 @@ public class OrderListPage extends BasePage {
 
         pagination = new Pagination(1, 0);
 
-        pagination.currentPageIndexProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number pageIndex) {
-                loadService.setPageIndex(pageIndex.intValue());
-                loadService.restart();
-            }
+        pagination.currentPageIndexProperty().addListener((observable, oldValue, pageIndex) -> {
+            loadService.setPageIndex(pageIndex.intValue());
+            loadService.restart();
         });
-
-        /*pagination.setMaxHeight(60);
-        pagination.setPrefHeight(60);
-        pagination.setMinHeight(60);
-*/
 
         BorderPane borderPane = new BorderPane();
         borderPane.setCenter(tableView);
@@ -110,12 +104,8 @@ public class OrderListPage extends BasePage {
         TableColumn<OrderTableItem, Boolean> checked = new TableColumn<>();
 
         checked.setMinWidth(50);
-        checked.setCellValueFactory(new PropertyValueFactory<OrderTableItem, Boolean>("checked"));
-        checked.setCellFactory(new Callback<TableColumn<OrderTableItem, Boolean>, TableCell<OrderTableItem, Boolean>>() {
-            public TableCell<OrderTableItem, Boolean> call(TableColumn<OrderTableItem, Boolean> p) {
-                return new CheckBoxTableCell<>();
-            }
-        });
+        checked.setCellValueFactory(new PropertyValueFactory<>("checked"));
+        checked.setCellFactory(p -> new CheckBoxTableCell<>());
 
         TableColumn<OrderTableItem, String> orderName = new TableColumn<>();
 
@@ -185,6 +175,7 @@ public class OrderListPage extends BasePage {
         });
 
         final Button editOrder = new Button(null, ImageFactory.creteInfo48Icon());
+
         editOrder.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
                 navigate(OrderViewPage.class, tableView.getSelectionModel().getSelectedItem().getOrder());
@@ -215,13 +206,10 @@ public class OrderListPage extends BasePage {
         });
         deleteBtn.setDisable(true);
 
-        tableView.getSelectionModel().selectedItemProperty().addListener(new InvalidationListener() {
-            @Override
-            public void invalidated(Observable observable) {
-                boolean selected = tableView.getSelectionModel().getSelectedItem() == null;
-                editOrder.setDisable(selected);
-                deleteBtn.setDisable(selected);
-            }
+        tableView.getSelectionModel().selectedItemProperty().addListener(observable -> {
+            boolean selected = tableView.getSelectionModel().getSelectedItem() == null;
+            editOrder.setDisable(selected);
+            deleteBtn.setDisable(selected);
         });
 
         control.getItems().addAll(addOrder, editOrder, deleteBtn);
@@ -236,18 +224,15 @@ public class OrderListPage extends BasePage {
             }
 
             @Override
-            public void onCreate(String orderName, int margin, String filePath) {
+            public void onCreate(String orderName, int margin, OrderType orderType, String filePath) {
                 hidePopupDialog();
 
-                if (filePath == null) {
+                if (orderType == null) {
                     ServiceFacade.getOrderService().save(new CustomerOrder(orderName).setSynthetic(true).setMargin(margin));
                     loadService.restart();
-                } else
-                    try {
-                        runTask(new CreateOrderTask(orderName, margin, new FileInputStream(new File(filePath))));
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    }
+                } else {
+                    runTask(new CreateOrderTask(orderName, margin, orderType, filePath));
+                }
             }
         });
     }
@@ -291,33 +276,41 @@ public class OrderListPage extends BasePage {
 
         private String orderName;
 
-        private InputStream is;
+        private String path;
 
         private int margin;
 
-        public CreateOrderTask(String orderName, int margin, InputStream is) {
+        private OrderCreateDialog.OrderType orderType;
+
+        public CreateOrderTask(String orderName, int margin, OrderCreateDialog.OrderType orderType, String path) {
             this.orderName = orderName;
-            this.is = is;
+            this.path = path;
             this.margin = margin;
+            this.orderType = orderType;
         }
 
         @Override
         protected Void call() throws InterruptedException {
             try {
-                ServiceFacade.getOrderService().createOrder(orderName, margin, is, new TaskProgress() {
-                    @Override
-                    public void updateProgress(long l, long l1) {
-                        CreateOrderTask.this.updateProgress(l, l1);
-                    }
-                });
+                if (OrderCreateDialog.OrderType.XLS.equals(orderType)) {
+                    InputStream inputStream = new FileInputStream(new File(path));
 
-                Platform.runLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        loadService.restart();
-                    }
-                });
+                    ServiceFacade.getOrderService().createOrderXls(orderName, margin, inputStream, CreateOrderTask.this::updateProgress);
+                } else if (OrderCreateDialog.OrderType.PDF.equals(orderType)) {
+                    List<InputStream> steams = Arrays.asList(path.split(";")).stream().map(pathItem -> {
+                        try {
+                            return new FileInputStream(new File(pathItem));
+                        } catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                        }
 
+                        return null;
+                    }).collect(Collectors.toList());
+
+                    ServiceFacade.getOrderService().createOrderPdf(orderName, margin, steams, CreateOrderTask.this::updateProgress);
+                }
+
+                Platform.runLater(loadService::restart);
             } catch (Exception e) {
                 e.printStackTrace();
             }

@@ -1,14 +1,11 @@
 package org.menesty.ikea.ui.controls.dialog;
 
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.VPos;
 import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
@@ -21,8 +18,13 @@ import org.menesty.ikea.util.FileChooserUtil;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class OrderCreateDialog extends BaseDialog {
+    public enum OrderType {
+        XLS, PDF
+    }
 
     private OrderForm orderForm;
 
@@ -41,19 +43,18 @@ public class OrderCreateDialog extends BaseDialog {
     @Override
     public void onOk() {
         if (orderForm.isValid())
-            onCreate(orderForm.getOrderName(), orderForm.getMargin(),
-                    orderForm.isSynthetic() ? null : orderForm.getFilePath());
+            onCreate(orderForm.getOrderName(), orderForm.getMargin(), orderForm.getOrderType(), orderForm.getFilePath());
     }
 
-    public void onCreate(String orderName, int margin, String filePath) {
+    public void onCreate(String orderName, int margin, OrderType orderType, String filePath) {
 
     }
 
     private class OrderForm extends FormPane {
         TextField orderName;
         TextField textField;
-        CheckBox synthetic;
         NumberTextField marginField;
+        ComboBox<OrderType> comboBox;
 
         RowPanel filePanel = new RowPanel();
 
@@ -69,34 +70,17 @@ public class OrderCreateDialog extends BaseDialog {
             return marginField.getNumber().intValue();
         }
 
-        public boolean isSynthetic() {
-            return synthetic.isSelected();
+        public OrderType getOrderType() {
+            return comboBox.getSelectionModel().getSelectedItem();
         }
 
         public OrderForm() {
             setShowLabels(true);
             setLabelWidth(60);
             filePanel.setPadding(new Insets(0));
-            final ChangeListener<String> textListener = new ChangeListener<String>() {
-                public void changed(ObservableValue<? extends String> ov, String t, String t1) {
-                    if (!synthetic.isSelected())
-                        okBtn.setDisable(orderName.getText() == null || orderName.getText().isEmpty()
-                                || textField.getText() == null || textField.getText().isEmpty());
-                }
-            };
-
-            addRow("Synthetic", synthetic = new CheckBox());
-            synthetic.selectedProperty().addListener(new ChangeListener<Boolean>() {
-                @Override
-                public void changed(ObservableValue<? extends Boolean> observableValue, Boolean aBoolean, Boolean aBoolean2) {
-                    filePanel.setDisable(synthetic.isSelected());
-
-                    if (synthetic.isSelected())
-                        okBtn.setDisable(false);
-                    else
-                        textListener.changed(null, null, null);
-                }
-            });
+            final ChangeListener<String> textListener = (ov, t, t1) ->
+                    okBtn.setDisable(orderName.getText() == null || orderName.getText().isEmpty()
+                            && (comboBox.getSelectionModel().getSelectedItem() != null && textField.getText() == null || textField.getText().isEmpty()));
 
             add(orderName = new TextField(null, "Name", false));
             orderName.setPrefColumnCount(20);
@@ -106,28 +90,47 @@ public class OrderCreateDialog extends BaseDialog {
 
             int rowIndex = filePanel.nextRow();
             Label label;
+            comboBox = new ComboBox<>();
+            comboBox.getItems().addAll(null, OrderType.XLS, OrderType.PDF);
+            GridPane.setConstraints(label = new Label("Order Type"), 0, rowIndex);
+            GridPane.setConstraints(comboBox, 1, rowIndex, 1, 1, HPos.CENTER, VPos.CENTER, Priority.ALWAYS, Priority.NEVER);
+            filePanel.getChildren().addAll(label, comboBox);
+
+            rowIndex = filePanel.nextRow();
+
             GridPane.setConstraints(label = new Label("File"), 0, rowIndex);
             label.setPrefWidth(60);
 
-
             textField = new TextField();
             textField.setEditable(false);
-            GridPane.setConstraints(textField, 1, rowIndex, 1, 1, HPos.CENTER, VPos.CENTER, Priority.ALWAYS, Priority.NEVER);
+            GridPane.setConstraints(textField, 1, rowIndex, 1, 1, HPos.LEFT, VPos.CENTER, Priority.ALWAYS, Priority.NEVER);
 
             Button button = new Button("Browse...");
             button.setId("browseButton");
             button.setMinWidth(USE_PREF_SIZE);
             GridPane.setConstraints(button, 2, rowIndex);
 
-            button.setOnAction(new EventHandler<ActionEvent>() {
-                @Override
-                public void handle(ActionEvent actionEvent) {
-                    File selectedFile = FileChooserUtil.getXls().showOpenDialog(getStage());
+            button.setOnAction(actionEvent -> {
+                OrderType selected = comboBox.getSelectionModel().getSelectedItem();
 
-                    okBtn.setDisable(selectedFile == null);
+                if (selected != null) {
+                    if (OrderType.XLS == selected) {
+                        File selectedFile = FileChooserUtil.getXls().showOpenDialog(getStage());
 
-                    if (selectedFile != null)
-                        textField.setText(selectedFile.getAbsolutePath());
+                        okBtn.setDisable(selectedFile == null);
+
+                        if (selectedFile != null) {
+                            textField.setText(selectedFile.getAbsolutePath());
+                        }
+                    } else if (OrderType.PDF == selected) {
+                        List<File> selectedFiles = FileChooserUtil.getPdf().showOpenMultipleDialog(getStage());
+
+                        if (!selectedFiles.isEmpty()) {
+                            String items = selectedFiles.stream().map(File::getAbsolutePath).collect(Collectors.joining(";"));
+
+                            textField.setText(items);
+                        }
+                    }
                 }
             });
 

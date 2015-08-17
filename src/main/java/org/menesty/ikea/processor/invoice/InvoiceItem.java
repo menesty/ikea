@@ -222,7 +222,7 @@ public class InvoiceItem extends Identifiable {
 
     public static List<InvoiceItem> get(ProductInfo productInfo, String artSuffix, double count) {
         List<InvoiceItem> result = new ArrayList<>();
-        boolean needGrind = productInfo.getPackageInfo().getBoxCount() > 1 && productInfo.getPackageInfo().getWeight() > 20000;
+        boolean needGrind = productInfo.getPackageInfo().getBoxCount() > 1 || productInfo.getPackageInfo().getWeight() > 5000;
 
         if (needGrind)
             for (int i = 1; i <= productInfo.getPackageInfo().getBoxCount(); i++)

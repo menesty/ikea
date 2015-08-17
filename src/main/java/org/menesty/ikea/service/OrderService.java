@@ -36,15 +36,38 @@ public class OrderService extends Repository<CustomerOrder> {
         this.productService = new ProductService();
     }
 
-    public CustomerOrder createOrder(String name, int margin, InputStream is, TaskProgress taskProgress) {
+    public CustomerOrder createOrderXls(String name, int margin, InputStream is, TaskProgress taskProgress) {
+        try {
+            OrderParseResult parseResult = parseOrder(is, taskProgress);
+
+            return createOrder(name, margin, parseResult, taskProgress);
+        } catch (IOException | SAXException | InvalidFormatException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public CustomerOrder createOrderPdf(String name, int margin, List<InputStream> is, TaskProgress taskProgress) {
+        try {
+            List<RawOrderItem> result = ServiceFacade.getOrderPdfService().getRawOrderItems(is);
+
+
+           return createOrder(name, margin, new OrderParseResult(result), taskProgress);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    private CustomerOrder createOrder(String name, int margin, OrderParseResult parseResult, TaskProgress taskProgress) {
 
         try {
             CustomerOrder order = new CustomerOrder();
             order.setName(name);
             order.setCreatedDate(new Date());
             order.setMargin(margin);
-
-            OrderParseResult parseResult = parseOrder(is, taskProgress);
 
             order.setParseWarnings(parseResult.getParseWarnings());
 
@@ -63,6 +86,7 @@ public class OrderService extends Repository<CustomerOrder> {
         }
         return null;
     }
+
     @SuppressWarnings("unchecked")
     protected OrderParseResult parseOrder(InputStream is, TaskProgress taskProgress) throws IOException,
             SAXException, InvalidFormatException {
@@ -140,7 +164,7 @@ public class OrderService extends Repository<CustomerOrder> {
         for (RawOrderItem rawOrderItem : list) {
             itemIndex++;
 
-            if (rawOrderItem.getArtNumber() == null || (StringUtils.isNotBlank(rawOrderItem.getCombo()) && rawOrderItem.getPrice() == 0))
+            if (rawOrderItem.getArtNumber() == null || /*(StringUtils.isNotBlank(rawOrderItem.getCombo()) ||*/ rawOrderItem.getPrice() == 0)
                 continue;
 
             String artNumber = getArtNumber(rawOrderItem.getArtNumber());
@@ -535,8 +559,15 @@ public class OrderService extends Repository<CustomerOrder> {
 
     public static class OrderParseResult {
         private List<RawOrderItem> rawOrderItems;
-
         private List<String> parseWarnings;
+
+        public OrderParseResult() {
+
+        }
+
+        public OrderParseResult(List<RawOrderItem> rawOrderItems) {
+            this.rawOrderItems = rawOrderItems;
+        }
 
         public List<RawOrderItem> getRawOrderItems() {
             return rawOrderItems;
