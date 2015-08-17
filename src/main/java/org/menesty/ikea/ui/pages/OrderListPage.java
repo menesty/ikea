@@ -339,16 +339,13 @@ public class OrderListPage extends BasePage {
                 @Override
                 protected PagingResult<CustomerOrder> call() throws Exception {
 
-                    return DatabaseService.runInTransaction(new Callable<PagingResult<CustomerOrder>>() {
-                        @Override
-                        public PagingResult<CustomerOrder> call() throws Exception {
-                            PagingResult<CustomerOrder> result = new PagingResult<>();
+                    return DatabaseService.runInTransaction(() -> {
+                        PagingResult<CustomerOrder> result = new PagingResult<>();
 
-                            result.setData(ServiceFacade.getOrderService().load(_pageIndex * ITEM_PER_PAGE, ITEM_PER_PAGE));
-                            result.setCount((int) ServiceFacade.getOrderService().count());
+                        result.setData(ServiceFacade.getOrderService().load(_pageIndex * ITEM_PER_PAGE, ITEM_PER_PAGE));
+                        result.setCount((int) ServiceFacade.getOrderService().count());
 
-                            return result;
-                        }
+                        return result;
                     });
                 }
             };
