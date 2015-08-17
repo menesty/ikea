@@ -15,29 +15,20 @@ public abstract class BaseTableView<Entity> extends TableView<Entity> {
     private List<TableRow<Entity>> rows = new ArrayList<>();
 
     public BaseTableView() {
-        setRowFactory(new Callback<TableView<Entity>, TableRow<Entity>>() {
-            @Override
-            public TableRow<Entity> call(TableView<Entity> entityTableView) {
-                final TableRow<Entity> row = new TableRow<>();
-                rows.add(row);
+        setRowFactory(entityTableView -> {
+            final TableRow<Entity> row = new TableRow<>();
+            rows.add(row);
 
-                row.setOnMouseClicked(new EventHandler<MouseEvent>() {
-                    @Override
-                    public void handle(MouseEvent mouseEvent) {
-                        if (mouseEvent.getClickCount() == 2)
-                            onRowDoubleClick(row);
-                    }
-                });
+            row.setOnMouseClicked(mouseEvent -> {
+                if (mouseEvent.getClickCount() == 2)
+                    onRowDoubleClick(row);
+            });
 
-                row.itemProperty().addListener(new ChangeListener<Entity>() {
-                    @Override
-                    public void changed(ObservableValue<? extends Entity> observableValue, Entity oldValue, Entity newValue) {
-                        onRowRender(row, newValue);
-                    }
-                });
+            row.itemProperty().addListener((observableValue, oldValue, newValue) -> {
+                onRowRender(row, newValue);
+            });
 
-                return row;
-            }
+            return row;
         });
     }
 

@@ -19,8 +19,9 @@ public class FileChooserUtil {
 
         String def = ServiceFacade.getApplicationPreference().getFileChooseDefaultDir();
 
-        if (StringUtils.isNotBlank(def) && new File(def).exists())
+        if (StringUtils.isNotBlank(def) && new File(def).exists()) {
             fileChooser.setInitialDirectory(new File(def));
+        }
 
         return fileChooser;
     }
