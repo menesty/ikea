@@ -23,10 +23,10 @@ import org.menesty.ikea.ui.controls.component.*;
 import org.menesty.ikea.ui.controls.dialog.BaseDialog;
 import org.menesty.ikea.ui.controls.dialog.IkeaUserFillProgressDialog;
 import org.menesty.ikea.ui.controls.search.OrderItemSearchData;
-import org.menesty.ikea.util.NumberUtil;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -74,60 +74,41 @@ public class OrderViewPage extends BasePage {
     @Override
     protected void initialize() {
         orderInvoiceSyncService = new OrderInvoiceSyncService();
-        orderInvoiceSyncService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<Boolean>() {
-            @Override
-            public void onSucceeded(Boolean value) {
-                if (value) {
-                    ServiceFacade.getInvoicePdfService().updateSyncBy(currentOrder);
+        orderInvoiceSyncService.setOnSucceededListener(value -> {
+            if (value) {
+                ServiceFacade.getInvoicePdfService().updateSyncBy(currentOrder);
 
-                    for (InvoicePdf pdf : orderData.invoicePdfs)
-                        pdf.setSync(true);
-                }
+                for (InvoicePdf pdf : orderData.invoicePdfs)
+                    pdf.setSync(true);
             }
         });
 
         loadService = new LoadService();
 
-        loadService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<OrderData>() {
-            @Override
-            public void onSucceeded(final OrderData value) {
-                OrderViewPage.this.orderData = value;
+        loadService.setOnSucceededListener(value -> {
+            OrderViewPage.this.orderData = value;
 
-                invoiceComponent.setOrderData(orderData);
-                orderItemViewComponent.setItems(orderData.orderItems);
+            invoiceComponent.setOrderData(orderData);
+            orderItemViewComponent.setItems(orderData.orderItems);
 
-                updateInvoiceRawSearchTab();
-            }
+            updateInvoiceRawSearchTab();
         });
 
         storeLackService = new StoreLackService();
 
-        storeLackService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<List<StorageLack>>() {
-            @Override
-            public void onSucceeded(List<StorageLack> value) {
-                storageLackItemViewComponent.setItems(value);
-            }
-        });
+        storeLackService.setOnSucceededListener(value -> storageLackItemViewComponent.setItems(value));
 
         storeLackComboService = new StoreLackComboService();
 
-        storeLackComboService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<List<StorageComboLack>>() {
-            @Override
-            public void onSucceeded(List<StorageComboLack> value) {
-                storageLackComboComponent.setItems(value);
-            }
-        });
+        storeLackComboService.setOnSucceededListener(value -> storageLackComboComponent.setItems(value));
 
         invoicePdfSyncService = new InvoicePdfSyncService();
-        invoicePdfSyncService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<Boolean>() {
-            @Override
-            public void onSucceeded(Boolean value) {
-                if (value) {
-                    InvoicePdf invoicePdf = invoicePdfSyncService.getInvoice();
-                    invoicePdf.setSync(true);
-                    ServiceFacade.getInvoicePdfService().save(invoicePdf);
-                    invoiceComponent.update(invoicePdf);
-                }
+        invoicePdfSyncService.setOnSucceededListener(value -> {
+            if (value) {
+                InvoicePdf invoicePdf = invoicePdfSyncService.getInvoice();
+                invoicePdf.setSync(true);
+                ServiceFacade.getInvoicePdfService().save(invoicePdf);
+                invoiceComponent.update(invoicePdf);
             }
         });
     }
@@ -153,13 +134,10 @@ public class OrderViewPage extends BasePage {
 
         storageLackComboComponent = new StorageLackComboComponent();
         tab.setContent(storageLackComboComponent);
-        tab.setOnSelectionChanged(new EventHandler<Event>() {
-            @Override
-            public void handle(Event event) {
-                if (tab.isSelected()) {
-                    loadingPane.bindTask(storeLackComboService);
-                    storeLackComboService.restart();
-                }
+        tab.setOnSelectionChanged(event -> {
+            if (tab.isSelected()) {
+                loadingPane.bindTask(storeLackComboService);
+                storeLackComboService.restart();
             }
         });
 
@@ -379,6 +357,7 @@ public class OrderViewPage extends BasePage {
             @Override
             public void onSync(boolean clear) {
                 orderInvoiceSyncService.setCustomerOrder(currentOrder);
+                orderInvoiceSyncService.setMargin(BigDecimal.valueOf(currentOrder.getMargin()));
                 orderInvoiceSyncService.setClear(clear);
 
                 loadingPane.bindTask(orderInvoiceSyncService);
@@ -399,7 +378,9 @@ public class OrderViewPage extends BasePage {
             @Override
             public void onUpload(InvoicePdf invoicePdf) {
                 loadingPane.bindTask(invoicePdfSyncService);
+
                 invoicePdfSyncService.setInvoice(invoicePdf);
+                invoicePdfSyncService.setMargin(BigDecimal.valueOf(currentOrder.getMargin()));
                 invoicePdfSyncService.restart();
             }
 
@@ -428,7 +409,7 @@ public class OrderViewPage extends BasePage {
         storageLackItemViewComponent.disableIkeaExport(currentOrder.getLackUser() == null);
 
         orderItemTab.setText(currentOrder.getName() + " - " + orderItemTab.getText());
-        invoiceComponent.setEppPrefix(((int) NumberUtil.parse(currentOrder.getName())) + "");
+        invoiceComponent.setEppPrefix(currentOrder.getName());
         invoiceComponent.updateView();
 
         if (currentOrder.isSynthetic())
@@ -453,12 +434,7 @@ public class OrderViewPage extends BasePage {
                 orderData.invoicePdfs.addAll(entities);
                 ServiceFacade.getOrderService().save(currentOrder);
 
-                Platform.runLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        invoiceComponent.refreshInvoicePdfs();
-                    }
-                });
+                Platform.runLater(invoiceComponent::refreshInvoicePdfs);
             } catch (Exception e) {
                 e.printStackTrace();
             }

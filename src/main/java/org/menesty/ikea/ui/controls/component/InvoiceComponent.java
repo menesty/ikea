@@ -1,10 +1,12 @@
 package org.menesty.ikea.ui.controls.component;
 
+import javafx.application.Platform;
 import javafx.geometry.Orientation;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableRow;
 import javafx.scene.layout.BorderPane;
 import org.menesty.ikea.core.component.DialogSupport;
+import org.menesty.ikea.db.DatabaseService;
 import org.menesty.ikea.domain.*;
 import org.menesty.ikea.processor.invoice.InvoiceItem;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
@@ -17,6 +19,8 @@ import org.menesty.ikea.ui.pages.OrderViewPage;
 import org.menesty.ikea.util.NumberUtil;
 
 import java.io.File;
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -37,31 +41,28 @@ public abstract class InvoiceComponent extends BorderPane {
     private InvoiceComponentListener listener;
 
     public InvoiceComponent(final DialogSupport dialogSupport) {
-        final CallBack<List<RawInvoiceProductItem>> importCallBack = new CallBack<List<RawInvoiceProductItem>>() {
-            @Override
-            public void onResult(List<RawInvoiceProductItem> data) {
-                String artSufix = ((int) NumberUtil.parse(getCustomerOrder().getName())) + "";
-                for (RawInvoiceProductItem item : data) {
-                    String prefix = item.getProductInfo() != null ? "IKEA" : "SYN";
+        final CallBack<List<RawInvoiceProductItem>> importCallBack = data -> {
+            String artSufix = getCustomerOrder().getName();
+            for (RawInvoiceProductItem item : data) {
+                String prefix = item.getProductInfo() != null ? "IKEA" : "SYN";
 
-                    if (item.getProductInfo() == null) {
-                        InvoiceItem invoiceItem = InvoiceItem.get(item.getOriginalArtNumber(), prefix, artSufix,
-                                item.getName(), item.getName(),
-                                item.getPrice(), item.getIntWat(), "", 1, item.getCount(), 1, 1);
+                if (item.getProductInfo() == null) {
+                    InvoiceItem invoiceItem = InvoiceItem.get(item.getOriginalArtNumber(), prefix, artSufix,
+                            item.getName(), item.getName(),
+                            item.getPrice(), item.getIntWat(), "", 1, item.getCount(), 1, 1);
 
+                    invoiceItem.invoicePdf = item.invoicePdf;
+
+                    ServiceFacade.getInvoiceItemService().save(invoiceItem);
+                } else {
+                    String artPrefix = item.invoicePdf.customerOrder.getName();
+                    List<InvoiceItem> items = InvoiceItem.get(item.getProductInfo(), artPrefix, item.getCount());
+
+                    for (InvoiceItem invoiceItem : items) {
                         invoiceItem.invoicePdf = item.invoicePdf;
-
-                        ServiceFacade.getInvoiceItemService().save(invoiceItem);
-                    } else {
-                        String artPrefix = ((int) NumberUtil.parse(item.invoicePdf.customerOrder.getName())) + "";
-                        List<InvoiceItem> items = InvoiceItem.get(item.getProductInfo(), artPrefix, item.getCount());
-
-                        for (InvoiceItem invoiceItem : items) {
-                            invoiceItem.invoicePdf = item.invoicePdf;
-                        }
-
-                        ServiceFacade.getInvoiceItemService().save(items);
                     }
+
+                    ServiceFacade.getInvoiceItemService().save(items);
                 }
             }
         };
@@ -69,10 +70,18 @@ public abstract class InvoiceComponent extends BorderPane {
         productEditDialog = new ProductDialog(dialogSupport.getStage());
         invoicePdfViewComponent = new InvoicePdfViewComponent(dialogSupport) {
             @Override
-            protected void onFake(List<InvoicePdf> checked) {
-                if (!checked.isEmpty()) {
-                    InvoicePdf invoicePdf = checked.get(0);
+            protected void onFake() {
+                DatabaseService.runInTransaction(() -> {
+                    InvoicePdf invoicePdf = new InvoicePdf();
+                    invoicePdf.setInvoiceNumber("All Order #" + getCustomerOrder().getId());
+                    invoicePdf.setName("All order items #" + getCustomerOrder().getId());
+                    invoicePdf.customerOrder = getCustomerOrder();
+
+                    ServiceFacade.getOrderItemService().save(invoicePdf);
+
+
                     List<OrderItem> orderItems = ServiceFacade.getOrderItemService().loadBy(getCustomerOrder());
+                    List<RawInvoiceProductItem> rawInvoiceProductItems = new ArrayList<>();
 
                     for (OrderItem orderItem : orderItems) {
                         if (orderItem.getProductInfo() == null) {
@@ -90,8 +99,15 @@ public abstract class InvoiceComponent extends BorderPane {
                                 : orderItem.getProductInfo().getName());
 
                         ServiceFacade.getOrderItemService().save(rawOrderItem);
+                        rawInvoiceProductItems.add(rawOrderItem);
                     }
-                }
+                    invoicePdf.setProducts(rawInvoiceProductItems);
+                    importCallBack.onResult(rawInvoiceProductItems);
+                    orderData.invoicePdfs.add(invoicePdf);
+
+                    Platform.runLater(() -> refreshInvoicePdfs());
+                    return null;
+                });
             }
 
             @Override
@@ -138,7 +154,6 @@ public abstract class InvoiceComponent extends BorderPane {
 
         invoiceSplitPane = new SplitPane();
         invoiceSplitPane.setId("page-splitpane");
-        //splitPane.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         invoiceSplitPane.setOrientation(Orientation.VERTICAL);
 
         rawInvoiceItemViewComponent = new RawInvoiceItemViewComponent(dialogSupport) {
@@ -203,7 +218,7 @@ public abstract class InvoiceComponent extends BorderPane {
 
             @Override
             public void export(String invoiceNumber, List<InvoiceItem> items, String path) {
-                ServiceFacade.getInvoiceService().exportToEpp(invoiceNumber, items, path);
+                ServiceFacade.getInvoiceService().exportToEpp(BigDecimal.valueOf(getCustomerOrder().getMargin()), invoiceNumber, items, path);
             }
         };
 
@@ -259,7 +274,7 @@ public abstract class InvoiceComponent extends BorderPane {
         }
     }
 
-    public static interface InvoiceComponentListener {
+    public interface InvoiceComponentListener {
         void onSync(boolean clear);
 
         void onSave(InvoicePdf invoicePdf);

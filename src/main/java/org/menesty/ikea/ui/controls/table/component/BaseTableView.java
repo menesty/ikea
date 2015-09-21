@@ -1,17 +1,12 @@
 package org.menesty.ikea.ui.controls.table.component;
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.event.EventHandler;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
-import javafx.scene.input.MouseEvent;
-import javafx.util.Callback;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class BaseTableView<Entity> extends TableView<Entity> {
+public class BaseTableView<Entity> extends TableView<Entity> {
     private List<TableRow<Entity>> rows = new ArrayList<>();
 
     public BaseTableView() {

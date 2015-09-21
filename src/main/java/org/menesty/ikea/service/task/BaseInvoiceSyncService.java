@@ -23,7 +23,7 @@ import java.net.URL;
 
 public abstract class BaseInvoiceSyncService extends AbstractAsyncService<Boolean> {
 
-    private final BigDecimal margin = BigDecimal.valueOf(1.02);
+    protected final BigDecimal DEFAULT_MARGIN = BigDecimal.valueOf(1.02);
 
     protected void sendData(boolean clean, String data) throws IOException {
         URL url = new URL(ServiceFacade.getApplicationPreference().getWarehouseHost() + "/sync/update/" + clean);
@@ -46,13 +46,21 @@ public abstract class BaseInvoiceSyncService extends AbstractAsyncService<Boolea
         }
     }
 
-    protected WarehouseItemDto convert(Integer orderId, InvoiceItem invoiceItem) {
+    protected WarehouseItemDto convert(BigDecimal margin, Integer orderId, InvoiceItem invoiceItem) {
         WarehouseItemDto item = new WarehouseItemDto();
         item.allowed = true;
         item.count = invoiceItem.getCount();
         item.orderId = orderId;
         //add 2%
-        item.price = NumberUtil.round(BigDecimal.valueOf(invoiceItem.getPriceWat()).multiply(margin).doubleValue());
+        BigDecimal marginUpdated = BigDecimal.ONE;
+
+        if (margin.doubleValue() > 0) {
+            marginUpdated = margin.divide(BigDecimal.valueOf(100), 2, BigDecimal.ROUND_HALF_UP).add(BigDecimal.ONE);
+        } else if (margin.doubleValue() < 0) {
+            marginUpdated = margin.add(BigDecimal.ONE);
+        }
+
+        item.price = NumberUtil.round(BigDecimal.valueOf(invoiceItem.getPriceWat()).multiply(marginUpdated).doubleValue());
         item.productNumber = invoiceItem.getArtNumber();
         item.shortName = invoiceItem.getShortName();
         item.zestav = invoiceItem.isZestav();

@@ -54,7 +54,7 @@ public abstract class RawInvoiceItemViewComponent extends BorderPane {
                     if (invoicePdf == null)
                         return;
 
-                    rawInvoiceItemDialog.setPriceMargin(invoicePdf.customerOrder.getMargin());
+                    rawInvoiceItemDialog.setPriceMargin(0);
                     rawInvoiceItemDialog.bind(new RawInvoiceProductItem(invoicePdf), new EntityDialogCallback<RawInvoiceProductItem>() {
                         @Override
                         public void onSave(RawInvoiceProductItem item, Object... params) {
@@ -74,11 +74,11 @@ public abstract class RawInvoiceItemViewComponent extends BorderPane {
             rawInvoiceControl.getItems().add(createRawInvoice);
         }
         {
-            Button export = new Button(null, ImageFactory.createXlsExportIcon());
+            Button export = new Button(null, ImageFactory.createXlsExport32Icon());
             export.setTooltip(new Tooltip("Export to XLS"));
             export.setOnAction(new EventHandler<ActionEvent>() {
                 public void handle(ActionEvent event) {
-                    FileChooser fileChooser = FileChooserUtil.getXls();
+                    FileChooser fileChooser = FileChooserUtil.getPdf();
                     //Show save file dialog
                     File file = fileChooser.showSaveDialog(dialogSupport.getStage());
 

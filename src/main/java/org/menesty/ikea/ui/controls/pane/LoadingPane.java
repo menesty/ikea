@@ -18,7 +18,8 @@ import java.util.List;
  * on 12/18/13.
  */
 public class LoadingPane extends StackPane {
-
+    private final int BIG_INDICATOR = 150;
+    private final int SMALL_INDICATOR = 50;
     private Region maskRegion;
 
     private ProgressIndicator progressIndicator;
@@ -31,12 +32,16 @@ public class LoadingPane extends StackPane {
         maskRegion.setVisible(false);
         maskRegion.setStyle("-fx-background-color: rgba(0, 0, 0, 0.4)");
         progressIndicator = new ProgressIndicator();
-        progressIndicator.setMaxSize(150, 150);
+        progressIndicator.setMaxSize(BIG_INDICATOR, BIG_INDICATOR);
         progressIndicator.setVisible(false);
         getChildren().addAll(maskRegion, progressIndicator);
         setVisible(false);
 
         taskRunningMonitorProperty = new TaskRunningMonitorProperty();
+    }
+
+    public void smallIndicator() {
+        progressIndicator.setMaxSize(SMALL_INDICATOR, SMALL_INDICATOR);
     }
 
     private void unbind() {

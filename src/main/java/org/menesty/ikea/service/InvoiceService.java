@@ -1,16 +1,18 @@
 package org.menesty.ikea.service;
 
-import net.sf.jxls.transformer.XLSTransformer;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.jxls.common.Context;
+import org.jxls.util.JxlsHelper;
 import org.menesty.ikea.domain.CustomerOrder;
 import org.menesty.ikea.processor.invoice.InvoiceItem;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
-import org.mvel.integration.VariableResolverFactory;
-import org.mvel.integration.impl.MapVariableResolverFactory;
-import org.mvel.templates.TemplateRuntime;
+import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.integration.impl.MapVariableResolverFactory;
+import org.mvel2.templates.TemplateRuntime;
 
-import java.io.*;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -26,7 +28,7 @@ public class InvoiceService {
 
     private static final Logger logger = Logger.getLogger(InvoiceService.class.getName());
 
-    public void exportToEpp(String invoiceName, List<InvoiceItem> items, String fileName) {
+    public void exportToEpp(BigDecimal margin, String invoiceName, List<InvoiceItem> items, String fileName) {
         String templateFile = "/config/invoice-order.epp";
         StringBuilder text = new StringBuilder();
         String NL = System.getProperty("line.separator");
@@ -41,8 +43,16 @@ public class InvoiceService {
             //calculate total
             BigDecimal totalPrice = BigDecimal.ZERO;
 
-            for (InvoiceItem item : items)
+            double retailPercentage = 0.02;
+
+            if (margin != null && !BigDecimal.ZERO.equals(margin)) {
+                retailPercentage = margin.divide(BigDecimal.valueOf(100), 2, BigDecimal.ROUND_HALF_UP).doubleValue();
+            }
+
+            for (InvoiceItem item : items) {
+                item.setRetailPercentage(retailPercentage);
                 totalPrice = totalPrice.add(item.getTotalWatPrice());
+            }
 
             InvoiceItem totalItem = new InvoiceItem();
             totalItem.setCount(1);
@@ -54,7 +64,7 @@ public class InvoiceService {
             map.put("invoiceName", invoiceName);
 
             VariableResolverFactory vrf = new MapVariableResolverFactory(map);
-            String result = (String) TemplateRuntime.eval(template, null, vrf, null);
+            String result = (String) TemplateRuntime.eval(template, null, vrf);
 
             if (!fileName.endsWith(".epp"))
                 fileName += ".epp";
@@ -68,19 +78,17 @@ public class InvoiceService {
     }
 
     public void exportToXls(List<RawInvoiceProductItem> items, String path) {
-        XLSTransformer transformer = new XLSTransformer();
-        Map<String, Object> bean = new HashMap<>();
-        bean.put("items", items);
+        Context bean = new Context();
+        bean.putVar("items", items);
 
         if (!path.endsWith(".xlsx"))
             path = path.concat(".xlsx");
 
         try (InputStream in = getClass().getResourceAsStream("/config/invoice.xlsx")) {
-            Workbook workbook = transformer.transformXLS(in, bean);
-
-            workbook.write(Files.newOutputStream(FileSystems.getDefault().getPath(path), StandardOpenOption.CREATE_NEW));
-
-        } catch (InvalidFormatException | IOException e) {
+            try (OutputStream os = Files.newOutputStream(FileSystems.getDefault().getPath(path))) {
+                JxlsHelper.getInstance().processTemplate(in, os, bean);
+            }
+        } catch (IOException e) {
             logger.log(Level.SEVERE, "exportToXls", e);
         }
     }
@@ -92,27 +100,26 @@ public class InvoiceService {
         for (InvoiceItem item : items)
             item.setIndex(++index);
 
-        exportToEpp(order.getName(), items, filePath);
+        exportToEpp(BigDecimal.valueOf(order.getMargin()), order.getName(), items, filePath);
         exportToXls(order.getName(), items, filePath);
     }
 
     private void exportToXls(String invoiceName, List<InvoiceItem> items, String path) {
-        XLSTransformer transformer = new XLSTransformer();
-        Map<String, Object> bean = new HashMap<>();
-        bean.put("items", items);
+        Context bean = new Context();
+        bean.putVar("items", items);
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
-        bean.put("date", sdf.format(new Date()));
+        bean.putVar("date", sdf.format(new Date()));
 
         if (!path.endsWith(".xls"))
             path = path.concat(".xls");
 
-        try {
-            Workbook workbook = transformer.transformXLS(getClass().getResourceAsStream("/config/outgoing-facture.xlsx"), bean);
+        try (InputStream in = getClass().getResourceAsStream("/config/outgoing-facture.xlsx")) {
+            try (OutputStream os = Files.newOutputStream(FileSystems.getDefault().getPath(path), StandardOpenOption.CREATE_NEW)) {
+                JxlsHelper.getInstance().processTemplate(in, os, bean);
+            }
 
-            workbook.write(Files.newOutputStream(FileSystems.getDefault().getPath(path), StandardOpenOption.CREATE_NEW));
-
-        } catch (InvalidFormatException | IOException e) {
+        } catch (IOException e) {
             logger.log(Level.SEVERE, "exportToXls", e);
         }
     }

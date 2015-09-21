@@ -1,28 +1,37 @@
 package org.menesty.ikea.ui.controls.form;
 
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import org.menesty.ikea.factory.ImageFactory;
+import org.menesty.ikea.ui.controls.pane.LoadingPane;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by Menesty on
  * 6/20/14.
  * 18:56.
  */
-public class ListEditField<T, Choice> extends VBox implements Field {
-    public static interface Converter<T, Choice> {
-        public T convertChoice(Choice choice, List<T> initValues);
+public class ListEditField<T, Choice> extends StackPane implements Field {
+    private LoadingPane loadingPane;
 
-        public Choice convertValueToChoice(T value);
+    public interface Converter<T, Choice> {
+        T convertChoice(Choice choice, List<T> initValues);
+
+        Choice convertValueToChoice(T value);
+    }
+
+    public LoadingPane getLoadingPane() {
+        return loadingPane;
     }
 
     private ListView<T> listView;
@@ -67,15 +76,12 @@ public class ListEditField<T, Choice> extends VBox implements Field {
 
         {
             Button button = new Button(null, ImageFactory.createAdd16Icon());
-            button.setOnAction(new EventHandler<ActionEvent>() {
-                @Override
-                public void handle(ActionEvent actionEvent) {
-                    Choice item = choiceComboBox.getSelectionModel().getSelectedItem();
+            button.setOnAction(actionEvent -> {
+                Choice item = choiceComboBox.getSelectionModel().getSelectedItem();
 
-                    if (item != null) {
-                        choiceComboBox.getItems().remove(item);
-                        listView.getItems().add(convertChoice.convertChoice(item, values));
-                    }
+                if (item != null) {
+                    choiceComboBox.getItems().remove(item);
+                    listView.getItems().add(convertChoice.convertChoice(item, values));
                 }
             });
             hBox.getChildren().add(button);
@@ -83,23 +89,37 @@ public class ListEditField<T, Choice> extends VBox implements Field {
 
         {
             Button button = new Button(null, ImageFactory.createDelete16Icon());
-            button.setOnAction(new EventHandler<ActionEvent>() {
-                @Override
-                public void handle(ActionEvent actionEvent) {
-                    T item = listView.getSelectionModel().getSelectedItem();
+            button.setOnAction(actionEvent -> {
+                T item = listView.getSelectionModel().getSelectedItem();
 
-                    if (item != null) {
-                        listView.getItems().remove(item);
-                        choiceComboBox.getItems().add(convertChoice.convertValueToChoice(item));
-                    }
+                if (item != null) {
+                    listView.getItems().remove(item);
+                    listView.requestLayout();
+                    choiceComboBox.getItems().add(convertChoice.convertValueToChoice(item));
                 }
             });
             hBox.getChildren().add(button);
         }
 
 
-        getChildren().addAll(listView, hBox);
+        VBox vBox = new VBox();
+        vBox.getChildren().addAll(listView, hBox);
 
+        loadingPane = new LoadingPane();
+        loadingPane.smallIndicator();
+        getChildren().addAll(vBox, loadingPane);
+    }
+
+    public void setItemLabel(ItemLabel<T> itemLabel) {
+        listView.setCellFactory(param ->
+                new ListCell<T>() {
+                    @Override
+                    protected void updateItem(T t, boolean bln) {
+                        super.updateItem(t, bln);
+                        setText(t != null ? itemLabel.label(t) : null);
+                    }
+
+                });
     }
 
     public void setConvertChoice(Converter<T, Choice> convertChoice) {
@@ -132,8 +152,7 @@ public class ListEditField<T, Choice> extends VBox implements Field {
     private List<Choice> convert(List<T> values) {
         List<Choice> result = new ArrayList<>(values.size());
 
-        for (T value : values)
-            result.add(convertChoice.convertValueToChoice(value));
+        result.addAll(values.stream().map(convertChoice::convertValueToChoice).collect(Collectors.toList()));
 
         return result;
     }

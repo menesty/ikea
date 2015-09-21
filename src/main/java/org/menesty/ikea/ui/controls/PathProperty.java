@@ -80,11 +80,13 @@ public class PathProperty<B, T> extends ObjectPropertyBase<T> {
             this.setter = buildSetter(getAccessor(), target, fieldName, insertSetterArgument);
         }
 
-        public static PropertyMethodHandles build(final Object initialTarget,
-                                                  final String expString) throws NoSuchMethodException, IllegalStateException {
+        public static PropertyMethodHandles build(final Object initialTarget, final String expString)
+                 throws NoSuchMethodException, IllegalStateException {
+
             final String[] expStr = expString.split("\\.");
             Object target = initialTarget;
             PropertyMethodHandles pmh = null;
+
             for (int i = 0; i < expStr.length; i++) {
                 pmh = new PropertyMethodHandles(target, expStr[i], i < (expStr.length - 1));
                 target = pmh.getSetterArgument();

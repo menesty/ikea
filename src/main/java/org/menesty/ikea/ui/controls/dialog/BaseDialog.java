@@ -70,14 +70,11 @@ public class BaseDialog extends StackPane {
 
         cancelBtn = new Button("Cancel");
         cancelBtn.setId("cancelButton");
-        cancelBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                if (defaultAction != null)
-                    defaultAction.defaultAction(BaseDialog.this);
+        cancelBtn.setOnAction(actionEvent -> {
+            if (defaultAction != null)
+                defaultAction.defaultAction(BaseDialog.this);
 
-                onCancel();
-            }
+            onCancel();
         });
         cancelBtn.setMinWidth(74);
         cancelBtn.setPrefWidth(74);
@@ -86,14 +83,11 @@ public class BaseDialog extends StackPane {
         okBtn.setId("saveButton");
         okBtn.setDefaultButton(true);
 
-        okBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                if (defaultAction != null)
-                    defaultAction.defaultAction(BaseDialog.this);
+        okBtn.setOnAction(actionEvent -> {
+            if (defaultAction != null)
+                defaultAction.defaultAction(BaseDialog.this);
 
-                onOk();
-            }
+            onOk();
         });
         okBtn.setMinWidth(74);
         okBtn.setPrefWidth(74);

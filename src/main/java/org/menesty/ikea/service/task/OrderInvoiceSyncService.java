@@ -10,17 +10,21 @@ import org.menesty.ikea.processor.invoice.InvoiceItem;
 import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.util.NumberUtil;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class OrderInvoiceSyncService extends BaseInvoiceSyncService {
     private SimpleObjectProperty<CustomerOrder> customerOrder = new SimpleObjectProperty<>();
     private SimpleBooleanProperty clear = new SimpleBooleanProperty();
+    private SimpleObjectProperty<BigDecimal> margin = new SimpleObjectProperty<>();
 
     @Override
     protected Task<Boolean> createTask() {
         final CustomerOrder _order = customerOrder.get();
         final boolean _clear = clear.get();
+        final BigDecimal _margin = margin.get() == null || margin.get().equals(BigDecimal.ZERO) ? null : margin.get();
 
         return new Task<Boolean>() {
             @Override
@@ -28,8 +32,10 @@ public class OrderInvoiceSyncService extends BaseInvoiceSyncService {
                 List<WarehouseItemDto> result = new ArrayList<>();
                 int orderId = ((int) NumberUtil.parse(_order.getName()));
 
-                for (InvoiceItem item : ServiceFacade.getInvoiceItemService().loadBy(_order))
-                    result.add(convert(orderId, item));
+                result.addAll(ServiceFacade.getInvoiceItemService().loadBy(_order)
+                        .stream()
+                        .map(item -> convert(_margin, orderId, item))
+                        .collect(Collectors.toList()));
 
                 try {
                     sendData(_clear, new Gson().toJson(result));
@@ -49,5 +55,9 @@ public class OrderInvoiceSyncService extends BaseInvoiceSyncService {
 
     public void setClear(boolean clear) {
         this.clear.set(clear);
+    }
+
+    public void setMargin(BigDecimal margin) {
+        this.margin.set(margin);
     }
 }

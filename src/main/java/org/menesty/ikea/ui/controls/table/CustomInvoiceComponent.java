@@ -13,6 +13,7 @@ import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.processor.invoice.InvoiceItem;
 import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.service.ServiceFacade;
+import org.menesty.ikea.service.SucceededListener;
 import org.menesty.ikea.ui.controls.dialog.InvoiceItemDialog;
 import org.menesty.ikea.ui.controls.table.component.BaseTableView;
 import org.menesty.ikea.ui.pages.EntityDialogCallback;
@@ -41,12 +42,7 @@ public abstract class CustomInvoiceComponent extends BorderPane {
         invoiceItemDialog = new InvoiceItemDialog(dialogSupport.getStage());
 
         loadService = new LoadService();
-        loadService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<List<InvoiceItem>>() {
-            @Override
-            public void onSucceeded(List<InvoiceItem> value) {
-                setItems(value);
-            }
-        });
+        loadService.setOnSucceededListener(value -> setItems(value));
 
         final EntityDialogCallback<InvoiceItem> saveHandler = new EntityDialogCallback<InvoiceItem>() {
             @Override

@@ -10,6 +10,7 @@ import org.menesty.ikea.domain.IkeaShop;
 import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.service.ServiceFacade;
+import org.menesty.ikea.service.SucceededListener;
 import org.menesty.ikea.ui.controls.dialog.IkeaShopDialog;
 import org.menesty.ikea.ui.controls.table.component.BaseTableView;
 import org.menesty.ikea.util.ColumnUtil;
@@ -33,12 +34,9 @@ public class IkeaShopPage extends BasePage {
     @Override
     protected void initialize() {
         loadService = new LoadService();
-        loadService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<List<IkeaShop>>() {
-            @Override
-            public void onSucceeded(List<IkeaShop> value) {
-                tableView.getItems().clear();
-                tableView.getItems().addAll(value);
-            }
+        loadService.setOnSucceededListener(value -> {
+            tableView.getItems().clear();
+            tableView.getItems().addAll(value);
         });
 
         dialog = new IkeaShopDialog(getStage());
@@ -51,24 +49,21 @@ public class IkeaShopPage extends BasePage {
         ToolBar toolBar = new ToolBar();
         {
             Button button = new Button(null, ImageFactory.createAdd32Icon());
-            button.setOnAction(new EventHandler<ActionEvent>() {
-                @Override
-                public void handle(ActionEvent actionEvent) {
-                    showPopupDialog(dialog);
-                    dialog.bind(new IkeaShop(), new EntityDialogCallback<IkeaShop>() {
-                        @Override
-                        public void onSave(IkeaShop ikeaShop, Object... params) {
-                            ServiceFacade.getIkeaShopService().save(ikeaShop);
-                            hidePopupDialog();
-                            load();
-                        }
+            button.setOnAction(actionEvent -> {
+                showPopupDialog(dialog);
+                dialog.bind(new IkeaShop(), new EntityDialogCallback<IkeaShop>() {
+                    @Override
+                    public void onSave(IkeaShop ikeaShop, Object... params) {
+                        ServiceFacade.getIkeaShopService().save(ikeaShop);
+                        hidePopupDialog();
+                        load();
+                    }
 
-                        @Override
-                        public void onCancel() {
-                            hidePopupDialog();
-                        }
-                    });
-                }
+                    @Override
+                    public void onCancel() {
+                        hidePopupDialog();
+                    }
+                });
             });
 
             toolBar.getItems().add(button);

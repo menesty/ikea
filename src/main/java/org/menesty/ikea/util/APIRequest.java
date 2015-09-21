@@ -11,52 +11,56 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
-import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
+import java.util.List;
 
 /**
-* Created by Menesty on
-* 7/21/15.
-* 08:44.
-*/
+ * Created by Menesty on
+ * 7/21/15.
+ * 08:44.
+ */
 public class APIRequest {
-   private final URL url;
+    private final URI url;
 
-   public APIRequest(URL url) {
-       this.url = url;
-   }
+    public APIRequest(URI url) {
+        this.url = url;
+    }
 
-   private String loadData() {
+    private String loadData() throws Exception {
 
-       HttpHost targetHost = new HttpHost(url.getHost(), url.getPort());
+        HttpHost targetHost = new HttpHost(url.getHost(), url.getPort());
 
-       CredentialsProvider credsProvider = HttpUtil.credentialsProvider(targetHost);
+        CredentialsProvider credsProvider = HttpUtil.credentialsProvider(targetHost);
 
-       try (CloseableHttpClient httpClient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build()) {
-           HttpClientContext localContext = HttpUtil.context(targetHost);
+        try (CloseableHttpClient httpClient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build()) {
+            HttpClientContext localContext = HttpUtil.context(targetHost);
 
-           HttpGet httpPost = new HttpGet(url.toURI());
+            HttpGet httpPost = new HttpGet(url);
 
-           try (CloseableHttpResponse response = httpClient.execute(targetHost, httpPost, localContext)) {
-               return EntityUtils.toString(response.getEntity());
-           }
-       } catch (Exception e) {
-           e.printStackTrace();
-       }
-       return null;
-   }
+            try (CloseableHttpResponse response = httpClient.execute(targetHost, httpPost, localContext)) {
+                return EntityUtils.toString(response.getEntity());
+            }
+        }
+    }
 
-   public <T> T getData(Class<T> clazz) throws IOException {
-       String response = loadData();
-       ObjectMapper objectMapper = new ObjectMapper();
+    public <T> T getData(Class<T> clazz) throws Exception {
+        String response = loadData();
+        ObjectMapper objectMapper = new ObjectMapper();
 
-       return objectMapper.readValue(response, clazz);
-   }
+        return objectMapper.readValue(response, clazz);
+    }
 
-   public <T> T getData(TypeReference<T> typeReference) throws IOException {
-       String response = loadData();
-       ObjectMapper objectMapper = new ObjectMapper();
+    public <T> T getData(TypeReference<T> typeReference) throws Exception {
+        String response = loadData();
+        ObjectMapper objectMapper = new ObjectMapper();
 
-       return objectMapper.readValue(response, typeReference);
-   }
+        return objectMapper.readValue(response, typeReference);
+    }
+
+    public <T> List<T> getList(TypeReference<List<T>> typeReference) throws Exception {
+        String response = loadData();
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        return objectMapper.readValue(response, typeReference);
+    }
 }

@@ -27,6 +27,7 @@ import org.menesty.ikea.domain.ParagonDto;
 import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.service.ServiceFacade;
+import org.menesty.ikea.service.SucceededListener;
 import org.menesty.ikea.ui.controls.dialog.ParagonViewDialog;
 import org.menesty.ikea.ui.controls.pane.LoadingPane;
 import org.menesty.ikea.ui.controls.table.component.BaseTableView;
@@ -63,7 +64,7 @@ public class ParagonViewComponent extends BorderPane {
 
     public ParagonViewComponent(final DialogSupport dialogSupport) {
         loadService = new LoadService();
-        loadService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<List<ParagonDto>>() {
+        loadService.setOnSucceededListener(new SucceededListener<List<ParagonDto>>() {
             @Override
             public void onSucceeded(final List<ParagonDto> value) {
                 tableView.setItems(FXCollections.observableList(value));
@@ -71,7 +72,7 @@ public class ParagonViewComponent extends BorderPane {
         });
 
         paragonCancelService = new ParagonCancelService();
-        paragonCancelService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<String>() {
+        paragonCancelService.setOnSucceededListener(new SucceededListener<String>() {
             @Override
             public void onSucceeded(String value) {
                 load();
@@ -79,7 +80,7 @@ public class ParagonViewComponent extends BorderPane {
         });
 
         paragonEppService = new ParagonEppService();
-        paragonEppService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<Result>() {
+        paragonEppService.setOnSucceededListener(new SucceededListener<Result>() {
             @Override
             public void onSucceeded(final Result value) {
                 loadingPane.hide();

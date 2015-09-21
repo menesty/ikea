@@ -28,6 +28,7 @@ import org.menesty.ikea.ui.pages.DialogCallback;
 import org.menesty.ikea.ui.pages.EntityDialogCallback;
 import org.menesty.ikea.util.FileChooserUtil;
 import org.menesty.ikea.util.NumberUtil;
+import org.menesty.ikea.util.ToolTipUtil;
 
 import java.io.File;
 import java.text.NumberFormat;
@@ -120,7 +121,7 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
         });
 
         deleteBtn = new Button(null, ImageFactory.createDelete32Icon());
-        deleteBtn.setTooltip(new Tooltip("Delete invoice"));
+        deleteBtn.setTooltip(ToolTipUtil.create("Delete invoice"));
         deleteBtn.setDisable(true);
         deleteBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -137,6 +138,8 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
                 });
             }
         });
+
+
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -160,34 +163,28 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
         });
         syncBtn.setDisable(true);
 
-        /*fakePdf = new Button(null, ImageFactory.createBalance32Icon());
+        Button fakePdf = new Button(null, ImageFactory.createBalance32Icon());
         fakePdf.setTooltip(new Tooltip("Fake pdf"));
-        fakePdf.setDisable(false);
-        fakePdf.setOnAction(new EventHandler<ActionEvent>() {
+        fakePdf.setOnAction(actionEvent -> Dialog.confirm(dialogSupport, "Are you sure to create Fake items", new DialogCallback() {
             @Override
-            public void handle(ActionEvent actionEvent) {
-                Dialog.confirm(dialogSupport, "Are you sure to create Fake items", new DialogCallback() {
-                    @Override
-                    public void onCancel() {
-                    }
-
-                    @Override
-                    public void onYes() {
-                        onFake(getChecked());
-                    }
-                });
+            public void onCancel() {
             }
-        });*/
+
+            @Override
+            public void onYes() {
+                onFake();
+            }
+        }));
 
 
-        pdfToolBar.getItems().addAll(uploadInvoice, deleteBtn, spacer, syncBtn/*, fakePdf*/);
+        pdfToolBar.getItems().addAll(uploadInvoice, deleteBtn, spacer, syncBtn, fakePdf);
 
         setTop(pdfToolBar);
         setCenter(invoicePdfTableView);
         setBottom(statusPanel = new WeightStatusPanel());
     }
 
-    protected abstract void onFake(List<InvoicePdf> checked);
+    protected abstract void onFake();
 
     private void showAddEditDialog(final DialogSupport dialogSupport, InvoicePdf invoicePdf) {
         invoicePdfDialog.bind(invoicePdf, new EntityDialogCallback<InvoicePdf>() {

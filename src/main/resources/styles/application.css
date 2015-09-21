@@ -748,3 +748,8 @@
 .pagination .label {
     -fx-text-fill: white;
 }
+
+.application-pane {
+    -fx-background-color: black, white, linear-gradient(rgb(250, 250, 250), rgb(230, 230, 230));
+    -fx-padding: 15;
+}

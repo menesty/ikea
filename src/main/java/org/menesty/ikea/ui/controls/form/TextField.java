@@ -9,6 +9,8 @@ import javafx.event.EventHandler;
 import javafx.util.Duration;
 import org.apache.commons.lang.StringUtils;
 
+import java.util.regex.Pattern;
+
 public class TextField extends javafx.scene.control.TextField implements Field {
 
     private Timeline delayTimeLine;
@@ -20,6 +22,8 @@ public class TextField extends javafx.scene.control.TextField implements Field {
     private boolean allowBlank = true;
 
     private String label;
+
+    private Pattern validationPattern;
 
     public TextField() {
         super();
@@ -36,26 +40,19 @@ public class TextField extends javafx.scene.control.TextField implements Field {
     }
 
     public void setDelay(int sec) {
-        delayTimeLine = new Timeline(new KeyFrame(Duration.seconds(sec), new EventHandler<ActionEvent>() {
-
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                if (delayAction != null) {
-                    delayTimeLine.stop();
-                    delayAction.handle(actionEvent);
-                }
+        delayTimeLine = new Timeline(new KeyFrame(Duration.seconds(sec), actionEvent -> {
+            if (delayAction != null) {
+                delayTimeLine.stop();
+                delayAction.handle(actionEvent);
             }
         }));
 
         if (invalidationListener != null)
             textProperty().removeListener(invalidationListener);
 
-        invalidationListener = new InvalidationListener() {
-            @Override
-            public void invalidated(Observable observable) {
-                delayTimeLine.stop();
-                delayTimeLine.playFromStart();
-            }
+        invalidationListener = observable -> {
+            delayTimeLine.stop();
+            delayTimeLine.playFromStart();
         };
         textProperty().addListener(invalidationListener);
     }
@@ -68,6 +65,10 @@ public class TextField extends javafx.scene.control.TextField implements Field {
         if (!allowBlank) {
             setValid(result = StringUtils.isNotBlank(getText()));
             getStyleClass().remove("white-border");
+        }
+
+        if (validationPattern != null && getText() != null) {
+            setValid(result = validationPattern.matcher(getText()).find());
         }
 
         return result;
@@ -88,12 +89,9 @@ public class TextField extends javafx.scene.control.TextField implements Field {
         this.allowBlank = allowBlank;
 
         if (!allowBlank)
-            focusedProperty().addListener(new InvalidationListener() {
-                @Override
-                public void invalidated(Observable observable) {
-                    if (!isFocused())
-                        isValid();
-                }
+            focusedProperty().addListener(observable -> {
+                if (!isFocused())
+                    isValid();
             });
     }
 
@@ -115,5 +113,9 @@ public class TextField extends javafx.scene.control.TextField implements Field {
 
         getStyleClass().removeAll("validation-succeed", "validation-error");
         getStyleClass().add("white-border");
+    }
+
+    public void setValidationPattern(Pattern validationPattern) {
+        this.validationPattern = validationPattern;
     }
 }

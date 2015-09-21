@@ -13,25 +13,25 @@
 
     <repositories>
         <repository>
-            <id>source.db4o</id>
-            <url>http://source.db4o.com/maven</url>
-        </repository>
-        <repository>
-            <id>oss.sonatype.org</id>
-            <name>OSS Sonatype Staging</name>
-            <url>https://oss.sonatype.org/content/groups/staging</url>
+            <id>central</id>
+            <url>http://repo1.maven.org/maven2/</url>
         </repository>
     </repositories>
 
     <organization>
-        <!-- Used as the 'Vendor' for JNLP generation -->
-        <name>None</name>
+        <name>Menesty</name>
     </organization>
 
     <properties>
+        <java.version>1.8</java.version>
         <slf4j.version>1.6.1</slf4j.version>
         <timestamp>${maven.build.timestamp}</timestamp>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
+        <jxls.reader.version>2.0.1</jxls.reader.version>
+        <jxls.writer.version>2.2.5</jxls.writer.version>
+        <org.jsoup.version>1.8.3</org.jsoup.version>
+        <org.mvel.version>2.2.6.Final</org.mvel.version>
+        <org.menesty.ikea.lib>1.0.1-SNAPSHOT</org.menesty.ikea.lib>
     </properties>
 
     <build>
@@ -44,8 +44,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.5.1</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
                     <encoding>UTF-8</encoding>
                     <showWarnings>true</showWarnings>
                     <showDeprecation>true</showDeprecation>
@@ -133,27 +133,31 @@
             <version>1.2.16</version>
         </dependency>
         <dependency>
-            <groupId>net.sf.jxls</groupId>
+            <groupId>org.jxls</groupId>
             <artifactId>jxls-reader</artifactId>
-            <version>1.0.3</version>
+            <version>${jxls.reader.version}</version>
         </dependency>
         <dependency>
-            <groupId>net.sf.jxls</groupId>
-            <artifactId>jxls-core</artifactId>
-            <version>1.0.2</version>
+            <groupId>org.jxls</groupId>
+            <artifactId>jxls</artifactId>
+            <version>${jxls.writer.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.jxls</groupId>
+            <artifactId>jxls-poi</artifactId>
+            <version>1.0.5</version>
+        </dependency>
         <!-- Html parser -->
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
-            <version>1.7.2</version>
+            <version>${org.jsoup.version}</version>
         </dependency>
         <!-- template engine -->
         <dependency>
             <groupId>org.mvel</groupId>
-            <artifactId>mvel</artifactId>
-            <version>2.0M2</version>
+            <artifactId>mvel2</artifactId>
+            <version>${org.mvel.version}</version>
         </dependency>
 
         <!-- PDF -->
@@ -209,7 +213,7 @@
         <dependency>
             <groupId>org.menesty</groupId>
             <artifactId>ikea.lib</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>${org.menesty.ikea.lib}</version>
         </dependency>
     </dependencies>
 

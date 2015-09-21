@@ -32,6 +32,7 @@ import org.menesty.ikea.domain.WarehouseItemDto;
 import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.service.ServiceFacade;
+import org.menesty.ikea.service.SucceededListener;
 import org.menesty.ikea.ui.controls.dialog.Dialog;
 import org.menesty.ikea.ui.controls.dialog.ParagonManageDialog;
 import org.menesty.ikea.ui.controls.pane.LoadingPane;
@@ -68,20 +69,10 @@ public class WarehouseViewComponent extends BorderPane {
         };
 
         loadService = new LoadService();
-        loadService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<List<WarehouseItemDto>>() {
-            @Override
-            public void onSucceeded(final List<WarehouseItemDto> value) {
-                setItems(items = value);
-            }
-        });
+        loadService.setOnSucceededListener(value -> setItems(items = value));
 
         clearService = new ClearService();
-        clearService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<Boolean>() {
-            @Override
-            public void onSucceeded(Boolean value) {
-                load();
-            }
-        });
+        clearService.setOnSucceededListener(value -> load());
 
         tableView = new TableView<>();
         {

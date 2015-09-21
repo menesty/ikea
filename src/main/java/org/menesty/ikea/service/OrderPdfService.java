@@ -82,12 +82,10 @@ public class OrderPdfService {
                                         rawOrderItems.add(rawOrderItem);
                                     }
 
-
-                                    System.out.println(scanner.nextLine() + "!!!!!");
                                 } else {
                                     Matcher matcher = LINE_PATTERN.matcher(countPrice);
 
-                                    if (matcher.find()) {
+                                     if (matcher.find()) {
                                         String countStr = matcher.group(1);
                                         String totalPriceStr = matcher.group(2);
 
@@ -99,7 +97,7 @@ public class OrderPdfService {
                                 }
                             }
                         }
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }

@@ -11,6 +11,7 @@ import org.menesty.ikea.domain.User;
 import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.service.ServiceFacade;
+import org.menesty.ikea.service.SucceededListener;
 import org.menesty.ikea.ui.controls.dialog.Dialog;
 import org.menesty.ikea.ui.controls.dialog.UserDialog;
 import org.menesty.ikea.ui.controls.table.component.BaseTableView;
@@ -34,12 +35,9 @@ public class UserPage extends BasePage {
     @Override
     protected void initialize() {
         loadService = new LoadService();
-        loadService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<List<User>>() {
-            @Override
-            public void onSucceeded(List<User> value) {
-                tableView.getItems().clear();
-                tableView.getItems().addAll(value);
-            }
+        loadService.setOnSucceededListener(value -> {
+            tableView.getItems().clear();
+            tableView.getItems().addAll(value);
         });
     }
 

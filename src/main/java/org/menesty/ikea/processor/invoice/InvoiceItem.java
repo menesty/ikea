@@ -50,7 +50,7 @@ public class InvoiceItem extends Identifiable {
 
     private String section;
     @Transient
-    private double retailPercentage = 0.02;
+    private double retailPercentage = 0.01;
 
     public String getSection() {
         return section;
@@ -118,6 +118,10 @@ public class InvoiceItem extends Identifiable {
 
     public boolean isZestav() {
         return zestav;
+    }
+
+    public void setRetailPercentage(double retailPercentage) {
+        this.retailPercentage = retailPercentage;
     }
 
     public double getRetailPercentage() {

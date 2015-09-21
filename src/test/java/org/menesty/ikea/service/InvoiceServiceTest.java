@@ -25,7 +25,7 @@ public class InvoiceServiceTest extends DatabaseTestCase {
         if (path.exists())
             path.delete();
 
-        invoiceService.exportToEpp("bla", Arrays.asList(item), path.getAbsolutePath());
+        //invoiceService.exportToEpp("bla", Arrays.asList(item), path.getAbsolutePath());
 
         Assert.assertTrue(path.exists());
 

@@ -19,6 +19,7 @@ import org.menesty.ikea.processor.invoice.InvoiceItem;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.service.ServiceFacade;
+import org.menesty.ikea.service.SucceededListener;
 import org.menesty.ikea.ui.controls.TotalStatusPanel;
 import org.menesty.ikea.ui.controls.dialog.Dialog;
 import org.menesty.ikea.ui.controls.dialog.InvoiceItemDialog;
@@ -77,12 +78,7 @@ public abstract class EppViewComponent extends StackPane {
         SplitPane splitPane = new SplitPane();
         loadingPane.bindTask(loadService);
 
-        loadService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<List<InvoiceItem>>() {
-            @Override
-            public void onSucceeded(final List<InvoiceItem> value) {
-                updateViews(value);
-            }
-        });
+        loadService.setOnSucceededListener(value -> updateViews(value));
 
         splitPane.setOrientation(Orientation.HORIZONTAL);
         splitPane.setDividerPosition(1, 0.40);
@@ -419,82 +415,28 @@ public abstract class EppViewComponent extends StackPane {
         currentInvoicePdf = invoicePdf;
 
         if (invoicePdf != null) {
-            artPrefix = ((int) NumberUtil.parse(invoicePdf.customerOrder.getName())) + "";
+            artPrefix = invoicePdf.customerOrder.getName();
             loadService.setInvoicePdf(invoicePdf);
             loadService.restart();
             invoicePrice = InvoicePdf.getTotalPrice(currentInvoicePdf.getProducts());
             eppStatusPanel.setTotal(invoicePrice.doubleValue());
         } else
-            updateViews(new ArrayList<InvoiceItem>());
+            updateViews(new ArrayList<>());
 
         eppToolBar.setDisable(invoicePdf == null);
     }
 
     private List<InvoiceItem> prepareData(List<RawInvoiceProductItem> items) {
         List<InvoiceItem> result = new ArrayList<>();
-        //List<RawInvoiceProductItem> filtered = new ArrayList<>();
 
         for (RawInvoiceProductItem item : items)
-           // if (item.isSeparate())
                 result.addAll(InvoiceItem.get(item.getProductInfo(), artPrefix, item.getCount()));
-           /* else {
-                filtered.add(item);
-                InvoiceItem invoiceItem = InvoiceItem.get(item.getProductInfo(), artPrefix, item.getCount(), 1, 1);
-                invoiceItem.setVisible(false);
 
-                result.add(invoiceItem);
-            }
-*/
-
-        /*
-        BigDecimal totalPrice = BigDecimal.ZERO;
-
-        Map<ProductInfo.Group, Integer> groupMap = new HashMap<>();
-
-        for (RawInvoiceProductItem item : filtered) {
-            totalPrice = totalPrice.add(BigDecimal.valueOf(item.getTotal()));
-
-            Integer groupCount = groupMap.get(item.getProductInfo().getGroup());
-
-            if (groupCount == null)
-                groupCount = 1;
-            else
-                groupCount++;
-
-            groupMap.put(item.getProductInfo().getGroup(), groupCount);
-
+        for (InvoiceItem item : result) {
+            item.invoicePdf = currentInvoicePdf;
         }
 
-        int zestavCount = (int) (totalPrice.doubleValue() / MAX_ZESTAV_PRICE);
-
-        for (int i = 0; i < zestavCount; i++)
-            result.add(createZestav(groupMap, i, MAX_ZESTAV_PRICE));
-
-        BigDecimal diff = totalPrice.subtract(BigDecimal.valueOf(zestavCount * MAX_ZESTAV_PRICE));
-
-        if (diff.doubleValue() > 0)
-            result.add(createZestav(groupMap, zestavCount, diff.doubleValue()));
-
-*/
-        for (InvoiceItem item : result)
-            item.invoicePdf = currentInvoicePdf;
         return result;
-    }
-
-    private InvoiceItem createZestav(Map<ProductInfo.Group, Integer> groupMap, int index, double price) {
-        String subName = "";
-        int maxIndex = 0;
-
-        for (Map.Entry<ProductInfo.Group, Integer> entry : groupMap.entrySet())
-            if (entry.getValue() > maxIndex) {
-                maxIndex = entry.getValue();
-                subName = entry.getKey().getTitle().equals("") ? entry.getKey().name() : entry.getKey().getTitle();
-            }
-
-        String name = String.format("Zestaw IKEA %1$s", subName);
-        String artNumber = artPrefix + "_" + subName.substring(0, 2) + "_" + (index + 1);
-
-        return InvoiceItem.get(artNumber, "IKEA", null, name, name, price, 23, "", 1, 1, 1, 1).setZestav(true);
     }
 
     class LoadService extends AbstractAsyncService<List<InvoiceItem>> {

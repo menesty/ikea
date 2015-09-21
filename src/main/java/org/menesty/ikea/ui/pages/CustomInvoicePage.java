@@ -24,6 +24,7 @@ import org.menesty.ikea.util.ColumnUtil;
 import org.menesty.ikea.util.FileChooserUtil;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.util.List;
 
 public class CustomInvoicePage extends BasePage {
@@ -229,7 +230,7 @@ public class CustomInvoicePage extends BasePage {
                                 for (InvoiceItem invoiceItem : list)
                                     invoiceItem.setIndex(++index);
 
-                                ServiceFacade.getInvoiceService().exportToEpp(invoicePdf.getInvoiceNumber(), list, selectedFile.getAbsolutePath());
+                                ServiceFacade.getInvoiceService().exportToEpp(BigDecimal.valueOf(20), invoicePdf.getInvoiceNumber(), list, selectedFile.getAbsolutePath());
                             }
                         }
                     });

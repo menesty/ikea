@@ -43,4 +43,12 @@ public class FormPane extends RowPanel {
         for (Field field : fields)
             field.reset();
     }
+
+    public <T extends Node & Field> void setVisible(T field, boolean visible) {
+        int index = fields.indexOf(field);
+
+        if (index != -1) {
+            setVisibleRow(index, visible);
+        }
+    }
 }

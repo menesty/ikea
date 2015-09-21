@@ -1,10 +1,10 @@
 package org.menesty.ikea.service;
 
-import net.sf.jxls.reader.*;
-import net.sf.jxls.transformer.XLSTransformer;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.jxls.reader.*;
+import org.jxls.util.JxlsHelper;
 import org.menesty.ikea.domain.*;
 import org.menesty.ikea.exception.ProductFetchException;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
@@ -246,7 +246,6 @@ public class OrderService extends Repository<CustomerOrder> {
             orderItems.add(orderItem);
         }
 
-        XLSTransformer transformer = new XLSTransformer();
         List<String> templateSheetNameList = Arrays.asList("combo", "color", "na", "invoice");
         List<String> sheetNameList = Arrays.asList("combo_r", "color_r", "na_r", "invoice_r");
 
@@ -269,11 +268,11 @@ public class OrderService extends Repository<CustomerOrder> {
 
         URI fileUri = new File(filePath).toURI();
         URI zipUri = new URI("jar:" + fileUri.getScheme(), fileUri.getPath(), null);
-
-        try (FileSystem zipfs = FileSystems.newFileSystem(zipUri, env)) {
+//TODO FIX ME
+        /*try (FileSystem zipfs = FileSystems.newFileSystem(zipUri, env)) {
             taskProgress.updateProgress(10, 100);
 
-            Workbook workbook = transformer.transformXLS(getClass().getResourceAsStream("/config/reduce.xlsx"), templateSheetNameList, sheetNameList, mapBeans);
+            Workbook workbook = JxlsHelper.getInstance().processTemplate(getClass().getResourceAsStream("/config/reduce.xlsx"), templateSheetNameList, sheetNameList, mapBeans);
             workbook.write(Files.newOutputStream(zipfs.getPath("reduce-result.xlsx"), StandardOpenOption.CREATE_NEW));
 
             taskProgress.updateProgress(15, 100);
@@ -298,7 +297,7 @@ public class OrderService extends Repository<CustomerOrder> {
 
         } catch (Exception e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
     private List<OrderItem> filterByProductGroup(ProductInfo.Group group, List<OrderItem> orderItems) {

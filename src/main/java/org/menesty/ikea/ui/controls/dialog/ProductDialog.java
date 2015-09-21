@@ -25,6 +25,7 @@ import org.menesty.ikea.domain.ProductPart;
 import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.service.ServiceFacade;
+import org.menesty.ikea.service.SucceededListener;
 import org.menesty.ikea.ui.controls.PathProperty;
 import org.menesty.ikea.ui.controls.form.DoubleTextField;
 import org.menesty.ikea.ui.controls.form.IntegerTextField;
@@ -133,12 +134,9 @@ public class ProductDialog extends BaseDialog {
         addRow(options, bottomBar);
 
         priceRefreshService = new PriceRefreshService();
-        priceRefreshService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<Double>() {
-            @Override
-            public void onSucceeded(Double value) {
-                if (value != null)
-                    productForm.setPrice(value);
-            }
+        priceRefreshService.setOnSucceededListener(value -> {
+            if (value != null)
+                productForm.setPrice(value);
         });
         loadingPane.bindTask(priceRefreshService);
     }

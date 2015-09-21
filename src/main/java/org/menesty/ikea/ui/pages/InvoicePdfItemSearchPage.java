@@ -14,6 +14,7 @@ import javafx.util.Callback;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.service.ServiceFacade;
+import org.menesty.ikea.service.SucceededListener;
 import org.menesty.ikea.ui.controls.form.TextField;
 import org.menesty.ikea.util.ColumnUtil;
 import org.menesty.ikea.util.NumberUtil;
@@ -28,12 +29,7 @@ public class InvoicePdfItemSearchPage extends BasePage {
     public InvoicePdfItemSearchPage() {
         super("Paragon search");
         loadService = new LoadService();
-        loadService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<List<RawInvoiceProductItem>>() {
-            @Override
-            public void onSucceeded(List<RawInvoiceProductItem> value) {
-                tableView.getItems().setAll(value);
-            }
-        });
+        loadService.setOnSucceededListener(value -> tableView.getItems().setAll(value));
     }
 
     public void onActive(Object... params) {

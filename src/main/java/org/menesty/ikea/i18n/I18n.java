@@ -31,4 +31,8 @@ public enum I18n {
         }
     }
 
+    public String getString(String key, Object... params) {
+        return String.format(getString(key), params);
+    }
+
 }

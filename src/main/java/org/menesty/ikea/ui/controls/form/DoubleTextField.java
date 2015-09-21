@@ -51,38 +51,23 @@ public class DoubleTextField extends TextField {
     private void initHandlers() {
 
         // try to parse when focus is lost or RETURN is hit
-        setOnAction(new EventHandler<ActionEvent>() {
+        setOnAction(arg0 -> parseAndFormatInput());
 
-            @Override
-            public void handle(ActionEvent arg0) {
+        focusedProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue)
                 parseAndFormatInput();
-            }
+
         });
 
-        focusedProperty().addListener(new ChangeListener<Boolean>() {
+        addEventFilter(KeyEvent.KEY_TYPED, event -> {
+            String newValue = getText().substring(0, getSelection().getStart()) + event.getCharacter() + getText().substring(getSelection().getEnd(), getText().length());
 
-            @Override
-            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                if (!newValue)
-                    parseAndFormatInput();
-
-            }
+            if (!NumberUtils.isNumber(newValue))
+                event.consume();
         });
 
-        addEventFilter(KeyEvent.KEY_TYPED, new EventHandler<KeyEvent>() {
-            public void handle(KeyEvent event) {
-                String newValue = getText().substring(0, getSelection().getStart()) + event.getCharacter() + getText().substring(getSelection().getEnd(), getText().length());
-
-                if (!NumberUtils.isNumber(newValue))
-                    event.consume();
-            }
-        });
-
-        textProperty().addListener(new InvalidationListener() {
-            @Override
-            public void invalidated(Observable observable) {
-                parseAndFormatInput();
-            }
+        textProperty().addListener(observable -> {
+            parseAndFormatInput();
         });
 
     }

@@ -60,9 +60,8 @@ public abstract class BasePage {
         pane.setMaxWidth(Double.MAX_VALUE);
         pane.setMaxHeight(Double.MAX_VALUE);
 
-        StackPane stack = new StackPane();
-        stack.getChildren().add(loadingPane = new LoadingPane());
-        return stack;
+        pane.getChildren().add(loadingPane = new LoadingPane());
+        return pane;
     }
 
     protected StackPane wrap(Node container) {

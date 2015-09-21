@@ -1,8 +1,6 @@
 package org.menesty.ikea.ui.pages;
 
 import javafx.application.Platform;
-import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -16,20 +14,20 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
-import javafx.util.Callback;
 import org.menesty.ikea.db.DatabaseService;
 import org.menesty.ikea.domain.CustomerOrder;
 import org.menesty.ikea.domain.PagingResult;
 import org.menesty.ikea.factory.ImageFactory;
+import org.menesty.ikea.i18n.I18n;
+import org.menesty.ikea.i18n.I18nKeys;
 import org.menesty.ikea.service.AbstractAsyncService;
-import org.menesty.ikea.service.AbstractAsyncService.SucceededListener;
 import org.menesty.ikea.service.ServiceFacade;
-import org.menesty.ikea.ui.TaskProgress;
 import org.menesty.ikea.ui.controls.MToolBar;
 import org.menesty.ikea.ui.controls.dialog.Dialog;
 import org.menesty.ikea.ui.controls.dialog.OrderCreateDialog;
 import org.menesty.ikea.ui.controls.dialog.OrderEditDialog;
 import org.menesty.ikea.ui.controls.table.component.BaseTableView;
+import org.menesty.ikea.ui.pages.wizard.order.OrderCreateWizardPage;
 import org.menesty.ikea.util.ColumnUtil;
 
 import java.io.File;
@@ -39,7 +37,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 public class OrderListPage extends BasePage {
@@ -61,14 +58,11 @@ public class OrderListPage extends BasePage {
     @Override
     protected void initialize() {
         loadService = new LoadService();
-        loadService.setOnSucceededListener(new SucceededListener<PagingResult<CustomerOrder>>() {
-            @Override
-            public void onSucceeded(final PagingResult<CustomerOrder> value) {
-                tableView.getItems().clear();
-                tableView.getItems().addAll(transform(value.getData()));
+        loadService.setOnSucceededListener(value -> {
+            tableView.getItems().clear();
+            tableView.getItems().addAll(transform(value.getData()));
 
-                pagination.setPageCount(value.getCount() / ITEM_PER_PAGE);
-            }
+            pagination.setPageCount(value.getCount() / ITEM_PER_PAGE);
         });
     }
 
@@ -212,7 +206,13 @@ public class OrderListPage extends BasePage {
             deleteBtn.setDisable(selected);
         });
 
-        control.getItems().addAll(addOrder, editOrder, deleteBtn);
+        final Button orderWizard = new Button(null, ImageFactory.createWizard48Icon());
+
+        orderWizard.setOnAction(event -> navigate(OrderCreateWizardPage.class));
+        orderWizard.setTooltip(new Tooltip(I18n.UA.getString(I18nKeys.CREATE_ORDER_WIZARD)));
+
+
+        control.getItems().addAll(addOrder, orderWizard, editOrder, deleteBtn);
         return control;
     }
 

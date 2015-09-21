@@ -19,6 +19,7 @@ import org.menesty.ikea.domain.ParagonDto;
 import org.menesty.ikea.domain.ParagonItemDto;
 import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.service.ServiceFacade;
+import org.menesty.ikea.service.SucceededListener;
 import org.menesty.ikea.util.ColumnUtil;
 import org.menesty.ikea.util.HttpUtil;
 
@@ -37,7 +38,7 @@ public class ParagonViewDialog extends BaseDialog {
         super(stage);
         setMinWidth(530);
         loadService = new LoadService();
-        loadService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<List<ParagonItemDto>>() {
+        loadService.setOnSucceededListener(new SucceededListener<List<ParagonItemDto>>() {
             @Override
             public void onSucceeded(List<ParagonItemDto> value) {
                 tableView.getItems().clear();

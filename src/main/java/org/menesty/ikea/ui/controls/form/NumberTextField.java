@@ -2,8 +2,6 @@ package org.menesty.ikea.ui.controls.form;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.input.KeyEvent;
@@ -78,35 +76,31 @@ public class NumberTextField extends TextField {
             }
         });
 
-        focusedProperty().addListener(new ChangeListener<Boolean>() {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                if (!newValue)
-                    parseAndFormatInput();
-            }
+        focusedProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue)
+                parseAndFormatInput();
         });
 
         // Set text in field if BigDecimal property is changed from outside.
-        numberProperty().addListener(new ChangeListener<BigDecimal>() {
-            @Override
-            public void changed(ObservableValue<? extends BigDecimal> obserable, BigDecimal oldValue, BigDecimal newValue) {
-                updateView();
-            }
+        numberProperty().addListener((obserable, oldValue, newValue) -> {
+            updateView();
         });
 
-        addEventFilter(KeyEvent.KEY_TYPED, new EventHandler<KeyEvent>() {
-            public void handle(KeyEvent event) {
-                if (!allowDouble && event.getCharacter().contains(".")) {
-                    event.consume();
-                    return;
-                }
-
-                String newValue = getText().substring(0, getSelection().getStart()) + event.getCharacter() +
-                        getText().substring(getSelection().getEnd(), getText().length());
-
-                if (!NumberUtils.isNumber(newValue))
-                    event.consume();
+        addEventFilter(KeyEvent.KEY_TYPED, event -> {
+            if (!allowDouble && event.getCharacter().contains(".")) {
+                event.consume();
+                return;
             }
+            String newValue = "";
+
+            if (getText() != null) {
+                newValue = getText().substring(0, getSelection().getStart()) + event.getCharacter() +
+                        getText().substring(getSelection().getEnd(), getText().length());
+            } else {
+                newValue = event.getCharacter();
+            }
+            if (!NumberUtils.isNumber(newValue))
+                event.consume();
         });
 
     }

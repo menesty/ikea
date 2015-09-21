@@ -3,11 +3,11 @@ package org.menesty.ikea.application;
 import javafx.application.Application;
 import javafx.application.ConditionalFeature;
 import javafx.application.Platform;
+import javafx.collections.ListChangeListener;
 import javafx.concurrent.Task;
-import javafx.concurrent.WorkerStateEvent;
-import javafx.event.EventHandler;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
@@ -17,7 +17,6 @@ import org.menesty.ikea.core.component.CategoryGroup;
 import org.menesty.ikea.core.component.DialogSupport;
 import org.menesty.ikea.core.component.PageDescription;
 import org.menesty.ikea.core.component.breadcrumb.BreadCrumb;
-import org.menesty.ikea.core.component.breadcrumb.BreadCrumbItem;
 import org.menesty.ikea.core.component.breadcrumb.BreadCrumbView;
 import org.menesty.ikea.core.component.ui.ApplicationControlToolBar;
 import org.menesty.ikea.core.component.ui.ApplicationWindow;
@@ -25,15 +24,15 @@ import org.menesty.ikea.core.component.ui.BreadCrumbToolBar;
 import org.menesty.ikea.core.component.ui.WorkspaceArea;
 import org.menesty.ikea.db.DatabaseService;
 import org.menesty.ikea.factory.ImageFactory;
-import org.menesty.ikea.i18n.I18n;
+import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.ui.controls.PopupDialog;
 import org.menesty.ikea.ui.controls.dialog.ApplicationPreferenceDialog;
 import org.menesty.ikea.ui.controls.dialog.BaseDialog;
+import org.menesty.ikea.ui.controls.dialog.ErrorConsoleDialog;
 import org.menesty.ikea.ui.controls.dialog.InfoDialog;
 import org.menesty.ikea.ui.controls.pane.LoadingPane;
 import org.menesty.ikea.ui.pages.*;
-
-import java.util.Locale;
+import org.menesty.ikea.ui.pages.wizard.order.OrderCreateWizardPage;
 
 /**
  * Created by Menesty on
@@ -79,14 +78,21 @@ public class IkeaApplication extends Application implements DialogSupport {
             }
         };
 
-        BreadCrumbView.OnBreadCrumbItemClickListener changeListener = new BreadCrumbView.OnBreadCrumbItemClickListener() {
-            @Override
-            public void onItemClick(BreadCrumbItem item) {
-                pageArea.navigate(item);
-            }
-        };
+        BreadCrumbView.OnBreadCrumbItemClickListener changeListener = pageArea::navigate;
 
         BreadCrumbToolBar breadCrumbToolBar = new BreadCrumbToolBar(breadCrumb, controlActionListener, changeListener);
+
+
+        final Button errorConsoleButton = new Button(null, ImageFactory.createError22Icon());
+        ServiceFacade.getErrorConsole().errorsProperty().get().addListener((ListChangeListener<Throwable>) c -> {
+            if (!c.getList().isEmpty()) {
+                Platform.runLater(() ->
+                        errorConsoleButton.setText("(" + c.getList().size() + ")"));
+            }
+        });
+        errorConsoleButton.setOnAction(event -> showPopupDialog(getErrorDialog()));
+
+        breadCrumbToolBar.addControlButton(errorConsoleButton);
 
 
         BorderPane pagePane = new BorderPane();
@@ -110,12 +116,7 @@ public class IkeaApplication extends Application implements DialogSupport {
     private void initDatabase() {
         Task<Void> initDbTask = DatabaseService.init();
         loadingPane.bindTask(initDbTask);
-        initDbTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
-            @Override
-            public void handle(WorkerStateEvent workerStateEvent) {
-                pageArea.navigate(pageArea.getCategories().get(0).getItems().get(0));
-            }
-        });
+        initDbTask.setOnSucceeded(workerStateEvent -> pageArea.navigate(pageArea.getCategories().get(0).getItems().get(0)));
 
     }
 
@@ -123,6 +124,7 @@ public class IkeaApplication extends Application implements DialogSupport {
         CategoryGroup group = new CategoryGroup("IKEA");
         PageDescription orderList = new PageDescription(Pages.ORDERS.getTitle(), ImageFactory.createOrders72Icon(), OrderListPage.class);
         orderList.addPage(new PageDescription(Pages.CUSTOMER_ORDER.getTitle(), OrderViewPage.class, false));
+        orderList.addPage(new PageDescription(Pages.ORDER_WIZARD.getTitle(), OrderCreateWizardPage.class, false));
 
         group.add(orderList);
         group.add(new PageDescription(Pages.SITE_ORDERS.getTitle(), ImageFactory.createSiteOrders72Icon(), SiteOrderPage.class));
@@ -153,25 +155,29 @@ public class IkeaApplication extends Application implements DialogSupport {
 
     private BaseDialog getPreferenceDialog() {
         ApplicationPreferenceDialog preferenceDialog = new ApplicationPreferenceDialog(getStage());
-        preferenceDialog.setDefaultAction(new BaseDialog.DefaultAction() {
-            @Override
-            public void defaultAction(BaseDialog dialog) {
-                dialog.setDefaultAction(null);
-                hidePopupDialog();
-            }
+        preferenceDialog.setDefaultAction(dialog -> {
+            dialog.setDefaultAction(null);
+            hidePopupDialog();
         });
 
         return preferenceDialog;
     }
 
+    private BaseDialog getErrorDialog() {
+        ErrorConsoleDialog errorConsoleDialog = new ErrorConsoleDialog(getStage());
+        errorConsoleDialog.setDefaultAction(dialog -> {
+            dialog.setDefaultAction(null);
+            hidePopupDialog();
+        });
+
+        return errorConsoleDialog;
+    }
+
     private BaseDialog getInfoDialog() {
         InfoDialog dialog = new InfoDialog(getStage());
-        dialog.setDefaultAction(new BaseDialog.DefaultAction() {
-            @Override
-            public void defaultAction(BaseDialog dialog) {
-                dialog.setDefaultAction(null);
-                hidePopupDialog();
-            }
+        dialog.setDefaultAction(dialog1 -> {
+            dialog1.setDefaultAction(null);
+            hidePopupDialog();
         });
         return dialog;
     }

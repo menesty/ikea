@@ -1,6 +1,7 @@
 package org.menesty.ikea.core.component.factory;
 
 import org.menesty.ikea.ui.pages.*;
+import org.menesty.ikea.ui.pages.wizard.order.OrderCreateWizardPage;
 
 /**
  * Created by Menesty on
@@ -30,6 +31,8 @@ public class PageFactory {
             return new InvoicePdfItemSearchPage();
         else if (SiteOrderPage.class.equals(page)) {
             return new SiteOrderPage();
+        } else if (OrderCreateWizardPage.class.equals(page)) {
+            return new OrderCreateWizardPage();
         }
 
         throw new RuntimeException(String.format("Requested page not defined for creation: %s, please add it to Page factory", page.getName()));

@@ -18,6 +18,7 @@ import org.menesty.ikea.domain.PagingResult;
 import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.service.ServiceFacade;
+import org.menesty.ikea.service.SucceededListener;
 import org.menesty.ikea.service.task.IkeaFamilyExportParagonTask;
 import org.menesty.ikea.service.task.IkeaFamilyParagonTask;
 import org.menesty.ikea.ui.controls.table.component.BaseTableView;
@@ -52,7 +53,7 @@ public class IkeaParagonPage extends BasePage {
     @Override
     protected void initialize() {
         parseService = new ParseService();
-        parseService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<Boolean>() {
+        parseService.setOnSucceededListener(new SucceededListener<Boolean>() {
             @Override
             public void onSucceeded(Boolean value) {
                 load();
@@ -60,7 +61,7 @@ public class IkeaParagonPage extends BasePage {
         });
 
         loadService = new LoadService();
-        loadService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<PagingResult<IkeaParagon>>() {
+        loadService.setOnSucceededListener(new SucceededListener<PagingResult<IkeaParagon>>() {
             @Override
             public void onSucceeded(PagingResult<IkeaParagon> value) {
                 tableView.getItems().clear();
@@ -74,12 +75,7 @@ public class IkeaParagonPage extends BasePage {
 
 
         exportParagonService = new ExportParagonService();
-        exportParagonService.setOnSucceededListener(new AbstractAsyncService.SucceededListener<Boolean>() {
-            @Override
-            public void onSucceeded(Boolean value) {
-                tableView.update(exportParagonService.getParagon());
-            }
-        });
+        exportParagonService.setOnSucceededListener(value -> tableView.update(exportParagonService.getParagon()));
     }
 
     @Override
@@ -102,7 +98,7 @@ public class IkeaParagonPage extends BasePage {
         }
 
         {
-            Button button = new Button(null, ImageFactory.createXlsExportIcon());
+            Button button = new Button(null, ImageFactory.createXlsExport32Icon());
             button.setOnAction(new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(ActionEvent actionEvent) {
