@@ -44,7 +44,6 @@ public class CustomInvoicePage extends BasePage {
     private Button editButton;
 
     public CustomInvoicePage() {
-        super("Invoice");
     }
 
     @Override

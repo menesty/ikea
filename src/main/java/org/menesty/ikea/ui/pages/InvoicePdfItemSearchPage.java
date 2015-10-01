@@ -27,7 +27,6 @@ public class InvoicePdfItemSearchPage extends BasePage {
     private TableView<RawInvoiceProductItem> tableView;
 
     public InvoicePdfItemSearchPage() {
-        super("Paragon search");
         loadService = new LoadService();
         loadService.setOnSucceededListener(value -> tableView.getItems().setAll(value));
     }
@@ -42,12 +41,9 @@ public class InvoicePdfItemSearchPage extends BasePage {
 
         artNumber = new TextField();
         artNumber.setDelay(1);
-        artNumber.setOnDelayAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                loadService.setArtNumber(artNumber.getText());
-                loadService.restart();
-            }
+        artNumber.setOnDelayAction(actionEvent -> {
+            loadService.setArtNumber(artNumber.getText());
+            loadService.restart();
         });
         artNumber.setPromptText("Product ID #");
 

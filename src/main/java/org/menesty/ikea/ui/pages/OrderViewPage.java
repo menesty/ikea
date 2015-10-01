@@ -68,7 +68,6 @@ public class OrderViewPage extends BasePage {
     private TabPane tabPane;
 
     public OrderViewPage() {
-        super("CustomerOrder");
     }
 
     @Override
@@ -189,13 +188,10 @@ public class OrderViewPage extends BasePage {
         final Tab tab = new Tab("Storage Lack");
         tab.setContent(storageLackItemViewComponent);
         tab.setClosable(false);
-        tab.setOnSelectionChanged(new EventHandler<Event>() {
-            @Override
-            public void handle(Event event) {
-                if (tab.isSelected()) {
-                    loadingPane.bindTask(storeLackService);
-                    storeLackService.restart();
-                }
+        tab.setOnSelectionChanged(event -> {
+            if (tab.isSelected()) {
+                loadingPane.bindTask(storeLackService);
+                storeLackService.restart();
             }
         });
 
@@ -207,12 +203,7 @@ public class OrderViewPage extends BasePage {
             @Override
             protected void reloadProduct(OrderItem orderItem, final EventHandler<Event> onSucceeded) {
                 Task<Void> task = new ProductFetch(orderItem);
-                task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
-                    @Override
-                    public void handle(WorkerStateEvent workerStateEvent) {
-                        onSucceeded.handle(workerStateEvent);
-                    }
-                });
+                task.setOnSucceeded(onSucceeded::handle);
                 runTask(task);
             }
 
@@ -485,12 +476,7 @@ public class OrderViewPage extends BasePage {
         @Override
         protected Void call() throws Exception {
             try {
-                ServiceFacade.getOrderService().exportToXls(order, fileName, new TaskProgress() {
-                    @Override
-                    public void updateProgress(long l, long l1) {
-                        ExportOrderItemsTask.this.updateProgress(l, l1);
-                    }
-                });
+                ServiceFacade.getOrderService().exportToXls(order, fileName, ExportOrderItemsTask.this::updateProgress);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -506,15 +492,12 @@ public class OrderViewPage extends BasePage {
             return new Task<OrderData>() {
                 @Override
                 protected OrderData call() throws Exception {
-                    return DatabaseService.runInTransaction(new Callable<OrderData>() {
-                        @Override
-                        public OrderData call() throws Exception {
-                            OrderData orderData = new OrderData();
-                            orderData.invoicePdfs = ServiceFacade.getInvoicePdfService().loadBy(currentOrder);
-                            orderData.orderItems = ServiceFacade.getOrderItemService().loadBy(currentOrder);
+                    return DatabaseService.runInTransaction(() -> {
+                        OrderData orderData1 = new OrderData();
+                        orderData1.invoicePdfs = ServiceFacade.getInvoicePdfService().loadBy(currentOrder);
+                        orderData1.orderItems = ServiceFacade.getOrderItemService().loadBy(currentOrder);
 
-                            return orderData;
-                        }
+                        return orderData1;
                     });
                 }
             };

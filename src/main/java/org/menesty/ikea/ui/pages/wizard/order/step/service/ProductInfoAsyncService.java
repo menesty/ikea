@@ -7,6 +7,7 @@ import org.menesty.ikea.lib.domain.ikea.IkeaProduct;
 import org.menesty.ikea.lib.dto.IkeaOrderItem;
 import org.menesty.ikea.lib.dto.OrderItemDetails;
 import org.menesty.ikea.lib.dto.ProductPriceMismatch;
+import org.menesty.ikea.lib.service.IkeaProductService;
 import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.service.parser.RawItem;
@@ -44,7 +45,7 @@ public class ProductInfoAsyncService extends AbstractAsyncService<OrderItemDetai
                                 artNumberIndexProperty.set(artNumberIndexProperty.get() + 1);
                             });
 
-                            IkeaProduct product = ikeaProductService.getProduct(rawItem.getArtNumber(), true);
+                            IkeaProduct product = ikeaProductService.getProduct(rawItem.getArtNumber(), throwable -> ServiceFacade.getErrorConsole().add(throwable));
                             result.add(new IkeaOrderItem(product, rawItem.getCount(), product.getPrice()));
 
                             if (!product.getPrice().equals(rawItem.getPrice())) {

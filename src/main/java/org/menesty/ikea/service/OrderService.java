@@ -88,7 +88,7 @@ public class OrderService extends Repository<CustomerOrder> {
     }
 
     @SuppressWarnings("unchecked")
-    protected OrderParseResult parseOrder(InputStream is, TaskProgress taskProgress) throws IOException,
+    public OrderParseResult parseOrder(InputStream is, TaskProgress taskProgress) throws IOException,
             SAXException, InvalidFormatException {
 
         OrderParseResult result = new OrderParseResult();
@@ -157,7 +157,7 @@ public class OrderService extends Repository<CustomerOrder> {
         return query.getResultList();
     }
 
-    List<OrderItem> reduce(CustomerOrder order, List<RawOrderItem> list, TaskProgress taskProgress) {
+    public List<OrderItem> reduce(CustomerOrder order, List<RawOrderItem> list, TaskProgress taskProgress) {
         Map<String, OrderItem> reduceMap = new HashMap<>();
         int itemIndex = 0;
 

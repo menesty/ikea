@@ -101,7 +101,7 @@ public class WorkspaceArea extends Pane {
     public void navigate(final BreadCrumbItem item) {
         if (item.getPageDescription() == null) {
             showCategories();
-            breadCrumb.setItems(new ArrayList<BreadCrumbItem>());
+            breadCrumb.setItems(new ArrayList<>());
             return;
         }
 
@@ -141,11 +141,14 @@ public class WorkspaceArea extends Pane {
     public void navigate(PageDescription parent, Class<? extends BasePage> subPage, Object... params) {
         for (CategoryGroup categoryGroup : categoryGroups) {
             PageDescription pageDescription = categoryGroup.getPageDescription(parent, subPage);
+
             if (pageDescription != null) {
                 navigate(pageDescription, params);
                 return;
             }
         }
+
+        throw new RuntimeException(String.format("Page with class %s not registered ", subPage.getName()));
     }
 
     public PageDescription getActivePage() {

@@ -36,9 +36,7 @@ public class SiteOrderPage extends BasePage {
     private TableView<ClientOrder> tableView;
     private Pagination pagination;
 
-
     public SiteOrderPage() {
-        super(Pages.SITE_ORDERS.getTitle());
     }
 
     @Override

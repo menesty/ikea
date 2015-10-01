@@ -47,28 +47,19 @@ public class IkeaParagonPage extends BasePage {
     private ExportParagonService exportParagonService;
 
     public IkeaParagonPage() {
-        super("Ikea paragons");
     }
 
     @Override
     protected void initialize() {
         parseService = new ParseService();
-        parseService.setOnSucceededListener(new SucceededListener<Boolean>() {
-            @Override
-            public void onSucceeded(Boolean value) {
-                load();
-            }
-        });
+        parseService.setOnSucceededListener(value -> load());
 
         loadService = new LoadService();
-        loadService.setOnSucceededListener(new SucceededListener<PagingResult<IkeaParagon>>() {
-            @Override
-            public void onSucceeded(PagingResult<IkeaParagon> value) {
-                tableView.getItems().clear();
-                tableView.getItems().addAll(value.getData());
+        loadService.setOnSucceededListener(value -> {
+            tableView.getItems().clear();
+            tableView.getItems().addAll(value.getData());
 
-                pagination.setPageCount(value.getCount() / ITEM_PER_PAGE);
-            }
+            pagination.setPageCount(value.getCount() / ITEM_PER_PAGE);
         });
 
         exportService = new ExportService();
@@ -86,12 +77,9 @@ public class IkeaParagonPage extends BasePage {
 
         {
             Button button = new Button(null, ImageFactory.createReload32Icon());
-            button.setOnAction(new EventHandler<ActionEvent>() {
-                @Override
-                public void handle(ActionEvent actionEvent) {
-                    loadingPane.bindTask(parseService);
-                    parseService.restart();
-                }
+            button.setOnAction(actionEvent -> {
+                loadingPane.bindTask(parseService);
+                parseService.restart();
             });
 
             control.getItems().add(button);
@@ -99,21 +87,18 @@ public class IkeaParagonPage extends BasePage {
 
         {
             Button button = new Button(null, ImageFactory.createXlsExport32Icon());
-            button.setOnAction(new EventHandler<ActionEvent>() {
-                @Override
-                public void handle(ActionEvent actionEvent) {
-                    FileChooser fileChooser = FileChooserUtil.getXls();
+            button.setOnAction(actionEvent -> {
+                FileChooser fileChooser = FileChooserUtil.getXls();
 
-                    File selectedFile = fileChooser.showSaveDialog(getStage());
+                File selectedFile = fileChooser.showSaveDialog(getStage());
 
-                    if (selectedFile != null) {
-                        exportService.setPath(selectedFile.getAbsolutePath());
-                        loadingPane.bindTask(exportService);
+                if (selectedFile != null) {
+                    exportService.setPath(selectedFile.getAbsolutePath());
+                    loadingPane.bindTask(exportService);
 
-                        FileChooserUtil.setDefaultDir(selectedFile);
+                    FileChooserUtil.setDefaultDir(selectedFile);
 
-                        exportService.restart();
-                    }
+                    exportService.restart();
                 }
             });
 

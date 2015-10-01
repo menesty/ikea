@@ -753,3 +753,17 @@
     -fx-background-color: black, white, linear-gradient(rgb(250, 250, 250), rgb(230, 230, 230));
     -fx-padding: 15;
 }
+
+.align-right {
+    -fx-alignment: CENTER-RIGHT;
+}
+.align-center {
+    -fx-alignment: CENTER;
+}
+
+.text-green {
+    -fx-text-fill: #008000;
+}
+.text-red {
+    -fx-text-fill: #ff0000;
+}

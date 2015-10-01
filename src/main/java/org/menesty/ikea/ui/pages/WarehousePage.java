@@ -12,7 +12,6 @@ public class WarehousePage extends BasePage {
     private ParagonViewComponent paragonViewComponent;
 
     public WarehousePage() {
-        super("Warehouse");
     }
 
     @Override

@@ -28,7 +28,6 @@ public class IkeaShopPage extends BasePage {
     private IkeaShopDialog dialog;
 
     public IkeaShopPage() {
-        super(Pages.SHOPS.getTitle());
     }
 
     @Override

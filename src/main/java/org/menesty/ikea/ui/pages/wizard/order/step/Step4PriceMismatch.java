@@ -1,13 +1,18 @@
 package org.menesty.ikea.ui.pages.wizard.order.step;
 
 import javafx.beans.property.SimpleStringProperty;
-import javafx.scene.control.Button;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.ToolBar;
+import javafx.event.EventHandler;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.util.Callback;
 import org.menesty.ikea.core.component.DialogSupport;
 import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.i18n.I18n;
@@ -15,8 +20,12 @@ import org.menesty.ikea.i18n.I18nKeys;
 import org.menesty.ikea.lib.dto.DesktopOrderInfo;
 import org.menesty.ikea.lib.dto.OrderItemDetails;
 import org.menesty.ikea.lib.dto.ProductPriceMismatch;
+import org.menesty.ikea.processor.invoice.InvoiceItem;
+import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.service.ServiceFacade;
+import org.menesty.ikea.ui.controls.dialog.ProductDialog;
 import org.menesty.ikea.ui.controls.pane.wizard.BaseWizardStep;
+import org.menesty.ikea.ui.controls.table.component.BaseTableView;
 import org.menesty.ikea.ui.pages.wizard.order.step.service.AbstractExportAsyncService;
 import org.menesty.ikea.util.ColumnUtil;
 import org.menesty.ikea.util.FileChooserUtil;
@@ -32,7 +41,7 @@ import java.util.List;
  */
 public class Step4PriceMismatch extends BaseWizardStep<DesktopOrderInfo> {
     private TableView<ProductPriceMismatch> productPriceMismatchTableView;
-    private TableView<String> noAvailableTableView;
+    private BaseTableView<String> noAvailableTableView;
     private AbstractExportAsyncService<List<ProductPriceMismatch>> xlsMismatchExportAsyncService;
     private AbstractExportAsyncService<List<String>> xlsnoAvailableExportAsyncService;
 
@@ -53,7 +62,8 @@ public class Step4PriceMismatch extends BaseWizardStep<DesktopOrderInfo> {
 
     private BorderPane initNotAvailablePane(DialogSupport dialogSupport) {
         BorderPane mainPane = new BorderPane();
-        noAvailableTableView = new TableView<>();
+        noAvailableTableView = new BaseTableView<>();
+
         {
             TableColumn<String, String> column = new TableColumn<>(I18n.UA.getString(I18nKeys.ART_NUMBER));
             column.setMinWidth(200);
@@ -64,8 +74,46 @@ public class Step4PriceMismatch extends BaseWizardStep<DesktopOrderInfo> {
 
                 return new SimpleStringProperty(param.getValue());
             });
+
+            column.setCellFactory(param -> new TableCell<String, String>() {
+                private Label numberLabel;
+                private HBox content;
+
+                @Override
+                protected void updateItem(String number, boolean empty) {
+                    super.updateItem(number, empty);
+                    if (empty) {
+                        setGraphic(null);
+                        setText(null);
+                    } else {
+                        if (numberLabel == null) {
+                            content = new HBox();
+                            content.setPrefWidth(Double.MAX_VALUE);
+                            numberLabel = new Label();
+
+                            ImageView imageView = ImageFactory.createWeb16Icon();
+                            HBox.setMargin(imageView, new Insets(0, 0, 0, 2));
+                            imageView.setOnMouseClicked(mouseEvent -> {
+                                String artNumber = getTableView().getItems().get(getIndex());
+                                ProductDialog.browse(artNumber);
+                            });
+
+                            Region space = new Region();
+                            HBox.setHgrow(space, Priority.ALWAYS);
+                            content.getChildren().addAll(numberLabel, space, imageView);
+                        }
+
+                        content.setMinWidth(getWidth() - getGraphicTextGap() * 2);
+                        setGraphic(content);
+                        numberLabel.setText(number);
+                    }
+                }
+
+            });
             noAvailableTableView.getColumns().add(column);
         }
+
+
 
         ToolBar toolBar = new ToolBar();
 

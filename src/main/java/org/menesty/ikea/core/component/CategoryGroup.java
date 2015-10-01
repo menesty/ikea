@@ -66,7 +66,31 @@ public class CategoryGroup {
     }
 
     public PageDescription getPageDescription(PageDescription parent, Class<? extends BasePage> subPage) {
-        return recursiveSearch(items, parent, subPage);
+        if (parent != null) {
+            return recursiveSearch(items, parent, subPage);
+        } else {
+            return recursiveSearchPage(items, subPage);
+        }
+    }
+
+    private PageDescription recursiveSearchPage(List<PageDescription> items, Class<? extends BasePage> subPage) {
+        if (items == null || items.isEmpty()) {
+            return null;
+        }
+
+        for (PageDescription item : items) {
+            if (item.getPageClass().equals(subPage)) {
+                return item;
+            } else {
+                PageDescription result = recursiveSearchPage(item.getSubPage(), subPage);
+
+                if (result != null) {
+                    return result;
+                }
+            }
+        }
+
+        return null;
     }
 
     private PageDescription recursiveSearch(List<PageDescription> items, PageDescription parent,

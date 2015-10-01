@@ -7,8 +7,6 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
@@ -18,8 +16,6 @@ import org.menesty.ikea.db.DatabaseService;
 import org.menesty.ikea.domain.CustomerOrder;
 import org.menesty.ikea.domain.PagingResult;
 import org.menesty.ikea.factory.ImageFactory;
-import org.menesty.ikea.i18n.I18n;
-import org.menesty.ikea.i18n.I18nKeys;
 import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.ui.controls.MToolBar;
@@ -27,7 +23,6 @@ import org.menesty.ikea.ui.controls.dialog.Dialog;
 import org.menesty.ikea.ui.controls.dialog.OrderCreateDialog;
 import org.menesty.ikea.ui.controls.dialog.OrderEditDialog;
 import org.menesty.ikea.ui.controls.table.component.BaseTableView;
-import org.menesty.ikea.ui.pages.wizard.order.OrderCreateWizardPage;
 import org.menesty.ikea.util.ColumnUtil;
 
 import java.io.File;
@@ -50,10 +45,6 @@ public class OrderListPage extends BasePage {
     private Pagination pagination;
 
     private static final int ITEM_PER_PAGE = 5;
-
-    public OrderListPage() {
-        super(Pages.ORDERS.getTitle());
-    }
 
     @Override
     protected void initialize() {
@@ -162,42 +153,29 @@ public class OrderListPage extends BasePage {
         Button addOrder = new Button(null, ImageFactory.createAdd48Icon());
 
         addOrder.setTooltip(new Tooltip("Create Order"));
-        addOrder.setOnAction(new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent event) {
-                showCreateOrderDialog();
-            }
-        });
+        addOrder.setOnAction(event -> showCreateOrderDialog());
 
         final Button editOrder = new Button(null, ImageFactory.creteInfo48Icon());
 
-        editOrder.setOnAction(new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent event) {
-                navigate(OrderViewPage.class, tableView.getSelectionModel().getSelectedItem().getOrder());
-            }
-        });
+        editOrder.setOnAction(event -> navigateSubPage(OrderViewPage.class, tableView.getSelectionModel().getSelectedItem().getOrder()));
 
         editOrder.setTooltip(new Tooltip("View order"));
         editOrder.setDisable(true);
 
         final Button deleteBtn = new Button(null, ImageFactory.createDelete48Icon());
-        deleteBtn.setOnAction(new EventHandler<ActionEvent>() {
+        deleteBtn.setOnAction(actionEvent -> Dialog.confirm(getDialogSupport(), "Are you sure want delete selected Order", new DialogCallback() {
             @Override
-            public void handle(ActionEvent actionEvent) {
-                Dialog.confirm(getDialogSupport(), "Are you sure want delete selected Order", new DialogCallback() {
-                    @Override
-                    public void onCancel() {
+            public void onCancel() {
 
-                    }
-
-                    @Override
-                    public void onYes() {
-                        OrderTableItem item = tableView.getSelectionModel().getSelectedItem();
-                        ServiceFacade.getOrderService().remove(item.getOrder());
-                        tableView.getItems().remove(item);
-                    }
-                });
             }
-        });
+
+            @Override
+            public void onYes() {
+                OrderTableItem item = tableView.getSelectionModel().getSelectedItem();
+                ServiceFacade.getOrderService().remove(item.getOrder());
+                tableView.getItems().remove(item);
+            }
+        }));
         deleteBtn.setDisable(true);
 
         tableView.getSelectionModel().selectedItemProperty().addListener(observable -> {
@@ -206,13 +184,7 @@ public class OrderListPage extends BasePage {
             deleteBtn.setDisable(selected);
         });
 
-        final Button orderWizard = new Button(null, ImageFactory.createWizard48Icon());
-
-        orderWizard.setOnAction(event -> navigate(OrderCreateWizardPage.class));
-        orderWizard.setTooltip(new Tooltip(I18n.UA.getString(I18nKeys.CREATE_ORDER_WIZARD)));
-
-
-        control.getItems().addAll(addOrder, orderWizard, editOrder, deleteBtn);
+        control.getItems().addAll(addOrder, editOrder, deleteBtn);
         return control;
     }
 

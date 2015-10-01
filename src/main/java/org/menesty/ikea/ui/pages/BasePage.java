@@ -17,20 +17,11 @@ import org.menesty.ikea.ui.controls.pane.LoadingPane;
 public abstract class BasePage {
     protected LoadingPane loadingPane;
 
-    private String breadCrumbPath;
-
-    private String name;
-
     private boolean initialized;
 
     private DialogSupport dialogSupport;
 
-    public BasePage(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
+    public BasePage() {
     }
 
     protected abstract Node createView();
@@ -83,8 +74,12 @@ public abstract class BasePage {
         dialogSupport.hidePopupDialog();
     }
 
-    protected void navigate(Class<? extends BasePage> pageClass, Object... params) {
+    protected void navigateSubPage(Class<? extends BasePage> pageClass, Object... params) {
         dialogSupport.navigate(dialogSupport.getActivePage(), pageClass, params);
+    }
+
+    protected void navigate(Class<? extends BasePage> pageClass, Object... params) {
+        dialogSupport.navigate(null, pageClass, params);
     }
 
     protected DialogSupport getDialogSupport() {
@@ -118,5 +113,10 @@ public abstract class BasePage {
         }
 
         return createView();
+    }
+
+    @SuppressWarnings("unchecked")
+    protected <T> T cast(Object object) {
+        return (T) object;
     }
 }

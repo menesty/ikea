@@ -8,6 +8,7 @@ import org.menesty.ikea.core.component.DialogSupport;
 import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.i18n.I18n;
 import org.menesty.ikea.i18n.I18nKeys;
+import org.menesty.ikea.lib.domain.product.Product;
 import org.menesty.ikea.lib.dto.DesktopOrderInfo;
 import org.menesty.ikea.lib.dto.IkeaOrderItem;
 import org.menesty.ikea.lib.dto.OrderItemDetails;
@@ -67,6 +68,13 @@ public class Step3OrderPreview extends BaseWizardStep<DesktopOrderInfo> {
             TableColumn<IkeaOrderItem, String> column = new TableColumn<>(I18n.UA.getString(I18nKeys.SHORT_NAME));
             column.setMinWidth(200);
             column.setCellValueFactory(ColumnUtil.<IkeaOrderItem, String>column("product.shortName"));
+            tableView.getColumns().add(column);
+        }
+
+        {
+            TableColumn<IkeaOrderItem, Product.Group> column = new TableColumn<>(I18n.UA.getString(I18nKeys.GROUP_NAME));
+            column.setMinWidth(80);
+            column.setCellValueFactory(ColumnUtil.<IkeaOrderItem, Product.Group>column("product.group"));
             tableView.getColumns().add(column);
         }
 

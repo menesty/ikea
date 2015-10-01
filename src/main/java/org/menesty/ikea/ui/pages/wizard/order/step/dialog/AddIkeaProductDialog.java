@@ -75,7 +75,7 @@ public class AddIkeaProductDialog extends BaseEntityDialog<IkeaOrderItem> {
             productIdField.validProperty().addListener((observable, oldValue, newValue) -> {
                 if (newValue) {
                     try {
-                        ikeaProduct = ServiceFacade.getIkeaProductService().getProduct(productIdField.getProductId(), true);
+                        ikeaProduct = ServiceFacade.getIkeaProductService().getProduct(productIdField.getProductId(), true, throwable -> ServiceFacade.getErrorConsole().add(throwable));
                     } catch (Exception e) {
                         ikeaProduct = null;
                     }

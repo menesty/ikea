@@ -29,7 +29,6 @@ public class UserPage extends BasePage {
     private TableView<User> tableView;
 
     public UserPage() {
-        super("Users");
     }
 
     @Override

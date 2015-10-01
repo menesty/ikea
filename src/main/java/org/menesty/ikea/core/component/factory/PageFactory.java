@@ -1,6 +1,8 @@
 package org.menesty.ikea.core.component.factory;
 
 import org.menesty.ikea.ui.pages.*;
+import org.menesty.ikea.ui.pages.ikea.order.IkeaOrderViewPage;
+import org.menesty.ikea.ui.pages.ikea.order.IkeaProcessOrderPage;
 import org.menesty.ikea.ui.pages.wizard.order.OrderCreateWizardPage;
 
 /**
@@ -33,6 +35,10 @@ public class PageFactory {
             return new SiteOrderPage();
         } else if (OrderCreateWizardPage.class.equals(page)) {
             return new OrderCreateWizardPage();
+        } else if (IkeaProcessOrderPage.class.equals(page)) {
+            return new IkeaProcessOrderPage();
+        } else if (IkeaOrderViewPage.class.equals(page)) {
+            return new IkeaOrderViewPage();
         }
 
         throw new RuntimeException(String.format("Requested page not defined for creation: %s, please add it to Page factory", page.getName()));

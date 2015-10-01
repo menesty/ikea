@@ -7,7 +7,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BaseTableView<Entity> extends TableView<Entity> {
+    public interface RowDoubleClickListener<Entity> {
+        void onRowDoubleClick(TableRow<Entity> row);
+    }
+
+    public interface RowRenderListener<Entity> {
+        void onRowRender(TableRow<Entity> row, Entity newValue);
+    }
+
     private List<TableRow<Entity>> rows = new ArrayList<>();
+
+    private RowDoubleClickListener<Entity> rowDoubleClickListener;
+    private RowRenderListener<Entity> rowRenderListener;
 
     public BaseTableView() {
         setRowFactory(entityTableView -> {
@@ -15,8 +26,9 @@ public class BaseTableView<Entity> extends TableView<Entity> {
             rows.add(row);
 
             row.setOnMouseClicked(mouseEvent -> {
-                if (mouseEvent.getClickCount() == 2)
+                if (mouseEvent.getClickCount() == 2) {
                     onRowDoubleClick(row);
+                }
             });
 
             row.itemProperty().addListener((observableValue, oldValue, newValue) -> {
@@ -28,11 +40,15 @@ public class BaseTableView<Entity> extends TableView<Entity> {
     }
 
     protected void onRowRender(TableRow<Entity> row, Entity newValue) {
-
+        if (rowRenderListener != null) {
+            rowRenderListener.onRowRender(row, newValue);
+        }
     }
 
     protected void onRowDoubleClick(TableRow<Entity> row) {
-
+        if (rowDoubleClickListener != null) {
+            rowDoubleClickListener.onRowDoubleClick(row);
+        }
     }
 
     public void updateRows() {
@@ -48,4 +64,12 @@ public class BaseTableView<Entity> extends TableView<Entity> {
             }
     }
 
+    public void setRowDoubleClickListener(RowDoubleClickListener<Entity> rowDoubleClickListener) {
+        this.rowDoubleClickListener = rowDoubleClickListener;
+    }
+
+    public void setRowRenderListener(RowRenderListener<Entity> rowRenderListener) {
+        this.rowRenderListener = rowRenderListener;
+    }
 }
+

@@ -57,11 +57,7 @@ public class BaseDialog extends StackPane {
         if (showTitle)
             addRow(title = createTitle(null));
         // block mouse clicks
-        setOnMouseClicked(new EventHandler<MouseEvent>() {
-            public void handle(MouseEvent t) {
-                t.consume();
-            }
-        });
+        setOnMouseClicked(t -> t.consume());
 
         content.setSpacing(10);
         loadingPane = new LoadingPane();

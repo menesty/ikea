@@ -1,6 +1,7 @@
 package org.menesty.ikea.ui.controls.form;
 
 import com.sun.javafx.scene.control.skin.AutoCompleteComboBoxListViewSkin;
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
@@ -9,6 +10,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.util.StringConverter;
 import org.menesty.ikea.ui.controls.form.provider.DataProvider;
+import org.menesty.ikea.util.ToolTipUtil;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -216,5 +218,12 @@ public class ComboBoxField<T> extends HBox implements Field {
         this.dataProvider = dataProvider;
     }
 
+    public ReadOnlyObjectProperty<T> selectedItemProperty() {
+        return comboBox.getSelectionModel().selectedItemProperty();
+    }
+
+    public void setTooltip(String tooltip) {
+        comboBox.setTooltip(ToolTipUtil.create(tooltip));
+    }
 }
 

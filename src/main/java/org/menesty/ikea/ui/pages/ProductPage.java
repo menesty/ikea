@@ -36,7 +36,6 @@ public class ProductPage extends BasePage {
     private TableView<ProductInfo> tableView;
 
     public ProductPage() {
-        super(Pages.PRODUCTS.getTitle());
     }
 
     @Override

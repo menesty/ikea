@@ -36,7 +36,9 @@ import java.util.regex.Pattern;
 public class InvoicePdfService extends Repository<InvoicePdf> {
     private static Logger logger = Logger.getLogger(InvoicePdfService.class.getName());
 
-    private final static Pattern linePattern = Pattern.compile("(\\d+) (\\d{3}-\\d{3}-\\d{2}) (.*) (SZT\\.|CM\\.) (\\d{0,},{0,}\\d+) (\\S+) (\\d+,\\d+%) (\\S+,\\d{2})");
+    private final static Pattern linePattern = Pattern.compile("(\\d+) (\\d{3}-\\d{3}-\\d{2}) (.*)(SZT\\.|CM\\.) (\\d{0,},{0,}\\d+) (\\S+) (\\d+,\\d+%) (\\S+,\\d{2})");
+
+    private final static Pattern LINE_START = Pattern.compile("(\\d+) (\\d{3}-\\d{3}-\\d{2})");
 
     private final static String INVOICE_NAME_PATTERN = "(\\d+)\\s+(\\d+)/\\s+(\\w+)\\s+/F A K T U R A.*";
 
@@ -79,29 +81,22 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
             Matcher m = linePattern.matcher(line);
 
             if (m.find()) {
-                RawInvoiceProductItem product = new RawInvoiceProductItem();
-                product.setOriginalArtNumber(m.group(2).replace("-", ""));
-                product.setName(m.group(3));
-
-                BigDecimal count = BigDecimal.valueOf(NumberUtil.parse(m.group(5)));
-
-                if ("CM.".equals(m.group(4)))
-                    count = count.divide(BigDecimal.valueOf(100));
-
-                product.setCount(count.doubleValue());
-
-                double price = Double.valueOf(m.group(6).trim().replaceAll("[\\s\\u00A0]+", "").replace(",", "."));
-
-                product.setBasePrice(price);
-
-
-                double marginPrice = NumberUtil.round(BigDecimal.valueOf(price).multiply(marginM).doubleValue());
-                product.setPrice(marginPrice);
-                product.setWat(m.group(7));
-                product.setProductInfo(loadProductInfo(product));
-                product.invoicePdf = invoicePdf;
+                RawInvoiceProductItem product = getRawInvoiceProductItem(m, marginM, invoicePdf);
                 products.add(product);
             } else {
+                m = LINE_START.matcher(line);
+
+                if (m.find()) {
+                    line = line + scanner.nextLine() + scanner.nextLine();
+                    m = linePattern.matcher(line);
+
+                    if (m.find()) {
+                        RawInvoiceProductItem product = getRawInvoiceProductItem(m, marginM, invoicePdf);
+                        products.add(product);
+                        continue;
+                    }
+                }
+
                 if (line.matches(INVOICE_NAME_PATTERN))
                     invoicePdf.setInvoiceNumber(line.replaceAll(INVOICE_NAME_PATTERN, "$1/$3/$2"));
                 else if (line.matches(PARAGON_DATE_PATTERN)) {
@@ -128,29 +123,53 @@ public class InvoicePdfService extends Repository<InvoicePdf> {
         return products;
     }
 
+    private RawInvoiceProductItem getRawInvoiceProductItem(Matcher m, BigDecimal margin, InvoicePdf invoicePdf) {
+        RawInvoiceProductItem product = new RawInvoiceProductItem();
+        product.setOriginalArtNumber(m.group(2).replace("-", ""));
+        product.setName(m.group(3));
+
+        BigDecimal count = BigDecimal.valueOf(NumberUtil.parse(m.group(5)));
+
+        if ("CM.".equals(m.group(4)))
+            count = count.divide(BigDecimal.valueOf(100));
+
+        product.setCount(count.doubleValue());
+
+        double price = Double.valueOf(m.group(6).trim().replaceAll("[\\s\\u00A0]+", "").replace(",", "."));
+
+        product.setBasePrice(price);
+
+
+        double marginPrice = NumberUtil.round(BigDecimal.valueOf(price).multiply(margin).doubleValue());
+        product.setPrice(marginPrice);
+        product.setWat(m.group(7));
+        product.setProductInfo(loadProductInfo(product));
+        product.invoicePdf = invoicePdf;
+
+        return product;
+    }
+
     public static void main(String... arg) throws IOException, InterruptedException, ExecutionException {
         InvoicePdfService service = new InvoicePdfService();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         List<RawInvoiceProductItem> products = new ArrayList<>();
 
         try {
-            String content = service.parseDocument(new FileInputStream("/Users/andrewhome/Downloads/Dokup_201.pdf"));
+            String content = service.parseDocument(new FileInputStream("/Users/andrewhome/Downloads/204-М-129108_15.pdf"));
 
             Scanner scanner = new Scanner(content);
 
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
+                Matcher m = linePattern.matcher(line);
 
-                if (line.equals("Numer artykułu:")) {
-                    String artNumber = scanner.nextLine();
-                    String countPrice = scanner.nextLine();
-
-                    System.out.println(artNumber + "||||||" + countPrice);
+                if (m.find()) {
+                    System.out.println(line + "!!!");
                 } else {
-                    System.out.println(line);
+                    System.out.println(line + "======");
                 }
-
             }
+
 
             System.out.println(products);
         } catch (IOException e) {

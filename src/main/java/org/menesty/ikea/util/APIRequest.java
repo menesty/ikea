@@ -4,13 +4,18 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpHost;
 import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 
@@ -41,6 +46,32 @@ public class APIRequest {
                 return EntityUtils.toString(response.getEntity());
             }
         }
+    }
+
+    private String postData(Object object) throws IOException {
+        HttpHost targetHost = new HttpHost(url.getHost(), url.getPort());
+
+        CredentialsProvider credsProvider = HttpUtil.credentialsProvider(targetHost);
+
+        try (CloseableHttpClient httpClient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build()) {
+            HttpClientContext localContext = HttpUtil.context(targetHost);
+
+            HttpPost httpPost = new HttpPost(url);
+            ObjectMapper objectMapper = new ObjectMapper();
+
+            httpPost.setEntity(new StringEntity(objectMapper.writeValueAsString(object), ContentType.APPLICATION_JSON));
+
+            try (CloseableHttpResponse response = httpClient.execute(targetHost, httpPost, localContext)) {
+                return EntityUtils.toString(response.getEntity());
+            }
+        }
+    }
+
+    public <T> T postData(Object param, Class<T> clazz) throws Exception {
+        String response = postData(param);
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        return objectMapper.readValue(response, clazz);
     }
 
     public <T> T getData(Class<T> clazz) throws Exception {

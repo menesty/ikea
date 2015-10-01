@@ -32,6 +32,8 @@ import org.menesty.ikea.ui.controls.dialog.ErrorConsoleDialog;
 import org.menesty.ikea.ui.controls.dialog.InfoDialog;
 import org.menesty.ikea.ui.controls.pane.LoadingPane;
 import org.menesty.ikea.ui.pages.*;
+import org.menesty.ikea.ui.pages.ikea.order.IkeaOrderViewPage;
+import org.menesty.ikea.ui.pages.ikea.order.IkeaProcessOrderPage;
 import org.menesty.ikea.ui.pages.wizard.order.OrderCreateWizardPage;
 
 /**
@@ -124,10 +126,13 @@ public class IkeaApplication extends Application implements DialogSupport {
         CategoryGroup group = new CategoryGroup("IKEA");
         PageDescription orderList = new PageDescription(Pages.ORDERS.getTitle(), ImageFactory.createOrders72Icon(), OrderListPage.class);
         orderList.addPage(new PageDescription(Pages.CUSTOMER_ORDER.getTitle(), OrderViewPage.class, false));
-        orderList.addPage(new PageDescription(Pages.ORDER_WIZARD.getTitle(), OrderCreateWizardPage.class, false));
-
         group.add(orderList);
-        group.add(new PageDescription(Pages.SITE_ORDERS.getTitle(), ImageFactory.createSiteOrders72Icon(), SiteOrderPage.class));
+
+        PageDescription ikeaOrderList = new PageDescription(Pages.SITE_ORDERS.getTitle(), ImageFactory.createSiteOrders72Icon(), IkeaProcessOrderPage.class);
+        ikeaOrderList.addPage(new PageDescription(Pages.ORDER_WIZARD.getTitle(), OrderCreateWizardPage.class, false));
+        ikeaOrderList.addPage(new PageDescription(Pages.ORDER_DETAIL.getTitle(), IkeaOrderViewPage.class, false));
+        group.add(ikeaOrderList);
+
         group.add(new PageDescription(Pages.PRODUCTS.getTitle(), ImageFactory.createProducts72Icon(), ProductPage.class));
         group.add(new PageDescription(Pages.USERS.getTitle(), ImageFactory.createUsersIcon64(), UserPage.class));
         group.add(new PageDescription(Pages.WAREHOUSE.getTitle(), ImageFactory.createWarehouseIcon72(), WarehousePage.class));

@@ -9,6 +9,7 @@ import org.menesty.ikea.i18n.I18n;
 import org.menesty.ikea.i18n.I18nKeys;
 import org.menesty.ikea.lib.domain.IkeaShop;
 import org.menesty.ikea.lib.domain.Profile;
+import org.menesty.ikea.lib.domain.order.IkeaProcessOrder;
 import org.menesty.ikea.lib.dto.DesktopOrderInfo;
 import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.ui.controls.form.*;
@@ -36,6 +37,7 @@ public class Step1 extends BaseWizardStep<DesktopOrderInfo> {
     private ComboBoxField<DesktopOrderInfo.SourceType> sourceTypeComboBoxField;
     private ComboBoxField<DesktopOrderInfo.OrderType> orderTypeComboBoxField;
     private ComboBoxField<Profile> clientComboBoxField;
+    private ComboBoxField<IkeaProcessOrder> ikeaProcessOrderComboBoxField;
     private TextField orderNameField;
     private DoubleTextField marginField;
     private DoubleTextField sellMarginField;
@@ -82,6 +84,7 @@ public class Step1 extends BaseWizardStep<DesktopOrderInfo> {
         leftForm.setVisible(fileListField, false);
 
         clientComboBoxField = new ComboBoxField<>(I18n.UA.getString(I18nKeys.CLIENT));
+        clientComboBoxField.setAllowBlank(false);
         clientComboBoxField.setEditable(true);
         clientComboBoxField.setItemLabel(item -> item.getFirstName().concat(" ").concat(item.getLastName()));
         clientComboBoxField.setLoader(new AsyncFilterDataProvider<>(new FilterAsyncService<List<Profile>>() {
@@ -93,7 +96,7 @@ public class Step1 extends BaseWizardStep<DesktopOrderInfo> {
                         Map<String, String> map = new HashMap<>();
                         map.put("queryString", queryString);
 
-                        APIRequest apiRequest = HttpServiceUtil.get("/profiles/WEB/", map);
+                        APIRequest apiRequest = HttpServiceUtil.get("/profiles/DESKTOP/", map);
 
                         return apiRequest.getList(new TypeReference<List<Profile>>() {
                         });
@@ -113,16 +116,46 @@ public class Step1 extends BaseWizardStep<DesktopOrderInfo> {
 
             if (DesktopOrderInfo.OrderType.EXISTED.equals(orderType)) {
                 leftForm.setVisible(orderNameField, false);
+                leftForm.setVisible(ikeaProcessOrderComboBoxField, true);
+                ikeaProcessOrderComboBoxField.setAllowBlank(false);
                 orderNameField.setAllowBlank(true);
 
             } else if (DesktopOrderInfo.OrderType.NEW.equals(orderType)) {
                 leftForm.setVisible(orderNameField, true);
+                leftForm.setVisible(ikeaProcessOrderComboBoxField, false);
+                ikeaProcessOrderComboBoxField.setAllowBlank(true);
                 orderNameField.setAllowBlank(false);
             } else {
                 leftForm.setVisible(orderNameField, false);
+                leftForm.setVisible(ikeaProcessOrderComboBoxField, false);
                 orderNameField.setAllowBlank(true);
+                ikeaProcessOrderComboBoxField.setAllowBlank(true);
             }
         });
+
+        ikeaProcessOrderComboBoxField = new ComboBoxField<>(I18n.UA.getString(I18nKeys.ORDER_NAME));
+        ikeaProcessOrderComboBoxField.setAllowBlank(true);
+
+        ikeaProcessOrderComboBoxField.setEditable(true);
+        ikeaProcessOrderComboBoxField.setItemLabel(IkeaProcessOrder::getName);
+        ikeaProcessOrderComboBoxField.setLoader(new AsyncFilterDataProvider<>(new FilterAsyncService<List<IkeaProcessOrder>>() {
+            @Override
+            public Task<List<IkeaProcessOrder>> createTask(String queryString) {
+                return new Task<List<IkeaProcessOrder>>() {
+                    @Override
+                    protected List<IkeaProcessOrder> call() throws Exception {
+                        Map<String, String> map = new HashMap<>();
+                        map.put("queryString", queryString);
+
+                        APIRequest apiRequest = HttpServiceUtil.get("/ikea-process-order/", map);
+
+                        return apiRequest.getList(new TypeReference<List<IkeaProcessOrder>>() {
+                        });
+                    }
+                };
+            }
+        }));
+        leftForm.add(ikeaProcessOrderComboBoxField);
 
         leftForm.add(orderNameField = new TextField(null, I18n.UA.getString(I18nKeys.ORDER_NAME)));
         leftForm.setVisible(orderNameField, false);
@@ -197,6 +230,7 @@ public class Step1 extends BaseWizardStep<DesktopOrderInfo> {
         param.setUsers(usersField.getValues());
         param.setIkeaShops(ikeaShopView.getValues());
         param.setSellMargin(BigDecimal.valueOf(sellMarginField.getNumber()));
+        param.setIkeaProcessOrder(ikeaProcessOrderComboBoxField.getValue());
     }
 
     @Override

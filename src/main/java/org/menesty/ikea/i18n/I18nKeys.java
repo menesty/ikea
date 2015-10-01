@@ -49,4 +49,15 @@ public interface I18nKeys {
     String FILES = "files";
     String MARGIN_ORDER = "margin.order";
     String MARGIN_SELL = "margin.sell";
+    String NAME = "name";
+    String UPDATED_DATE = "updated.date";
+    String INFO = "info";
+    String CLIENTS_ORDER = "clients.order";
+    String GROUP_BY = "group.by";
+    String FILTER_BY = "filter.by";
+    String PRODUCT_GROUP = "product.group";
+    String CLEAR  = "clear";
+    String GROUP_NAME = "group.name";
+    String DIFF_AMOUNT = "amount.diff";
+    String TOTAL_AMOUNT ="amount.total";
 }

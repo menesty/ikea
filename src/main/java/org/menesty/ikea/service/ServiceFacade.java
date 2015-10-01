@@ -1,8 +1,8 @@
 package org.menesty.ikea.service;
 
 import org.menesty.ikea.ApplicationPreference;
+import org.menesty.ikea.lib.service.IkeaProductService;
 import org.menesty.ikea.service.xls.XlsExportService;
-import org.menesty.ikea.ui.pages.wizard.order.step.service.IkeaProductService;
 import org.menesty.ikea.util.ErrorConsole;
 
 import java.util.List;

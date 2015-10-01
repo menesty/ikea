@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -20,6 +22,8 @@ import java.util.stream.Collectors;
  * 20:15.
  */
 public class XlsParserOrder {
+    private static final Pattern ART_NUMBER_PATTERN = Pattern.compile("\\w{0,}\\d+");
+
     @SuppressWarnings("unchecked")
     public ParseResult parse(InputStream orderIs, InputStream configIs) {
         ParseResult result = new ParseResult();
@@ -48,7 +52,7 @@ public class XlsParserOrder {
                     .map(rawOrderItem -> {
                         RawItem rawItem = new RawItem();
 
-                        rawItem.setArtNumber(rawOrderItem.getArtNumber());
+                        rawItem.setArtNumber(getArtNumber(rawOrderItem.getArtNumber()));
                         rawItem.setCombo(rawOrderItem.getCombo() != null && rawOrderItem.getCombo().trim().toLowerCase().equals("K"));
                         rawItem.setComment(rawOrderItem.getComment());
                         rawItem.setCount(BigDecimal.valueOf(rawOrderItem.getCount()));
@@ -68,5 +72,14 @@ public class XlsParserOrder {
             result.setParseWarnings(Collections.singletonList(new ErrorMessage(I18n.UA.getString(I18nKeys.PARSING_FILE_EXCEPTION), e.getMessage())));
         }
         return result;
+    }
+
+    private String getArtNumber(String artNumber) {
+        Matcher m = ART_NUMBER_PATTERN.matcher(artNumber.replace(".", ""));
+
+        if (m.find())
+            return m.group().trim();
+
+        return "";
     }
 }
