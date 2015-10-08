@@ -1,11 +1,8 @@
 package org.menesty.ikea.ui.pages.ikea.order.component;
 
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import org.menesty.ikea.core.component.DialogSupport;
 import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.i18n.I18n;
 import org.menesty.ikea.i18n.I18nKeys;
@@ -16,11 +13,11 @@ import org.menesty.ikea.lib.dto.IkeaOrderItem;
 import org.menesty.ikea.lib.dto.ProductPriceMismatch;
 import org.menesty.ikea.ui.controls.TotalStatusPanel;
 import org.menesty.ikea.ui.controls.form.ComboBoxField;
+import org.menesty.ikea.ui.pages.ikea.order.dialog.export.IkeaSiteExportDialog;
 import org.menesty.ikea.util.ColumnUtil;
 import org.menesty.ikea.util.NumberUtil;
 import org.menesty.ikea.util.ToolTipUtil;
 
-import javax.tools.Tool;
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -50,13 +47,18 @@ public class RawOrderViewComponent extends BorderPane {
 
     private ComboBoxField<Profile> profileComboBoxField;
 
-    public RawOrderViewComponent() {
+    public RawOrderViewComponent(final DialogSupport dialogSupport) {
         VBox controlBox = new VBox();
         ToolBar actionToolBar = new ToolBar();
         {
             Button button = new Button(null, ImageFactory.createIkea32Icon());
             button.setTooltip(new Tooltip("Export CustomerOrder to IKEA"));
-            button.setOnAction(event -> onExportToIkea());
+            button.setOnAction(event -> {
+                IkeaSiteExportDialog dialog = getExportDialog(dialogSupport);
+                dialog.bind(data);
+                dialogSupport.showPopupDialog(dialog);
+
+            });
             actionToolBar.getItems().add(button);
         }
 
@@ -137,8 +139,14 @@ public class RawOrderViewComponent extends BorderPane {
         setBottom(statusPanel);
     }
 
-    private void onExportToIkea() {
+    public IkeaSiteExportDialog getExportDialog(DialogSupport dialogSupport) {
+        IkeaSiteExportDialog exportDialog = new IkeaSiteExportDialog(dialogSupport.getStage());
+        exportDialog.setDefaultAction(dialog -> {
+            dialog.setDefaultAction(null);
+            dialogSupport.hidePopupDialog();
+        });
 
+        return exportDialog;
     }
 
     private void filter() {
@@ -159,7 +167,7 @@ public class RawOrderViewComponent extends BorderPane {
         }
 
 
-        items = groupBy(items);
+        items = groupItem(items);
 
         BigDecimal total = items.stream().map(IkeaOrderItem::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
         statusPanel.setTotal(total);
@@ -181,7 +189,7 @@ public class RawOrderViewComponent extends BorderPane {
         tableView.getItems().addAll(items);
     }
 
-    private List<IkeaOrderItem> groupBy(List<IkeaOrderItem> allItems) {
+    public static List<IkeaOrderItem> groupItem(List<IkeaOrderItem> allItems) {
         Map<String, List<IkeaOrderItem>> map = allItems.stream().collect(Collectors.groupingBy(item -> item.getProduct().getArtNumber()));
 
         List<IkeaOrderItem> itemList = new ArrayList<>();

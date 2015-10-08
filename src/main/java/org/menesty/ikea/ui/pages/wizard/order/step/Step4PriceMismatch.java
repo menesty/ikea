@@ -1,37 +1,34 @@
 package org.menesty.ikea.ui.pages.wizard.order.step;
 
 import javafx.beans.property.SimpleStringProperty;
-import javafx.event.EventHandler;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.util.Callback;
+import javafx.scene.layout.StackPane;
 import org.menesty.ikea.core.component.DialogSupport;
 import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.i18n.I18n;
 import org.menesty.ikea.i18n.I18nKeys;
 import org.menesty.ikea.lib.dto.DesktopOrderInfo;
+import org.menesty.ikea.lib.dto.IkeaOrderItem;
 import org.menesty.ikea.lib.dto.OrderItemDetails;
 import org.menesty.ikea.lib.dto.ProductPriceMismatch;
-import org.menesty.ikea.processor.invoice.InvoiceItem;
-import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.service.ServiceFacade;
-import org.menesty.ikea.ui.controls.dialog.ProductDialog;
+import org.menesty.ikea.service.parser.RawItem;
+import org.menesty.ikea.ui.controls.pane.LoadingPane;
 import org.menesty.ikea.ui.controls.pane.wizard.BaseWizardStep;
 import org.menesty.ikea.ui.controls.table.component.BaseTableView;
 import org.menesty.ikea.ui.pages.wizard.order.step.service.AbstractExportAsyncService;
+import org.menesty.ikea.ui.pages.wizard.order.step.service.ProductInfoAsyncService;
+import org.menesty.ikea.ui.table.ArtNumberCell;
 import org.menesty.ikea.util.ColumnUtil;
 import org.menesty.ikea.util.FileChooserUtil;
 import org.menesty.ikea.util.ToolTipUtil;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -42,26 +39,57 @@ import java.util.List;
 public class Step4PriceMismatch extends BaseWizardStep<DesktopOrderInfo> {
     private TableView<ProductPriceMismatch> productPriceMismatchTableView;
     private BaseTableView<String> noAvailableTableView;
-    private AbstractExportAsyncService<List<ProductPriceMismatch>> xlsMismatchExportAsyncService;
-    private AbstractExportAsyncService<List<String>> xlsnoAvailableExportAsyncService;
+    private AbstractExportAsyncService<ProcessResult> xlsResultExportAsyncService;
+    private ProductInfoAsyncService productInfoAsyncService;
+    private DesktopOrderInfo desktopOrderInfo;
 
     public Step4PriceMismatch(DialogSupport dialogSupport) {
         HBox mainPane = new HBox();
         mainPane.setSpacing(8);
 
-        BorderPane priceMismatchPane = initMismatchPane(dialogSupport);
-        BorderPane notAvailablePanePane = initNotAvailablePane(dialogSupport);
+        BorderPane priceMismatchPane = initMismatchPane();
+        Node notAvailablePanePane = initNotAvailablePane();
 
         HBox.setHgrow(priceMismatchPane, Priority.ALWAYS);
         HBox.setHgrow(notAvailablePanePane, Priority.ALWAYS);
 
         mainPane.getChildren().addAll(priceMismatchPane, notAvailablePanePane);
 
-        setContent(mainPane);
+        xlsResultExportAsyncService = new AbstractExportAsyncService<ProcessResult>() {
+            @Override
+            protected void export(File file, ProcessResult param) {
+                ServiceFacade.getXlsExportService().exportProductPriceMismatchNotAvailable(file, param.getNotAvailable(), param.getProductPriceMismatches());
+            }
+        };
+
+        ToolBar toolBar = new ToolBar();
+
+        {
+            Button button = new Button(null, ImageFactory.createXlsExport32Icon());
+            button.setTooltip(ToolTipUtil.create(I18n.UA.getString(I18nKeys.XLS_EXPORT)));
+            button.setOnAction(event -> {
+                File selectedFile = FileChooserUtil.getXls().showSaveDialog(dialogSupport.getStage());
+
+                if (selectedFile != null) {
+                    xlsResultExportAsyncService.setFile(selectedFile);
+                    xlsResultExportAsyncService.setParam(new ProcessResult(productPriceMismatchTableView.getItems(), noAvailableTableView.getItems()));
+                    xlsResultExportAsyncService.restart();
+                }
+            });
+
+            toolBar.getItems().add(button);
+        }
+
+        BorderPane borderPanel = new BorderPane();
+        borderPanel.setTop(toolBar);
+
+        borderPanel.setCenter(mainPane);
+
+        setContent(borderPanel);
     }
 
-    private BorderPane initNotAvailablePane(DialogSupport dialogSupport) {
-        BorderPane mainPane = new BorderPane();
+    private StackPane initNotAvailablePane() {
+        StackPane stackPane = new StackPane();
         noAvailableTableView = new BaseTableView<>();
 
         {
@@ -75,78 +103,51 @@ public class Step4PriceMismatch extends BaseWizardStep<DesktopOrderInfo> {
                 return new SimpleStringProperty(param.getValue());
             });
 
-            column.setCellFactory(param -> new TableCell<String, String>() {
-                private Label numberLabel;
-                private HBox content;
-
-                @Override
-                protected void updateItem(String number, boolean empty) {
-                    super.updateItem(number, empty);
-                    if (empty) {
-                        setGraphic(null);
-                        setText(null);
-                    } else {
-                        if (numberLabel == null) {
-                            content = new HBox();
-                            content.setPrefWidth(Double.MAX_VALUE);
-                            numberLabel = new Label();
-
-                            ImageView imageView = ImageFactory.createWeb16Icon();
-                            HBox.setMargin(imageView, new Insets(0, 0, 0, 2));
-                            imageView.setOnMouseClicked(mouseEvent -> {
-                                String artNumber = getTableView().getItems().get(getIndex());
-                                ProductDialog.browse(artNumber);
-                            });
-
-                            Region space = new Region();
-                            HBox.setHgrow(space, Priority.ALWAYS);
-                            content.getChildren().addAll(numberLabel, space, imageView);
-                        }
-
-                        content.setMinWidth(getWidth() - getGraphicTextGap() * 2);
-                        setGraphic(content);
-                        numberLabel.setText(number);
-                    }
-                }
-
-            });
+            column.setCellFactory(ArtNumberCell::new);
             noAvailableTableView.getColumns().add(column);
         }
 
+        noAvailableTableView.setRowRenderListener((row, newValue) -> {
+            row.setContextMenu(null);
 
+            if (newValue != null) {
 
-        ToolBar toolBar = new ToolBar();
+                ContextMenu contextMenu = new ContextMenu();
 
-        {
-            Button button = new Button(null, ImageFactory.createXlsExport32Icon());
-            button.setTooltip(ToolTipUtil.create(I18n.UA.getString(I18nKeys.XLS_EXPORT)));
-            button.setOnAction(event -> {
-                File selectedFile = FileChooserUtil.getXls().showSaveDialog(dialogSupport.getStage());
-
-                if (selectedFile != null) {
-                    xlsnoAvailableExportAsyncService.setFile(selectedFile);
-                    xlsnoAvailableExportAsyncService.setParam(noAvailableTableView.getItems());
-                    xlsnoAvailableExportAsyncService.reset();
+                {
+                    MenuItem menuItem = new MenuItem(I18n.UA.getString(I18nKeys.PRODUCT_FETCH), ImageFactory.createFetch16Icon());
+                    menuItem.setOnAction(actionEvent -> reloadProduct(row.getItem()));
+                    contextMenu.getItems().add(menuItem);
                 }
-            });
 
-            toolBar.getItems().add(button);
-        }
-
-        mainPane.setCenter(noAvailableTableView);
-        mainPane.setTop(toolBar);
-
-        xlsnoAvailableExportAsyncService = new AbstractExportAsyncService<List<String>>() {
-            @Override
-            protected void export(File file, List<String> param) {
-                ServiceFacade.getXlsExportService().exportNotAvailable(file, param);
+                row.setContextMenu(contextMenu);
             }
-        };
+        });
 
-        return mainPane;
+        LoadingPane noAvailableLoadingPane = new LoadingPane();
+
+        productInfoAsyncService = new ProductInfoAsyncService();
+        productInfoAsyncService.setOnSucceededListener(value -> {
+            if (!value.getIkeaOrderItems().isEmpty()) {
+                IkeaOrderItem item = value.getIkeaOrderItems().get(0);
+                noAvailableTableView.getItems().remove(item.getProduct().getArtNumber());
+                desktopOrderInfo.getOrderItemDetails().getIkeaOrderItems().add(item);
+            }
+        });
+        noAvailableLoadingPane.bindTask(productInfoAsyncService);
+
+
+        stackPane.getChildren().addAll(noAvailableTableView, noAvailableLoadingPane);
+
+        return stackPane;
     }
 
-    private BorderPane initMismatchPane(DialogSupport dialogSupport) {
+    private void reloadProduct(String artNumber) {
+        productInfoAsyncService.setRawItems(Collections.singletonList(new RawItem(artNumber)));
+        productInfoAsyncService.restart();
+    }
+
+    private BorderPane initMismatchPane() {
         BorderPane mainPane = new BorderPane();
 
         productPriceMismatchTableView = new TableView<>();
@@ -154,14 +155,15 @@ public class Step4PriceMismatch extends BaseWizardStep<DesktopOrderInfo> {
         {
             TableColumn<ProductPriceMismatch, String> column = new TableColumn<>(I18n.UA.getString(I18nKeys.ART_NUMBER));
             column.setMinWidth(170);
-            column.setCellValueFactory(ColumnUtil.<ProductPriceMismatch, String>column("artNumber"));
+            column.setCellValueFactory(ColumnUtil.column("artNumber"));
+            column.setCellFactory(ArtNumberCell::new);
 
             productPriceMismatchTableView.getColumns().add(column);
         }
 
         {
             TableColumn<ProductPriceMismatch, Number> column = new TableColumn<>(I18n.UA.getString(I18nKeys.PRICE));
-            column.setCellValueFactory(ColumnUtil.<ProductPriceMismatch, Number>column("orderPrice"));
+            column.setCellValueFactory(ColumnUtil.column("orderPrice"));
             column.setMinWidth(100);
 
             productPriceMismatchTableView.getColumns().add(column);
@@ -170,38 +172,14 @@ public class Step4PriceMismatch extends BaseWizardStep<DesktopOrderInfo> {
 
         {
             TableColumn<ProductPriceMismatch, Number> column = new TableColumn<>(I18n.UA.getString(I18nKeys.SITE_PRICE));
-            column.setCellValueFactory(ColumnUtil.<ProductPriceMismatch, Number>column("sitePrice"));
+            column.setCellValueFactory(ColumnUtil.column("sitePrice"));
             column.setMinWidth(100);
 
             productPriceMismatchTableView.getColumns().add(column);
         }
 
-        ToolBar toolBar = new ToolBar();
-
-        {
-            Button button = new Button(null, ImageFactory.createXlsExport32Icon());
-            button.setTooltip(ToolTipUtil.create(I18n.UA.getString(I18nKeys.XLS_EXPORT)));
-            button.setOnAction(event -> {
-                File selectedFile = FileChooserUtil.getXls().showSaveDialog(dialogSupport.getStage());
-
-                if (selectedFile != null) {
-                    xlsMismatchExportAsyncService.setFile(selectedFile);
-                    xlsMismatchExportAsyncService.setParam(productPriceMismatchTableView.getItems());
-                    xlsMismatchExportAsyncService.reset();
-                }
-            });
-
-            toolBar.getItems().add(button);
-        }
-
-        mainPane.setTop(toolBar);
         mainPane.setCenter(productPriceMismatchTableView);
-        xlsMismatchExportAsyncService = new AbstractExportAsyncService<List<ProductPriceMismatch>>() {
-            @Override
-            protected void export(File file, List<ProductPriceMismatch> param) {
-                ServiceFacade.getXlsExportService().exportProductPriceMismatch(file, param);
-            }
-        };
+
 
         return mainPane;
     }
@@ -224,12 +202,29 @@ public class Step4PriceMismatch extends BaseWizardStep<DesktopOrderInfo> {
 
     @Override
     public void onActive(DesktopOrderInfo param) {
+        this.desktopOrderInfo = param;
         productPriceMismatchTableView.getItems().clear();
         productPriceMismatchTableView.getItems().addAll(param.getOrderItemDetails().getProductPriceMismatches());
 
         noAvailableTableView.getItems().clear();
         noAvailableTableView.getItems().addAll(param.getOrderItemDetails().getNotAvailable());
     }
+
+    class ProcessResult {
+        private final List<ProductPriceMismatch> productPriceMismatches;
+        private final List<String> notAvailable;
+
+        public ProcessResult(List<ProductPriceMismatch> productPriceMismatches, List<String> notAvailable) {
+            this.productPriceMismatches = productPriceMismatches;
+            this.notAvailable = notAvailable;
+        }
+
+        public List<ProductPriceMismatch> getProductPriceMismatches() {
+            return productPriceMismatches;
+        }
+
+        public List<String> getNotAvailable() {
+            return notAvailable;
+        }
+    }
 }
-
-

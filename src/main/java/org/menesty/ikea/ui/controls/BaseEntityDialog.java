@@ -2,6 +2,7 @@ package org.menesty.ikea.ui.controls;
 
 import javafx.stage.Stage;
 import org.menesty.ikea.ui.controls.dialog.BaseDialog;
+import org.menesty.ikea.ui.controls.form.FormPane;
 import org.menesty.ikea.ui.pages.EntityDialogCallback;
 
 /**

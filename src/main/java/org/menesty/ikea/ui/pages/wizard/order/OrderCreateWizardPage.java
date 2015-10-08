@@ -3,6 +3,7 @@ package org.menesty.ikea.ui.pages.wizard.order;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Task;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.layout.StackPane;
 import org.menesty.ikea.lib.domain.order.IkeaProcessOrder;
@@ -48,6 +49,8 @@ public class OrderCreateWizardPage extends BasePage {
 
         StackPane mainPane = new StackPane();
         mainPane.getChildren().add(wizardPanel);
+        mainPane.setPadding(new Insets(0, 0, 5, 0));
+        mainPane.getStyleClass().add("wizard-pane");
 
         return wrap(mainPane);
     }

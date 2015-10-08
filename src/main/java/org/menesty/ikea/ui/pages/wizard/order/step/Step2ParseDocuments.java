@@ -166,7 +166,6 @@ public class Step2ParseDocuments extends BaseWizardStep<DesktopOrderInfo> {
             List<FileParseStatistic> statistics = value.stream().map(this::statistic).collect(Collectors.toList());
 
             processedFileTableView.getItems().addAll(statistics);
-
             syncProductsWithIkea(value);
         });
 
@@ -204,14 +203,12 @@ public class Step2ParseDocuments extends BaseWizardStep<DesktopOrderInfo> {
                     reduceMap.put(rawItem.getArtNumber(), rawItem);
                 } else {
                     current.setCount(current.getCount().add(rawItem.getCount()));
-                    current.setPrice(current.getPrice().add(rawItem.getPrice()));
                 }
             });
         });
 
         return new ArrayList<>(reduceMap.values());
     }
-
 
     class XlsParseService extends AbstractParseOrderService {
         private InputStream configuration;
@@ -242,11 +239,12 @@ public class Step2ParseDocuments extends BaseWizardStep<DesktopOrderInfo> {
     }
 
     private FileParseStatistic statistic(ParseResult parseResult) {
+
         FileParseStatistic fileParseStatistic = new FileParseStatistic(parseResult);
 
         BigDecimal sum = parseResult.getRawOrderItems()
                 .stream()
-                .map(rawItem -> rawItem.getCount().multiply(rawItem.getPrice()))
+                .map(RawItem::getTotalPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         fileParseStatistic.setSum(sum);
 

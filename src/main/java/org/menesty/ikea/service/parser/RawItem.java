@@ -14,8 +14,20 @@ public class RawItem {
     private String comment;
     private BigDecimal price;
 
+    public RawItem() {
+
+    }
+
+    public RawItem(String artNumber) {
+        this.artNumber = artNumber;
+    }
+
     public BigDecimal getCount() {
         return count;
+    }
+
+    public BigDecimal getTotalPrice() {
+        return count.multiply(price).setScale(2, BigDecimal.ROUND_HALF_UP);
     }
 
     public void setCount(BigDecimal count) {

@@ -96,28 +96,21 @@ public abstract class InvoicePdfViewComponent extends BorderPane {
         {
             Button button = new Button(null, ImageFactory.createAdd32Icon());
             button.setTooltip(new Tooltip("Create Invoice"));
-            button.setOnAction(new EventHandler<ActionEvent>() {
-                @Override
-                public void handle(ActionEvent actionEvent) {
-                    showAddEditDialog(dialogSupport, new InvoicePdf(getCustomerOrder()));
-                }
-            });
+            button.setOnAction(actionEvent -> showAddEditDialog(dialogSupport, new InvoicePdf(getCustomerOrder())));
 
             pdfToolBar.getItems().add(button);
         }
 
         Button uploadInvoice = new Button(null, ImageFactory.createPdf32Icon());
         uploadInvoice.setTooltip(new Tooltip("Upload Invoice PDF"));
-        uploadInvoice.setOnAction(new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent event) {
-                FileChooser fileChooser = FileChooserUtil.getPdf();
+        uploadInvoice.setOnAction(event -> {
+            FileChooser fileChooser = FileChooserUtil.getPdf();
 
-                List<File> selectedFile = fileChooser.showOpenMultipleDialog(dialogSupport.getStage());
+            List<File> selectedFile = fileChooser.showOpenMultipleDialog(dialogSupport.getStage());
 
-                if (selectedFile != null && selectedFile.size() > 0)
-                    onImport(filter(selectedFile));
+            if (selectedFile != null && selectedFile.size() > 0)
+                onImport(filter(selectedFile));
 
-            }
         });
 
         deleteBtn = new Button(null, ImageFactory.createDelete32Icon());

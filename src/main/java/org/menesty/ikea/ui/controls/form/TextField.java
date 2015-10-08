@@ -3,7 +3,6 @@ package org.menesty.ikea.ui.controls.form;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.util.Duration;
@@ -29,8 +28,8 @@ public class TextField extends javafx.scene.control.TextField implements Field {
         super();
     }
 
-    public TextField(String s, String label, boolean allowBlank) {
-        super(s);
+    public TextField(String value, String label, boolean allowBlank) {
+        super(value);
         this.label = label;
         this.allowBlank = allowBlank;
     }
@@ -60,20 +59,19 @@ public class TextField extends javafx.scene.control.TextField implements Field {
     @Override
     public boolean isValid() {
         boolean result = true;
-        getStyleClass().removeAll("validation-succeed", "validation-error");
 
         if (!allowBlank) {
-            setValid(result = StringUtils.isNotBlank(getText()));
-            getStyleClass().remove("white-border");
+            result = StringUtils.isNotBlank(getText());
         }
 
         if (validationPattern != null && getText() != null) {
-            setValid(result = validationPattern.matcher(getText()).find());
+            validationPattern.matcher(getText()).find();
         }
 
         return result;
     }
 
+    @Override
     public void setValid(boolean valid) {
         getStyleClass().removeAll("validation-succeed", "validation-error");
         getStyleClass().remove("white-border");
@@ -112,7 +110,7 @@ public class TextField extends javafx.scene.control.TextField implements Field {
         setText(null);
 
         getStyleClass().removeAll("validation-succeed", "validation-error");
-        getStyleClass().add("white-border");
+        getStyleClass().addAll("text-input", "text-field");
     }
 
     public void setValidationPattern(Pattern validationPattern) {

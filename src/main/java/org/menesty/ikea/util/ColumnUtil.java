@@ -7,6 +7,7 @@ import javafx.scene.control.TableColumn;
 import javafx.util.Callback;
 import org.menesty.ikea.ui.controls.PathProperty;
 
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -30,6 +31,7 @@ public class ColumnUtil {
     public static <Entity> Callback<TableColumn.CellDataFeatures<Entity, String>, ObservableValue<String>> number(final String propertyName) {
         return item -> {
             Number number = new PathProperty<Entity, Number>(item.getValue(), propertyName).get();
+
             return new SimpleStringProperty(NumberUtil.toString(number.doubleValue()));
         };
     }

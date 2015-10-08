@@ -17,6 +17,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -25,32 +27,29 @@ import java.util.List;
  * 20:25.
  */
 public class XlsExportService {
-    private static final String PRODUCT_PRICE_MISMATCH_TEMPLATE = "mismatch";
-    private static final String PRODUCT_NOT_AVAILABLE_TEMPLATE = "not-available";
+    private static final String PRODUCT_PRICE_MISMATCH_NOT_AVAILABLE_TEMPLATE = "mismatch_not_available";
 
-    public void exportNotAvailable(File targetFile, List<String> items) {
+    public void exportProductPriceMismatchNotAvailable(File targetFile, List<String> items, List<ProductPriceMismatch> mismatches) {
         Context context = new Context();
         context.putVar("items", items);
+        context.putVar("mismatches", mismatches);
 
-        transformSingleSheet(targetFile, PRODUCT_NOT_AVAILABLE_TEMPLATE, context, "Template!A1");
+        transformSingleSheet(targetFile, PRODUCT_PRICE_MISMATCH_NOT_AVAILABLE_TEMPLATE, context, Arrays.asList("NotExist!A1", "Mismatch!A1"));
     }
 
-    public void exportProductPriceMismatch(File targetFile, List<ProductPriceMismatch> items) {
-        Context context = new Context();
-        context.putVar("items", items);
-
-        transformSingleSheet(targetFile, PRODUCT_PRICE_MISMATCH_TEMPLATE, context, "Template!A1");
-    }
-
-    private void transformSingleSheet(File targetFile, String templateName, Context context, String cellRef) {
+    private void transformSingleSheet(File targetFile, String templateName, Context context, List<String> cellRef) {
         try (InputStream is = getTemplate(templateName)) {
             try (OutputStream os = getOutputStream(targetFile)) {
                 Transformer transformer = TransformerFactory.createTransformer(is, os);
                 try (InputStream configInputStream = getTemplateConfig(templateName)) {
                     AreaBuilder areaBuilder = new XmlAreaBuilder(configInputStream, transformer);
                     List<Area> xlsAreaList = areaBuilder.build();
-                    Area xlsArea = xlsAreaList.get(0);
-                    xlsArea.applyAt(new CellRef(cellRef), context);
+
+                    for (int i = 0; i < xlsAreaList.size(); i++) {
+                        Area xlsArea = xlsAreaList.get(i);
+                        xlsArea.applyAt(new CellRef(cellRef.get(i)), context);
+                    }
+
                     transformer.write();
                 }
             }

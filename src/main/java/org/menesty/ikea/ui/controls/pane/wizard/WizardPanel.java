@@ -1,8 +1,8 @@
 package org.menesty.ikea.ui.controls.pane.wizard;
 
 import javafx.scene.control.Button;
-import javafx.scene.control.ToolBar;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import org.menesty.ikea.i18n.I18n;
 import org.menesty.ikea.i18n.I18nKeys;
 
@@ -17,6 +17,10 @@ import java.util.Optional;
  * 02:58.
  */
 public class WizardPanel<T> extends BorderPane {
+    public interface OnChangeAction<T> {
+        void onNext(BaseWizardStep<T> step);
+    }
+
     public interface OnFinishListener<T> {
         void onFinish(T param);
     }
@@ -29,6 +33,7 @@ public class WizardPanel<T> extends BorderPane {
         void onPrevious();
     }
 
+    private OnChangeAction<T> onChangeAction;
     private List<BaseWizardStep<T>> steps;
     private T wizardParameter;
     private BaseWizardStep<T> activeStep;
@@ -44,6 +49,10 @@ public class WizardPanel<T> extends BorderPane {
                 if (activeStep.isValid()) {
                     activeStep.collect(wizardParameter);
                     setStep(getNext().get());
+
+                    if (onChangeAction != null) {
+                        onChangeAction.onNext(activeStep);
+                    }
                 }
             }
 
@@ -128,6 +137,10 @@ public class WizardPanel<T> extends BorderPane {
         return subList.stream().filter(tBaseWizardStep -> !tBaseWizardStep.canSkip(wizardParameter)).findFirst();
     }
 
+    public void setOnChangeAction(OnChangeAction<T> onChangeAction) {
+        this.onChangeAction = onChangeAction;
+    }
+
     private void updateControlButtons() {
         int index = steps.indexOf(activeStep);
 
@@ -149,15 +162,20 @@ public class WizardPanel<T> extends BorderPane {
             }
         }
     }
+
+    public void addButton(Button button) {
+        wizardButtonBar.getChildren().add(button);
+    }
 }
 
-class WizardButtonBar extends ToolBar {
+class WizardButtonBar extends HBox {
 
     private Button next;
     private Button finish;
     private Button previous;
 
     public WizardButtonBar(WizardPanel.ActionButton actionButton) {
+        super(3);
         next = new Button(I18n.UA.getString(I18nKeys.NEXT));
         next.setOnAction(event -> actionButton.onNext());
 
@@ -167,7 +185,7 @@ class WizardButtonBar extends ToolBar {
         previous = new Button(I18n.UA.getString(I18nKeys.PREVIOUS));
         previous.setOnAction(event -> actionButton.onPrevious());
 
-        getItems().addAll(previous, next, finish);
+        getChildren().addAll(previous, next, finish);
     }
 
     public WizardButtonBar showFinish() {

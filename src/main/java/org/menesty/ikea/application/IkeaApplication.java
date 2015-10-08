@@ -50,6 +50,9 @@ public class IkeaApplication extends Application implements DialogSupport {
     @Override
     public void start(Stage stage) throws Exception {
         this.stage = stage;
+        Thread.currentThread().setUncaughtExceptionHandler((thread, throwable) -> {
+            ServiceFacade.getErrorConsole().add(throwable);
+        });
 
         ApplicationWindow rootPane = new ApplicationWindow(stage, 1020, 650);
 

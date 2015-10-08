@@ -12,6 +12,7 @@ import org.menesty.ikea.ui.controls.BaseEntityDialog;
 import org.menesty.ikea.ui.controls.form.FormPane;
 import org.menesty.ikea.ui.controls.form.NumberTextField;
 import org.menesty.ikea.ui.controls.form.ProductIdField;
+import org.menesty.ikea.ui.controls.form.TextField;
 
 import java.math.BigDecimal;
 
@@ -40,7 +41,7 @@ public class AddIkeaProductDialog extends BaseEntityDialog<IkeaOrderItem> {
     @Override
     protected IkeaOrderItem collect() {
         return new IkeaOrderItem(ikeaProductAddForm.getIkeaProduct(), ikeaProductAddForm.getCount(),
-                ikeaProductAddForm.getIkeaProduct().getPrice());
+                ikeaProductAddForm.getIkeaProduct().getPrice(), ikeaProductAddForm.getComment());
     }
 
     @Override
@@ -64,13 +65,14 @@ public class AddIkeaProductDialog extends BaseEntityDialog<IkeaOrderItem> {
         private NumberTextField countField;
         private IkeaProduct ikeaProduct;
         private BooleanProperty validProperty;
-
+        private TextField commentField;
 
         public IkeaProductAddForm() {
             validProperty = new SimpleBooleanProperty();
 
             add(productIdField = new ProductIdField(I18n.UA.getString(I18nKeys.ART_NUMBER), false));
             add(countField = new NumberTextField(I18n.UA.getString(I18nKeys.COUNT), false));
+            add(commentField = new TextField(null, I18n.UA.getString(I18nKeys.COMMENT)));
 
             productIdField.validProperty().addListener((observable, oldValue, newValue) -> {
                 if (newValue) {
@@ -99,6 +101,10 @@ public class AddIkeaProductDialog extends BaseEntityDialog<IkeaOrderItem> {
 
         public BigDecimal getCount() {
             return countField.getNumber();
+        }
+
+        public String getComment() {
+            return commentField.getText();
         }
 
         public BooleanProperty validProperty() {

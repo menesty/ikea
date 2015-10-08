@@ -1,10 +1,12 @@
 package org.menesty.ikea.pdf;
 
+/*
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.BaseFont;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
+*/
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -17,7 +19,7 @@ import java.io.IOException;
 public class PdfTest {
     public static String polish = "Ą Ć Ę Ł Ń Ó Ś Ź Ż ą ć ę ł ń ó ś ź ż";
 
-    public static void main(String... arg) throws IOException, DocumentException {
+   /* public static void main(String... arg) throws IOException, DocumentException {
         new PdfTest().createPdf("test.pdf");
     }
 
@@ -40,11 +42,11 @@ public class PdfTest {
         document.close();
     }
 
-    /**
+    *//**
      * Creates our first table
      *
      * @return our first table
-     */
+     *//*
     public static PdfPTable createFirstTable() throws IOException, DocumentException {
         BaseFont courier = BaseFont.createFont("/Users/andrewhome/development/workspace/ikea/src/test/java/org/menesty/ikea/pdf/Polish-European Courier.TTF", BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
         Font font = new Font(courier, 12, Font.NORMAL);
@@ -67,6 +69,6 @@ public class PdfTest {
         table.addCell("ł row 2; cell 1 ó ą ę ł");
         table.addCell("ł row 2; cell 2 ó ą ę ł");
         return table;
-    }
+    }*/
 
 }

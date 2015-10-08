@@ -750,8 +750,12 @@
 }
 
 .application-pane {
-    -fx-background-color: black, white, linear-gradient(rgb(250, 250, 250), rgb(230, 230, 230));
+
     -fx-padding: 15;
+}
+
+.wizard-pane {
+    -fx-background-color: black, white, linear-gradient(rgb(250, 250, 250), rgb(230, 230, 230));
 }
 
 .align-right {

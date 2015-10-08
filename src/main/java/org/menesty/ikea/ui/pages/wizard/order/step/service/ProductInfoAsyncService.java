@@ -46,10 +46,10 @@ public class ProductInfoAsyncService extends AbstractAsyncService<OrderItemDetai
                             });
 
                             IkeaProduct product = ikeaProductService.getProduct(rawItem.getArtNumber(), throwable -> ServiceFacade.getErrorConsole().add(throwable));
-                            result.add(new IkeaOrderItem(product, rawItem.getCount(), product.getPrice()));
+                            result.add(new IkeaOrderItem(product, rawItem.getCount(), product.getPrice(), rawItem.getComment()));
 
                             if (!product.getPrice().equals(rawItem.getPrice())) {
-                                new ProductPriceMismatch(rawItem.getArtNumber(), rawItem.getPrice(), product.getPrice(), rawItem.getCount());
+                                result.add(new ProductPriceMismatch(rawItem.getArtNumber(), rawItem.getPrice(), product.getPrice(), rawItem.getCount()));
                             }
 
                         } catch (Exception e) {

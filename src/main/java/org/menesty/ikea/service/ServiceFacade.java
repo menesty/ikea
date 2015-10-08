@@ -2,10 +2,10 @@ package org.menesty.ikea.service;
 
 import org.menesty.ikea.ApplicationPreference;
 import org.menesty.ikea.lib.service.IkeaProductService;
+import org.menesty.ikea.lib.service.parse.pdf.invoice.InvoicePdfParserService;
 import org.menesty.ikea.service.xls.XlsExportService;
+import org.menesty.ikea.ui.pages.ikea.order.export.IkeaExportService;
 import org.menesty.ikea.util.ErrorConsole;
-
-import java.util.List;
 
 public class ServiceFacade {
 
@@ -39,6 +39,10 @@ public class ServiceFacade {
 
     private final static XlsExportService xlsExportService;
 
+    private final static IkeaExportService ikeaExportService;
+
+    private final static InvoicePdfParserService invoicePdfParserService;
+
     static {
         orderService = new OrderService();
         invoiceItemService = new InvoiceItemService();
@@ -56,6 +60,8 @@ public class ServiceFacade {
         errorConsole = new ErrorConsole();
         ikeaProductService = new IkeaProductService();
         xlsExportService = new XlsExportService();
+        ikeaExportService = new IkeaExportService();
+        invoicePdfParserService = new InvoicePdfParserService();
     }
 
     private static IkeaUserService ikeaUserService;
@@ -122,6 +128,14 @@ public class ServiceFacade {
 
     public static XlsExportService getXlsExportService() {
         return xlsExportService;
+    }
+
+    public static IkeaExportService getIkeaExportService() {
+        return ikeaExportService;
+    }
+
+    public static InvoicePdfParserService getInvoicePdfParserService() {
+        return invoicePdfParserService;
     }
 }
 

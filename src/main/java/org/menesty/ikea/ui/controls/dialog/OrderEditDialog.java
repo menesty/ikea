@@ -49,14 +49,11 @@ public class OrderEditDialog extends BaseEntityDialog<CustomerOrder> {
         form.setShops(entityValue.getOrderShops());
         form.setLackUser(entityValue.getLackUser());
 
-        DatabaseService.runInTransaction(new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                form.setChoiceUsers(ServiceFacade.getUserService().load(false));
-                form.setChoiceShops(ServiceFacade.getIkeaShopService().load());
-                form.setLackUsers(ServiceFacade.getUserService().load(false));
-                return null;
-            }
+        DatabaseService.runInTransaction(() -> {
+            form.setChoiceUsers(ServiceFacade.getUserService().load(false));
+            form.setChoiceShops(ServiceFacade.getIkeaShopService().load());
+            form.setLackUsers(ServiceFacade.getUserService().load(false));
+            return null;
         });
     }
 

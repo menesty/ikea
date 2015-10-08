@@ -32,7 +32,7 @@ public abstract class AbstractAsyncService<T> extends Service<T> implements Asyn
                 try {
                     listener.onSucceeded((T) workerStateEvent.getSource().getValue());
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    ServiceFacade.getErrorConsole().add(e);
                 }
             }));
 

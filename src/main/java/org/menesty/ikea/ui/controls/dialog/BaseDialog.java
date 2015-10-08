@@ -1,6 +1,7 @@
 package org.menesty.ikea.ui.controls.dialog;
 
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -57,7 +58,7 @@ public class BaseDialog extends StackPane {
         if (showTitle)
             addRow(title = createTitle(null));
         // block mouse clicks
-        setOnMouseClicked(t -> t.consume());
+        setOnMouseClicked(Event::consume);
 
         content.setSpacing(10);
         loadingPane = new LoadingPane();
@@ -74,24 +75,26 @@ public class BaseDialog extends StackPane {
         });
         cancelBtn.setMinWidth(74);
         cancelBtn.setPrefWidth(74);
-        HBox.setMargin(cancelBtn, new Insets(0, 8, 0, 0));
         okBtn = new Button("Ok");
         okBtn.setId("saveButton");
         okBtn.setDefaultButton(true);
 
-        okBtn.setOnAction(actionEvent -> {
-            if (defaultAction != null)
-                defaultAction.defaultAction(BaseDialog.this);
-
-            onOk();
-        });
+        okBtn.setOnAction(actionEvent -> onActionOk());
         okBtn.setMinWidth(74);
         okBtn.setPrefWidth(74);
 
-        bottomBar = new HBox(0);
+        bottomBar = new HBox(4);
         bottomBar.setAlignment(Pos.BASELINE_RIGHT);
         bottomBar.getChildren().addAll(cancelBtn, okBtn);
         VBox.setMargin(bottomBar, new Insets(20, 5, 5, 5));
+    }
+
+    protected void onActionOk() {
+        if (defaultAction != null) {
+            defaultAction.defaultAction(BaseDialog.this);
+        }
+
+        onOk();
     }
 
     public Stage getStage() {

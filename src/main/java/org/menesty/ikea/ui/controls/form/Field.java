@@ -11,4 +11,6 @@ public interface Field {
     void reset();
 
     String getLabel();
+
+    void setValid(boolean valid);
 }

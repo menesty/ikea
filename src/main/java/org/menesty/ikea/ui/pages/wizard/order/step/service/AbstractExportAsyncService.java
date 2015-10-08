@@ -32,6 +32,7 @@ public abstract class AbstractExportAsyncService<T> extends AbstractAsyncService
         return new Task<Void>() {
             @Override
             protected Void call() throws Exception {
+                export(_file, _param);
                 return null;
             }
         };

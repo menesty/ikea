@@ -2,20 +2,14 @@ package org.menesty.ikea.ui.pages.wizard.order.step;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import javafx.concurrent.Task;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 import javafx.stage.Stage;
 import org.menesty.ikea.i18n.I18n;
 import org.menesty.ikea.i18n.I18nKeys;
-import org.menesty.ikea.lib.domain.IkeaShop;
 import org.menesty.ikea.lib.domain.Profile;
 import org.menesty.ikea.lib.domain.order.IkeaProcessOrder;
 import org.menesty.ikea.lib.dto.DesktopOrderInfo;
-import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.ui.controls.form.*;
 import org.menesty.ikea.ui.controls.form.provider.AsyncFilterDataProvider;
-import org.menesty.ikea.ui.controls.form.provider.CachedAsyncDataProvider;
-import org.menesty.ikea.ui.controls.form.provider.DataProvider;
 import org.menesty.ikea.ui.controls.form.provider.FilterAsyncService;
 import org.menesty.ikea.ui.controls.pane.wizard.BaseWizardStep;
 import org.menesty.ikea.util.APIRequest;
@@ -42,19 +36,9 @@ public class Step1 extends BaseWizardStep<DesktopOrderInfo> {
     private DoubleTextField marginField;
     private DoubleTextField sellMarginField;
 
-
-    private ListViewField usersField;
-    private ListEditField<IkeaShop, IkeaShop> ikeaShopView;
-
     private FormPane leftForm;
-    private FormPane rightForm;
-
-    private CachedAsyncDataProvider<IkeaShop> ikeaListCachedAsyncDataProvider;
 
     public Step1(Stage stage) {
-        HBox formPane = new HBox();
-
-
         leftForm = new FormPane();
         leftForm.setLabelWidth(120);
 
@@ -167,51 +151,13 @@ public class Step1 extends BaseWizardStep<DesktopOrderInfo> {
         sellMarginField.setAllowBlank(false);
 
         /******************RIGHT FORM******************/
-        rightForm = new FormPane();
-        rightForm.setLabelWidth(100);
 
-        rightForm.add(usersField = new ListViewField(I18n.UA.getString(I18nKeys.USERS), true));
-        rightForm.add(ikeaShopView = new ListEditField<>(I18n.UA.getString(I18nKeys.SHOPS), true));
-        ikeaShopView.setItemLabel(IkeaShop::getName);
-
-        ikeaListCachedAsyncDataProvider = new CachedAsyncDataProvider<>(new AbstractAsyncService<List<IkeaShop>>() {
-            @Override
-            protected Task<List<IkeaShop>> createTask() {
-                return new Task<List<IkeaShop>>() {
-                    @Override
-                    protected List<IkeaShop> call() throws Exception {
-                        APIRequest apiRequest = HttpServiceUtil.get("/ikea-shops");
-
-                        return apiRequest.getList(new TypeReference<List<IkeaShop>>() {
-                        });
-                    }
-                };
-            }
-        });
-        ikeaShopView.getLoadingPane().bindTask(ikeaListCachedAsyncDataProvider.getService());
-        ikeaListCachedAsyncDataProvider.getData(new DataProvider.CallBack<IkeaShop>() {
-            @Override
-            public void onData(List<IkeaShop> data) {
-                ikeaShopView.setChoiceList(data);
-            }
-
-            @Override
-            public void onError() {
-
-            }
-        });
-
-        HBox.setHgrow(leftForm, Priority.ALWAYS);
-        HBox.setHgrow(rightForm, Priority.ALWAYS);
-
-        formPane.getChildren().addAll(leftForm, rightForm);
-
-        setContent(formPane);
+        setContent(leftForm);
     }
 
     @Override
     public boolean isValid() {
-        return leftForm.isValid() & rightForm.isValid();
+        return leftForm.isValid();
     }
 
     @Override
@@ -227,8 +173,6 @@ public class Step1 extends BaseWizardStep<DesktopOrderInfo> {
         param.setOrderMargin(BigDecimal.valueOf(marginField.getNumber()));
         param.setOrderType(orderTypeComboBoxField.getValue());
         param.setOrderName(orderNameField.getText());
-        param.setUsers(usersField.getValues());
-        param.setIkeaShops(ikeaShopView.getValues());
         param.setSellMargin(BigDecimal.valueOf(sellMarginField.getNumber()));
         param.setIkeaProcessOrder(ikeaProcessOrderComboBoxField.getValue());
     }
@@ -241,8 +185,6 @@ public class Step1 extends BaseWizardStep<DesktopOrderInfo> {
         marginField.setNumber(param.getOrderMargin().doubleValue());
         orderTypeComboBoxField.setValue(param.getOrderType());
         orderNameField.setText(param.getOrderName());
-        usersField.setValue(param.getUsers());
-        ikeaShopView.setValue(param.getIkeaShops());
         sellMarginField.setNumber(param.getSellMargin().doubleValue());
     }
 }

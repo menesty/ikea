@@ -3,10 +3,8 @@ package org.menesty.ikea.ui.controls.form;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import org.menesty.ikea.factory.ImageFactory;
@@ -96,6 +94,11 @@ public class ProductIdField extends HBox implements Field {
     @Override
     public String getLabel() {
         return productId.getLabel();
+    }
+
+    @Override
+    public void setValid(boolean valid) {
+        productId.setValid(valid);
     }
 
     public BooleanProperty validProperty() {

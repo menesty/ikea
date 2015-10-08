@@ -12,12 +12,14 @@ import org.menesty.ikea.lib.domain.product.Product;
 import org.menesty.ikea.lib.dto.DesktopOrderInfo;
 import org.menesty.ikea.lib.dto.IkeaOrderItem;
 import org.menesty.ikea.lib.dto.OrderItemDetails;
+import org.menesty.ikea.ui.controls.TotalStatusPanel;
 import org.menesty.ikea.ui.controls.pane.wizard.BaseWizardStep;
 import org.menesty.ikea.ui.controls.table.component.BaseTableView;
 import org.menesty.ikea.ui.pages.EntityDialogCallback;
 import org.menesty.ikea.ui.pages.wizard.order.step.dialog.AddIkeaProductDialog;
 import org.menesty.ikea.util.ColumnUtil;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 /**
@@ -29,6 +31,7 @@ public class Step3OrderPreview extends BaseWizardStep<DesktopOrderInfo> {
     private BaseTableView<IkeaOrderItem> tableView;
     private AddIkeaProductDialog addIkeaProductDialog;
     private OrderItemDetails orderItemDetails;
+    private TotalStatusPanel totalStatusPanel;
 
     public Step3OrderPreview(DialogSupport dialogSupport) {
         addIkeaProductDialog = new AddIkeaProductDialog(dialogSupport.getStage());
@@ -130,6 +133,8 @@ public class Step3OrderPreview extends BaseWizardStep<DesktopOrderInfo> {
         }
 
         mainPane.setTop(toolBar);
+        mainPane.setBottom(totalStatusPanel = new TotalStatusPanel());
+
         setContent(mainPane);
     }
 
@@ -153,5 +158,10 @@ public class Step3OrderPreview extends BaseWizardStep<DesktopOrderInfo> {
         tableView.getItems().clear();
         orderItemDetails = param.getOrderItemDetails();
         tableView.getItems().addAll(orderItemDetails.getIkeaOrderItems());
+
+        BigDecimal total = orderItemDetails.getIkeaOrderItems().stream()
+                .map(IkeaOrderItem::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        totalStatusPanel.setTotal(total);
     }
 }

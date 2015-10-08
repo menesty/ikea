@@ -1,0 +1,12 @@
+<xls>
+    <area ref="NotExist!A1:A2">
+        <each items="items" var="item" ref="NotExist!A2:A2">
+            <area ref="NotExist!A2:A2"/>
+        </each>
+    </area>
+    <area ref="Mismatch!A1:D2">
+        <each items="mismatches" var="mismatch" ref="Mismatch!A2:D2">
+            <area ref="Mismatch!A2:D2"/>
+        </each>
+    </area>
+</xls>

@@ -33,8 +33,12 @@ public class FormPane extends RowPanel {
         boolean result = true;
 
         for (Field field : fields)
-            if (!field.isValid())
+            if (!field.isValid()) {
                 result = false;
+                field.setValid(result);
+            } else {
+                field.setValid(true);
+            }
 
         return result;
     }

@@ -1,11 +1,15 @@
 package org.menesty.ikea.ui.controls.dialog;
 
 import javafx.collections.FXCollections;
+import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 import org.menesty.ikea.dto.ErrorItem;
+import org.menesty.ikea.factory.ImageFactory;
+import org.menesty.ikea.i18n.I18n;
+import org.menesty.ikea.i18n.I18nKeys;
 import org.menesty.ikea.service.ServiceFacade;
 
 import java.util.List;
@@ -40,6 +44,13 @@ public class ErrorConsoleDialog extends BaseDialog {
             tableView.getColumns().add(column);
         }
 
+        Button button = new Button(I18n.UA.getString(I18nKeys.CLEAR), ImageFactory.createClear16Icon());
+        button.setOnAction(event -> {
+            tableView.getItems().clear();
+            ServiceFacade.getErrorConsole().clear();
+        });
+
+        bottomBar.getChildren().add(0, button);
     }
 
     @Override

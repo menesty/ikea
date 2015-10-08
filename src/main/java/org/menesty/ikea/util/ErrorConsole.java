@@ -30,4 +30,8 @@ public class ErrorConsole {
     public List<Throwable> getItems() {
         return errors.get();
     }
+
+    public void clear(){
+        errors.get().removeAll(errors.get());
+    }
 }

@@ -19,8 +19,8 @@ public class ItemProcessingInfoLabel extends HBox {
     private Label itemNameLabel;
     private ChangeListener<? super Number> changeListener;
 
-    public ItemProcessingInfoLabel(String mailLabel) {
-        Label textLabel = new Label(mailLabel);
+    public ItemProcessingInfoLabel(String mainLabel) {
+        Label textLabel = new Label(mainLabel);
         itemNameLabel = new Label();
 
         currentIndexItemLabel = new Label();
@@ -41,6 +41,11 @@ public class ItemProcessingInfoLabel extends HBox {
     public void setNameProperty(StringProperty fileNameProperty) {
         itemNameLabel.textProperty().unbind();
         itemNameLabel.textProperty().bind(fileNameProperty);
+    }
+
+    public void setInfo(int index, String itemName) {
+        currentIndexItemLabel.setText(index + "");
+        itemNameLabel.setText(itemName);
     }
 
     public void hideProgress() {

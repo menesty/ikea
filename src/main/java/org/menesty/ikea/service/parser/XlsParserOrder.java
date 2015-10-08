@@ -47,8 +47,10 @@ public class XlsParserOrder {
                     .collect(Collectors.toList()));
 
             List<RawItem> items = rawOrderItems.stream().filter(rawOrderItem ->
-                    StringUtils.isNotBlank(rawOrderItem.getArtNumber()) && !rawOrderItem.getArtNumber().trim().toUpperCase().startsWith("K")
-                            && rawOrderItem.getPrice() != null && rawOrderItem.getCount() != null)
+                            StringUtils.isNotBlank(rawOrderItem.getArtNumber()) && !rawOrderItem.getArtNumber().trim().toUpperCase().startsWith("K")
+                                    && rawOrderItem.getPrice() != null && rawOrderItem.getCount() != null
+                                    && getArtNumber(rawOrderItem.getArtNumber()).matches("\\w{0,1}\\d{8}")
+            )
                     .map(rawOrderItem -> {
                         RawItem rawItem = new RawItem();
 
@@ -56,7 +58,7 @@ public class XlsParserOrder {
                         rawItem.setCombo(rawOrderItem.getCombo() != null && rawOrderItem.getCombo().trim().toLowerCase().equals("K"));
                         rawItem.setComment(rawOrderItem.getComment());
                         rawItem.setCount(BigDecimal.valueOf(rawOrderItem.getCount()));
-                        rawItem.setPrice(BigDecimal.valueOf(rawOrderItem.getPrice()));
+                        rawItem.setPrice(BigDecimal.valueOf(rawOrderItem.getPrice()).divide(rawItem.getCount(), 2, BigDecimal.ROUND_HALF_UP));
 
                         return rawItem;
                     }).collect(Collectors.toList());

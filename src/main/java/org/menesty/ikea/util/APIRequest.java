@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpHost;
 import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -69,20 +68,42 @@ public class APIRequest {
 
     public <T> T postData(Object param, Class<T> clazz) throws Exception {
         String response = postData(param);
+        checkForError(response);
         ObjectMapper objectMapper = new ObjectMapper();
 
         return objectMapper.readValue(response, clazz);
+    }
+
+    public <T> T postData(Object param, TypeReference<T> typeReference) throws Exception {
+        String response = postData(param);
+        checkForError(response);
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        return objectMapper.readValue(response, typeReference);
     }
 
     public <T> T getData(Class<T> clazz) throws Exception {
         String response = loadData();
+        checkForError(response);
         ObjectMapper objectMapper = new ObjectMapper();
 
         return objectMapper.readValue(response, clazz);
     }
 
+    public void get() throws Exception {
+        String response = loadData();
+        checkForError(response);
+    }
+
+    private void checkForError(String response) {
+        if (response.contains("exception") && response.contains("\"status\":500")) {
+            throw new RuntimeException(response);
+        }
+    }
+
     public <T> T getData(TypeReference<T> typeReference) throws Exception {
         String response = loadData();
+        checkForError(response);
         ObjectMapper objectMapper = new ObjectMapper();
 
         return objectMapper.readValue(response, typeReference);
@@ -90,6 +111,7 @@ public class APIRequest {
 
     public <T> List<T> getList(TypeReference<List<T>> typeReference) throws Exception {
         String response = loadData();
+        checkForError(response);
         ObjectMapper objectMapper = new ObjectMapper();
 
         return objectMapper.readValue(response, typeReference);
