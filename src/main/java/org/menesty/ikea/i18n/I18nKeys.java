@@ -82,4 +82,6 @@ public interface I18nKeys {
     String DELETE_CONFIRMATION_MESSAGE = "delete.confirmation.message";
     String INVOICE_ADD_TITLE = "invoice.add.title";
     String INVOICE_EDIT_TITLE = "invoice.edit.title";
+    String IKEA_PRODUCT = "ikea.product";
+    String PRODUCT_NOT_FOUND = "product.not.found";
 }

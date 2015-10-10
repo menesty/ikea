@@ -64,34 +64,6 @@ public class IkeaUserService {
         logout(httpClient);
     }
 
-   /* public void fillOrder(CustomerOrder order, TaskProgressLog taskProgressLog) {
-        try (CloseableHttpClient httpClient = HttpClients.custom().build()) {
-            try {
-                List<OrderItem> orderItems = ServiceFacade.getOrderItemService().loadBy(order);
-
-                Map<ProductInfo.Group, List<OrderItem>> groupMap = groupItems(OrderItemService.getByType(orderItems, Arrays.asList(OrderItem.Type.General)));
-                Map<ProductInfo.Group, List<OrderItem>> subGroupMap = new HashMap<>();
-
-
-                fillUser(httpClient, order.getGeneralUser(), ProductInfo.Group.general(), groupMap, subGroupMap, taskProgressLog);
-
-                subGroupMap.put(ProductInfo.Group.Combo, OrderItemService.getByType(orderItems, Arrays.asList(OrderItem.Type.Combo)));
-
-                fillUser(httpClient, order.getComboUser(), subGroupMap.keySet(), subGroupMap, taskProgressLog);
-
-                taskProgressLog.addLog("Finish");
-            } catch (LoginIkeaException e) {
-                taskProgressLog.addLog(e.getMessage());
-            } catch (IOException e) {
-                taskProgressLog.addLog("Error happened during connection to IKEA site");
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        taskProgressLog.done();
-    }*/
-
     private <T extends UserProductInfo> List<T> fillListWithProduct(CloseableHttpClient httpClient,
                                                                     final Category category, final List<T> list,
                                                                     final TaskProgressLog taskProgressLog) throws IOException {

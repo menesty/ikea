@@ -1,5 +1,6 @@
 package org.menesty.ikea.ui.pages.ikea.order.export;
 
+import org.menesty.ikea.domain.StorageLack;
 import org.menesty.ikea.domain.User;
 import org.menesty.ikea.exception.LoginIkeaException;
 import org.menesty.ikea.i18n.I18n;
@@ -7,6 +8,7 @@ import org.menesty.ikea.i18n.I18nKeys;
 import org.menesty.ikea.lib.domain.IkeaShop;
 import org.menesty.ikea.lib.dto.IkeaOrderItem;
 import org.menesty.ikea.ui.TaskProgressLog;
+import org.menesty.ikea.ui.controls.dialog.IkeaUserFillProgressDialog;
 import org.menesty.ikea.ui.pages.ikea.order.IkeaExportHttpClient;
 import org.menesty.ikea.ui.pages.ikea.order.StockAvailability;
 
@@ -415,5 +417,28 @@ public class IkeaExportService {
         }
 
         return countCategories.divide(maxCategoriesCount, 0, BigDecimal.ROUND_CEILING).intValue();
+    }
+
+    public void export(List<StorageLack> items, String login, IkeaUserFillProgressDialog taskProgressLog) {
+        List<StockItem> stockItems = items.stream().map(storageLack -> new StockItem(storageLack.getArtNumber(), "StorageLack", BigDecimal.valueOf(storageLack.getCount()))).collect(Collectors.toList());
+
+        Map<String, List<StockItem>> dataByCategories = prepareSplitByCategory("StorageLack", stockItems);
+
+        try (IkeaExportHttpClient ikeaExportHttpClient = new IkeaExportHttpClient()) {
+            try {
+                taskProgressLog.addLog("Start export goods");
+                fillUser(ikeaExportHttpClient, new User(login, "Mature65"), dataByCategories, taskProgressLog);
+                taskProgressLog.addLog("Finish export goods");
+            } catch (LoginIkeaException e) {
+                taskProgressLog.addLog(e.getMessage());
+            } catch (IOException e) {
+                taskProgressLog.addLog("Error happened during connection to IKEA site");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+            taskProgressLog.addLog(e.getMessage());
+        }
     }
 }

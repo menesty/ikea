@@ -36,7 +36,7 @@ import java.util.List;
  */
 public abstract class OrderItemViewComponent extends BorderPane {
 
-    private final Button exportToIkeaBtn;
+    private final SplitMenuButton exportToIkeaBtn;
 
     private OrderItemTableView orderItemTableView;
 
@@ -158,14 +158,13 @@ public abstract class OrderItemViewComponent extends BorderPane {
         });
         toolBar.getItems().add(exportOrder);
 
-        ImageView imageView = new ImageView(new Image("/styles/images/icon/ikea-32x32.png"));
-        exportToIkeaBtn = new Button(null, imageView);
+        exportToIkeaBtn = new SplitMenuButton();
+        MenuItem item =new Menu("Without group");
+        item.setOnAction(event1 -> onExportToIkea(false));
+        exportToIkeaBtn.getItems().addAll(item);
+        exportToIkeaBtn.setGraphic(ImageFactory.createIkea32Icon());
         exportToIkeaBtn.setTooltip(new Tooltip("Export CustomerOrder to IKEA"));
-        exportToIkeaBtn.setOnAction(new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent event) {
-                onExportToIkea();
-            }
-        });
+        exportToIkeaBtn.setOnAction(event -> onExportToIkea(true));
         toolBar.getItems().add(exportToIkeaBtn);
 
 
@@ -203,7 +202,7 @@ public abstract class OrderItemViewComponent extends BorderPane {
 
     protected abstract void onExport(String filePath);
 
-    protected abstract void onExportToIkea();
+    protected abstract void onExportToIkea(boolean categories);
 
     public void setItems(List<OrderItem> items) {
         orderItemTableView.getItems().clear();

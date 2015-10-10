@@ -1,15 +1,8 @@
 package org.menesty.ikea.ui.controls.form;
 
-import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
 import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.input.KeyEvent;
 import org.apache.commons.lang.math.NumberUtils;
-import org.menesty.ikea.util.NumberUtil;
 
 /**
  * User: Menesty
@@ -87,6 +80,8 @@ public class DoubleTextField extends TextField {
         number.setValue(NumberUtils.createDouble(input));
         selectAll();
     }
+
+
 
     @Override
     public void reset() {

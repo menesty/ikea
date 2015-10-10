@@ -1,20 +1,19 @@
 package org.menesty.ikea.service;
 
-import org.menesty.ikea.domain.CustomerOrder;
-import org.menesty.ikea.domain.OrderItem;
-import org.menesty.ikea.domain.OrderShop;
-import org.menesty.ikea.domain.User;
+import org.menesty.ikea.domain.*;
 import org.menesty.ikea.lib.domain.IkeaShop;
 import org.menesty.ikea.lib.domain.ikea.IkeaProduct;
 import org.menesty.ikea.lib.domain.product.Product;
 import org.menesty.ikea.lib.dto.IkeaOrderItem;
 import org.menesty.ikea.ui.TaskProgressLog;
+import org.menesty.ikea.ui.controls.dialog.IkeaUserFillProgressDialog;
 import org.menesty.ikea.ui.pages.ikea.order.export.IkeaExportService;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -24,7 +23,7 @@ import java.util.stream.Collectors;
  */
 public class NewOrderFillService {
 
-    public void fillOrder(CustomerOrder order, TaskProgressLog taskProgressLog) throws Exception {
+    public void fillOrder(CustomerOrder order, boolean split, TaskProgressLog taskProgressLog) throws Exception {
 
         IkeaExportService exportService = ServiceFacade.getIkeaExportService();
 
@@ -62,6 +61,12 @@ public class NewOrderFillService {
             shops.add(shop);
         }
 
-        exportService.export(items, users, shops, true, taskProgressLog);
+        exportService.export(items, users, shops, split, taskProgressLog);
+    }
+
+    public void fillUser(User lackUser, List<StorageLack> items, IkeaUserFillProgressDialog taskProgressLog) {
+        IkeaExportService exportService = ServiceFacade.getIkeaExportService();
+
+        exportService.export(items, lackUser.getLogin(), taskProgressLog);
     }
 }

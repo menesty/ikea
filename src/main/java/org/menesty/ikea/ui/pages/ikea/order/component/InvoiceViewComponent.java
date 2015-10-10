@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Task;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -23,6 +24,7 @@ import org.menesty.ikea.ui.pages.DialogCallback;
 import org.menesty.ikea.ui.pages.EntityDialogCallback;
 import org.menesty.ikea.ui.pages.ikea.order.dialog.invoice.IkeaInvoiceUploadDialog;
 import org.menesty.ikea.ui.pages.ikea.order.dialog.invoice.InvoiceAddEditDialog;
+import org.menesty.ikea.ui.pages.ikea.order.dialog.invoice.InvoiceItemAddDialog;
 import org.menesty.ikea.ui.table.ArtNumberCell;
 import org.menesty.ikea.util.APIRequest;
 import org.menesty.ikea.util.ColumnUtil;
@@ -38,7 +40,7 @@ import java.util.List;
  * 21:51.
  */
 public class InvoiceViewComponent extends HBox {
-    enum InvoiceAction {
+    enum ItemAction {
         Delete, Add
     }
 
@@ -48,6 +50,10 @@ public class InvoiceViewComponent extends HBox {
         void onInvoiceDelete(Invoice invoice);
 
         void onInvoiceAdd(Invoice invoice);
+
+        void onInvoiceItemAdd(InvoiceItem item);
+
+        void onInvoiceItemDelete(InvoiceItem item);
     }
 
     private Long processOrderId;
@@ -57,14 +63,15 @@ public class InvoiceViewComponent extends HBox {
 
     private TotalStatusPanel invoiceItemStatusPanel;
     private InvoiceActionService invoiceActionService;
+    private InvoiceItemActionService invoiceItemActionService;
 
     public InvoiceViewComponent(DialogSupport dialogSupport, InvoiceActionListener invoiceActionListener) {
         Preconditions.checkNotNull(invoiceActionListener);
 
-        getChildren().addAll(initLeftPanel(dialogSupport, invoiceActionListener), initRightPanel());
+        getChildren().addAll(initLeftPanel(dialogSupport, invoiceActionListener), initRightPanel(dialogSupport, invoiceActionListener));
     }
 
-    private Pane initLeftPanel(DialogSupport dialogSupport, final InvoiceActionListener invoiceActionListener) {
+    private Pane initLeftPanel(final DialogSupport dialogSupport, final InvoiceActionListener invoiceActionListener) {
         BorderPane leftPanel = new BorderPane();
         LoadingPane loadingPane = new LoadingPane();
 
@@ -138,7 +145,9 @@ public class InvoiceViewComponent extends HBox {
                 dialog.bind(invoice, new EntityDialogCallback<Invoice>() {
                     @Override
                     public void onSave(Invoice invoice, Object... params) {
-
+                        dialogSupport.hidePopupDialog();
+                        invoiceActionService.setInvoice(invoice, ItemAction.Add);
+                        invoiceActionService.restart();
                     }
 
                     @Override
@@ -178,7 +187,7 @@ public class InvoiceViewComponent extends HBox {
 
                     @Override
                     public void onYes() {
-                        invoiceActionService.setInvoice(invoiceTableView.getSelectionModel().getSelectedItem(), InvoiceAction.Delete);
+                        invoiceActionService.setInvoice(invoiceTableView.getSelectionModel().getSelectedItem(), ItemAction.Delete);
                         invoiceActionService.restart();
                     }
                 });
@@ -195,10 +204,10 @@ public class InvoiceViewComponent extends HBox {
 
         invoiceActionService = new InvoiceActionService();
         invoiceActionService.setOnSucceededListener(result -> {
-            if (InvoiceAction.Delete == result.getAction()) {
-                invoiceActionListener.onInvoiceDelete(result.getInvoice());
-            } else if (InvoiceAction.Add == result.getAction()) {
-                invoiceActionListener.onInvoiceAdd(result.getInvoice());
+            if (ItemAction.Delete == result.getAction()) {
+                invoiceActionListener.onInvoiceDelete(result.getItem());
+            } else if (ItemAction.Add == result.getAction()) {
+                invoiceActionListener.onInvoiceAdd(result.getItem());
             }
         });
         loadingPane.bindTask(invoiceActionService);
@@ -208,9 +217,15 @@ public class InvoiceViewComponent extends HBox {
         return mainPanel;
     }
 
-    private BorderPane initRightPanel() {
+    private Node initRightPanel(DialogSupport dialogSupport, final InvoiceActionListener invoiceActionListener) {
         BorderPane rightPanel = new BorderPane();
-        HBox.setHgrow(rightPanel, Priority.ALWAYS);
+
+        LoadingPane loadingPane = new LoadingPane();
+
+        StackPane mainPanel = new StackPane();
+        mainPanel.getChildren().addAll(rightPanel, loadingPane);
+
+        HBox.setHgrow(mainPanel, Priority.ALWAYS);
 
         invoiceItemTableView = new TableView<>();
 
@@ -258,7 +273,52 @@ public class InvoiceViewComponent extends HBox {
         rightPanel.setCenter(invoiceItemTableView);
         rightPanel.setBottom(invoiceItemStatusPanel = new TotalStatusPanel());
 
-        return rightPanel;
+        ToolBar toolBar = new ToolBar();
+        {
+            Button button = new Button(null, ImageFactory.createAdd32Icon());
+            button.setTooltip(ToolTipUtil.create(I18n.UA.getString(I18nKeys.ADD)));
+            button.setOnAction(event -> {
+                InvoiceItemAddDialog dialog = getInvoiceItemAddEditDialog(dialogSupport);
+
+                InvoiceItem invoiceItem = new InvoiceItem();
+                invoiceItem.setInvoiceId(invoiceTableView.getSelectionModel().getSelectedItem().getId());
+
+                dialog.bind(invoiceItem, new EntityDialogCallback<InvoiceItem>() {
+                    @Override
+                    public void onSave(InvoiceItem invoiceItem, Object... params) {
+                        dialogSupport.hidePopupDialog();
+                        invoiceItemActionService.setInvoiceItem(invoiceItem, ItemAction.Add);
+                        invoiceItemActionService.restart();
+                    }
+
+                    @Override
+                    public void onCancel() {
+                        dialogSupport.hidePopupDialog();
+                    }
+                });
+
+                dialogSupport.showPopupDialog(dialog);
+            });
+
+            toolBar.getItems().add(button);
+        }
+
+        toolBar.setDisable(true);
+        invoiceTableView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> toolBar.setDisable(newValue == null));
+
+        rightPanel.setTop(toolBar);
+
+        invoiceItemActionService = new InvoiceItemActionService();
+        invoiceItemActionService.setOnSucceededListener(result -> {
+            if (ItemAction.Delete == result.getAction()) {
+                invoiceActionListener.onInvoiceItemDelete(result.getItem());
+            } else if (ItemAction.Add == result.getAction()) {
+                invoiceActionListener.onInvoiceItemAdd(result.getItem());
+            }
+        });
+        loadingPane.bindTask(invoiceItemActionService);
+
+        return mainPanel;
     }
 
     private IkeaInvoiceUploadDialog getInvoiceUploadDialog(DialogSupport dialogSupport) {
@@ -277,6 +337,10 @@ public class InvoiceViewComponent extends HBox {
         return new InvoiceAddEditDialog(dialogSupport.getStage());
     }
 
+    private InvoiceItemAddDialog getInvoiceItemAddEditDialog(DialogSupport dialogSupport) {
+        return new InvoiceItemAddDialog(dialogSupport.getStage());
+    }
+
     public void setProcessOrderId(Long processOrderId) {
         this.processOrderId = processOrderId;
     }
@@ -286,30 +350,32 @@ public class InvoiceViewComponent extends HBox {
         invoiceTableView.getItems().addAll(invoices);
     }
 
-    class InvoiceActionService extends AbstractAsyncService<InvoiceActionResult> {
+    class InvoiceActionService extends AbstractAsyncService<ItemActionResult<Invoice>> {
         private ObjectProperty<Invoice> invoiceProperty = new SimpleObjectProperty<>();
-        private ObjectProperty<InvoiceAction> invoiceActionProperty = new SimpleObjectProperty<>();
+        private ObjectProperty<ItemAction> invoiceActionProperty = new SimpleObjectProperty<>();
 
         @Override
-        protected Task<InvoiceActionResult> createTask() {
+        protected Task<ItemActionResult<Invoice>> createTask() {
             final Invoice _invoice = invoiceProperty.get();
-            final InvoiceAction _invoiceAction = invoiceActionProperty.get();
+            final ItemAction _itemAction = invoiceActionProperty.get();
 
-            return new Task<InvoiceActionResult>() {
+            return new Task<ItemActionResult<Invoice>>() {
                 @Override
-                protected InvoiceActionResult call() throws Exception {
-                    if (InvoiceAction.Delete == _invoiceAction) {
+                protected ItemActionResult<Invoice> call() throws Exception {
+                    if (ItemAction.Delete == _itemAction) {
                         APIRequest apiRequest = HttpServiceUtil.get("/ikea-order/invoice/delete/" + _invoice.getId());
                         apiRequest.get();
-                    } else if (InvoiceAction.Add == _invoiceAction) {
-
+                    } else if (ItemAction.Add == _itemAction) {
+                        APIRequest apiRequest = HttpServiceUtil.get("/ikea-order/invoice/add/" + processOrderId);
+                        Long id = apiRequest.postData(_invoice, Long.class);
+                        _invoice.setId(id);
                     }
-                    return new InvoiceActionResult(_invoice, _invoiceAction);
+                    return new ItemActionResult<>(_invoice, _itemAction);
                 }
             };
         }
 
-        public void setInvoice(Invoice invoice, InvoiceAction action) {
+        public void setInvoice(Invoice invoice, ItemAction action) {
             Preconditions.checkNotNull(invoice);
             Preconditions.checkNotNull(action);
 
@@ -318,21 +384,61 @@ public class InvoiceViewComponent extends HBox {
         }
     }
 
-    class InvoiceActionResult {
-        private final Invoice invoice;
-        private final InvoiceAction action;
+    class InvoiceItemActionService extends AbstractAsyncService<ItemActionResult<InvoiceItem>> {
+        private ObjectProperty<InvoiceItem> itemProperty = new SimpleObjectProperty<>();
+        private ObjectProperty<ItemAction> itemActionProperty = new SimpleObjectProperty<>();
+
+        @Override
+        protected Task<ItemActionResult<InvoiceItem>> createTask() {
+            final InvoiceItem _item = itemProperty.get();
+            final ItemAction _itemAction = itemActionProperty.get();
+
+            return new Task<ItemActionResult<InvoiceItem>>() {
+                @Override
+                protected ItemActionResult<InvoiceItem> call() throws Exception {
+                    if (ItemAction.Delete == _itemAction) {
+                        APIRequest apiRequest = HttpServiceUtil.get("/ikea-order/invoice-item/delete/" + _item.getId());
+                        apiRequest.get();
+                    } else if (ItemAction.Add == _itemAction) {
+                        APIRequest apiRequest = HttpServiceUtil.get("/ikea-order/invoice-item/add/" + _item.getInvoiceId());
+                        Long id = apiRequest.postData(_item, Long.class);
+                        _item.setId(id);
+                    }
+                    return new ItemActionResult<>(_item, _itemAction);
+                }
+            };
+        }
+
+        public void setInvoiceItem(InvoiceItem item, ItemAction action) {
+            itemProperty.set(item);
+            itemActionProperty.set(action);
+        }
+    }
 
 
-        InvoiceActionResult(Invoice invoice, InvoiceAction action) {
-            this.invoice = invoice;
+    public void setSelected(Invoice selected) {
+        if (selected.equals(invoiceTableView.getSelectionModel().getSelectedItem())) {
+            invoiceTableView.getSelectionModel().select(null);
+        }
+
+        invoiceTableView.getSelectionModel().select(selected);
+    }
+
+    class ItemActionResult<T> {
+        private final T item;
+        private final ItemAction action;
+
+
+        ItemActionResult(T item, ItemAction action) {
+            this.item = item;
             this.action = action;
         }
 
-        public Invoice getInvoice() {
-            return invoice;
+        public T getItem() {
+            return item;
         }
 
-        public InvoiceAction getAction() {
+        public ItemAction getAction() {
             return action;
         }
     }

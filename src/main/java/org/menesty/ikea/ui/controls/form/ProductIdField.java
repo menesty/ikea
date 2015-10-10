@@ -3,6 +3,8 @@ package org.menesty.ikea.ui.controls.form;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
@@ -16,7 +18,7 @@ public class ProductIdField extends HBox implements Field {
     private TextField productId;
     private ImageView imageView;
     private BooleanProperty validProperty;
-    private static Pattern validationPattern = Pattern.compile("^(?i)S{0,1}\\d{3}\\.{0,1}\\d{3}\\.{0,1}\\d{2}$");
+    public static final Pattern VALIDATION_PATTERN = Pattern.compile("^(?i)S{0,1}\\d{3}\\.{0,1}\\d{3}\\.{0,1}\\d{2}$");
 
     public ProductIdField(String label, boolean allowBlank) {
         this();
@@ -40,7 +42,11 @@ public class ProductIdField extends HBox implements Field {
             validProperty.set(isValid());
         });
 
-        productId.setValidationPattern(validationPattern);
+        setValidationPattern(VALIDATION_PATTERN);
+    }
+
+    public void setValidationPattern(Pattern pattern) {
+        productId.setValidationPattern(pattern);
     }
 
     public void enableBrowse(boolean enable) {
@@ -103,5 +109,13 @@ public class ProductIdField extends HBox implements Field {
 
     public BooleanProperty validProperty() {
         return validProperty;
+    }
+
+    public void setOnDelayAction(EventHandler<ActionEvent> onDelayAction) {
+        productId.setOnDelayAction(onDelayAction);
+    }
+
+    public void setDelay(int sec) {
+        productId.setDelay(sec);
     }
 }

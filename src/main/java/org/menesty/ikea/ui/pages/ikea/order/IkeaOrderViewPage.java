@@ -9,6 +9,7 @@ import javafx.scene.control.TabPane;
 import org.menesty.ikea.i18n.I18n;
 import org.menesty.ikea.i18n.I18nKeys;
 import org.menesty.ikea.lib.domain.ikea.invoice.Invoice;
+import org.menesty.ikea.lib.domain.ikea.invoice.InvoiceItem;
 import org.menesty.ikea.lib.domain.order.IkeaOrderDetail;
 import org.menesty.ikea.lib.domain.order.IkeaProcessOrder;
 import org.menesty.ikea.service.AbstractAsyncService;
@@ -19,6 +20,7 @@ import org.menesty.ikea.util.APIRequest;
 import org.menesty.ikea.util.HttpServiceUtil;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by Menesty on
@@ -77,6 +79,34 @@ public class IkeaOrderViewPage extends BasePage {
                 public void onInvoiceAdd(Invoice invoice) {
                     ikeaOrderDetail.getInvoices().add(invoice);
                     invoiceViewComponent.setInvoices(ikeaOrderDetail.getInvoices());
+                }
+
+                @Override
+                public void onInvoiceItemAdd(InvoiceItem item) {
+                    Optional<Invoice> target = ikeaOrderDetail.getInvoices().stream()
+                            .filter(invoice -> invoice.getId().equals(item.getInvoiceId()))
+                            .findFirst();
+
+                    if (target.isPresent()) {
+                        Invoice invoice = target.get();
+                        invoice.addInvoiceItem(item);
+
+                        invoiceViewComponent.setSelected(invoice);
+                    }
+                }
+
+                @Override
+                public void onInvoiceItemDelete(InvoiceItem item) {
+                    Optional<Invoice> target = ikeaOrderDetail.getInvoices().stream()
+                            .filter(invoice -> invoice.getId().equals(item.getInvoiceId()))
+                            .findFirst();
+
+                    if (target.isPresent()) {
+                        Invoice invoice = target.get();
+                        invoice.removeInvoiceItem(item);
+
+                        invoiceViewComponent.setSelected(invoice);
+                    }
                 }
             }));
 

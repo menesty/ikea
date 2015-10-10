@@ -135,7 +135,7 @@ public class IkeaInvoiceUploadDialog extends BaseDialog {
             return new Task<List<Invoice>>() {
                 @Override
                 protected List<Invoice> call() throws Exception {
-                    APIRequest apiRequest = HttpServiceUtil.get("/ikea-order/invoice/add/" + _uploadInfo.getIkeaProcessOrderId());
+                    APIRequest apiRequest = HttpServiceUtil.get("/ikea-order/invoice/add/parse/" + _uploadInfo.getIkeaProcessOrderId());
                     return apiRequest.postData(_uploadInfo.getInvoiceParseResult(), new TypeReference<List<Invoice>>() {
                     });
                 }

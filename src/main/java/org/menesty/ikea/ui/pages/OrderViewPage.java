@@ -166,17 +166,7 @@ public class OrderViewPage extends BasePage {
                 new Thread(new Task<Void>() {
                     @Override
                     protected Void call() throws Exception {
-                        try {
-                            ServiceFacade.getIkeaUserService().fillUser(
-                                    currentOrder.getLackUser(), ProductInfo.Group.general(),
-                                    ServiceFacade.getIkeaUserService().groupItems(storageLacks), logDialog);
-
-                        } catch (LoginIkeaException e) {
-                            logDialog.addLog(e.getMessage());
-                        } catch (IOException e) {
-                            logDialog.addLog("Error happened during connection to IKEA site");
-                        }
-
+                        ServiceFacade.getNewOrderFillService().fillUser(currentOrder.getLackUser(), storageLacks, logDialog);
                         logDialog.done();
                         return null;
                     }
@@ -254,7 +244,7 @@ public class OrderViewPage extends BasePage {
             }
 
             @Override
-            protected void onExportToIkea() {
+            protected void onExportToIkea(boolean split) {
                 final IkeaUserFillProgressDialog logDialog = new IkeaUserFillProgressDialog(getStage()) {
                     @Override
                     public void onOk() {
@@ -267,7 +257,7 @@ public class OrderViewPage extends BasePage {
                     new Thread(new Task<Void>() {
                         @Override
                         protected Void call() throws Exception {
-                            ServiceFacade.getNewOrderFillService().fillOrder(currentOrder, logDialog);
+                            ServiceFacade.getNewOrderFillService().fillOrder(currentOrder, split, logDialog);
                             return null;
                         }
                     }).start();

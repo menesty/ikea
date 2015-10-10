@@ -62,21 +62,16 @@ public class NumberTextField extends TextField {
         BigDecimal newValue = getNumber();
 
         if (newValue != null)
-            setText((allowDouble ? newValue.doubleValue() + "" : newValue.intValue() + ""));
+            textField.setText((allowDouble ? newValue.doubleValue() + "" : newValue.intValue() + ""));
         else
-            setText("0");
+            textField.setText("0");
     }
 
     private void initHandlers() {
         // try to parse when focus is lost or RETURN is hit
-        setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent arg0) {
-                parseAndFormatInput();
-            }
-        });
+        textField.setOnAction(arg0 -> parseAndFormatInput());
 
-        focusedProperty().addListener((observable, oldValue, newValue) -> {
+        textField.focusedProperty().addListener((observable, oldValue, newValue) -> {
             if (!newValue)
                 parseAndFormatInput();
         });
@@ -86,7 +81,7 @@ public class NumberTextField extends TextField {
             updateView();
         });
 
-        addEventFilter(KeyEvent.KEY_TYPED, event -> {
+        textField.addEventFilter(KeyEvent.KEY_TYPED, event -> {
             if (!allowDouble && event.getCharacter().contains(".")) {
                 event.consume();
                 return;
@@ -94,8 +89,8 @@ public class NumberTextField extends TextField {
             String newValue = "";
 
             if (getText() != null) {
-                newValue = getText().substring(0, getSelection().getStart()) + event.getCharacter() +
-                        getText().substring(getSelection().getEnd(), getText().length());
+                newValue =textField.getText().substring(0, textField.getSelection().getStart()) + event.getCharacter() +
+                        textField.getText().substring(textField.getSelection().getEnd(), textField.getText().length());
             } else {
                 newValue = event.getCharacter();
             }
@@ -119,10 +114,10 @@ public class NumberTextField extends TextField {
             Number parsedNumber = nf.parse(input);
             BigDecimal newValue = new BigDecimal(allowDouble ? parsedNumber.doubleValue() : parsedNumber.intValue());
             setNumber(newValue);
-            selectAll();
+            textField.selectAll();
         } catch (ParseException ex) {
             // If parsing fails keep old number
-            setText((allowDouble ? number.get().doubleValue() : number.get().intValue()) + "");
+            textField.setText((allowDouble ? number.get().doubleValue() : number.get().intValue()) + "");
         }
     }
 }
