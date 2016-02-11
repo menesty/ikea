@@ -54,12 +54,7 @@ public class RawInvoiceTableView extends TableView<RawInvoiceProductItem> {
         if (invoiceNameVisible) {
             TableColumn<RawInvoiceProductItem, String> column = new TableColumn<>("Invoice Name");
             column.setMinWidth(160);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<RawInvoiceProductItem, String>, ObservableValue<String>>() {
-                @Override
-                public ObservableValue<String> call(TableColumn.CellDataFeatures<RawInvoiceProductItem, String> item) {
-                    return new SimpleStringProperty(item.getValue().invoicePdf.getInvoiceNumber());
-                }
-            });
+            column.setCellValueFactory(item -> new SimpleStringProperty(item.getValue().invoicePdf.getInvoiceNumber()));
 
             getColumns().add(column);
         }
@@ -67,12 +62,7 @@ public class RawInvoiceTableView extends TableView<RawInvoiceProductItem> {
         {
             TableColumn<RawInvoiceProductItem, String> column = new TableColumn<>("Count");
             column.setMaxWidth(50);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<RawInvoiceProductItem, String>, ObservableValue<String>>() {
-                @Override
-                public ObservableValue<String> call(TableColumn.CellDataFeatures<RawInvoiceProductItem, String> item) {
-                    return new SimpleStringProperty(NumberUtil.toString(item.getValue().getCount()));
-                }
-            });
+            column.setCellValueFactory(item -> new SimpleStringProperty(NumberUtil.toString(item.getValue().getCount())));
 
             getColumns().add(column);
         }

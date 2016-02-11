@@ -28,7 +28,7 @@ public class NewOrderFillService {
         IkeaExportService exportService = ServiceFacade.getIkeaExportService();
 
         List<OrderItem> orderItems = ServiceFacade.getOrderItemService().loadBy(order);
-        List<OrderItem> itemForExport = OrderItemService.getByType(orderItems, Arrays.asList(OrderItem.Type.General, OrderItem.Type.Combo));
+        List<OrderItem> itemForExport = OrderItemService.getByType(orderItems, Arrays.asList(OrderItem.Type.General, OrderItem.Type.Combo, OrderItem.Type.Specials));
 
         List<IkeaOrderItem> items = itemForExport.stream().map(orderItem -> {
             IkeaOrderItem ikeaOrderItem = new IkeaOrderItem();

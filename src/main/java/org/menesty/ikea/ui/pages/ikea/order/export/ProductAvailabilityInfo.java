@@ -4,6 +4,7 @@ import org.menesty.ikea.ui.pages.ikea.order.StockAvailability;
 
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Created by Menesty on
@@ -12,19 +13,21 @@ import java.util.Map;
  */
 class ProductAvailabilityInfo {
 
-    private Map<Integer, StockAvailability> stockAvailability;
+  private Map<Integer, StockAvailability> stockAvailability;
 
-    ProductAvailabilityInfo(Map<Integer, StockAvailability> stockAvailability) {
-        this.stockAvailability = stockAvailability;
-    }
+  ProductAvailabilityInfo(Map<Integer, StockAvailability> stockAvailability) {
+    this.stockAvailability = stockAvailability;
+  }
 
 
-    public BigDecimal getStockCount(int shopId) {
-        StockAvailability stock = stockAvailability.get(shopId);
+  public BigDecimal getStockCount(int shopId) {
+    StockAvailability stock = stockAvailability.get(shopId);
 
-        if (stock != null)
-            return stock.getAvailable().add(stock.getAvailable2()).add(stock.getAvailable3());
+    if (stock != null)
+      return Optional.ofNullable(stock.getAvailable()).orElse(BigDecimal.ZERO)
+          .add(Optional.ofNullable(stock.getAvailable2()).orElse(BigDecimal.ZERO))
+          .add(Optional.ofNullable(stock.getAvailable3()).orElse(BigDecimal.ZERO));
 
-        return BigDecimal.ZERO;
-    }
+    return BigDecimal.ZERO;
+  }
 }

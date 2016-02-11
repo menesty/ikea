@@ -1,0 +1,47 @@
+[INFO]
+"1.05",3,1250,"Subiekt GT","olia","10-11","10-11",,,,"2314543267","#43","43",,,1,@{createDate},@{createDate},"Szef Olia",@{createDate},"Polska","PL",,0
+
+[NAGLOWEK]
+"FZ",1,0,2,"@{invoiceName}",,"2/2013",,,,,"YAR HUS","Yaroslav Husar","Yaroslav Husar","Kraków","31-159","al. Juliusza Słowackiego 1 lok. 6","6762478016","Zakup","Zakup towarów lub usług","Kraków",@{createDate},@{createDate},@{createDate},7,0,"Specjalna",@{totalItem.nettoPrice},@{totalItem.taxPay},@{totalItem.bruttoPrice},1665.8900,,0.0000,,@{createDate},@{totalItem.bruttoPrice},@{totalItem.bruttoPrice},0,0,1,3,,"Olia Szef",,0.0000,0.0000,"PLN",1.0000,,,,,0,0,0,,0.0000,,0.0000,"Polska","PL",0
+
+[ZAWARTOSC]
+@foreach{item : eppItems}@{item.index},@{item.isZestav() ? '8' : '1'},"@{item.artNumber}",1,0,0,1,0.0000,0.0000,"szt.",@{item.count},@{item.count},0.0000,@{item.nettoPrice},@{item.bruttoPrice},@{item.wat},@{item.bruttoTotalPrice},@{item.taxPay},@{item.nettoTotalPrice},@{item.bruttoTotalPrice},,
+@end{}
+
+[NAGLOWEK]
+"KONTRAHENCI"
+
+[ZAWARTOSC]
+0,"YAR HUS","Yaroslav Husar","Kraków","31-159","al. Juliusza Słowackiego 1 lok. 6","6762478016","123171918",,,,,,,,,,,,,,,,,,,"Polska","PL",0
+
+[NAGLOWEK]
+"GRUPYKONTRAHENTOW"
+
+[ZAWARTOSC]
+"IKEA RET","Podstawowa"
+
+[NAGLOWEK]
+"CECHYKONTRAHENTOW"
+
+[ZAWARTOSC]
+
+[NAGLOWEK]
+"TOWARY"
+
+[ZAWARTOSC]
+@foreach{item : eppItems}@{item.isZestav() ? '8' : '1'},"@{item.artNumber}",,,"@{item.shortName}","@{item.artNumber}","@{item.shortName}",,,"szt.","23",@{item.wat},"23",@{item.wat},0.0000,0.0000,,0,,,,0.0000,0,,,0,"szt.",0.0000,0.0000,,0,,0,0,,,,,,,,
+@end{}
+[NAGLOWEK]
+"CENNIK"
+
+[ZAWARTOSC]
+@foreach{item : eppItems}"@{item.artNumber}","Detaliczna",@{item.retail},@{item.bruttoRetail},@{item.retailPercent},@{item.marginPercent},@{item.margin}
+"@{item.artNumber}","Hurtowa",@{item.retail},@{item.bruttoRetail},@{item.retailPercent},@{item.marginPercent},@{item.margin}
+"@{item.artNumber}","Specjalna",@{item.nettoPrice},@{item.bruttoPrice},0.0000,0.0000,0.0000
+@end{}
+[NAGLOWEK]
+"GRUPYTOWAROW"
+
+[ZAWARTOSC]
+@foreach{item : eppItems}"@{item.artNumber}","@{orderName}",
+@end{}

@@ -100,20 +100,33 @@ public class Step1 extends BaseWizardStep<DesktopOrderInfo> {
 
             if (DesktopOrderInfo.OrderType.EXISTED.equals(orderType)) {
                 leftForm.setVisible(orderNameField, false);
+                leftForm.setVisible(sellMarginField, false);
+
                 leftForm.setVisible(ikeaProcessOrderComboBoxField, true);
                 ikeaProcessOrderComboBoxField.setAllowBlank(false);
                 orderNameField.setAllowBlank(true);
+                sellMarginField.setAllowBlank(true);
 
             } else if (DesktopOrderInfo.OrderType.NEW.equals(orderType)) {
                 leftForm.setVisible(orderNameField, true);
+                leftForm.setVisible(sellMarginField, true);
+
                 leftForm.setVisible(ikeaProcessOrderComboBoxField, false);
+
+
                 ikeaProcessOrderComboBoxField.setAllowBlank(true);
                 orderNameField.setAllowBlank(false);
+
+                sellMarginField.setAllowBlank(false);
+
             } else {
                 leftForm.setVisible(orderNameField, false);
                 leftForm.setVisible(ikeaProcessOrderComboBoxField, false);
+                leftForm.setVisible(sellMarginField, false);
+
                 orderNameField.setAllowBlank(true);
                 ikeaProcessOrderComboBoxField.setAllowBlank(true);
+                sellMarginField.setAllowBlank(true);
             }
         });
 
@@ -148,7 +161,8 @@ public class Step1 extends BaseWizardStep<DesktopOrderInfo> {
         marginField.setAllowBlank(false);
 
         leftForm.add(sellMarginField = new DoubleTextField(I18n.UA.getString(I18nKeys.MARGIN_SELL)));
-        sellMarginField.setAllowBlank(false);
+        sellMarginField.setAllowBlank(true);
+        leftForm.setVisible(sellMarginField, false);
 
         /******************RIGHT FORM******************/
 

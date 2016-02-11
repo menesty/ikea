@@ -14,8 +14,8 @@ public class OrderItemService extends Repository<OrderItem> {
             if (!started)
                 begin();
 
-            TypedQuery<OrderItem> query = getEm().createQuery("select entity from " + entityClass.getName() + " entity where entity.customerOrder.id = ?1", entityClass);
-            query.setParameter(1, order.getId());
+            TypedQuery<OrderItem> query = getEm().createQuery("select entity from " + entityClass.getName() + " entity where entity.customerOrder.id = :id", entityClass);
+            query.setParameter("id", order.getId());
             return query.getResultList();
 
         } finally {

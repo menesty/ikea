@@ -466,7 +466,7 @@ public class OrderService extends Repository<CustomerOrder> {
         Map<String, ProductInfo> infoComboData = new HashMap<>();
 
         for (OrderItem orderItem : orderItems) {
-            if (OrderItem.Type.Na != orderItem.getType() && !orderItem.isInvalidFetch() && OrderItem.Type.Specials != orderItem.getType()) {
+            if (OrderItem.Type.Na != orderItem.getType() && !orderItem.isInvalidFetch() /*&& OrderItem.Type.Specials != orderItem.getType()*/) {
                 if (OrderItem.Type.Combo == orderItem.getType())
                     for (ProductPart part : orderItem.getProductInfo().getParts()) {
                         increaseData(orderComboData, part.getProductInfo().getOriginalArtNum(), NumberUtil.round(orderItem.getCount() * part.getCount()));

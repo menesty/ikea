@@ -2,10 +2,11 @@ package org.menesty.ikea.ui.controls.form;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.input.KeyEvent;
 import org.apache.commons.lang.math.NumberUtils;
+import org.menesty.ikea.ui.controls.form.validation.MaxNumberValidationRule;
+import org.menesty.ikea.ui.controls.form.validation.MinNumberValidationRule;
+import org.menesty.ikea.ui.controls.form.validation.ValidationRule;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
@@ -32,6 +33,26 @@ public class NumberTextField extends TextField {
         updateView();
     }
 
+    public void setMaxValue(BigDecimal maxValue) {
+        ValidationRule rule = findValidationRule(MaxNumberValidationRule.class);
+
+        if (maxValue == null) {
+            validationRules.remove(rule);
+        } else if (rule == null) {
+            validationRules.add(new MaxNumberValidationRule(maxValue));
+        }
+    }
+
+    public void setMinValue(BigDecimal minValue) {
+        ValidationRule rule = findValidationRule(MinNumberValidationRule.class);
+
+        if (minValue == null) {
+            validationRules.remove(rule);
+        } else if (rule == null) {
+            validationRules.add(new MinNumberValidationRule(minValue));
+        }
+    }
+
     public ObjectProperty<BigDecimal> numberProperty() {
         return number;
     }
@@ -42,6 +63,11 @@ public class NumberTextField extends TextField {
 
     public NumberTextField(BigDecimal value, String label, boolean allowBlank) {
         this(value, NumberFormat.getInstance(), label, allowBlank);
+    }
+
+    @Override
+    public Object getValue() {
+        return getNumber();
     }
 
     public void setAllowDouble(boolean allowDouble) {
@@ -89,7 +115,7 @@ public class NumberTextField extends TextField {
             String newValue = "";
 
             if (getText() != null) {
-                newValue =textField.getText().substring(0, textField.getSelection().getStart()) + event.getCharacter() +
+                newValue = textField.getText().substring(0, textField.getSelection().getStart()) + event.getCharacter() +
                         textField.getText().substring(textField.getSelection().getEnd(), textField.getText().length());
             } else {
                 newValue = event.getCharacter();

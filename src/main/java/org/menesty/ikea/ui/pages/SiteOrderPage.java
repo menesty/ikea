@@ -1,29 +1,21 @@
 package org.menesty.ikea.ui.pages;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
-import org.menesty.ikea.domain.StorageComboLack;
 import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.i18n.I18n;
 import org.menesty.ikea.i18n.I18nKeys;
 import org.menesty.ikea.lib.domain.ClientOrder;
 import org.menesty.ikea.lib.dto.PageResult;
 import org.menesty.ikea.service.AbstractAsyncService;
-import org.menesty.ikea.ui.controls.form.Field;
 import org.menesty.ikea.util.*;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.concurrent.Callable;
 
 /**
  * Created by Menesty on
@@ -158,7 +150,7 @@ public class SiteOrderPage extends BasePage {
     }
 
     class SiteOrderAsyncService extends AbstractAsyncService<PageResult<ClientOrder>> {
-        private SimpleIntegerProperty pageIndex = new SimpleIntegerProperty(1);
+        private IntegerProperty pageIndex = new SimpleIntegerProperty(1);
 
         @Override
         protected Task<PageResult<ClientOrder>> createTask() {
