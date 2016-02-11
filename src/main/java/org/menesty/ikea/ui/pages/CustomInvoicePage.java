@@ -229,7 +229,7 @@ public class CustomInvoicePage extends BasePage {
                                 for (InvoiceItem invoiceItem : list)
                                     invoiceItem.setIndex(++index);
 
-                                ServiceFacade.getInvoiceService().exportToEpp(BigDecimal.valueOf(20), invoicePdf.getInvoiceNumber(), list, selectedFile.getAbsolutePath());
+                                ServiceFacade.getInvoiceService().exportToEpp("CustomInvoice",BigDecimal.valueOf(20), invoicePdf.getInvoiceNumber(), list, selectedFile.getAbsolutePath());
                             }
                         }
                     });

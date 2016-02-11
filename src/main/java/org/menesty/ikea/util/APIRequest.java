@@ -24,96 +24,124 @@ import java.util.List;
  * 08:44.
  */
 public class APIRequest {
-    private final URI url;
+  private final URI url;
 
-    public APIRequest(URI url) {
-        this.url = url;
+  public APIRequest(URI url) {
+    this.url = url;
+  }
+
+  public URI getUrl() {
+    return url;
+  }
+
+  private byte[] loadData() throws Exception {
+
+    HttpHost targetHost = new HttpHost(url.getHost(), url.getPort());
+
+    CredentialsProvider credsProvider = HttpUtil.credentialsProvider(targetHost);
+
+    try (CloseableHttpClient httpClient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build()) {
+      HttpClientContext localContext = HttpUtil.context(targetHost);
+
+      HttpGet httpPost = new HttpGet(url);
+
+      try (CloseableHttpResponse response = httpClient.execute(targetHost, httpPost, localContext)) {
+        return EntityUtils.toByteArray(response.getEntity());
+      }
     }
+  }
 
-    private String loadData() throws Exception {
+  private String postRequestData(Object object) throws IOException {
+    HttpHost targetHost = new HttpHost(url.getHost(), url.getPort());
 
-        HttpHost targetHost = new HttpHost(url.getHost(), url.getPort());
+    CredentialsProvider credsProvider = HttpUtil.credentialsProvider(targetHost);
 
-        CredentialsProvider credsProvider = HttpUtil.credentialsProvider(targetHost);
+    try (CloseableHttpClient httpClient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build()) {
+      HttpClientContext localContext = HttpUtil.context(targetHost);
 
-        try (CloseableHttpClient httpClient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build()) {
-            HttpClientContext localContext = HttpUtil.context(targetHost);
+      HttpPost httpPost = new HttpPost(url);
+      ObjectMapper objectMapper = new ObjectMapper();
 
-            HttpGet httpPost = new HttpGet(url);
+      httpPost.setEntity(new StringEntity(objectMapper.writeValueAsString(object), ContentType.APPLICATION_JSON));
 
-            try (CloseableHttpResponse response = httpClient.execute(targetHost, httpPost, localContext)) {
-                return EntityUtils.toString(response.getEntity());
-            }
-        }
+      try (CloseableHttpResponse response = httpClient.execute(targetHost, httpPost, localContext)) {
+        return EntityUtils.toString(response.getEntity());
+      }
     }
+  }
 
-    private String postData(Object object) throws IOException {
-        HttpHost targetHost = new HttpHost(url.getHost(), url.getPort());
+  public <T> T postData(Object param, Class<T> clazz) throws Exception {
+    String response = postRequestData(param);
+    checkForError(response);
 
-        CredentialsProvider credsProvider = HttpUtil.credentialsProvider(targetHost);
+    ObjectMapper objectMapper = new ObjectMapper();
 
-        try (CloseableHttpClient httpClient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build()) {
-            HttpClientContext localContext = HttpUtil.context(targetHost);
+    return objectMapper.readValue(response, clazz);
+  }
 
-            HttpPost httpPost = new HttpPost(url);
-            ObjectMapper objectMapper = new ObjectMapper();
+  public void postData(Object param) throws Exception {
+    String response = postRequestData(param);
+    checkForError(response);
+  }
 
-            httpPost.setEntity(new StringEntity(objectMapper.writeValueAsString(object), ContentType.APPLICATION_JSON));
 
-            try (CloseableHttpResponse response = httpClient.execute(targetHost, httpPost, localContext)) {
-                return EntityUtils.toString(response.getEntity());
-            }
-        }
+  public <T> T postData(Object param, TypeReference<T> typeReference) throws Exception {
+    String response = postRequestData(param);
+    checkForError(response);
+    ObjectMapper objectMapper = new ObjectMapper();
+
+    return objectMapper.readValue(response, typeReference);
+  }
+
+  public <T> T getData(Class<T> clazz) throws Exception {
+    String response = toString(loadData());
+    checkForError(response);
+    ObjectMapper objectMapper = new ObjectMapper();
+
+    return objectMapper.readValue(response, clazz);
+  }
+
+  public void get() throws Exception {
+    String response = toString(loadData());
+    checkForError(response);
+  }
+
+  private String toString(byte[] byteArray) {
+    return new String(byteArray);
+  }
+
+  private void checkForError(String response) {
+    if (response.contains("exception") && !response.contains("\"status\":200")) {
+      throw new RuntimeException(response);
     }
+  }
 
-    public <T> T postData(Object param, Class<T> clazz) throws Exception {
-        String response = postData(param);
-        checkForError(response);
-        ObjectMapper objectMapper = new ObjectMapper();
+  public <T> T getData(TypeReference<T> typeReference) throws Exception {
+    String response = toString(loadData());
+    checkForError(response);
+    ObjectMapper objectMapper = new ObjectMapper();
 
-        return objectMapper.readValue(response, clazz);
-    }
+    return objectMapper.readValue(response, typeReference);
+  }
 
-    public <T> T postData(Object param, TypeReference<T> typeReference) throws Exception {
-        String response = postData(param);
-        checkForError(response);
-        ObjectMapper objectMapper = new ObjectMapper();
+  public <T> List<T> getList(TypeReference<List<T>> typeReference) throws Exception {
+    String response = toString(loadData());
+    checkForError(response);
+    ObjectMapper objectMapper = new ObjectMapper();
 
-        return objectMapper.readValue(response, typeReference);
-    }
+    return objectMapper.readValue(response, typeReference);
+  }
 
-    public <T> T getData(Class<T> clazz) throws Exception {
-        String response = loadData();
-        checkForError(response);
-        ObjectMapper objectMapper = new ObjectMapper();
+  public byte[] getBytes() throws Exception {
+    byte[] bytes = loadData();
+    checkForError(toString(bytes));
 
-        return objectMapper.readValue(response, clazz);
-    }
+    return bytes;
+  }
 
-    public void get() throws Exception {
-        String response = loadData();
-        checkForError(response);
-    }
+  public String getRawData() throws Exception {
+    byte[] bytes = getBytes();
 
-    private void checkForError(String response) {
-        if (response.contains("exception") && response.contains("\"status\":500")) {
-            throw new RuntimeException(response);
-        }
-    }
-
-    public <T> T getData(TypeReference<T> typeReference) throws Exception {
-        String response = loadData();
-        checkForError(response);
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        return objectMapper.readValue(response, typeReference);
-    }
-
-    public <T> List<T> getList(TypeReference<List<T>> typeReference) throws Exception {
-        String response = loadData();
-        checkForError(response);
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        return objectMapper.readValue(response, typeReference);
-    }
+    return bytes.length == 0 ? null : new String(bytes);
+  }
 }

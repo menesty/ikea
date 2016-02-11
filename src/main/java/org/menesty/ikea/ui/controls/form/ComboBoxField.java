@@ -12,10 +12,7 @@ import javafx.util.StringConverter;
 import org.menesty.ikea.ui.controls.form.provider.DataProvider;
 import org.menesty.ikea.util.ToolTipUtil;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by Menesty on
@@ -23,207 +20,223 @@ import java.util.Map;
  * 09:12.
  */
 public class ComboBoxField<T> extends HBox implements Field {
-    private String label;
-    private ComboBox<T> comboBox;
-    private ProgressIndicator indicator;
-    private DataProvider<T> dataProvider;
-    private ItemLabel<T> itemLabel = Object::toString;
-    private Map<String, Integer> itemFastMap = new HashMap<>();
-    private int selectedIndex = -1;
-    private boolean allowBlank = true;
+  private String label;
+  private ComboBox<T> comboBox;
+  private ProgressIndicator indicator;
+  private DataProvider<T> dataProvider;
+  private ItemLabel<T> itemLabel = Object::toString;
+  private Map<String, Integer> itemFastMap = new HashMap<>();
+  private int selectedIndex = -1;
+  private boolean allowBlank = true;
+  private int minLength = -1;
 
-    public ComboBoxField(String label) {
-        this.label = label;
-        this.comboBox = new ComboBox<>();
-        this.comboBox.setSkin(new AutoCompleteComboBoxListViewSkin<>(comboBox));
+  public ComboBoxField(String label) {
+    this.label = label;
+    this.comboBox = new ComboBox<>();
+    this.comboBox.setSkin(new AutoCompleteComboBoxListViewSkin<>(comboBox));
 
-        HBox.setHgrow(comboBox, Priority.ALWAYS);
+    HBox.setHgrow(comboBox, Priority.ALWAYS);
 
-        indicator = new ProgressIndicator();
-        indicator.setMaxHeight(23);
-        indicator.setVisible(false);
+    indicator = new ProgressIndicator();
+    indicator.setMaxHeight(23);
+    indicator.setVisible(false);
 
-        getChildren().addAll(comboBox, indicator);
+    getChildren().addAll(comboBox, indicator);
+  }
+
+  public void setAllowBlank(boolean allowBlank) {
+    this.allowBlank = allowBlank;
+  }
+
+  @Override
+  public boolean isValid() {
+    boolean result = true;
+    comboBox.getStyleClass().removeAll("validation-succeed", "validation-error");
+
+    if (!allowBlank) {
+      setValid(result = getValue() != null);
+      comboBox.getStyleClass().remove("white-border");
     }
 
-    public void setAllowBlank(boolean allowBlank) {
-        this.allowBlank = allowBlank;
+    return result;
+  }
+
+
+  public void setValid(boolean valid) {
+    comboBox.getStyleClass().removeAll("validation-succeed", "validation-error");
+    comboBox.getStyleClass().remove("white-border");
+
+    if (valid)
+      comboBox.getStyleClass().add("validation-succeed");
+    else
+      comboBox.getStyleClass().add("validation-error");
+
+  }
+
+  @Override
+  public void reset() {
+    comboBox.setValue(null);
+  }
+
+  public List<T> getItems() {
+    return Collections.unmodifiableList(comboBox.getItems());
+  }
+
+  @Override
+  public String getLabel() {
+    return label;
+  }
+
+  public void setEditable(boolean editable) {
+    comboBox.setEditable(editable);
+
+    if (dataProvider == null) {
+      dataProvider = new DataProvider<>();
+      dataProvider.setItemLabel(itemLabel);
     }
 
-    @Override
-    public boolean isValid() {
-        boolean result = true;
-        comboBox.getStyleClass().removeAll("validation-succeed", "validation-error");
+    comboBox.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {
+      selectedIndex = -1;
+      String filterText = comboBox.getEditor().getText();
 
-        if (!allowBlank) {
-            setValid(result = getValue() != null);
-            comboBox.getStyleClass().remove("white-border");
+      if (filterText == null || filterText.trim().equals("")) {
+        return;
+      }
+
+      if (itemFastMap.containsKey(filterText)) {
+        selectedIndex = itemFastMap.get(filterText);
+        return;
+      }
+
+      if (minLength != -1 && filterText.trim().length() < minLength) {
+        return;
+      }
+
+      comboBox.show();
+      indicator.setVisible(true);
+
+
+      dataProvider.filter(new DataProvider.CallBack<T>() {
+        @Override
+        public void onData(List<T> data) {
+          setItems(data);
+          indicator.setVisible(false);
         }
 
-        return result;
-    }
-
-    public void setValid(boolean valid) {
-        comboBox.getStyleClass().removeAll("validation-succeed", "validation-error");
-        comboBox.getStyleClass().remove("white-border");
-
-        if (valid)
-            comboBox.getStyleClass().add("validation-succeed");
-        else
-            comboBox.getStyleClass().add("validation-error");
-
-    }
-
-    @Override
-    public void reset() {
-        comboBox.setValue(null);
-    }
-
-    @Override
-    public String getLabel() {
-        return label;
-    }
-
-    public void setEditable(boolean editable) {
-        comboBox.setEditable(editable);
-
-        if (dataProvider == null) {
-            dataProvider = new DataProvider<>();
-            dataProvider.setItemLabel(itemLabel);
+        @Override
+        public void onError() {
+          indicator.setVisible(false);
         }
+      }, filterText);
+    });
+  }
 
-        comboBox.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {
-            selectedIndex = -1;
-            String filterText = comboBox.getEditor().getText();
+  public void addSelectItemListener(ChangeListener<? super T> listener) {
+    comboBox.getSelectionModel().selectedItemProperty().addListener(listener);
+  }
 
-            if (filterText == null || filterText.trim().equals("")) {
-                return;
-            }
+  public void setItemLabel(ItemLabel<T> itemLabel) {
+    this.itemLabel = itemLabel;
 
-            if (itemFastMap.containsKey(filterText)) {
-                selectedIndex = itemFastMap.get(filterText);
-                return;
-            }
+    comboBox.setCellFactory(param ->
+            new ListCell<T>() {
+              @Override
+              protected void updateItem(T t, boolean bln) {
+                super.updateItem(t, bln);
 
-            comboBox.show();
-            indicator.setVisible(true);
-            dataProvider.filter(new DataProvider.CallBack<T>() {
-                @Override
-                public void onData(List<T> data) {
-                    setItems(data);
-                    indicator.setVisible(false);
+                if (t != null) {
+                  setText(itemLabel.label(t));
                 }
+              }
 
-                @Override
-                public void onError() {
-                    indicator.setVisible(false);
-                }
-            }, filterText);
-        });
-    }
-
-    public void addSelectItemListener(ChangeListener<? super T> listener) {
-        comboBox.getSelectionModel().selectedItemProperty().addListener(listener);
-    }
-
-    public void setItemLabel(ItemLabel<T> itemLabel) {
-        this.itemLabel = itemLabel;
-
-        comboBox.setCellFactory(param ->
-                        new ListCell<T>() {
-                            @Override
-                            protected void updateItem(T t, boolean bln) {
-                                super.updateItem(t, bln);
-
-                                if (t != null) {
-                                    setText(itemLabel.label(t));
-                                }
-                            }
-
-                        }
-        );
-
-        comboBox.setConverter(new StringConverter<T>() {
-            @Override
-            public String toString(T item) {
-                return item == null ? comboBox.getEditor().getText() : itemLabel.label(item);
             }
+    );
 
-            @Override
-            public T fromString(String string) {
-                Integer index = itemFastMap.get(string);
+    comboBox.setConverter(new StringConverter<T>() {
+      @Override
+      public String toString(T item) {
+        return item == null ? comboBox.getEditor().getText() : itemLabel.label(item);
+      }
 
-                if (index != null) {
-                    selectedIndex = index;
-                    return comboBox.getItems().get(selectedIndex);
-                }
+      @Override
+      public T fromString(String string) {
+        Integer index = itemFastMap.get(string);
 
-                return null;
-            }
-        });
-
-        if (dataProvider != null) {
-            dataProvider.setItemLabel(itemLabel);
+        if (index != null) {
+          selectedIndex = index;
+          return comboBox.getItems().get(selectedIndex);
         }
 
-        buildFastMap();
+        return null;
+      }
+    });
+
+    if (dataProvider != null) {
+      dataProvider.setItemLabel(itemLabel);
     }
 
-    @SafeVarargs
-    public final void setItems(T... items) {
-        setItems(Arrays.asList(items));
+    buildFastMap();
+  }
+
+  @SafeVarargs
+  public final void setItems(T... items) {
+    setItems(Arrays.asList(items));
+  }
+
+  public void setItems(List<T> items) {
+    updateItems(items);
+  }
+
+  public void setValue(T value) {
+    comboBox.setValue(value);
+
+    if (value != null) {
+      if (comboBox.getItems().isEmpty() || !comboBox.getItems().contains(value)) {
+        comboBox.getItems().add(value);
+      }
+
+      selectedIndex = comboBox.getItems().indexOf(value);
+    } else {
+      selectedIndex = -1;
+    }
+  }
+
+  public T getValue() {
+    if (comboBox.isEditable()) {
+      return selectedIndex != -1 ? comboBox.getItems().get(selectedIndex) : null;
     }
 
-    public void setItems(List<T> items) {
-        updateItems(items);
+    return comboBox.getSelectionModel().getSelectedItem();
+  }
+
+  private void updateItems(List<T> items) {
+    comboBox.getItems().setAll(items);
+    buildFastMap();
+  }
+
+  private void buildFastMap() {
+    itemFastMap.clear();
+
+    for (int index = 0; index < comboBox.getItems().size(); index++) {
+      itemFastMap.put(itemLabel.label(comboBox.getItems().get(index)), index);
     }
+  }
 
-    public void setValue(T value) {
-        comboBox.setValue(value);
+  public void setLoader(DataProvider<T> dataProvider) {
+    setLoader(dataProvider, -1);
+  }
 
-        if (value != null) {
-            if (comboBox.getItems().isEmpty() || !comboBox.getItems().contains(value)) {
-                comboBox.getItems().add(value);
-            }
+  public void setLoader(DataProvider<T> dataProvider, int minLength) {
+    this.minLength = minLength;
+    this.dataProvider = dataProvider;
+  }
 
-            selectedIndex = comboBox.getItems().indexOf(value);
-        } else {
-            selectedIndex = -1;
-        }
-    }
+  public ReadOnlyObjectProperty<T> selectedItemProperty() {
+    return comboBox.getSelectionModel().selectedItemProperty();
+  }
 
-    public T getValue() {
-        if (comboBox.isEditable()) {
-            return selectedIndex != -1 ? comboBox.getItems().get(selectedIndex) : null;
-        }
-
-        return comboBox.getSelectionModel().getSelectedItem();
-    }
-
-    private void updateItems(List<T> items) {
-        comboBox.getItems().clear();
-        comboBox.getItems().addAll(items);
-        buildFastMap();
-    }
-
-    private void buildFastMap() {
-        itemFastMap.clear();
-
-        for (int index = 0; index < comboBox.getItems().size(); index++) {
-            itemFastMap.put(itemLabel.label(comboBox.getItems().get(index)), index);
-        }
-    }
-
-    public void setLoader(DataProvider<T> dataProvider) {
-        this.dataProvider = dataProvider;
-    }
-
-    public ReadOnlyObjectProperty<T> selectedItemProperty() {
-        return comboBox.getSelectionModel().selectedItemProperty();
-    }
-
-    public void setTooltip(String tooltip) {
-        comboBox.setTooltip(ToolTipUtil.create(tooltip));
-    }
+  public void setTooltip(String tooltip) {
+    comboBox.setTooltip(ToolTipUtil.create(tooltip));
+  }
 }
 

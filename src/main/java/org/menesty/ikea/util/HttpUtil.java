@@ -11,32 +11,45 @@ import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.menesty.ikea.service.ServiceFacade;
 
+import java.net.Authenticator;
+import java.net.PasswordAuthentication;
+
 public class HttpUtil {
 
-    public static CredentialsProvider credentialsProvider(final HttpHost targetHost) {
-        CredentialsProvider credsProvider = new BasicCredentialsProvider();
-        credsProvider.setCredentials(
-                new AuthScope(targetHost.getHostName(), targetHost.getPort()),
-                new UsernamePasswordCredentials(
-                        ServiceFacade.getApplicationPreference().getWarehouseUser(),
-                        ServiceFacade.getApplicationPreference().getWarehousePassword()
-                )
-        );
+  public static void initAuthenticator() {
+    Authenticator.setDefault(new Authenticator() {
+      protected PasswordAuthentication getPasswordAuthentication() {
+        return new PasswordAuthentication(
+            ServiceFacade.getApplicationPreference().getWarehouseUser(),
+            ServiceFacade.getApplicationPreference().getWarehousePassword().toCharArray());
+      }
+    });
+  }
 
-        return credsProvider;
-    }
+  public static CredentialsProvider credentialsProvider(final HttpHost targetHost) {
+    CredentialsProvider credsProvider = new BasicCredentialsProvider();
+    credsProvider.setCredentials(
+        new AuthScope(targetHost.getHostName(), targetHost.getPort()),
+        new UsernamePasswordCredentials(
+            ServiceFacade.getApplicationPreference().getWarehouseUser(),
+            ServiceFacade.getApplicationPreference().getWarehousePassword()
+        )
+    );
 
-    public static HttpClientContext context(final HttpHost targetHost) {
-        AuthCache authCache = new BasicAuthCache();
-        DigestScheme digestAuth = new DigestScheme();
-        digestAuth.overrideParamter("realm", "Authentication require");
-        digestAuth.overrideParamter("nonce", "1");
-        authCache.put(targetHost, digestAuth);
+    return credsProvider;
+  }
 
-        // Add AuthCache to the execution context
-        HttpClientContext localContext = HttpClientContext.create();
-        localContext.setAuthCache(authCache);
+  public static HttpClientContext context(final HttpHost targetHost) {
+    AuthCache authCache = new BasicAuthCache();
+    DigestScheme digestAuth = new DigestScheme();
+    digestAuth.overrideParamter("realm", "Authentication require");
+    digestAuth.overrideParamter("nonce", "1");
+    authCache.put(targetHost, digestAuth);
 
-        return localContext;
-    }
+    // Add AuthCache to the execution context
+    HttpClientContext localContext = HttpClientContext.create();
+    localContext.setAuthCache(authCache);
+
+    return localContext;
+  }
 }

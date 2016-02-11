@@ -64,7 +64,7 @@ public class AutoCompleteComboBoxListViewSkin<T> extends ComboBoxListViewSkin<T>
     private Point2D getPrefPopupPosition() {
         double dx = 0;
         dx += (getSkinnable().getEffectiveNodeOrientation() == NodeOrientation.RIGHT_TO_LEFT) ? -3 : 0;
-        return com.sun.javafx.Utils.pointRelativeTo(getSkinnable(), getPopupContent(), HPos.CENTER, VPos.BOTTOM, dx, 0, false);
+        return com.sun.javafx.util.Utils.pointRelativeTo(getSkinnable(), getPopupContent(), HPos.CENTER, VPos.BOTTOM, dx, 0, false);
     }
 
     @Override

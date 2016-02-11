@@ -12,44 +12,45 @@ import org.menesty.ikea.ui.pages.EntityDialogCallback;
  */
 public abstract class BaseEntityDialog<Entity> extends BaseDialog implements Form {
 
-    private EntityDialogCallback<Entity> callback;
+  private EntityDialogCallback<Entity> callback;
 
-    protected Entity entityValue;
+  protected Entity entityValue;
 
-    public BaseEntityDialog(Stage stage) {
-        super(stage);
+  public BaseEntityDialog(Stage stage) {
+    super(stage);
+  }
+
+  @Override
+  public void onCancel() {
+    if (callback != null) {
+      callback.onCancel();
     }
+  }
 
-    public void setCallback(EntityDialogCallback<Entity> callback) {
-        this.callback = callback;
-    }
+  protected void setCallback(EntityDialogCallback<Entity> callback) {
+    this.callback = callback;
+  }
 
-    @Override
-    public void onCancel() {
-        if (callback != null)
-            callback.onCancel();
-    }
+  @Override
+  public void onOk() {
+    if (isValid())
+      onSave(collect());
+  }
 
-    @Override
-    public void onOk() {
-        if (isValid())
-            onSave(collect());
-    }
+  protected abstract Entity collect();
 
-    protected abstract Entity collect();
+  protected abstract void populate(Entity entityValue);
 
-    protected abstract void populate(Entity entityValue);
+  private void onSave(Entity currentEntity) {
+    if (callback != null)
+      callback.onSave(currentEntity);
+  }
 
-    private void onSave(Entity currentEntity) {
-        if (callback != null)
-            callback.onSave(currentEntity);
-    }
+  public void bind(Entity entityValue, EntityDialogCallback<Entity> callback) {
+    this.entityValue = entityValue;
+    this.callback = callback;
+    reset();
 
-    public void bind(Entity entityValue, EntityDialogCallback<Entity> callback) {
-        this.entityValue = entityValue;
-        this.callback = callback;
-        reset();
-
-        populate(entityValue);
-    }
+    populate(entityValue);
+  }
 }

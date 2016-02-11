@@ -1,0 +1,12 @@
+<xls>
+    <area ref="OverBough!A1:D2">
+        <each items="overBoughs" var="overBough" ref="OverBough!A2:D2">
+            <area ref="OverBough!A2:D2"/>
+        </each>
+    </area>
+    <area ref="Lack!A1:D2">
+        <each items="lacks" var="lack" ref="Lack!A2:D2">
+            <area ref="Lack!A2:D2"/>
+        </each>
+    </area>
+</xls>
