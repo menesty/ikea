@@ -12,8 +12,12 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.util.Duration;
-import org.apache.commons.lang.StringUtils;
+import org.menesty.ikea.ui.controls.form.validation.NotBlankValidationRule;
+import org.menesty.ikea.ui.controls.form.validation.PatternValidationRule;
+import org.menesty.ikea.ui.controls.form.validation.ValidationRule;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 public class TextField extends HBox implements Field {
@@ -24,14 +28,12 @@ public class TextField extends HBox implements Field {
 
     private InvalidationListener invalidationListener;
 
-    private boolean allowBlank = true;
-
     private String label;
-
-    private Pattern validationPattern;
 
     protected javafx.scene.control.TextField textField;
     private Label charCountLabel;
+
+    protected List<ValidationRule> validationRules = new ArrayList<>();
 
     public TextField() {
         textField = new javafx.scene.control.TextField();
@@ -50,6 +52,10 @@ public class TextField extends HBox implements Field {
 
         getChildren().addAll(textField, charCountLabel);
         textField.heightProperty().addListener((observable, oldValue, newValue) -> charCountLabel.setMinHeight(newValue.doubleValue()));
+        focusedProperty().addListener(observable -> {
+            if (!isFocused())
+                isValid();
+        });
     }
 
     public void showCharCounter(boolean showCharCounter) {
@@ -72,7 +78,7 @@ public class TextField extends HBox implements Field {
         this();
         textField.setText(value);
         this.label = label;
-        this.allowBlank = allowBlank;
+        setAllowBlank(allowBlank);
     }
 
     public TextField(String value, String label) {
@@ -99,17 +105,21 @@ public class TextField extends HBox implements Field {
 
     @Override
     public boolean isValid() {
-        boolean result = true;
+        Object value = getValue();
 
-        if (!allowBlank) {
-            result = StringUtils.isNotBlank(textField.getText());
-        }
+        ValidationRule result = validationRules
+                .stream()
+                .filter(rule -> !rule.validate(value))
+                .findFirst().orElse(null);
 
-        if (validationPattern != null && textField.getText() != null) {
-            result = validationPattern.matcher(textField.getText()).find();
-        }
+        Boolean isValid = result == null;
+        setValid(isValid);
 
-        return result;
+        return isValid;
+    }
+
+    public Object getValue() {
+        return textField.getText();
     }
 
     @Override
@@ -125,13 +135,17 @@ public class TextField extends HBox implements Field {
     }
 
     public void setAllowBlank(boolean allowBlank) {
-        this.allowBlank = allowBlank;
+        ValidationRule rule = findValidationRule(NotBlankValidationRule.class);
 
-        if (!allowBlank)
-            focusedProperty().addListener(observable -> {
-                if (!isFocused())
-                    isValid();
-            });
+        if (allowBlank) {
+            validationRules.remove(rule);
+        } else if (rule == null) {
+            validationRules.add(new NotBlankValidationRule());
+        }
+    }
+
+    protected ValidationRule findValidationRule(Class<? extends ValidationRule> classRule) {
+        return validationRules.stream().filter(validationRule -> validationRule.getClass().equals(classRule)).findFirst().orElse(null);
     }
 
     public void setOnDelayAction(EventHandler<ActionEvent> onDelayAction) {
@@ -155,7 +169,13 @@ public class TextField extends HBox implements Field {
     }
 
     public void setValidationPattern(Pattern validationPattern) {
-        this.validationPattern = validationPattern;
+        ValidationRule rule = findValidationRule(PatternValidationRule.class);
+
+        if (validationPattern == null) {
+            validationRules.remove(rule);
+        } else if (rule == null) {
+            validationRules.add(new PatternValidationRule(validationPattern));
+        }
     }
 
     public void setPromptText(String promptText) {

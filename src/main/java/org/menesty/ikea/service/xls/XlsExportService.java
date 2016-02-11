@@ -9,6 +9,7 @@ import org.jxls.transform.Transformer;
 import org.jxls.util.TransformerFactory;
 import org.menesty.ikea.i18n.I18n;
 import org.menesty.ikea.i18n.I18nKeys;
+import org.menesty.ikea.lib.domain.ikea.logistic.stock.StockItemDto;
 import org.menesty.ikea.lib.dto.ProductPriceMismatch;
 
 import java.io.File;
@@ -27,52 +28,61 @@ import java.util.List;
  * 20:25.
  */
 public class XlsExportService {
-    private static final String PRODUCT_PRICE_MISMATCH_NOT_AVAILABLE_TEMPLATE = "mismatch_not_available";
+  private static final String PRODUCT_PRICE_MISMATCH_NOT_AVAILABLE_TEMPLATE = "mismatch_not_available";
+  private static final String PRODUCT_BUY_RESULT_TEMPLATE = "buy_result";
 
-    public void exportProductPriceMismatchNotAvailable(File targetFile, List<String> items, List<ProductPriceMismatch> mismatches) {
-        Context context = new Context();
-        context.putVar("items", items);
-        context.putVar("mismatches", mismatches);
+  public void exportProductPriceMismatchNotAvailable(File targetFile, List<String> items, List<ProductPriceMismatch> mismatches) {
+    Context context = new Context();
+    context.putVar("items", items);
+    context.putVar("mismatches", mismatches);
 
-        transformSingleSheet(targetFile, PRODUCT_PRICE_MISMATCH_NOT_AVAILABLE_TEMPLATE, context, Arrays.asList("NotExist!A1", "Mismatch!A1"));
-    }
+    transformSingleSheet(targetFile, PRODUCT_PRICE_MISMATCH_NOT_AVAILABLE_TEMPLATE, context, Arrays.asList("NotExist!A1", "Mismatch!A1"));
+  }
 
-    private void transformSingleSheet(File targetFile, String templateName, Context context, List<String> cellRef) {
-        try (InputStream is = getTemplate(templateName)) {
-            try (OutputStream os = getOutputStream(targetFile)) {
-                Transformer transformer = TransformerFactory.createTransformer(is, os);
-                try (InputStream configInputStream = getTemplateConfig(templateName)) {
-                    AreaBuilder areaBuilder = new XmlAreaBuilder(configInputStream, transformer);
-                    List<Area> xlsAreaList = areaBuilder.build();
+  private void transformSingleSheet(File targetFile, String templateName, Context context, List<String> cellRef) {
+    try (InputStream is = getTemplate(templateName)) {
+      try (OutputStream os = getOutputStream(targetFile)) {
+        Transformer transformer = TransformerFactory.createTransformer(is, os);
+        try (InputStream configInputStream = getTemplateConfig(templateName)) {
+          AreaBuilder areaBuilder = new XmlAreaBuilder(configInputStream, transformer);
+          List<Area> xlsAreaList = areaBuilder.build();
 
-                    for (int i = 0; i < xlsAreaList.size(); i++) {
-                        Area xlsArea = xlsAreaList.get(i);
-                        xlsArea.applyAt(new CellRef(cellRef.get(i)), context);
-                    }
+          for (int i = 0; i < xlsAreaList.size(); i++) {
+            Area xlsArea = xlsAreaList.get(i);
+            xlsArea.applyAt(new CellRef(cellRef.get(i)), context);
+          }
 
-                    transformer.write();
-                }
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(I18n.UA.getString(I18nKeys.FAILED_GENERATE_XLS_REPORT, templateName), e);
+          transformer.write();
         }
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(I18n.UA.getString(I18nKeys.FAILED_GENERATE_XLS_REPORT, templateName), e);
+    }
+  }
+
+  private InputStream getTemplate(String templateName) throws IOException {
+    return XlsExportService.class.getResourceAsStream("/templates/xls/" + templateName + ".xlsx");
+  }
+
+  private InputStream getTemplateConfig(String templateName) throws IOException {
+    return XlsExportService.class.getResourceAsStream("/templates/xls/config/" + templateName + ".xml");
+  }
+
+  private OutputStream getOutputStream(File file) throws IOException {
+    StandardOpenOption operation = StandardOpenOption.CREATE_NEW;
+
+    if (file.exists()) {
+      operation = StandardOpenOption.TRUNCATE_EXISTING;
     }
 
-    private InputStream getTemplate(String templateName) throws IOException {
-        return XlsExportService.class.getResourceAsStream("/templates/xls/" + templateName + ".xlsx");
-    }
+    return Files.newOutputStream(file.toPath(), operation);
+  }
 
-    private InputStream getTemplateConfig(String templateName) throws IOException {
-        return XlsExportService.class.getResourceAsStream("/templates/xls/config/" + templateName + ".xml");
-    }
+  public void exportBuyResult(File targetFile, List<StockItemDto> overBough, List<StockItemDto> lack) {
+    Context context = new Context();
+    context.putVar("overBoughs", overBough);
+    context.putVar("lacks", lack);
 
-    private OutputStream getOutputStream(File file) throws IOException {
-        StandardOpenOption operation = StandardOpenOption.CREATE_NEW;
-
-        if (file.exists()) {
-            operation = StandardOpenOption.TRUNCATE_EXISTING;
-        }
-
-        return Files.newOutputStream(file.toPath(), operation);
-    }
+    transformSingleSheet(targetFile, PRODUCT_BUY_RESULT_TEMPLATE, context, Arrays.asList("OverBough!A1", "Lack!A1"));
+  }
 }

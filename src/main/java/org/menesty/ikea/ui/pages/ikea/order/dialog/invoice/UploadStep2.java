@@ -29,7 +29,7 @@ public class UploadStep2 extends BaseWizardStep<IkeaInvoiceUploadDialog.IkeaInvo
 
         ItemProcessingInfoLabel progress = new ItemProcessingInfoLabel(I18n.UA.getString(I18nKeys.INVOICE_PARSE_FILE_INFO));
         invoiceInformationTableView = new InvoiceInformationTableView();
-        invoiceInformationTableView.setMaxHeight(150);
+        invoiceInformationTableView.setMinHeight(150);
 
         invoiceInformationTableView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             rawInvoiceItemTableView.getItems().clear();

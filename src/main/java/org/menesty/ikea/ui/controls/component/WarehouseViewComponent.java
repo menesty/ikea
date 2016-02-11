@@ -166,7 +166,7 @@ public class WarehouseViewComponent extends BorderPane {
         controlBox.getChildren().add(new WarehouseSearchBar() {
             @Override
             public void onSearch(WarehouseItemSearchData data) {
-                setItems(filter(data));
+
             }
         });
 
@@ -197,18 +197,6 @@ public class WarehouseViewComponent extends BorderPane {
         return result;
     }
 
-    public List<WarehouseItemDto> filter(WarehouseItemSearchData data) {
-        if (data.price == null || data.price == 0)
-            return items;
-
-        List<WarehouseItemDto> result = new ArrayList<>();
-
-        for (WarehouseItemDto item : items)
-            if (item.price <= data.price)
-                result.add(item);
-
-        return result;
-    }
 
     public void load() {
         loadingPane.bindTask(loadService);
