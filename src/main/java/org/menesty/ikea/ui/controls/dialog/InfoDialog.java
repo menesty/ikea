@@ -5,6 +5,7 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.Properties;
 
 /**
@@ -13,30 +14,35 @@ import java.util.Properties;
  * 9:19.
  */
 public class InfoDialog extends BaseDialog {
-    private Label buildVersion;
-    private Label buildTime;
+  private Label buildVersion;
+  private Label buildTime;
+  private Label defaultFileEncoding;
+  private Label defaultCharsetEncoding;
 
-    public InfoDialog(Stage stage) {
-        super(stage);
-        setTitle("Info");
+  public InfoDialog(Stage stage) {
+    super(stage);
+    setTitle("Info");
 
-        addRow(buildVersion = new Label(), buildTime = new Label(), bottomBar);
+    addRow(buildVersion = new Label(), buildTime = new Label(), defaultFileEncoding = new Label(), defaultCharsetEncoding = new Label(), bottomBar);
+  }
+
+
+  @Override
+  public void onShow() {
+    Properties properties = new Properties();
+
+    try (InputStream version = getClass().getResourceAsStream("/version.properties")) {
+      properties.load(version);
+
+      buildTime.setText("Build date : " + properties.getProperty("build.date"));
+      buildVersion.setText("Version : " + properties.getProperty("version"));
+
+      properties.clear();
+    } catch (IOException e) {
+      e.printStackTrace();
     }
 
-
-    @Override
-    public void onShow() {
-        Properties properties = new Properties();
-
-        try (InputStream version = getClass().getResourceAsStream("/version.properties")) {
-            properties.load(version);
-
-            buildTime.setText(properties.getProperty("build.date"));
-            buildVersion.setText(properties.getProperty("version"));
-
-            properties.clear();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+    defaultFileEncoding.setText("File encoding : " + System.getProperty("file.encoding"));
+    defaultCharsetEncoding.setText("Charset encoding : " + Charset.defaultCharset().toString());
+  }
 }

@@ -1,7 +1,6 @@
 package org.menesty.ikea.ui.controls.pane;
 
 import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -55,14 +54,22 @@ public class LoadingPane extends StackPane {
     public void bindTask(Worker<?>... task) {
         unbind();
 
+        List<ReadOnlyBooleanProperty> workerRunningProperties = new ArrayList<>();
+
         for (Worker<?> worker : task) {
-            taskRunningMonitorProperty.setProperties(worker.runningProperty());
+            workerRunningProperties.add(worker.runningProperty());
         }
+
+        taskRunningMonitorProperty.setProperties(workerRunningProperties.toArray(new ReadOnlyBooleanProperty[workerRunningProperties.size()]));
 
         progressIndicator.progressProperty().bind(progressProperty);
         maskRegion.visibleProperty().bind(taskRunningMonitorProperty);
         visibleProperty().bind(taskRunningMonitorProperty);
         progressIndicator.visibleProperty().bind(taskRunningMonitorProperty);
+    }
+
+    public void addBindTask(Worker<?> worker) {
+        taskRunningMonitorProperty.addProperty(worker.runningProperty());
     }
 
     public void show() {
@@ -88,18 +95,15 @@ class TaskRunningMonitorProperty extends SimpleBooleanProperty {
     private InvalidationListener invalidationListener;
 
     public TaskRunningMonitorProperty() {
-        invalidationListener = new InvalidationListener() {
-            @Override
-            public void invalidated(Observable observable) {
-                boolean running = false;
-                for (ReadOnlyBooleanProperty property : properties) {
-                    if (property.get()) {
-                        running = true;
-                        break;
-                    }
+        invalidationListener = observable -> {
+            boolean running = false;
+            for (ReadOnlyBooleanProperty property : properties) {
+                if (property.get()) {
+                    running = true;
+                    break;
                 }
-                TaskRunningMonitorProperty.this.set(running);
             }
+            TaskRunningMonitorProperty.this.set(running);
         };
     }
 
@@ -110,6 +114,12 @@ class TaskRunningMonitorProperty extends SimpleBooleanProperty {
             property.addListener(invalidationListener);
             this.properties.add(property);
         }
+    }
+
+    public void addProperty(ReadOnlyBooleanProperty property) {
+        property.addListener(invalidationListener);
+        this.properties.add(property);
+        invalidationListener.invalidated(null);
     }
 
     @Override

@@ -11,7 +11,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.menesty.ikea.i18n.I18n;
 import org.menesty.ikea.i18n.I18nKeys;
-import org.menesty.ikea.lib.domain.ikea.invoice.Invoice;
+import org.menesty.ikea.lib.domain.ikea.logistic.invoice.Invoice;
 import org.menesty.ikea.lib.service.parse.pdf.invoice.InvoiceParseResult;
 import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.ui.controls.dialog.BaseDialog;
@@ -66,7 +66,7 @@ public class IkeaInvoiceUploadDialog extends BaseDialog {
         button.setOnAction(event -> onActionOk());
         wizardPanel.addButton(button);
 
-        setMaxSize(640, 600);
+        setMaxSize(660, 500);
         cancelBtn.setVisible(false);
         okBtn.setVisible(false);
 

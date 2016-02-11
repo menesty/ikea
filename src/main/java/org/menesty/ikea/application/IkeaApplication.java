@@ -32,9 +32,12 @@ import org.menesty.ikea.ui.controls.dialog.ErrorConsoleDialog;
 import org.menesty.ikea.ui.controls.dialog.InfoDialog;
 import org.menesty.ikea.ui.controls.pane.LoadingPane;
 import org.menesty.ikea.ui.pages.*;
+import org.menesty.ikea.ui.pages.ikea.contraget.ContragentPage;
 import org.menesty.ikea.ui.pages.ikea.order.IkeaOrderViewPage;
 import org.menesty.ikea.ui.pages.ikea.order.IkeaProcessOrderPage;
+import org.menesty.ikea.ui.pages.ikea.warehouse.SiteWarehousePage;
 import org.menesty.ikea.ui.pages.wizard.order.OrderCreateWizardPage;
+import org.menesty.ikea.util.HttpUtil;
 
 /**
  * Created by Menesty on
@@ -42,193 +45,208 @@ import org.menesty.ikea.ui.pages.wizard.order.OrderCreateWizardPage;
  * 20:48.
  */
 public class IkeaApplication extends Application implements DialogSupport {
-    private PopupDialog modalDimmer;
-    private LoadingPane loadingPane;
-    private WorkspaceArea pageArea;
-    private Stage stage;
+  private PopupDialog modalDimmer;
+  private LoadingPane loadingPane;
+  private WorkspaceArea pageArea;
+  private Stage stage;
 
-    @Override
-    public void start(Stage stage) throws Exception {
-        this.stage = stage;
-        Thread.currentThread().setUncaughtExceptionHandler((thread, throwable) -> {
-            ServiceFacade.getErrorConsole().add(throwable);
-        });
+  @Override
+  public void start(Stage stage) throws Exception {
+    this.stage = stage;
+    Thread.currentThread().setUncaughtExceptionHandler((thread, throwable) -> {
+      ServiceFacade.getErrorConsole().add(throwable);
+    });
 
-        ApplicationWindow rootPane = new ApplicationWindow(stage, 1020, 650);
+    HttpUtil.initAuthenticator();
 
-        BorderPane mainPane = new BorderPane();
-        mainPane.getStyleClass().add("application");
-        mainPane.setId("root");
+    ApplicationWindow rootPane = new ApplicationWindow(stage, 1020, 650);
 
-        mainPane.setTop(new ApplicationControlToolBar(stage));
+    BorderPane mainPane = new BorderPane();
+    mainPane.getStyleClass().add("application");
+    mainPane.setId("root");
 
-
-        StackPane pageContainer = new StackPane();
-
-        BreadCrumb breadCrumb = new BreadCrumb();
-        pageArea = new WorkspaceArea(breadCrumb, this);
+    mainPane.setTop(new ApplicationControlToolBar(stage));
 
 
-        pageArea.addCategory(createIkeaCategoryGroup());
+    StackPane pageContainer = new StackPane();
 
-        BreadCrumbToolBar.ControlActionListener controlActionListener = new BreadCrumbToolBar.ControlActionListener() {
-            @Override
-            public void onSetting() {
-                showPopupDialog(getPreferenceDialog());
-            }
-
-            @Override
-            public void onInfo() {
-                showPopupDialog(getInfoDialog());
-            }
-        };
-
-        BreadCrumbView.OnBreadCrumbItemClickListener changeListener = pageArea::navigate;
-
-        BreadCrumbToolBar breadCrumbToolBar = new BreadCrumbToolBar(breadCrumb, controlActionListener, changeListener);
+    BreadCrumb breadCrumb = new BreadCrumb();
+    pageArea = new WorkspaceArea(breadCrumb, this);
 
 
-        final Button errorConsoleButton = new Button(null, ImageFactory.createError22Icon());
-        ServiceFacade.getErrorConsole().errorsProperty().get().addListener((ListChangeListener<Throwable>) c -> {
-            if (!c.getList().isEmpty()) {
-                Platform.runLater(() ->
-                        errorConsoleButton.setText("(" + c.getList().size() + ")"));
-            }
-        });
-        errorConsoleButton.setOnAction(event -> showPopupDialog(getErrorDialog()));
+    pageArea.addCategory(createIkeaCategoryGroup());
+    pageArea.addCategory(createSiteGroup());
 
-        breadCrumbToolBar.addControlButton(errorConsoleButton);
+    BreadCrumbToolBar.ControlActionListener controlActionListener = new BreadCrumbToolBar.ControlActionListener() {
+      @Override
+      public void onSetting() {
+        showPopupDialog(getPreferenceDialog());
+      }
 
+      @Override
+      public void onInfo() {
+        showPopupDialog(getInfoDialog());
+      }
+    };
 
-        BorderPane pagePane = new BorderPane();
-        pagePane.setTop(breadCrumbToolBar);
+    BreadCrumbView.OnBreadCrumbItemClickListener changeListener = pageArea::navigate;
 
-
-        pagePane.setCenter(pageArea);
-
-
-        pageContainer.getChildren().addAll(pagePane, loadingPane = new LoadingPane());
+    BreadCrumbToolBar breadCrumbToolBar = new BreadCrumbToolBar(breadCrumb, controlActionListener, changeListener);
 
 
-        mainPane.setCenter(pageContainer);
-        rootPane.addFirst(mainPane);
-        rootPane.add(modalDimmer = new PopupDialog());
+    final Button errorConsoleButton = new Button(null, ImageFactory.createError22Icon());
+    ServiceFacade.getErrorConsole().errorsProperty().get().addListener((ListChangeListener<Throwable>) c -> {
+      if (!c.getList().isEmpty()) {
+        Platform.runLater(() ->
+            errorConsoleButton.setText("(" + c.getList().size() + ")"));
+      }
+    });
+    errorConsoleButton.setOnAction(event -> showPopupDialog(getErrorDialog()));
 
-        show(stage, rootPane);
-        initDatabase();
+    breadCrumbToolBar.addControlButton(errorConsoleButton);
+
+
+    BorderPane pagePane = new BorderPane();
+    pagePane.setTop(breadCrumbToolBar);
+
+
+    pagePane.setCenter(pageArea);
+
+
+    pageContainer.getChildren().addAll(pagePane, loadingPane = new LoadingPane());
+
+
+    mainPane.setCenter(pageContainer);
+    rootPane.addFirst(mainPane);
+    rootPane.add(modalDimmer = new PopupDialog());
+
+    show(stage, rootPane);
+    initDatabase();
+  }
+
+  private void initDatabase() {
+    Task<Void> initDbTask = DatabaseService.init();
+    loadingPane.bindTask(initDbTask);
+    initDbTask.setOnSucceeded(workerStateEvent -> pageArea.navigate(pageArea.getCategories().get(0).getItems().get(0)));
+
+  }
+
+  private CategoryGroup createIkeaCategoryGroup() {
+    CategoryGroup group = new CategoryGroup("IKEA");
+    PageDescription orderList = new PageDescription(Pages.ORDERS.getTitle(), ImageFactory.createOrders72Icon(), OrderListPage.class);
+    orderList.addPage(new PageDescription(Pages.CUSTOMER_ORDER.getTitle(), OrderViewPage.class, false));
+    group.add(orderList);
+
+    group.add(new PageDescription(Pages.PRODUCTS.getTitle(), ImageFactory.createProducts72Icon(), ProductPage.class));
+    group.add(new PageDescription(Pages.USERS.getTitle(), ImageFactory.createUsersIcon64(), UserPage.class));
+    group.add(new PageDescription(Pages.WAREHOUSE.getTitle(), ImageFactory.createWarehouseIcon72(), WarehousePage.class));
+    group.add(new PageDescription(Pages.INVOICE.getTitle(), ImageFactory.createInvoice72Icon(), CustomInvoicePage.class));
+    group.add(new PageDescription(Pages.IKEA_PARAGONS.getTitle(), ImageFactory.createIkea72Icon(), IkeaParagonPage.class));
+    group.add(new PageDescription(Pages.SHOPS.getTitle(), ImageFactory.createShopIcon72(), IkeaShopPage.class));
+    group.add(new PageDescription(Pages.INVOICE_ITEM_SEARCH.getTitle(), ImageFactory.createSearch72Icon(), InvoicePdfItemSearchPage.class));
+
+
+    return group;
+  }
+
+  private CategoryGroup createSiteGroup() {
+    CategoryGroup group = new CategoryGroup("Site");
+
+    PageDescription ikeaOrderList = new PageDescription(Pages.SITE_ORDERS.getTitle(), ImageFactory.createSiteOrders72Icon(), IkeaProcessOrderPage.class);
+
+    ikeaOrderList.addPage(new PageDescription(Pages.ORDER_WIZARD.getTitle(), OrderCreateWizardPage.class, false));
+    ikeaOrderList.addPage(new PageDescription(Pages.ORDER_DETAIL.getTitle(), IkeaOrderViewPage.class, false));
+
+
+    group.add(ikeaOrderList);
+
+    group.add(new PageDescription(Pages.WAREHOUSE.getTitle(), ImageFactory.createWarehouseIcon72(), SiteWarehousePage.class));
+    group.add(new PageDescription(Pages.CONTRAGENT.getTitle(), ImageFactory.createUsersIcon64(), ContragentPage.class));
+
+    return group;
+  }
+
+  private void show(Stage stage, Pane rootPane) {
+    boolean is3dSupported = Platform.isSupported(ConditionalFeature.SCENE3D);
+    Scene scene = new Scene(rootPane, 1020, 650, is3dSupported);
+    scene.getStylesheets().add("/styles/application.css");
+
+    if (is3dSupported) {
+      scene.setCamera(new PerspectiveCamera());
     }
+    stage.initStyle(StageStyle.UNDECORATED);
+    stage.setScene(scene);
+    stage.show();
+  }
 
-    private void initDatabase() {
-        Task<Void> initDbTask = DatabaseService.init();
-        loadingPane.bindTask(initDbTask);
-        initDbTask.setOnSucceeded(workerStateEvent -> pageArea.navigate(pageArea.getCategories().get(0).getItems().get(0)));
+  private BaseDialog getPreferenceDialog() {
+    ApplicationPreferenceDialog preferenceDialog = new ApplicationPreferenceDialog(getStage());
+    preferenceDialog.setDefaultAction(dialog -> {
+      dialog.setDefaultAction(null);
+      hidePopupDialog();
+    });
 
-    }
+    return preferenceDialog;
+  }
 
-    private CategoryGroup createIkeaCategoryGroup() {
-        CategoryGroup group = new CategoryGroup("IKEA");
-        PageDescription orderList = new PageDescription(Pages.ORDERS.getTitle(), ImageFactory.createOrders72Icon(), OrderListPage.class);
-        orderList.addPage(new PageDescription(Pages.CUSTOMER_ORDER.getTitle(), OrderViewPage.class, false));
-        group.add(orderList);
+  private BaseDialog getErrorDialog() {
+    ErrorConsoleDialog errorConsoleDialog = new ErrorConsoleDialog(getStage());
+    errorConsoleDialog.setDefaultAction(dialog -> {
+      dialog.setDefaultAction(null);
+      hidePopupDialog();
+    });
 
-        PageDescription ikeaOrderList = new PageDescription(Pages.SITE_ORDERS.getTitle(), ImageFactory.createSiteOrders72Icon(), IkeaProcessOrderPage.class);
-        ikeaOrderList.addPage(new PageDescription(Pages.ORDER_WIZARD.getTitle(), OrderCreateWizardPage.class, false));
-        ikeaOrderList.addPage(new PageDescription(Pages.ORDER_DETAIL.getTitle(), IkeaOrderViewPage.class, false));
-        group.add(ikeaOrderList);
+    return errorConsoleDialog;
+  }
 
-        group.add(new PageDescription(Pages.PRODUCTS.getTitle(), ImageFactory.createProducts72Icon(), ProductPage.class));
-        group.add(new PageDescription(Pages.USERS.getTitle(), ImageFactory.createUsersIcon64(), UserPage.class));
-        group.add(new PageDescription(Pages.WAREHOUSE.getTitle(), ImageFactory.createWarehouseIcon72(), WarehousePage.class));
-        group.add(new PageDescription(Pages.INVOICE.getTitle(), ImageFactory.createInvoice72Icon(), CustomInvoicePage.class));
-        group.add(new PageDescription(Pages.IKEA_PARAGONS.getTitle(), ImageFactory.createIkea72Icon(), IkeaParagonPage.class));
-        group.add(new PageDescription(Pages.SHOPS.getTitle(), ImageFactory.createShopIcon72(), IkeaShopPage.class));
-        group.add(new PageDescription(Pages.INVOICE_ITEM_SEARCH.getTitle(), ImageFactory.createSearch72Icon(), InvoicePdfItemSearchPage.class));
+  private BaseDialog getInfoDialog() {
+    InfoDialog dialog = new InfoDialog(getStage());
+    dialog.setDefaultAction(dialog1 -> {
+      dialog1.setDefaultAction(null);
+      hidePopupDialog();
+    });
+    return dialog;
+  }
 
+  @Override
+  public void showPopupDialog(BaseDialog node) {
+    modalDimmer.showModalMessage(node, node.isAllowAutoHide());
+    node.onShow();
+  }
 
-        return group;
-    }
+  @Override
+  public void hidePopupDialog() {
+    hidePopupDialog(true);
+  }
 
-    private void show(Stage stage, Pane rootPane) {
-        boolean is3dSupported = Platform.isSupported(ConditionalFeature.SCENE3D);
-        Scene scene = new Scene(rootPane, 1020, 650, is3dSupported);
-        scene.getStylesheets().add("/styles/application.css");
+  @Override
+  public void hidePopupDialog(boolean animate) {
+    modalDimmer.hideModalMessage(animate);
+  }
 
-        if (is3dSupported) {
-            scene.setCamera(new PerspectiveCamera());
-        }
-        stage.initStyle(StageStyle.UNDECORATED);
-        stage.setScene(scene);
-        stage.show();
-    }
+  @Override
+  public Stage getStage() {
+    return stage;
+  }
 
-    private BaseDialog getPreferenceDialog() {
-        ApplicationPreferenceDialog preferenceDialog = new ApplicationPreferenceDialog(getStage());
-        preferenceDialog.setDefaultAction(dialog -> {
-            dialog.setDefaultAction(null);
-            hidePopupDialog();
-        });
+  @Override
+  public void navigate(PageDescription parent, Class<? extends BasePage> subPage, Object... params) {
+    pageArea.navigate(parent, subPage, params);
+  }
 
-        return preferenceDialog;
-    }
+  @Override
+  public PageDescription getActivePage() {
+    return pageArea.getActivePage();
+  }
 
-    private BaseDialog getErrorDialog() {
-        ErrorConsoleDialog errorConsoleDialog = new ErrorConsoleDialog(getStage());
-        errorConsoleDialog.setDefaultAction(dialog -> {
-            dialog.setDefaultAction(null);
-            hidePopupDialog();
-        });
-
-        return errorConsoleDialog;
-    }
-
-    private BaseDialog getInfoDialog() {
-        InfoDialog dialog = new InfoDialog(getStage());
-        dialog.setDefaultAction(dialog1 -> {
-            dialog1.setDefaultAction(null);
-            hidePopupDialog();
-        });
-        return dialog;
-    }
-
-    @Override
-    public void showPopupDialog(BaseDialog node) {
-        modalDimmer.showModalMessage(node, node.isAllowAutoHide());
-        node.onShow();
-    }
-
-    @Override
-    public void hidePopupDialog() {
-        hidePopupDialog(true);
-    }
-
-    @Override
-    public void hidePopupDialog(boolean animate) {
-        modalDimmer.hideModalMessage(animate);
-    }
-
-    @Override
-    public Stage getStage() {
-        return stage;
-    }
-
-    @Override
-    public void navigate(PageDescription parent, Class<? extends BasePage> subPage, Object... params) {
-        pageArea.navigate(parent, subPage, params);
-    }
-
-    @Override
-    public PageDescription getActivePage() {
-        return pageArea.getActivePage();
-    }
-
-    @Override
-    public void stop() throws Exception {
-        super.stop();
-        DatabaseService.close();
-    }
+  @Override
+  public void stop() throws Exception {
+    super.stop();
+    DatabaseService.close();
+  }
 
 
-    public static void main(String... args) {
-        launch(args);
-    }
+  public static void main(String... args) {
+    launch(args);
+  }
 }

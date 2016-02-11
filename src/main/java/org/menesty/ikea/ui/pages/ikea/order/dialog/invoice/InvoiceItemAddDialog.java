@@ -9,7 +9,7 @@ import javafx.stage.Stage;
 import org.menesty.ikea.i18n.I18n;
 import org.menesty.ikea.i18n.I18nKeys;
 import org.menesty.ikea.lib.domain.ikea.IkeaProduct;
-import org.menesty.ikea.lib.domain.ikea.invoice.InvoiceItem;
+import org.menesty.ikea.lib.domain.ikea.logistic.invoice.InvoiceItem;
 import org.menesty.ikea.lib.service.IkeaProductService;
 import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.service.ServiceFacade;

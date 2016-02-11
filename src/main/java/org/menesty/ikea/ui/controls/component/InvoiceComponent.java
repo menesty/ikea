@@ -218,7 +218,7 @@ public abstract class InvoiceComponent extends BorderPane {
 
             @Override
             public void export(String invoiceNumber, List<InvoiceItem> items, String path) {
-                ServiceFacade.getInvoiceService().exportToEpp(BigDecimal.valueOf(getCustomerOrder().getMargin()), invoiceNumber, items, path);
+                ServiceFacade.getInvoiceService().exportToEpp("orderName",BigDecimal.valueOf(getCustomerOrder().getMargin()), invoiceNumber, items, path);
             }
         };
 
