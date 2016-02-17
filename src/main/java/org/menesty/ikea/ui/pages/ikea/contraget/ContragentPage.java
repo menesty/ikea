@@ -89,6 +89,14 @@ public class ContragentPage extends BasePage {
       tableView.getColumns().add(column);
     }
 
+    {
+      TableColumn<Contragent, String> column = new TableColumn<>(I18n.UA.getString(I18nKeys.POST_CODE));
+      column.setCellValueFactory(ColumnUtil.<Contragent, String>column("postCode"));
+      column.setMinWidth(100);
+      column.getStyleClass().add("align-right");
+      tableView.getColumns().add(column);
+    }
+
     tableView.setRowRenderListener((row, newValue) -> {
       row.setContextMenu(null);
 

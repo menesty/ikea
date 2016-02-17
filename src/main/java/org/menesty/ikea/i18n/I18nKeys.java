@@ -107,9 +107,9 @@ public interface I18nKeys {
   String APPLICATION_PREFERENCES = "application.preferences";
   String SAVE = "save";
   String ACTIVE_PROFILE = "active.profile";
-  String RESET = "reset";
+  String CLEAR_WAREHOUSE = "clear.warehouse";
   String WARNING = "warning";
-  String CONFIRM_RESET_QUESTION = "confirm.reset.question";
+  String CONFIRM_CLEAR_WAREHOUSE_QUESTION = "confirm.clear.warehouse.question";
   String DOWNLOAD_DATE = "download.date";
   String PARAGON_ID = "paragon.id";
   String PARAGON_DETAILS = "paragon.details";
@@ -128,10 +128,14 @@ public interface I18nKeys {
   String HEIGHT_CM = "height.cm";
   String WIGHT_CM = "wight.cm";
   String WEIGHT_KG = "weight.kg";
-  String ACTIVE = "active";
+  String NOT_ACTIVE = "not.active";
   String PACKAGE_INFO_LIST = "package.info.list";
   String PACKAGE_INFO = "package.info";
   String BOX_COUNT = "box.count";
   String BOX_NUMBER = "box.number";
   String UPDATE_PACKAGE_INFO = "update.package.info";
+  String COPY = "copy";
+  String ADD_CHECKED_TO_ORDER = "add.checked.to.order";
+  String ALL_CHECKED_ITEMS_WILL_ADD_TO_ORDER_WITH_FULL_COUNT = "all.checked.items.will.add.to.order.with.full.count";
+  String POST_CODE = "post.code";
 }

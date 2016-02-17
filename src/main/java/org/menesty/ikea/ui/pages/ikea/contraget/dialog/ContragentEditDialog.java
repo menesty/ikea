@@ -31,6 +31,7 @@ public class ContragentEditDialog extends EntityDialog<Contragent> {
     private TextField documentNumberField;
     private TextField regionField;
     private TextField addressField;
+    private TextField postCodeFiled;
 
     public ContragentForm() {
       add(firstNameField = new TextField(null, I18n.UA.getString(I18nKeys.FIRST_NAME), false));
@@ -38,6 +39,7 @@ public class ContragentEditDialog extends EntityDialog<Contragent> {
       add(documentNumberField = new TextField(null, I18n.UA.getString(I18nKeys.DOCUMENT_NUMBER), false));
       add(regionField = new TextField(null, I18n.UA.getString(I18nKeys.REGION), false));
       add(addressField = new TextField(null, I18n.UA.getString(I18nKeys.ADDRESS), false));
+      add(postCodeFiled = new TextField(null, I18n.UA.getString(I18nKeys.POST_CODE), false));
     }
 
     @Override
@@ -47,6 +49,7 @@ public class ContragentEditDialog extends EntityDialog<Contragent> {
       entity.setDocumentNumber(documentNumberField.getText());
       entity.setRegion(regionField.getText());
       entity.setAddress(addressField.getText());
+      entity.setPostCode(postCodeFiled.getText());
 
       return entity;
     }
@@ -58,6 +61,7 @@ public class ContragentEditDialog extends EntityDialog<Contragent> {
       documentNumberField.setText(entity.getDocumentNumber());
       regionField.setText(entity.getRegion());
       addressField.setText(entity.getAddress());
+      postCodeFiled.setText(entity.getPostCode());
 
     }
   }

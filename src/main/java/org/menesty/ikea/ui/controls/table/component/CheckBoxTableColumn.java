@@ -19,15 +19,11 @@ public class CheckBoxTableColumn<S> extends TableColumn<S, Boolean> {
 
     public CheckBoxTableColumn() {
         CheckBox checked = new CheckBox();
-        checked.selectedProperty().addListener(new ChangeListener<Boolean>() {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> observableValue, Boolean oldValue, Boolean newValue) {
-                for (int i = 0; i < list.size(); i++) {
-                    CheckBox item = list.get(i);
-                    //item.setItem(newValue);
-                    item.selectedProperty().setValue(newValue);
-
-                }
+        checked.selectedProperty().addListener((observableValue, oldValue, newValue) -> {
+            for (int i = 0; i < list.size(); i++) {
+                CheckBox item = list.get(i);
+                //item.setItem(newValue);
+                item.selectedProperty().setValue(newValue);
             }
         });
 
@@ -37,13 +33,11 @@ public class CheckBoxTableColumn<S> extends TableColumn<S, Boolean> {
         setGraphic(checked);
         setResizable(false);
 
-        setCellFactory(new Callback<TableColumn<S, Boolean>, TableCell<S, Boolean>>() {
-            public TableCell<S, Boolean> call(TableColumn<S, Boolean> p) {
-                CheckBoxTableCell<S, Boolean> checkBoxTableCell = new CheckBoxTableCell<>();
-                checkBoxTableCell.setAlignment(Pos.CENTER);
-                list.add(getCheckBox(checkBoxFiled, checkBoxTableCell));
-                return checkBoxTableCell;
-            }
+        setCellFactory(p -> {
+            CheckBoxTableCell<S, Boolean> checkBoxTableCell = new CheckBoxTableCell<>();
+            checkBoxTableCell.setAlignment(Pos.CENTER);
+            list.add(getCheckBox(checkBoxFiled, checkBoxTableCell));
+            return checkBoxTableCell;
         });
     }
 
