@@ -1,12 +1,8 @@
 package org.menesty.ikea.ui.pages.ikea.warehouse;
 
-import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.concurrent.Worker;
 import javafx.scene.control.Button;
@@ -15,7 +11,6 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.ToolBar;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
-import javafx.util.Callback;
 import org.menesty.ikea.core.component.DialogSupport;
 import org.menesty.ikea.domain.WarehouseItemDto;
 import org.menesty.ikea.factory.ImageFactory;
@@ -24,6 +19,7 @@ import org.menesty.ikea.i18n.I18nKeys;
 import org.menesty.ikea.lib.domain.ikea.logistic.stock.WarehouseAvailableItem;
 import org.menesty.ikea.lib.domain.ikea.logistic.warehouse.WarehouseStatusDto;
 import org.menesty.ikea.service.AbstractAsyncService;
+import org.menesty.ikea.ui.controls.TotalStatusPanel;
 import org.menesty.ikea.ui.controls.dialog.ParagonManageDialog;
 import org.menesty.ikea.ui.controls.search.WarehouseItemSearchData;
 import org.menesty.ikea.ui.controls.search.WarehouseSearchBar;
@@ -32,6 +28,7 @@ import org.menesty.ikea.util.APIRequest;
 import org.menesty.ikea.util.ColumnUtil;
 import org.menesty.ikea.util.HttpServiceUtil;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -48,6 +45,8 @@ public class WarehouseViewComponent extends BorderPane {
 
   private ParagonManageDialog paragonManageDialog;
 
+  private StatusPanel statusPanel;
+
   public WarehouseViewComponent(final DialogSupport dialogSupport) {
     paragonManageDialog = new ParagonManageDialog(dialogSupport.getStage()) {
       @Override
@@ -59,7 +58,7 @@ public class WarehouseViewComponent extends BorderPane {
     loadService = new LoadService();
     loadService.setOnSucceededListener(value -> {
       warehouseStatusDto = value;
-      tableView.getItems().setAll(value.getItems());
+      setItems(value.getItems());
       warehouseSearchBar.setProfiles(warehouseStatusDto.getProfiles());
     });
 
@@ -67,11 +66,20 @@ public class WarehouseViewComponent extends BorderPane {
 
     {
       TableColumn<WarehouseAvailableItem, String> column = new TableColumn<>(I18n.UA.getString(I18nKeys.ART_NUMBER));
-      column.setMinWidth(140);
+      column.setMaxWidth(140);
       column.setCellValueFactory(ColumnUtil.column("artNumber"));
       column.setCellFactory(ArtNumberCell::new);
 
       tableView.getColumns().add(column);
+    }
+
+    {
+      TableColumn<WarehouseAvailableItem, String> column = new TableColumn<>(I18n.UA.getString(I18nKeys.ORDER_NAME));
+      column.setMinWidth(140);
+      column.setCellValueFactory(ColumnUtil.column("orderName"));
+
+      tableView.getColumns().add(column);
+
     }
 
     {
@@ -144,12 +152,24 @@ public class WarehouseViewComponent extends BorderPane {
           stream = stream.filter(warehouseAvailableItem -> warehouseAvailableItem.getArtNumber().contains(data.getArtNumber()));
         }
 
-        tableView.getItems().setAll(stream.collect(Collectors.toList()));
+        setItems(stream.collect(Collectors.toList()));
       }
     });
 
     setCenter(tableView);
     setTop(controlBox);
+    setBottom(statusPanel = new StatusPanel());
+
+  }
+
+  private void setItems(List<WarehouseAvailableItem> items) {
+    tableView.getItems().setAll(items);
+
+    BigDecimal total = items.stream()
+        .map(WarehouseAvailableItem::getTotalPrice)
+        .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+    statusPanel.setTotal(total);
   }
 
 
@@ -192,7 +212,6 @@ public class WarehouseViewComponent extends BorderPane {
       this.checked = new SimpleBooleanProperty(checked);
 
       this.checked.addListener((observableValue, oldValue, newValue) -> {
-        System.out.println(oldValue + "=" + newValue);
         WarehouseItemDtoTableItem.this.checked.getValue();
 
       });
@@ -228,6 +247,10 @@ public class WarehouseViewComponent extends BorderPane {
         }
       };
     }
+  }
+
+  class StatusPanel extends TotalStatusPanel {
+
   }
 }
 

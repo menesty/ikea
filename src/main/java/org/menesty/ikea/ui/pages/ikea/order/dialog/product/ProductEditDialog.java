@@ -228,7 +228,7 @@ public class ProductEditDialog extends EntityDialog<IkeaProduct> {
 
       weightField.setAllowDouble(true);
 
-      add(new WrapField<CheckBox>(I18n.UA.getString(I18nKeys.ACTIVE), deletedField = new CheckBox()) {
+      add(new WrapField<CheckBox>(I18n.UA.getString(I18nKeys.NOT_ACTIVE), deletedField = new CheckBox()) {
 
         @Override
         public boolean isValid() {

@@ -17,10 +17,7 @@ import org.menesty.ikea.lib.dto.PageResult;
 import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.ui.controls.table.component.BaseTableView;
 import org.menesty.ikea.ui.pages.ikea.warehouse.dialog.ParagonViewDialog;
-import org.menesty.ikea.util.APIRequest;
-import org.menesty.ikea.util.ColumnUtil;
-import org.menesty.ikea.util.FileChooserUtil;
-import org.menesty.ikea.util.HttpServiceUtil;
+import org.menesty.ikea.util.*;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -30,6 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 
 public class ParagonViewComponent extends BorderPane {
   private final LoadService loadService;
@@ -51,7 +49,7 @@ public class ParagonViewComponent extends BorderPane {
     loadService = new LoadService();
     loadService.setOnSucceededListener(value -> {
           tableView.getItems().setAll(value.getData());
-          pagination.setPageCount(value.getCount() / ITEM_PER_PAGE);
+          pagination.setPageCount(PaginationUtil.getPageCount(value.getCount(), ITEM_PER_PAGE));
         }
     );
 
@@ -60,6 +58,7 @@ public class ParagonViewComponent extends BorderPane {
 
     paragonEppService = new ParagonEppService();
     paragonEppService.setOnSucceededListener(value -> {
+      tableView.update(paragonEppService.getParagon());
     });
 
     paragonViewDialog = new ParagonViewDialog(dialogSupport.getStage()) {
@@ -95,7 +94,7 @@ public class ParagonViewComponent extends BorderPane {
           MenuItem menuItem = new MenuItem(I18n.UA.getString(I18nKeys.DOWNLOAD_EPP), ImageFactory.createDownload16Icon());
           menuItem.setOnAction(actionEvent -> {
             FileChooser fileChooser = FileChooserUtil.getEpp();
-            fileChooser.setInitialFileName("paragon_" + paragon.getId() + ".epp");
+            fileChooser.setInitialFileName("paragon_" + paragon.getId() + "_" + paragon.getAmount() + ".epp");
 
             File selectedFile = fileChooser.showSaveDialog(dialogSupport.getStage());
 
@@ -234,6 +233,7 @@ public class ParagonViewComponent extends BorderPane {
           BufferedInputStream bis = new BufferedInputStream(con.getInputStream());
 
           Files.copy(bis, _file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+          getParagon().setDownloadedDate(new Date());
 
           return null;
         }
@@ -243,6 +243,10 @@ public class ParagonViewComponent extends BorderPane {
     public void setParagon(File file, Paragon paragon) {
       this.fileProperty.setValue(file);
       this.paragonProperty.setValue(paragon);
+    }
+
+    public Paragon getParagon() {
+      return paragonProperty.get();
     }
   }
 
@@ -289,7 +293,7 @@ public class ParagonViewComponent extends BorderPane {
     }
 
     public void setPageIndex(int pageIndex) {
-      this.pageIndex.set(pageIndex);
+      this.pageIndex.set(PaginationUtil.getPageNumber(pageIndex));
     }
   }
 

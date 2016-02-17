@@ -1,6 +1,5 @@
 package org.menesty.ikea.factory;
 
-import javafx.scene.Node;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
@@ -225,5 +224,9 @@ public class ImageFactory {
 
   public static ImageView createPaste32Icon() {
     return createIcon("paste-32x32.png");
+  }
+
+  public static ImageView createIkeaSmallIcon() {
+    return createIcon("ikea-small.png");
   }
 }
