@@ -41,437 +41,435 @@ import java.util.*;
  */
 public abstract class EppViewComponent extends StackPane {
 
-    private InvoiceEppTableView invoiceEppTableView;
+  private InvoiceEppTableView invoiceEppTableView;
 
-    private InvoiceItemDialog invoiceItemDialog;
+  private InvoiceItemDialog invoiceItemDialog;
 
-    private InvoiceEppInvisibleTableView invoiceEppInvisibleTableView;
+  private InvoiceEppInvisibleTableView invoiceEppInvisibleTableView;
 
-    private LoadService loadService;
+  private LoadService loadService;
 
-    private LoadingPane loadingPane;
+  private LoadingPane loadingPane;
 
-    private InvoicePdf currentInvoicePdf;
+  private InvoicePdf currentInvoicePdf;
 
-    private ToolBar eppToolBar;
+  private ToolBar eppToolBar;
 
-    private Button delBtn;
+  private Button delBtn;
 
-    private Button saveBtn;
+  private Button saveBtn;
 
-    private StatusPanel eppStatusPanel;
+  private StatusPanel eppStatusPanel;
 
-    private BigDecimal invoicePrice;
+  private BigDecimal invoicePrice;
 
-    private String artPrefix = "";
-    private Button exportEppBtn;
+  private String artPrefix = "";
+  private Button exportEppBtn;
 
-    private InvalidationListener saveBtnUpdater;
+  private InvalidationListener saveBtnUpdater;
 
-    private static final int MAX_ZESTAV_PRICE = 460;
+  private static final int MAX_ZESTAV_PRICE = 460;
 
-    public EppViewComponent(final DialogSupport dialogSupport) {
-        loadingPane = new LoadingPane();
-        loadService = new LoadService();
-        invoiceItemDialog = new InvoiceItemDialog(dialogSupport.getStage());
+  public EppViewComponent(final DialogSupport dialogSupport) {
+    loadingPane = new LoadingPane();
+    loadService = new LoadService();
+    invoiceItemDialog = new InvoiceItemDialog(dialogSupport.getStage());
 
-        SplitPane splitPane = new SplitPane();
-        loadingPane.bindTask(loadService);
+    SplitPane splitPane = new SplitPane();
+    loadingPane.bindTask(loadService);
 
-        loadService.setOnSucceededListener(value -> updateViews(value));
+    loadService.setOnSucceededListener(value -> updateViews(value));
 
-        splitPane.setOrientation(Orientation.HORIZONTAL);
-        splitPane.setDividerPosition(1, 0.40);
+    splitPane.setOrientation(Orientation.HORIZONTAL);
+    splitPane.setDividerPosition(1, 0.40);
 
-        splitPane.getItems().addAll(initInvoiceEppTableView(dialogSupport), initInvoiceEppInvisible());
+    splitPane.getItems().addAll(initInvoiceEppTableView(dialogSupport), initInvoiceEppInvisible());
 
-        getChildren().addAll(splitPane, loadingPane);
+    getChildren().addAll(splitPane, loadingPane);
+  }
+
+  private BorderPane initInvoiceEppInvisible() {
+    BorderPane pane = new BorderPane();
+
+    invoiceEppInvisibleTableView = new InvoiceEppInvisibleTableView() {
+      public void onRowDoubleClick(TableRow<InvoiceItem> row) {
+        InvoiceItem item = row.getItem();
+        item.setVisible(true);
+        item.setPrice(item.basePrice);
+
+        invoiceEppInvisibleTableView.getItems().remove(item);
+        invoiceEppTableView.getItems().add(item);
+      }
+    };
+    pane.setCenter(invoiceEppInvisibleTableView);
+
+    ToolBar toolBar = new ToolBar();
+    {
+      Button button = new Button(null, ImageFactory.createMoney32Icon());
+      button.setOnAction(new EventHandler<ActionEvent>() {
+        @Override
+        public void handle(ActionEvent actionEvent) {
+          List<InvoiceItem> items = invoiceEppInvisibleTableView.getItems();
+
+          for (InvoiceItem item : items) {
+            double newPrice = NumberUtil.round(item.getPriceWat() / 4);
+            newPrice = newPrice < 1.99 ? 1.99 : newPrice;
+            newPrice = newPrice > 20 ? 19.99 : newPrice;
+
+            item.setPrice(newPrice);
+            item.basePrice = newPrice;
+          }
+
+          invoiceEppInvisibleTableView.updateRows();
+        }
+      });
+
+      toolBar.getItems().add(button);
     }
 
-    private BorderPane initInvoiceEppInvisible() {
-        BorderPane pane = new BorderPane();
+    {
+      Button button = new Button(null, ImageFactory.createPrevious32Icon());
+      button.setOnAction(new EventHandler<ActionEvent>() {
+        @Override
+        public void handle(ActionEvent actionEvent) {
+          List<InvoiceItem> items = invoiceEppInvisibleTableView.getItems();
 
-        invoiceEppInvisibleTableView = new InvoiceEppInvisibleTableView() {
-            public void onRowDoubleClick(TableRow<InvoiceItem> row) {
-                InvoiceItem item = row.getItem();
-                item.setVisible(true);
-                item.setPrice(item.basePrice);
+          if (items.size() == 0)
+            return;
 
-                invoiceEppInvisibleTableView.getItems().remove(item);
-                invoiceEppTableView.getItems().add(item);
-            }
-        };
-        pane.setCenter(invoiceEppInvisibleTableView);
+          for (InvoiceItem item : items)
+            item.setVisible(true);
 
-        ToolBar toolBar = new ToolBar();
-        {
-            Button button = new Button(null, ImageFactory.createMoney32Icon());
-            button.setOnAction(new EventHandler<ActionEvent>() {
-                @Override
-                public void handle(ActionEvent actionEvent) {
-                    List<InvoiceItem> items = invoiceEppInvisibleTableView.getItems();
-
-                    for (InvoiceItem item : items) {
-                        double newPrice = NumberUtil.round(item.getPriceWat() / 4);
-                        newPrice = newPrice < 1.99 ? 1.99 : newPrice;
-                        newPrice = newPrice > 20 ? 19.99 : newPrice;
-
-                        item.setPrice(newPrice);
-                        item.basePrice = newPrice;
-                    }
-
-                    invoiceEppInvisibleTableView.updateRows();
-                }
-            });
-
-            toolBar.getItems().add(button);
+          invoiceEppTableView.getItems().addAll(items);
+          invoiceEppInvisibleTableView.getItems().clear();
         }
+      });
 
-        {
-            Button button = new Button(null, ImageFactory.createPrevious32Icon());
-            button.setOnAction(new EventHandler<ActionEvent>() {
-                @Override
-                public void handle(ActionEvent actionEvent) {
-                    List<InvoiceItem> items = invoiceEppInvisibleTableView.getItems();
-
-                    if (items.size() == 0)
-                        return;
-
-                    for (InvoiceItem item : items)
-                        item.setVisible(true);
-
-                    invoiceEppTableView.getItems().addAll(items);
-                    invoiceEppInvisibleTableView.getItems().clear();
-                }
-            });
-
-            toolBar.getItems().add(button);
-        }
-
-        pane.setTop(toolBar);
-
-        return pane;
+      toolBar.getItems().add(button);
     }
 
-    private BorderPane initInvoiceEppTableView(final DialogSupport dialogSupport) {
-        invoiceEppTableView = new InvoiceEppTableView() {
+    pane.setTop(toolBar);
 
-            @Override
-            protected void onRowDoubleClick(TableRow<InvoiceItem> row) {
-                if (row.getItem() == null)
-                    return;
+    return pane;
+  }
 
-                invoiceItemDialog.bind(row.getItem(), new EntityDialogCallback<InvoiceItem>() {
-                    @Override
-                    public void onSave(InvoiceItem invoiceItem, Object... params) {
-                        saveBtn.setDisable(false);
-                        invoiceEppTableView.update(invoiceItem);
-                        dialogSupport.hidePopupDialog();
-                    }
+  private BorderPane initInvoiceEppTableView(final DialogSupport dialogSupport) {
+    invoiceEppTableView = new InvoiceEppTableView() {
 
-                    @Override
-                    public void onCancel() {
-                        dialogSupport.hidePopupDialog();
-                    }
-                });
+      @Override
+      protected void onRowDoubleClick(TableRow<InvoiceItem> row) {
+        if (row.getItem() == null)
+          return;
 
-                dialogSupport.showPopupDialog(invoiceItemDialog);
-            }
-        };
+        invoiceItemDialog.bind(row.getItem(), new EntityDialogCallback<InvoiceItem>() {
+          @Override
+          public void onSave(InvoiceItem invoiceItem, Object... params) {
+            saveBtn.setDisable(false);
+            invoiceEppTableView.update(invoiceItem);
+            dialogSupport.hidePopupDialog();
+          }
 
-        final InvalidationListener invalidationListener = new InvalidationListener() {
-            @Override
-            public void invalidated(Observable observable) {
-                eppStatusPanel.setCurrentTotal(calculatePrice(invoiceEppTableView.getItems()).doubleValue());
-            }
-        };
+          @Override
+          public void onCancel() {
+            dialogSupport.hidePopupDialog();
+          }
+        });
 
-        eppToolBar = new ToolBar();
-        saveBtn = new Button(null, ImageFactory.createSave32Icon());
+        dialogSupport.showPopupDialog(invoiceItemDialog);
+      }
+    };
+
+    final InvalidationListener invalidationListener = new InvalidationListener() {
+      @Override
+      public void invalidated(Observable observable) {
+        eppStatusPanel.setCurrentTotal(calculatePrice(invoiceEppTableView.getItems()).doubleValue());
+      }
+    };
+
+    eppToolBar = new ToolBar();
+    saveBtn = new Button(null, ImageFactory.createSave32Icon());
+    saveBtn.setDisable(true);
+    saveBtn.setOnAction(new EventHandler<ActionEvent>() {
+      @Override
+      public void handle(ActionEvent actionEvent) {
+        ServiceFacade.getInvoiceItemService().save(invoiceEppTableView.getItems());
+        ServiceFacade.getInvoiceItemService().save(invoiceEppInvisibleTableView.getItems());
         saveBtn.setDisable(true);
-        saveBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                ServiceFacade.getInvoiceItemService().save(invoiceEppTableView.getItems());
-                ServiceFacade.getInvoiceItemService().save(invoiceEppInvisibleTableView.getItems());
-                saveBtn.setDisable(true);
-                onChange(currentInvoicePdf);
+        onChange(currentInvoicePdf);
 
-            }
+      }
+    });
+
+    exportEppBtn = new Button(null, ImageFactory.createEppExport32Icon());
+    exportEppBtn.setTooltip(new Tooltip("Export to EPP"));
+    exportEppBtn.setOnAction(event -> {
+      FileChooser fileChooser = FileChooserUtil.getEpp(FileChooserUtil.FolderType.INVOICE);
+      fileChooser.setInitialFileName(currentInvoicePdf.getInvoiceNumber().replaceAll("[/-]", "_") + ".epp");
+
+      File selectedFile = fileChooser.showSaveDialog(dialogSupport.getStage());
+
+      if (selectedFile != null) {
+        List<InvoiceItem> list = invoiceEppTableView.getItems();
+        int index = 0;
+
+        for (InvoiceItem invoiceItem : list)
+          invoiceItem.setIndex(++index);
+
+        export(currentInvoicePdf.getInvoiceNumber(), list, selectedFile.getAbsolutePath());
+
+        FileChooserUtil.setDefaultDir(FileChooserUtil.FolderType.INVOICE, selectedFile);
+      }
+
+    });
+
+
+    eppToolBar.getItems().addAll(saveBtn, exportEppBtn, new Separator());
+
+    Button addBtn = new Button(null, ImageFactory.createPlus32Icon());
+    addBtn.setTooltip(new Tooltip("Add Row"));
+    addBtn.setOnAction(new EventHandler<ActionEvent>() {
+      public void handle(ActionEvent event) {
+        InvoiceItem item = new InvoiceItem();
+        item.setCount(1);
+        item.setZestav(true);
+        item.setVisible(true);
+        item.invoicePdf = currentInvoicePdf;
+
+        invoiceItemDialog.bind(item, new EntityDialogCallback<InvoiceItem>() {
+          @Override
+          public void onSave(InvoiceItem invoiceItem, Object... params) {
+            invoiceEppTableView.getItems().add(invoiceItem);
+            dialogSupport.hidePopupDialog();
+          }
+
+          @Override
+          public void onCancel() {
+            dialogSupport.hidePopupDialog();
+          }
         });
 
-        exportEppBtn = new Button(null, ImageFactory.createEppExport32Icon());
-        exportEppBtn.setTooltip(new Tooltip("Export to EPP"));
-        exportEppBtn.setOnAction(new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent event) {
-                FileChooser fileChooser = FileChooserUtil.getEpp();
-                fileChooser.setInitialFileName(currentInvoicePdf.getInvoiceNumber().replaceAll("[/-]", "_") + ".epp");
+        dialogSupport.showPopupDialog(invoiceItemDialog);
 
-                File selectedFile = fileChooser.showSaveDialog(dialogSupport.getStage());
+      }
+    });
 
-                if (selectedFile != null) {
-                    List<InvoiceItem> list = invoiceEppTableView.getItems();
-                    int index = 0;
+    eppToolBar.getItems().add(addBtn);
 
-                    for (InvoiceItem invoiceItem : list)
-                        invoiceItem.setIndex(++index);
+    delBtn = new Button(null, ImageFactory.createMinus32Icon());
+    delBtn.setTooltip(new Tooltip("Delete Row"));
+    delBtn.setOnAction(new EventHandler<ActionEvent>() {
+      public void handle(ActionEvent event) {
+        InvoiceItem item = invoiceEppTableView.getSelectionModel().getSelectedItem();
 
-                    export(currentInvoicePdf.getInvoiceNumber(), list, selectedFile.getAbsolutePath());
+        if (!item.isZestav()) {
+          item.setVisible(false);
+          invoiceEppInvisibleTableView.getItems().add(item);
+        }
 
-                    FileChooserUtil.setDefaultDir(selectedFile);
-                }
+        invoiceEppTableView.getItems().remove(item);
+      }
+    });
+    delBtn.setDisable(true);
+    eppToolBar.getItems().add(delBtn);
 
-            }
-        });
+    Button balanceBtn = new Button(null, ImageFactory.createBalance32Icon());
+    balanceBtn.setTooltip(new Tooltip("Auto balance Price"));
+    balanceBtn.setOnAction(new EventHandler<ActionEvent>() {
+      public void handle(ActionEvent event) {
+        List<InvoiceItem> items = new ArrayList<>(invoiceEppTableView.getItems());
+        Iterator<InvoiceItem> iterator = items.iterator();
 
+        BigDecimal zestavPrice = BigDecimal.ZERO;
 
-        eppToolBar.getItems().addAll(saveBtn, exportEppBtn, new Separator());
+        while (iterator.hasNext()) {
+          InvoiceItem item = iterator.next();
 
-        Button addBtn = new Button(null, ImageFactory.createPlus32Icon());
-        addBtn.setTooltip(new Tooltip("Add Row"));
-        addBtn.setOnAction(new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent event) {
-                InvoiceItem item = new InvoiceItem();
-                item.setCount(1);
-                item.setZestav(true);
-                item.setVisible(true);
-                item.invoicePdf = currentInvoicePdf;
-
-                invoiceItemDialog.bind(item, new EntityDialogCallback<InvoiceItem>() {
-                    @Override
-                    public void onSave(InvoiceItem invoiceItem, Object... params) {
-                        invoiceEppTableView.getItems().add(invoiceItem);
-                        dialogSupport.hidePopupDialog();
-                    }
-
-                    @Override
-                    public void onCancel() {
-                        dialogSupport.hidePopupDialog();
-                    }
-                });
-
-                dialogSupport.showPopupDialog(invoiceItemDialog);
-
-            }
-        });
-
-        eppToolBar.getItems().add(addBtn);
-
-        delBtn = new Button(null, ImageFactory.createMinus32Icon());
-        delBtn.setTooltip(new Tooltip("Delete Row"));
-        delBtn.setOnAction(new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent event) {
-                InvoiceItem item = invoiceEppTableView.getSelectionModel().getSelectedItem();
-
-                if (!item.isZestav()) {
-                    item.setVisible(false);
-                    invoiceEppInvisibleTableView.getItems().add(item);
-                }
-
-                invoiceEppTableView.getItems().remove(item);
-            }
-        });
-        delBtn.setDisable(true);
-        eppToolBar.getItems().add(delBtn);
-
-        Button balanceBtn = new Button(null, ImageFactory.createBalance32Icon());
-        balanceBtn.setTooltip(new Tooltip("Auto balance Price"));
-        balanceBtn.setOnAction(new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent event) {
-                List<InvoiceItem> items = new ArrayList<>(invoiceEppTableView.getItems());
-                Iterator<InvoiceItem> iterator = items.iterator();
-
-                BigDecimal zestavPrice = BigDecimal.ZERO;
-
-                while (iterator.hasNext()) {
-                    InvoiceItem item = iterator.next();
-
-                    if (item.isZestav()) {
-                        iterator.remove();
-                        zestavPrice = zestavPrice.add(item.getTotalWatPrice());
-                    } /*else
+          if (item.isZestav()) {
+            iterator.remove();
+            zestavPrice = zestavPrice.add(item.getTotalWatPrice());
+          } /*else
                         item.setPrice(item.getPriceWatTotal());
 */
-                }
-
-                BigDecimal currentItemsPrice = calculatePrice(items);
-                BigDecimal diff = invoicePrice.subtract(zestavPrice);
-
-                BigDecimal cof = diff.doubleValue() == 0 ? BigDecimal.ONE : BigDecimal.valueOf(diff.doubleValue() / currentItemsPrice.doubleValue());
-
-                for (InvoiceItem item : items)
-                    item.setPrice(BigDecimal.valueOf(item.getPriceWat()).multiply(cof).setScale(2, BigDecimal.ROUND_CEILING).doubleValue());
-
-                BigDecimal currentPrice = calculatePrice(items).add(zestavPrice);
-                diff = invoicePrice.subtract(currentPrice);
-
-                if (diff.doubleValue() != 0) {
-                    //search with 1 element
-                    InvoiceItem updateItem = null;
-                    for (InvoiceItem item : items)
-                        if (item.getCount() == 1) {
-                            updateItem = item;
-                            break;
-                        }
-
-                    if (updateItem != null)
-                        updateItem.setPrice(BigDecimal.valueOf(updateItem.getPriceWat()).add(diff).doubleValue());
-
-                }
-
-                invoiceEppTableView.updateRows();
-
-                invalidationListener.invalidated(null);
-
-            }
-        });
-
-        eppToolBar.getItems().add(balanceBtn);
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        eppToolBar.getItems().add(spacer);
-
-        Button reloadBtn = new Button(null, ImageFactory.createReload32Icon());
-        reloadBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                Dialog.confirm(dialogSupport, "All balanced items will be deleted", new DialogCallback() {
-                    @Override
-                    public void onCancel() {
-                    }
-
-                    @Override
-                    public void onYes() {
-                        ServiceFacade.getInvoiceItemService().deleteBy(currentInvoicePdf);
-                        updateViews(prepareData(currentInvoicePdf.getProducts()));
-                        saveBtn.setDisable(false);
-                        onChange(currentInvoicePdf);
-                    }
-                });
-
-            }
-        });
-
-        eppToolBar.getItems().add(reloadBtn);
-
-        invoiceEppTableView.getSelectionModel().selectedItemProperty().addListener(new InvalidationListener() {
-            @Override
-            public void invalidated(Observable observable) {
-                delBtn.setDisable(invoiceEppTableView.getSelectionModel().getSelectedItem() == null);
-            }
-        });
-
-        invoiceEppTableView.itemsProperty().addListener(invalidationListener);
-
-        BorderPane pane = new BorderPane();
-        pane.setTop(eppToolBar);
-        pane.setCenter(invoiceEppTableView);
-        pane.setBottom(eppStatusPanel = new StatusPanel());
-
-        saveBtnUpdater = new InvalidationListener() {
-            @Override
-            public void invalidated(Observable observable) {
-                saveBtn.setDisable(false);
-                eppStatusPanel.setCurrentTotal(calculatePrice(invoiceEppTableView.getItems()).doubleValue());
-            }
-        };
-
-        return pane;
-    }
-
-    public abstract void onChange(InvoicePdf invoicePdf);
-
-    public abstract void export(String invoiceName, List<InvoiceItem> items, String path);
-
-    private BigDecimal calculatePrice(List<InvoiceItem> items) {
-        BigDecimal price = BigDecimal.ZERO;
-
-        for (InvoiceItem item : items)
-            price = price.add(item.getTotalWatPrice());
-
-        return price;
-
-    }
-
-    private void updateViews(List<InvoiceItem> items) {
-        List<InvoiceItem> visible = new ArrayList<>();
-        List<InvoiceItem> invisible = new ArrayList<>();
-
-        for (InvoiceItem item : items)
-            if (item.isVisible())
-                visible.add(item);
-            else
-                invisible.add(item);
-
-        invoiceEppTableView.setItems(FXCollections.observableList(visible));
-        invoiceEppInvisibleTableView.setItems(FXCollections.observableList(invisible));
-
-        invoiceEppTableView.getItems().addListener(saveBtnUpdater);
-        exportEppBtn.setDisable(items.isEmpty());
-    }
-
-    public void setActive(final InvoicePdf invoicePdf) {
-        currentInvoicePdf = invoicePdf;
-
-        if (invoicePdf != null) {
-            artPrefix = invoicePdf.customerOrder.getName();
-            loadService.setInvoicePdf(invoicePdf);
-            loadService.restart();
-            invoicePrice = InvoicePdf.getTotalPrice(currentInvoicePdf.getProducts());
-            eppStatusPanel.setTotal(invoicePrice.doubleValue());
-        } else
-            updateViews(new ArrayList<>());
-
-        eppToolBar.setDisable(invoicePdf == null);
-    }
-
-    private List<InvoiceItem> prepareData(List<RawInvoiceProductItem> items) {
-        List<InvoiceItem> result = new ArrayList<>();
-
-        for (RawInvoiceProductItem item : items)
-                result.addAll(InvoiceItem.get(item.getProductInfo(), artPrefix, item.getCount()));
-
-        for (InvoiceItem item : result) {
-            item.invoicePdf = currentInvoicePdf;
         }
 
-        return result;
-    }
+        BigDecimal currentItemsPrice = calculatePrice(items);
+        BigDecimal diff = invoicePrice.subtract(zestavPrice);
 
-    class LoadService extends AbstractAsyncService<List<InvoiceItem>> {
-        private SimpleObjectProperty<InvoicePdf> invoicePdf = new SimpleObjectProperty<>();
+        BigDecimal cof = diff.doubleValue() == 0 ? BigDecimal.ONE : BigDecimal.valueOf(diff.doubleValue() / currentItemsPrice.doubleValue());
 
-        public void setInvoicePdf(InvoicePdf invoicePdf) {
-            this.invoicePdf.setValue(invoicePdf);
+        for (InvoiceItem item : items)
+          item.setPrice(BigDecimal.valueOf(item.getPriceWat()).multiply(cof).setScale(2, BigDecimal.ROUND_CEILING).doubleValue());
+
+        BigDecimal currentPrice = calculatePrice(items).add(zestavPrice);
+        diff = invoicePrice.subtract(currentPrice);
+
+        if (diff.doubleValue() != 0) {
+          //search with 1 element
+          InvoiceItem updateItem = null;
+          for (InvoiceItem item : items)
+            if (item.getCount() == 1) {
+              updateItem = item;
+              break;
+            }
+
+          if (updateItem != null)
+            updateItem.setPrice(BigDecimal.valueOf(updateItem.getPriceWat()).add(diff).doubleValue());
+
         }
 
+        invoiceEppTableView.updateRows();
+
+        invalidationListener.invalidated(null);
+
+      }
+    });
+
+    eppToolBar.getItems().add(balanceBtn);
+
+    Region spacer = new Region();
+    HBox.setHgrow(spacer, Priority.ALWAYS);
+    eppToolBar.getItems().add(spacer);
+
+    Button reloadBtn = new Button(null, ImageFactory.createReload32Icon());
+    reloadBtn.setOnAction(new EventHandler<ActionEvent>() {
+      @Override
+      public void handle(ActionEvent actionEvent) {
+        Dialog.confirm(dialogSupport, "All balanced items will be deleted", new DialogCallback() {
+          @Override
+          public void onCancel() {
+          }
+
+          @Override
+          public void onYes() {
+            ServiceFacade.getInvoiceItemService().deleteBy(currentInvoicePdf);
+            updateViews(prepareData(currentInvoicePdf.getProducts()));
+            saveBtn.setDisable(false);
+            onChange(currentInvoicePdf);
+          }
+        });
+
+      }
+    });
+
+    eppToolBar.getItems().add(reloadBtn);
+
+    invoiceEppTableView.getSelectionModel().selectedItemProperty().addListener(new InvalidationListener() {
+      @Override
+      public void invalidated(Observable observable) {
+        delBtn.setDisable(invoiceEppTableView.getSelectionModel().getSelectedItem() == null);
+      }
+    });
+
+    invoiceEppTableView.itemsProperty().addListener(invalidationListener);
+
+    BorderPane pane = new BorderPane();
+    pane.setTop(eppToolBar);
+    pane.setCenter(invoiceEppTableView);
+    pane.setBottom(eppStatusPanel = new StatusPanel());
+
+    saveBtnUpdater = new InvalidationListener() {
+      @Override
+      public void invalidated(Observable observable) {
+        saveBtn.setDisable(false);
+        eppStatusPanel.setCurrentTotal(calculatePrice(invoiceEppTableView.getItems()).doubleValue());
+      }
+    };
+
+    return pane;
+  }
+
+  public abstract void onChange(InvoicePdf invoicePdf);
+
+  public abstract void export(String invoiceName, List<InvoiceItem> items, String path);
+
+  private BigDecimal calculatePrice(List<InvoiceItem> items) {
+    BigDecimal price = BigDecimal.ZERO;
+
+    for (InvoiceItem item : items)
+      price = price.add(item.getTotalWatPrice());
+
+    return price;
+
+  }
+
+  private void updateViews(List<InvoiceItem> items) {
+    List<InvoiceItem> visible = new ArrayList<>();
+    List<InvoiceItem> invisible = new ArrayList<>();
+
+    for (InvoiceItem item : items)
+      if (item.isVisible())
+        visible.add(item);
+      else
+        invisible.add(item);
+
+    invoiceEppTableView.setItems(FXCollections.observableList(visible));
+    invoiceEppInvisibleTableView.setItems(FXCollections.observableList(invisible));
+
+    invoiceEppTableView.getItems().addListener(saveBtnUpdater);
+    exportEppBtn.setDisable(items.isEmpty());
+  }
+
+  public void setActive(final InvoicePdf invoicePdf) {
+    currentInvoicePdf = invoicePdf;
+
+    if (invoicePdf != null) {
+      artPrefix = invoicePdf.customerOrder.getName();
+      loadService.setInvoicePdf(invoicePdf);
+      loadService.restart();
+      invoicePrice = InvoicePdf.getTotalPrice(currentInvoicePdf.getProducts());
+      eppStatusPanel.setTotal(invoicePrice.doubleValue());
+    } else
+      updateViews(new ArrayList<>());
+
+    eppToolBar.setDisable(invoicePdf == null);
+  }
+
+  private List<InvoiceItem> prepareData(List<RawInvoiceProductItem> items) {
+    List<InvoiceItem> result = new ArrayList<>();
+
+    for (RawInvoiceProductItem item : items)
+      result.addAll(InvoiceItem.get(item.getProductInfo(), artPrefix, item.getCount()));
+
+    for (InvoiceItem item : result) {
+      item.invoicePdf = currentInvoicePdf;
+    }
+
+    return result;
+  }
+
+  class LoadService extends AbstractAsyncService<List<InvoiceItem>> {
+    private SimpleObjectProperty<InvoicePdf> invoicePdf = new SimpleObjectProperty<>();
+
+    public void setInvoicePdf(InvoicePdf invoicePdf) {
+      this.invoicePdf.setValue(invoicePdf);
+    }
+
+    @Override
+    protected Task<List<InvoiceItem>> createTask() {
+      final InvoicePdf _invoicePdf = invoicePdf.get();
+
+      return new Task<List<InvoiceItem>>() {
         @Override
-        protected Task<List<InvoiceItem>> createTask() {
-            final InvoicePdf _invoicePdf = invoicePdf.get();
-
-            return new Task<List<InvoiceItem>>() {
-                @Override
-                protected List<InvoiceItem> call() throws Exception {
-                    return ServiceFacade.getInvoiceItemService().loadBy(_invoicePdf);
-                }
-            };
+        protected List<InvoiceItem> call() throws Exception {
+          return ServiceFacade.getInvoiceItemService().loadBy(_invoicePdf);
         }
+      };
     }
+  }
 }
 
 class StatusPanel extends TotalStatusPanel {
-    private Label currentTotal;
+  private Label currentTotal;
 
-    public StatusPanel() {
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        getItems().add(spacer);
-        getItems().add(new Label("Current  :"));
-        getItems().add(currentTotal = new Label());
-    }
+  public StatusPanel() {
+    Region spacer = new Region();
+    HBox.setHgrow(spacer, Priority.ALWAYS);
+    getItems().add(spacer);
+    getItems().add(new Label("Current  :"));
+    getItems().add(currentTotal = new Label());
+  }
 
-    public void setCurrentTotal(double total) {
-        currentTotal.setText(NumberFormat.getNumberInstance().format(total));
-    }
+  public void setCurrentTotal(double total) {
+    currentTotal.setText(NumberFormat.getNumberInstance().format(total));
+  }
 }

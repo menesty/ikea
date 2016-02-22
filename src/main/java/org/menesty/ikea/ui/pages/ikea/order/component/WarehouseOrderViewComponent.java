@@ -61,7 +61,7 @@ public class WarehouseOrderViewComponent extends BorderPane {
 
     {
       TableColumn<WarehouseAvailableItem, String> column = new TableColumn<>(I18n.UA.getString(I18nKeys.ART_NUMBER));
-      column.setMinWidth(140);
+      column.setMaxWidth(200);
       column.setCellValueFactory(ColumnUtil.column("artNumber"));
       column.setCellFactory(ArtNumberCell::new);
 

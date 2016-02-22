@@ -1,5 +1,7 @@
 package org.menesty.ikea;
 
+import org.menesty.ikea.util.FileChooserUtil;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.prefs.Preferences;
@@ -38,12 +40,14 @@ public class ApplicationPreference {
     return preferences.get(getActiveProfile() + ".warehouse-password", "");
   }
 
-  public String getFileChooseDefaultDir() {
-    return preferences.get("file-choose-default-dir", null);
+  public String getFileChooseDefaultDir(FileChooserUtil.FolderType folderType) {
+    String key = "file-choose-default-dir" + (folderType != null ? "-".concat(folderType.toString().toLowerCase()) : "");
+    return preferences.get(key, null);
   }
 
-  public void setFileChooseDefaultDir(String path) {
-    preferences.put("file-choose-default-dir", path);
+  public void setFileChooseDefaultDir(FileChooserUtil.FolderType folderType, String path) {
+    String key = "file-choose-default-dir" + (folderType != null ? "-".concat(folderType.toString().toLowerCase()) : "");
+    preferences.put(key, path);
   }
 
   public void setIkeaUser(String user) {

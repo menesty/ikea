@@ -8,6 +8,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 import org.apache.commons.lang3.StringUtils;
 import org.menesty.ikea.core.component.DialogSupport;
 import org.menesty.ikea.factory.ImageFactory;
@@ -29,6 +30,7 @@ import org.menesty.ikea.ui.pages.ikea.order.component.table.InvoiceItemTableView
 import org.menesty.ikea.ui.pages.ikea.order.dialog.invoice.IkeaInvoiceUploadDialog;
 import org.menesty.ikea.ui.pages.ikea.order.dialog.invoice.InvoiceAddEditDialog;
 import org.menesty.ikea.ui.pages.ikea.order.dialog.invoice.InvoiceItemAddDialog;
+import org.menesty.ikea.ui.pages.ikea.order.dialog.invoice.InvoiceItemChangeCountDialog;
 import org.menesty.ikea.ui.pages.ikea.order.dialog.product.ProductEditDialog;
 import org.menesty.ikea.util.*;
 
@@ -77,6 +79,9 @@ public class InvoiceViewComponent extends HBox {
   private InvoiceItemActionService invoiceItemActionService;
   private InvoiceEppExportService invoiceEppExportService;
   private IkeaProductUpdateService ikeaProductUpdateService;
+
+  private InvoiceItemChangeCountDialog invoiceItemChangeCountDialog;
+  private InvoiceItemChangeCountService invoiceItemChangeCountService;
 
   public InvoiceViewComponent(DialogSupport dialogSupport, InvoiceActionListener invoiceActionListener) {
     Preconditions.checkNotNull(invoiceActionListener);
@@ -151,7 +156,6 @@ public class InvoiceViewComponent extends HBox {
         invoiceItemStatusPanel.setInvoicePrice(newValue.getPayed());
       }
     });
-
 
     ToolBar toolBar = new ToolBar();
 
@@ -251,6 +255,15 @@ public class InvoiceViewComponent extends HBox {
 
     leftPanel.setTop(toolBar);
 
+    invoiceItemChangeCountService = new InvoiceItemChangeCountService();
+    invoiceItemChangeCountService.setOnSucceededListener(value -> {
+      if (value) {
+        InvoiceItem invoiceItem = invoiceItemChangeCountService.invoiceItemProperty.get();
+        invoiceItem.setCount(invoiceItemChangeCountService.itemCountProperty.get());
+
+        invoiceItemTableView.update(invoiceItem);
+      }
+    });
     createFakeOrderInvoice = new CreateFakeOrderInvoice();
     createFakeOrderInvoice.setOnSucceededListener(value -> invoiceActionListener.onExport(Collections.singletonList(value)));
 
@@ -262,11 +275,19 @@ public class InvoiceViewComponent extends HBox {
         invoiceActionListener.onInvoiceAdd(result.getItem());
       }
     });
-    loadingPane.bindTask(invoiceActionService, createFakeOrderInvoice);
+    loadingPane.bindTask(invoiceActionService, createFakeOrderInvoice, invoiceItemChangeCountService);
 
     leftPanel.setCenter(invoiceTableView);
 
     return mainPanel;
+  }
+
+  public InvoiceItemChangeCountDialog getInvoiceItemChangeCountDialog(DialogSupport dialogSupport) {
+    if (invoiceItemChangeCountDialog == null) {
+      invoiceItemChangeCountDialog = new InvoiceItemChangeCountDialog(dialogSupport.getStage());
+    }
+
+    return invoiceItemChangeCountDialog;
   }
 
   private Node initRightPanel(DialogSupport dialogSupport, final InvoiceActionListener invoiceActionListener) {
@@ -288,7 +309,7 @@ public class InvoiceViewComponent extends HBox {
         ContextMenu contextMenu = new ContextMenu();
 
         {
-          MenuItem menuItem = new MenuItem(I18n.UA.getString(I18nKeys.EDIT));
+          MenuItem menuItem = new MenuItem(I18n.UA.getString(I18nKeys.EDIT), ImageFactory.createEdit16Icon());
           menuItem.setOnAction(event -> {
             IkeaProduct ikeaProduct = newValue.getProduct();
 
@@ -318,6 +339,31 @@ public class InvoiceViewComponent extends HBox {
             });
 
             dialogSupport.showPopupDialog(productEditDialog);
+          });
+
+          contextMenu.getItems().add(menuItem);
+        }
+
+        {
+          MenuItem menuItem = new MenuItem(I18n.UA.getString(I18nKeys.CHANGE_ITEM_COUNT));
+          menuItem.setOnAction(event -> {
+            InvoiceItemChangeCountDialog invoiceItemChangeCountDialog = getInvoiceItemChangeCountDialog(dialogSupport);
+
+            invoiceItemChangeCountDialog.bind(newValue.getCount(), new EntityDialogCallback<BigDecimal>() {
+              @Override
+              public void onSave(BigDecimal count, Object... params) {
+                dialogSupport.hidePopupDialog();
+                invoiceItemChangeCountService.setInvoiceItem(newValue, count);
+                invoiceItemChangeCountService.restart();
+              }
+
+              @Override
+              public void onCancel() {
+                dialogSupport.hidePopupDialog();
+              }
+            });
+
+            dialogSupport.showPopupDialog(invoiceItemChangeCountDialog);
           });
 
           contextMenu.getItems().add(menuItem);
@@ -376,13 +422,13 @@ public class InvoiceViewComponent extends HBox {
         String fileName = StringUtils.isNotBlank(invoice.getInvoiceName()) ?
             invoice.getInvoiceName().replaceAll("[/-]", "_") : ikeaOrderDetail.getName().replaceAll("[/-]", "_");
 
-        FileChooser fileChooser = FileChooserUtil.getEpp();
+        FileChooser fileChooser = FileChooserUtil.getEpp(FileChooserUtil.FolderType.INVOICE);
         fileChooser.setInitialFileName(fileName + ".epp");
 
         File selectedFile = fileChooser.showSaveDialog(dialogSupport.getStage());
 
         if (selectedFile != null) {
-          FileChooserUtil.setDefaultDir(selectedFile);
+          FileChooserUtil.setDefaultDir(FileChooserUtil.FolderType.INVOICE, selectedFile);
           invoiceEppExportService.setInvoiceId(selectedFile, invoice.getId(), ikeaOrderDetail.getName(), invoice.getInvoiceName());
           invoiceEppExportService.restart();
         }
@@ -591,6 +637,31 @@ public class InvoiceViewComponent extends HBox {
 
     public void setIkeaProcessOrderId(Long ikeaProcessOrderId) {
       ikeaProcessOrderIdProperty.setValue(ikeaProcessOrderId);
+    }
+  }
+
+  class InvoiceItemChangeCountService extends AbstractAsyncService<Boolean> {
+    private ObjectProperty<InvoiceItem> invoiceItemProperty = new SimpleObjectProperty<>();
+    private ObjectProperty<BigDecimal> itemCountProperty = new SimpleObjectProperty<>();
+
+    @Override
+    protected Task<Boolean> createTask() {
+      final Long _id = invoiceItemProperty.get().getId();
+      final BigDecimal _itemCount = itemCountProperty.get();
+
+      return new Task<Boolean>() {
+        @Override
+        protected Boolean call() throws Exception {
+          APIRequest request = HttpServiceUtil.get("/ikea-order/invoice-item/" + _id + "/change/count/" + _itemCount.toString());
+
+          return request.postData(null, Boolean.class);
+        }
+      };
+    }
+
+    public void setInvoiceItem(InvoiceItem invoiceItem, BigDecimal itemCount) {
+      invoiceItemProperty.setValue(invoiceItem);
+      itemCountProperty.setValue(itemCount);
     }
   }
 

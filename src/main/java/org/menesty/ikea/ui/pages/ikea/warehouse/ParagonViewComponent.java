@@ -6,16 +6,23 @@ import javafx.concurrent.Task;
 import javafx.concurrent.Worker;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import org.menesty.ikea.core.component.DialogSupport;
 import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.i18n.I18n;
 import org.menesty.ikea.i18n.I18nKeys;
+import org.menesty.ikea.lib.domain.ikea.logistic.Contragent;
 import org.menesty.ikea.lib.domain.ikea.logistic.invoice.EppInformation;
 import org.menesty.ikea.lib.domain.ikea.logistic.paragon.Paragon;
 import org.menesty.ikea.lib.dto.PageResult;
 import org.menesty.ikea.service.AbstractAsyncService;
+import org.menesty.ikea.ui.controls.dialog.Dialog;
+import org.menesty.ikea.ui.controls.pane.LoadingPane;
 import org.menesty.ikea.ui.controls.table.component.BaseTableView;
+import org.menesty.ikea.ui.pages.DialogCallback;
+import org.menesty.ikea.ui.pages.EntityDialogCallback;
+import org.menesty.ikea.ui.pages.ikea.warehouse.dialog.ContragentChoiceDialog;
 import org.menesty.ikea.ui.pages.ikea.warehouse.dialog.ParagonViewDialog;
 import org.menesty.ikea.util.*;
 
@@ -38,10 +45,15 @@ public class ParagonViewComponent extends BorderPane {
 
   private ParagonCancelService paragonCancelService;
 
+  private ParagonMarkDefectService paragonMarkDefectService;
+
+  private AssignContragentService assignContragentService;
+
   private ParagonViewDialog paragonViewDialog;
 
   private static final int ITEM_PER_PAGE = 20;
 
+  private ContragentChoiceDialog contragentChoiceDialog;
 
   private Pagination pagination;
 
@@ -55,6 +67,14 @@ public class ParagonViewComponent extends BorderPane {
 
     paragonCancelService = new ParagonCancelService();
     paragonCancelService.setOnSucceededListener(value -> load());
+
+    paragonMarkDefectService = new ParagonMarkDefectService();
+    paragonMarkDefectService.setOnSucceededListener(value -> {
+      paragonMarkDefectService.getParagon().setDefected(value);
+      tableView.update(paragonMarkDefectService.getParagon());
+    });
+
+    assignContragentService = new AssignContragentService();
 
     paragonEppService = new ParagonEppService();
     paragonEppService.setOnSucceededListener(value -> {
@@ -93,12 +113,14 @@ public class ParagonViewComponent extends BorderPane {
         {
           MenuItem menuItem = new MenuItem(I18n.UA.getString(I18nKeys.DOWNLOAD_EPP), ImageFactory.createDownload16Icon());
           menuItem.setOnAction(actionEvent -> {
-            FileChooser fileChooser = FileChooserUtil.getEpp();
-            fileChooser.setInitialFileName("paragon_" + paragon.getId() + "_" + paragon.getAmount() + ".epp");
+            FileChooser fileChooser = FileChooserUtil.getEpp(FileChooserUtil.FolderType.PARAGON);
+            fileChooser.setInitialFileName((paragon.getContragent() != null ? "named_" : "") + "paragon_" + paragon.getId() + "_" + paragon.getAmount() + ".epp");
 
             File selectedFile = fileChooser.showSaveDialog(dialogSupport.getStage());
 
             if (selectedFile != null) {
+              FileChooserUtil.setDefaultDir(FileChooserUtil.FolderType.PARAGON, selectedFile);
+
               paragonEppService.setParagon(selectedFile, paragon);
               paragonEppService.restart();
             }
@@ -106,16 +128,38 @@ public class ParagonViewComponent extends BorderPane {
           contextMenu.getItems().add(menuItem);
         }
 
-
         {
-          MenuItem menuItem = new MenuItem(I18n.UA.getString(I18nKeys.PARAGON_CANCEL));
+          MenuItem menuItem = new MenuItem(I18n.UA.getString(I18nKeys.PARAGON_MARK_AS_DEFECTS));
           menuItem.setOnAction(actionEvent -> {
-            paragonCancelService.setParagonId(paragon.getId());
-            paragonCancelService.restart();
+            paragonMarkDefectService.setParagon(paragon);
+            paragonMarkDefectService.restart();
           });
 
           contextMenu.getItems().add(menuItem);
         }
+
+        {
+          MenuItem menuItem = new MenuItem(I18n.UA.getString(I18nKeys.PARAGON_CANCEL), ImageFactory.createDelete16Icon());
+          menuItem.setOnAction(actionEvent -> {
+            Dialog.confirm(dialogSupport, I18n.UA.getString(I18nKeys.WARNING), I18n.UA.getString(I18nKeys.PARAGON_CANCEL_CONFIRMATION), new DialogCallback() {
+              @Override
+              public void onCancel() {
+                dialogSupport.hidePopupDialog();
+              }
+
+              @Override
+              public void onYes() {
+                paragonCancelService.setParagonId(paragon.getId());
+                paragonCancelService.restart();
+                dialogSupport.hidePopupDialog();
+              }
+            });
+
+          });
+
+          contextMenu.getItems().add(menuItem);
+        }
+
 
         row.setContextMenu(contextMenu);
 
@@ -149,31 +193,84 @@ public class ParagonViewComponent extends BorderPane {
     {
       TableColumn<Paragon, String> column = new TableColumn<>(I18n.UA.getString(I18nKeys.DOWNLOAD_DATE));
       column.setMinWidth(150);
-      String DATE_FORMAT = "dd/MM/yyyy HH:mm:ss";
-      column.setCellValueFactory(ColumnUtil.dateColumn(DATE_FORMAT, "downloadedDate"));
+      column.setCellValueFactory(ColumnUtil.dateColumn("dd/MM/yyyy", "downloadedDate"));
       tableView.getColumns().add(column);
     }
 
     {
       TableColumn<Paragon, Long> column = new TableColumn<>(I18n.UA.getString(I18nKeys.PARAGON_ID));
-      column.setMinWidth(180);
+      column.setMaxWidth(180);
       column.setCellValueFactory(ColumnUtil.<Paragon, Long>column("id"));
       tableView.getColumns().add(column);
     }
 
     {
-      TableColumn<Paragon, String> column = new TableColumn<>(I18n.UA.getString(I18nKeys.CONTRAGENT));
+      TableColumn<Paragon, Contragent> column = new TableColumn<>(I18n.UA.getString(I18nKeys.CONTRAGENT));
       column.setMinWidth(180);
-      column.setCellValueFactory(param -> {
-        SimpleStringProperty contragentProperty = new SimpleStringProperty();
+      column.setCellValueFactory(ColumnUtil.<Paragon, Contragent>column("contragent"));
+      column.setCellFactory(param -> new TableCell<Paragon, Contragent>() {
+        final Button btn = new Button(I18n.UA.getString(I18nKeys.ASSIGN_CONTRAGENT));
 
+        @Override
+        public void updateItem(Contragent item, boolean empty) {
+          super.updateItem(item, empty);
+
+          if (empty) {
+            setGraphic(null);
+            setText(null);
+          } else {
+            if (item != null) {
+              setText(item.getFirstName() + " " + item.getLastName());
+              setGraphic(null);
+            } else {
+              btn.setOnAction(event ->
+              {
+                ContragentChoiceDialog contragentChoiceDialog = getContragentChoiceDialog(dialogSupport);
+                contragentChoiceDialog.bind(new EntityDialogCallback<Contragent>() {
+                  @Override
+                  public void onSave(final Contragent contragent, Object... params) {
+                    dialogSupport.hidePopupDialog();
+
+                    if (contragent != null) {
+                      Paragon paragon = (Paragon) getTableRow().getItem();
+                      paragon.setContragent(contragent);
+                      paragon.setContragentId(contragent.getId());
+
+                      tableView.update(paragon);
+
+                      assignContragentService.setData(paragon.getId(), contragent.getId());
+                      assignContragentService.restart();
+                    }
+                  }
+
+                  @Override
+                  public void onCancel() {
+                    dialogSupport.hidePopupDialog();
+                  }
+                });
+                dialogSupport.showPopupDialog(contragentChoiceDialog);
+              });
+              setGraphic(btn);
+              setText(null);
+            }
+          }
+        }
+      });
+
+      tableView.getColumns().add(column);
+    }
+
+    {
+      TableColumn<Paragon, String> column = new TableColumn<>(I18n.UA.getString(I18nKeys.DEFECTED));
+      column.setMinWidth(150);
+      column.setCellValueFactory(param -> {
         Paragon paragon = param.getValue();
 
-        if (paragon != null && paragon.getContragent() != null) {
-          contragentProperty.set(paragon.getContragent().getFirstName() + " " + paragon.getContragent().getLastName());
+        if (paragon != null && paragon.isDefected()) {
+          return new SimpleStringProperty(I18n.UA.getString(I18nKeys.YES));
         }
 
-        return contragentProperty;
+        return new SimpleStringProperty("");
       });
       tableView.getColumns().add(column);
     }
@@ -183,7 +280,13 @@ public class ParagonViewComponent extends BorderPane {
     refresh.setOnAction(actionEvent -> load());
     control.getItems().add(refresh);
 
-    setCenter(tableView);
+    StackPane main = new StackPane();
+    LoadingPane loadingPane = new LoadingPane();
+    loadingPane.bindTask(loadService, assignContragentService);
+
+    main.getChildren().addAll(tableView, loadingPane);
+
+    setCenter(main);
     setTop(control);
 
     pagination = new Pagination(1, 0);
@@ -197,8 +300,16 @@ public class ParagonViewComponent extends BorderPane {
   }
 
   public void load() {
-    loadService.setPageIndex(1);
+    loadService.setPageIndex(0);
     loadService.restart();
+  }
+
+  public ContragentChoiceDialog getContragentChoiceDialog(DialogSupport dialogSupport) {
+    if (contragentChoiceDialog == null) {
+      contragentChoiceDialog = new ContragentChoiceDialog(dialogSupport.getStage());
+    }
+
+    return contragentChoiceDialog;
   }
 
   public Collection<? extends Worker<?>> getWorkers() {
@@ -273,6 +384,55 @@ public class ParagonViewComponent extends BorderPane {
     }
   }
 
+  class ParagonMarkDefectService extends AbstractAsyncService<Boolean> {
+    private ObjectProperty<Paragon> paragonProperty = new SimpleObjectProperty<>();
+
+    @Override
+    protected Task<Boolean> createTask() {
+      final Long _paragonId = paragonProperty.get().getId();
+      return new Task<Boolean>() {
+        @Override
+        protected Boolean call() throws Exception {
+          APIRequest request = HttpServiceUtil.get("/paragon/" + _paragonId + "/mark/defect");
+          return request.getData(Boolean.class);
+        }
+      };
+    }
+
+    public void setParagon(Paragon paragon) {
+      this.paragonProperty.setValue(paragon);
+    }
+
+    public Paragon getParagon() {
+      return paragonProperty.get();
+    }
+  }
+
+
+  class AssignContragentService extends AbstractAsyncService<Boolean> {
+    private LongProperty paragonIdProperty = new SimpleLongProperty();
+    private LongProperty contragentIdProperty = new SimpleLongProperty();
+
+    @Override
+    protected Task<Boolean> createTask() {
+      final Long _paragonId = paragonIdProperty.get();
+      final Long _contragentId = contragentIdProperty.get();
+
+      return new Task<Boolean>() {
+        @Override
+        protected Boolean call() throws Exception {
+          APIRequest request = HttpServiceUtil.get("/paragon/" + _paragonId + "/assign/contragent/" + _contragentId);
+
+          return request.getData(Boolean.class);
+        }
+      };
+    }
+
+    public void setData(Long paragonId, Long contragentId) {
+      paragonIdProperty.setValue(paragonId);
+      contragentIdProperty.setValue(contragentId);
+    }
+  }
 
   class LoadService extends AbstractAsyncService<PageResult<Paragon>> {
     private IntegerProperty pageIndex = new SimpleIntegerProperty();

@@ -138,4 +138,10 @@ public interface I18nKeys {
   String ADD_CHECKED_TO_ORDER = "add.checked.to.order";
   String ALL_CHECKED_ITEMS_WILL_ADD_TO_ORDER_WITH_FULL_COUNT = "all.checked.items.will.add.to.order.with.full.count";
   String POST_CODE = "post.code";
+  String ASSIGN_CONTRAGENT="assign.contragent";
+  String PARAGON_MARK_AS_DEFECTS = "paragon.mark.as.defects";
+  String PARAGON_CANCEL_CONFIRMATION = "paragon.cancel.confirmation";
+  String DEFECTED = "defected";
+  String YES = "yes";
+  String CHANGE_ITEM_COUNT = "change.item.count";
 }

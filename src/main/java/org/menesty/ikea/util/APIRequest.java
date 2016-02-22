@@ -62,7 +62,9 @@ public class APIRequest {
       HttpPost httpPost = new HttpPost(url);
       ObjectMapper objectMapper = new ObjectMapper();
 
-      httpPost.setEntity(new StringEntity(objectMapper.writeValueAsString(object), ContentType.APPLICATION_JSON));
+      if (object != null) {
+        httpPost.setEntity(new StringEntity(objectMapper.writeValueAsString(object), ContentType.APPLICATION_JSON));
+      }
 
       try (CloseableHttpResponse response = httpClient.execute(targetHost, httpPost, localContext)) {
         return EntityUtils.toString(response.getEntity());
