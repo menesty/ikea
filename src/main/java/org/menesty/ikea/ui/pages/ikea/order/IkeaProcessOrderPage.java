@@ -20,10 +20,7 @@ import org.menesty.ikea.ui.controls.table.component.BaseTableView;
 import org.menesty.ikea.ui.pages.BasePage;
 import org.menesty.ikea.ui.pages.DialogCallback;
 import org.menesty.ikea.ui.pages.wizard.order.OrderCreateWizardPage;
-import org.menesty.ikea.util.APIRequest;
-import org.menesty.ikea.util.ColumnUtil;
-import org.menesty.ikea.util.HttpServiceUtil;
-import org.menesty.ikea.util.ToolTipUtil;
+import org.menesty.ikea.util.*;
 
 /**
  * Created by Menesty on
@@ -41,7 +38,7 @@ public class IkeaProcessOrderPage extends BasePage {
     loadService = new LoadService();
     loadService.setOnSucceededListener(value -> {
       tableView.getItems().setAll(value.getData());
-      pagination.setPageCount(value.getCount() / value.getLimit());
+      pagination.setPageCount(PaginationUtil.getPageCount(value.getCount(), value.getLimit()));
     });
 
     deleteService = new DeleteService();
@@ -125,7 +122,7 @@ public class IkeaProcessOrderPage extends BasePage {
     pagination = new Pagination(1, 0);
 
     pagination.currentPageIndexProperty().addListener((observable, oldValue, pageIndex) -> {
-      loadService.setPage(pageIndex.intValue());
+      loadService.setPage(PaginationUtil.getPageNumber(pageIndex.intValue()));
       loadService.restart();
     });
 
@@ -163,7 +160,7 @@ public class IkeaProcessOrderPage extends BasePage {
   @Override
   public void onActive(Object... params) {
     loadingPane.bindTask(loadService, deleteService);
-    loadService.setPage(0);
+    loadService.setPage(1);
     loadService.restart();
   }
 }

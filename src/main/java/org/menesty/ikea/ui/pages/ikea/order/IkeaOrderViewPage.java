@@ -35,6 +35,7 @@ public class IkeaOrderViewPage extends BasePage {
   private StockManagementComponent stockManagementComponent;
   private WarehouseOrderViewComponent warehouseOrderViewComponent;
   private InvoiceSearchComponent invoiceSearchComponent;
+  private ParagonItemSearchComponent paragonItemSearchComponent;
 
   @Override
   protected void initialize() {
@@ -147,6 +148,19 @@ public class IkeaOrderViewPage extends BasePage {
       tab.selectedProperty().addListener((observable, oldValue, newValue) -> {
         if (newValue) {
           warehouseOrderViewComponent.setOrderDetail(ikeaOrderDetail);
+        }
+      });
+
+      tabPane.getTabs().add(tab);
+    }
+
+    {
+      Tab tab = new Tab(I18n.UA.getString(I18nKeys.PARAGON_ITEM_SEARCH));
+      tab.setClosable(false);
+      tab.setContent(paragonItemSearchComponent = new ParagonItemSearchComponent(getDialogSupport()));
+      tab.selectedProperty().addListener((observable, oldValue, newValue) -> {
+        if (newValue) {
+          paragonItemSearchComponent.onActive(ikeaOrderDetail.getId());
         }
       });
 

@@ -145,5 +145,6 @@ public interface I18nKeys {
   String YES = "yes";
   String CHANGE_ITEM_COUNT = "change.item.count";
   String RESUMPTION = "resumption";
-  String RESUMPTION_DETAIL="resumption.detail";
+  String RESUMPTION_DETAIL = "resumption.detail";
+  String PARAGON_ITEM_SEARCH = "paragon.item.search";
 }
