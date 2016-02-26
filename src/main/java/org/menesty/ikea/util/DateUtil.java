@@ -11,8 +11,8 @@ import java.util.Date;
  * 16:05.
  */
 public class DateUtil {
-    public static Date toDate(LocalDate localDate) {
-        Instant instant = localDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant();
-        return Date.from(instant);
-    }
+  public static Date toDate(LocalDate localDate) {
+    Instant instant = localDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant();
+    return Date.from(instant);
+  }
 }

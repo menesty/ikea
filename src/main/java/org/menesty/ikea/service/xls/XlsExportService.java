@@ -9,8 +9,11 @@ import org.jxls.transform.Transformer;
 import org.jxls.util.TransformerFactory;
 import org.menesty.ikea.i18n.I18n;
 import org.menesty.ikea.i18n.I18nKeys;
+import org.menesty.ikea.lib.domain.ikea.logistic.resumption.ResumptionItem;
 import org.menesty.ikea.lib.domain.ikea.logistic.stock.StockItemDto;
 import org.menesty.ikea.lib.dto.ProductPriceMismatch;
+import org.menesty.ikea.util.ColumnUtil;
+import org.menesty.ikea.util.DateFormatter;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,6 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -30,6 +34,7 @@ import java.util.List;
 public class XlsExportService {
   private static final String PRODUCT_PRICE_MISMATCH_NOT_AVAILABLE_TEMPLATE = "mismatch_not_available";
   private static final String PRODUCT_BUY_RESULT_TEMPLATE = "buy_result";
+  private static final String RESUMPTION_ITEM_TEMPLATE = "resumption_item";
 
   public void exportProductPriceMismatchNotAvailable(File targetFile, List<String> items, List<ProductPriceMismatch> mismatches) {
     Context context = new Context();
@@ -84,5 +89,14 @@ public class XlsExportService {
     context.putVar("lacks", lack);
 
     transformSingleSheet(targetFile, PRODUCT_BUY_RESULT_TEMPLATE, context, Arrays.asList("OverBough!A1", "Lack!A1"));
+  }
+
+  public void exportResumptionItems(File targetFile, List<ResumptionItem> resumptionItems) {
+    Context context = new Context();
+
+    context.putVar("items", resumptionItems);
+    context.putVar("dateFormatter", new DateFormatter(ColumnUtil.DEFAULT_DATE_FORMAT));
+    transformSingleSheet(targetFile, RESUMPTION_ITEM_TEMPLATE, context, Collections.singletonList("Resumption!A1"));
+
   }
 }

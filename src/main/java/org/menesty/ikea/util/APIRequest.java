@@ -4,9 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpHost;
 import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.*;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
@@ -15,6 +13,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.List;
 
@@ -34,7 +33,7 @@ public class APIRequest {
     return url;
   }
 
-  private byte[] loadData() throws Exception {
+  private byte[] loadData(String method) throws Exception {
 
     HttpHost targetHost = new HttpHost(url.getHost(), url.getPort());
 
@@ -43,9 +42,15 @@ public class APIRequest {
     try (CloseableHttpClient httpClient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build()) {
       HttpClientContext localContext = HttpUtil.context(targetHost);
 
-      HttpGet httpPost = new HttpGet(url);
+      HttpRequestBase httpRequest;
 
-      try (CloseableHttpResponse response = httpClient.execute(targetHost, httpPost, localContext)) {
+      if (HttpDelete.METHOD_NAME.equals(method)) {
+        httpRequest = new HttpDelete(url);
+      } else {
+        httpRequest = new HttpGet(url);
+      }
+
+      try (CloseableHttpResponse response = httpClient.execute(targetHost, httpRequest, localContext)) {
         return EntityUtils.toByteArray(response.getEntity());
       }
     }
@@ -60,6 +65,7 @@ public class APIRequest {
       HttpClientContext localContext = HttpUtil.context(targetHost);
 
       HttpPost httpPost = new HttpPost(url);
+
       ObjectMapper objectMapper = new ObjectMapper();
 
       if (object != null) {
@@ -96,7 +102,11 @@ public class APIRequest {
   }
 
   public <T> T getData(Class<T> clazz) throws Exception {
-    String response = toString(loadData());
+    return getData(clazz, HttpGet.METHOD_NAME);
+  }
+
+  public <T> T getData(Class<T> clazz, String method) throws Exception {
+    String response = toString(loadData(method));
     checkForError(response);
     ObjectMapper objectMapper = new ObjectMapper();
 
@@ -104,7 +114,11 @@ public class APIRequest {
   }
 
   public void get() throws Exception {
-    String response = toString(loadData());
+    get(HttpGet.METHOD_NAME);
+  }
+
+  public void get(String method) throws Exception {
+    String response = toString(loadData(method));
     checkForError(response);
   }
 
@@ -118,8 +132,13 @@ public class APIRequest {
     }
   }
 
+
   public <T> T getData(TypeReference<T> typeReference) throws Exception {
-    String response = toString(loadData());
+    return getData(typeReference, HttpGet.METHOD_NAME);
+  }
+
+  public <T> T getData(TypeReference<T> typeReference, String method) throws Exception {
+    String response = toString(loadData(method));
     checkForError(response);
     ObjectMapper objectMapper = new ObjectMapper();
 
@@ -127,7 +146,11 @@ public class APIRequest {
   }
 
   public <T> List<T> getList(TypeReference<List<T>> typeReference) throws Exception {
-    String response = toString(loadData());
+    return getList(typeReference, HttpGet.METHOD_NAME);
+  }
+
+  public <T> List<T> getList(TypeReference<List<T>> typeReference, String method) throws Exception {
+    String response = toString(loadData(method));
     checkForError(response);
     ObjectMapper objectMapper = new ObjectMapper();
 
@@ -135,7 +158,11 @@ public class APIRequest {
   }
 
   public byte[] getBytes() throws Exception {
-    byte[] bytes = loadData();
+    return getBytes(HttpGet.METHOD_NAME);
+  }
+
+  public byte[] getBytes(String method) throws Exception {
+    byte[] bytes = loadData(method);
     checkForError(toString(bytes));
 
     return bytes;

@@ -4,6 +4,8 @@ import org.menesty.ikea.ui.pages.*;
 import org.menesty.ikea.ui.pages.ikea.contraget.ContragentPage;
 import org.menesty.ikea.ui.pages.ikea.order.IkeaOrderViewPage;
 import org.menesty.ikea.ui.pages.ikea.order.IkeaProcessOrderPage;
+import org.menesty.ikea.ui.pages.ikea.resumption.ResumptionDetailPage;
+import org.menesty.ikea.ui.pages.ikea.resumption.ResumptionPage;
 import org.menesty.ikea.ui.pages.ikea.warehouse.SiteWarehousePage;
 import org.menesty.ikea.ui.pages.wizard.order.OrderCreateWizardPage;
 
@@ -45,8 +47,11 @@ public class PageFactory {
       return new SiteWarehousePage();
     } else if (ContragentPage.class.equals(page)) {
       return new ContragentPage();
+    } else if (ResumptionPage.class.equals(page)) {
+      return new ResumptionPage();
+    } else if (ResumptionDetailPage.class.equals(page)) {
+      return new ResumptionDetailPage();
     }
-
 
     throw new RuntimeException(String.format("Requested page not defined for creation: %s, please add it to Page factory", page.getName()));
   }

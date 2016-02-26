@@ -229,4 +229,8 @@ public class ImageFactory {
   public static ImageView createIkeaSmallIcon() {
     return createIcon("ikea-small.png");
   }
+
+  public static ImageView createResumptionIcon72(){
+    return createIcon("resumption-72x72.png");
+  }
 }

@@ -15,7 +15,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class ColumnUtil {
-  private static final String DEFAULT_DATE_FORMAT = "dd/MM/yyyy";
+  public static final String DEFAULT_DATE_FORMAT = "dd/MM/yyyy";
 
   public static <Entity, Value> Callback<TableColumn.CellDataFeatures<Entity, Value>, ObservableValue<Value>> column(final String propertyName) {
     try {

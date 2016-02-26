@@ -27,8 +27,9 @@
         <slf4j.version>1.6.1</slf4j.version>
         <timestamp>${maven.build.timestamp}</timestamp>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
-        <jxls.reader.version>2.0.1</jxls.reader.version>
-        <jxls.writer.version>2.2.5</jxls.writer.version>
+        <jxls.reader.version>2.0.2</jxls.reader.version>
+        <jxls.writer.version>2.2.9</jxls.writer.version>
+        <jxls.poi.version>1.0.8</jxls.poi.version>
         <org.jsoup.version>1.8.3</org.jsoup.version>
         <org.mvel.version>2.2.6.Final</org.mvel.version>
         <org.menesty.ikea.lib>1.0.2-SNAPSHOT</org.menesty.ikea.lib>
@@ -172,7 +173,7 @@
         <dependency>
             <groupId>org.jxls</groupId>
             <artifactId>jxls-poi</artifactId>
-            <version>1.0.5</version>
+            <version>${jxls.poi.version}</version>
         </dependency>
         <!-- Html parser -->
         <dependency>

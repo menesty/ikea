@@ -35,6 +35,8 @@ import org.menesty.ikea.ui.pages.*;
 import org.menesty.ikea.ui.pages.ikea.contraget.ContragentPage;
 import org.menesty.ikea.ui.pages.ikea.order.IkeaOrderViewPage;
 import org.menesty.ikea.ui.pages.ikea.order.IkeaProcessOrderPage;
+import org.menesty.ikea.ui.pages.ikea.resumption.ResumptionDetailPage;
+import org.menesty.ikea.ui.pages.ikea.resumption.ResumptionPage;
 import org.menesty.ikea.ui.pages.ikea.warehouse.SiteWarehousePage;
 import org.menesty.ikea.ui.pages.wizard.order.OrderCreateWizardPage;
 import org.menesty.ikea.util.HttpUtil;
@@ -162,6 +164,13 @@ public class IkeaApplication extends Application implements DialogSupport {
 
     group.add(new PageDescription(Pages.WAREHOUSE.getTitle(), ImageFactory.createWarehouseIcon72(), SiteWarehousePage.class));
     group.add(new PageDescription(Pages.CONTRAGENT.getTitle(), ImageFactory.createUsersIcon64(), ContragentPage.class));
+
+    {
+      PageDescription resumptionListPageDescription = new PageDescription(Pages.RESUMPTION.getTitle(), ImageFactory.createResumptionIcon72(), ResumptionPage.class);
+      resumptionListPageDescription.addPage(new PageDescription(Pages.RESUMPTION_DETAIL.getTitle(), ResumptionDetailPage.class, false));
+
+      group.add(resumptionListPageDescription);
+    }
 
     return group;
   }

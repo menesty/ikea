@@ -79,7 +79,6 @@ public class WarehouseViewComponent extends BorderPane {
       column.setCellValueFactory(ColumnUtil.column("orderName"));
 
       tableView.getColumns().add(column);
-
     }
 
     {
