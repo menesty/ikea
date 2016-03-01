@@ -233,4 +233,11 @@ public class ImageFactory {
   public static ImageView createResumptionIcon72(){
     return createIcon("resumption-72x72.png");
   }
+
+  public static ImageView createCopyIcon32(){
+    return createIcon("copy-32x32.png");
+  }
+  public static ImageView createCopyIcon316(){
+    return createIcon("copy-16x16.png");
+  }
 }

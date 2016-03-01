@@ -307,7 +307,7 @@ public class ProductEditDialog extends EntityDialog<IkeaProduct> {
       add(artNumberField = new TextField(null, I18n.UA.getString(I18nKeys.ART_NUMBER)));
       artNumberField.setEditable(false);
 
-      add(uaNameField = new TextField(null, I18n.UA.getString(I18nKeys.UA_NAME), false));
+      add(uaNameField = new TextField(null, I18n.UA.getString(I18nKeys.UA_NAME), true));
       add(shortNameField = new TextField(null, I18n.UA.getString(I18nKeys.SHORT_NAME), false));
       add(priceField = new NumberTextField(null, I18n.UA.getString(I18nKeys.PRICE), false));
 

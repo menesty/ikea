@@ -7,9 +7,7 @@ import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Task;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.ToolBar;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.FileChooser;
 import org.menesty.ikea.factory.ImageFactory;
@@ -21,6 +19,7 @@ import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.service.xls.XlsExportService;
 import org.menesty.ikea.ui.controls.table.component.BaseTableView;
 import org.menesty.ikea.ui.pages.BasePage;
+import org.menesty.ikea.ui.pages.ikea.resumption.dialog.ResumptionItemAlternativeDialog;
 import org.menesty.ikea.ui.table.ArtNumberCell;
 import org.menesty.ikea.util.APIRequest;
 import org.menesty.ikea.util.ColumnUtil;
@@ -40,6 +39,7 @@ public class ResumptionDetailPage extends BasePage {
 
   private LoadService loadService;
   private XlsDataExportService xlsDataExportService;
+  private ResumptionItemAlternativeDialog resumptionItemAlternativeDialog;
 
   @Override
   protected void initialize() {
@@ -101,6 +101,27 @@ public class ResumptionDetailPage extends BasePage {
       tableView.getColumns().add(column);
     }
 
+    tableView.setRowRenderListener((row, newValue) -> {
+      row.setContextMenu(null);
+      if (newValue != null) {
+        ContextMenu contextMenu = new ContextMenu();
+
+        {
+          MenuItem menuItem = new MenuItem(I18n.UA.getString(I18nKeys.RESUMPTION_ALTERNATIVES_MENU));
+          menuItem.setOnAction(event -> {
+            ResumptionItemAlternativeDialog dialog = getResumptionItemAlternativeDialog();
+            dialog.setProductId(newValue.getProductId());
+
+            getDialogSupport().showPopupDialog(dialog);
+          });
+
+          contextMenu.getItems().add(menuItem);
+        }
+
+        row.setContextMenu(contextMenu);
+      }
+    });
+
     main.setCenter(tableView);
 
     ToolBar toolBar = new ToolBar();
@@ -133,6 +154,23 @@ public class ResumptionDetailPage extends BasePage {
 
     loadService.setResumptionId(resumption.getId());
     loadService.restart();
+  }
+
+  public ResumptionItemAlternativeDialog getResumptionItemAlternativeDialog() {
+    if (resumptionItemAlternativeDialog == null) {
+      resumptionItemAlternativeDialog = new ResumptionItemAlternativeDialog(getDialogSupport().getStage()) {
+        @Override
+        public void onCancel() {
+          getDialogSupport().hidePopupDialog();
+        }
+
+        @Override
+        public void onOk() {
+          getDialogSupport().hidePopupDialog();
+        }
+      };
+    }
+    return resumptionItemAlternativeDialog;
   }
 
   class LoadService extends AbstractAsyncService<List<ResumptionItem>> {

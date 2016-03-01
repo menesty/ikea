@@ -23,7 +23,7 @@ public class ArtNumberCell<T> extends TableCell<T, String> {
   private Label numberLabel;
   private HBox content;
   private final TableColumn<T, String> column;
-  private final Pattern ART_NUMBER_PATTERN = Pattern.compile("I_(.*)_.*");
+  private final Pattern ART_NUMBER_PATTERN = Pattern.compile("(\\d+)_\\d+");
 
   public ArtNumberCell(TableColumn<T, String> column) {
     this.column = column;

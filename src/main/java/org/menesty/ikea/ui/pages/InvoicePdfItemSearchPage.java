@@ -6,25 +6,30 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.ToolBar;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.util.Callback;
+import org.menesty.ikea.factory.ImageFactory;
+import org.menesty.ikea.i18n.I18n;
+import org.menesty.ikea.i18n.I18nKeys;
 import org.menesty.ikea.processor.invoice.RawInvoiceProductItem;
 import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.service.SucceededListener;
 import org.menesty.ikea.ui.controls.form.TextField;
+import org.menesty.ikea.ui.controls.table.component.BaseTableView;
+import org.menesty.ikea.util.ClipboardUtil;
 import org.menesty.ikea.util.ColumnUtil;
+import org.menesty.ikea.util.DateFormatter;
 import org.menesty.ikea.util.NumberUtil;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 public class InvoicePdfItemSearchPage extends BasePage {
   private TextField artNumber;
   private LoadService loadService;
-  private TableView<RawInvoiceProductItem> tableView;
+  private BaseTableView<RawInvoiceProductItem> tableView;
 
   public InvoicePdfItemSearchPage() {
     loadService = new LoadService();
@@ -49,7 +54,7 @@ public class InvoicePdfItemSearchPage extends BasePage {
 
     toolBar.getItems().add(artNumber);
 
-    tableView = new TableView<>();
+    tableView = new BaseTableView<>();
     {
       TableColumn<RawInvoiceProductItem, String> column = new TableColumn<>("Art # ");
       column.setMinWidth(100);
@@ -108,6 +113,29 @@ public class InvoicePdfItemSearchPage extends BasePage {
 
       tableView.getColumns().add(column);
     }
+
+    tableView.setRowRenderListener((row, newValue) -> {
+      row.setContextMenu(null);
+
+      if (newValue != null) {
+        ContextMenu contextMenu = new ContextMenu();
+
+        {
+          MenuItem menuItem = new MenuItem(I18n.UA.getString(I18nKeys.COPY));
+          menuItem.setOnAction(event -> {
+            SimpleDateFormat dateFormatter = new SimpleDateFormat(ColumnUtil.DEFAULT_DATE_FORMAT);
+            String copyString = newValue.getOriginalArtNumber() + "\t" + newValue.getCount() + "\t" + newValue.getPrice() +
+                "\t" + newValue.getInvoicePdf().getInvoiceNumber() + "\t" + newValue.getInvoicePdf().getParagonName() +
+                "\t" + dateFormatter.format(newValue.getInvoicePdf().getParagonDate());
+            ClipboardUtil.copy(copyString);
+          });
+
+          contextMenu.getItems().add(menuItem);
+        }
+
+        row.setContextMenu(contextMenu);
+      }
+    });
 
 
     BorderPane main = new BorderPane();
