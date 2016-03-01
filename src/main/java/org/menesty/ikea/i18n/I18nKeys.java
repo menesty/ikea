@@ -149,4 +149,6 @@ public interface I18nKeys {
   String PARAGON_ITEM_SEARCH = "paragon.item.search";
   String RESUMPTION_ALTERNATIVES = "resumption.alternatives";
   String RESUMPTION_ALTERNATIVES_MENU = "resumption.alternatives.menu";
+  String OVER_BOUGH = "over.bough";
+  String STORAGE_LACK = "storage.lack";
 }

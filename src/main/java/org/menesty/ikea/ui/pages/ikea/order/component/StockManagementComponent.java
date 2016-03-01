@@ -243,130 +243,187 @@ public class StockManagementComponent extends BorderPane {
   }
 
   private Node initRightPane(DialogSupport dialogSupport) {
-    VBox rightPane = new VBox(0);
-
-    overBoughTableView = new BaseTableView<>();
-    overBoughTableView.setRowRenderListener((row, newValue) -> {
-      row.setContextMenu(null);
-
-      if (newValue != null) {
-        ContextMenu contextMenu = new ContextMenu();
-
-        {
-          MenuItem menuItem = new MenuItem(I18n.UA.getString(I18nKeys.ADD_TO_ORDER));
-          menuItem.setOnAction(event -> {
-            ChoiceCountDialog choiceCountDialog = new ChoiceCountDialog(dialogSupport.getStage());
-            choiceCountDialog.maxValue(newValue.getItem().getArtNumber(), newValue.getItem().getInvoiceItemId(), profileListView.getItems(), newValue.getItem().getCount(), new EntityDialogCallback<NewOrderItemInfo>() {
-              @Override
-              public void onSave(NewOrderItemInfo newOrderItemInfo, Object... params) {
-                dialogSupport.hidePopupDialog();
-
-                addToOrderItemService.setChoiceCountResult(ikeaProcessOrderId, Collections.singletonList(newOrderItemInfo));
-                addToOrderItemService.restart();
-              }
-
-              @Override
-              public void onCancel() {
-                dialogSupport.hidePopupDialog();
-              }
-            });
-
-            dialogSupport.showPopupDialog(choiceCountDialog);
-          });
-
-          contextMenu.getItems().add(menuItem);
-        }
-        {
-          MenuItem menuItem = new MenuItem(I18n.UA.getString(I18nKeys.RETURN_BACK));
-          menuItem.setOnAction(event -> Dialog.confirm(dialogSupport, I18n.UA.getString(I18nKeys.RETURN_BACK_INVOICE_ITEM_ORDER_QUESTION), new DialogCallback() {
-            @Override
-            public void onCancel() {
-
-            }
-
-            @Override
-            public void onYes() {
-
-            }
-          }));
-          contextMenu.getItems().add(menuItem);
-        }
-
-        {
-          MenuItem menuItem = new MenuItem(I18n.UA.getString(I18nKeys.ADD_TO_COMBO));
-          menuItem.setOnAction(event -> {
-            OrderViewComboDialog dialog = getOrderViewComboDialog(dialogSupport.getStage());
-
-            dialog.loadCombos(ikeaProcessOrderId, newValue.getItem().getArtNumber(), new EntityDialogCallback<OrderViewComboDialog.ComboSelectResult>() {
-              @Override
-              public void onSave(OrderViewComboDialog.ComboSelectResult comboSelectResult, Object... params) {
-                addComboPartService.setData(comboSelectResult);
-                addComboPartService.restart();
-                dialogSupport.hidePopupDialog();
-              }
-
-              @Override
-              public void onCancel() {
-                dialogSupport.hidePopupDialog();
-              }
-            });
-
-            dialogSupport.showPopupDialog(dialog);
-
-          });
-
-          contextMenu.getItems().add(menuItem);
-        }
-
-        row.setContextMenu(contextMenu);
-      }
-    });
-
-
-    overBoughTableView.setMaxHeight(250);
+    TabPane tabPane = new TabPane();
 
     {
+      Tab tab = new Tab(I18n.UA.getString(I18nKeys.OVER_BOUGH));
+
+      overBoughTableView = new BaseTableView<>();
+      overBoughTableView.setRowRenderListener((row, newValue) -> {
+        row.setContextMenu(null);
+
+        if (newValue != null) {
+          ContextMenu contextMenu = new ContextMenu();
+
+          {
+            MenuItem menuItem = new MenuItem(I18n.UA.getString(I18nKeys.ADD_TO_ORDER));
+            menuItem.setOnAction(event -> {
+              ChoiceCountDialog choiceCountDialog = new ChoiceCountDialog(dialogSupport.getStage());
+              choiceCountDialog.maxValue(newValue.getItem().getArtNumber(), newValue.getItem().getInvoiceItemId(), profileListView.getItems(), newValue.getItem().getCount(), new EntityDialogCallback<NewOrderItemInfo>() {
+                @Override
+                public void onSave(NewOrderItemInfo newOrderItemInfo, Object... params) {
+                  dialogSupport.hidePopupDialog();
+
+                  addToOrderItemService.setChoiceCountResult(ikeaProcessOrderId, Collections.singletonList(newOrderItemInfo));
+                  addToOrderItemService.restart();
+                }
+
+                @Override
+                public void onCancel() {
+                  dialogSupport.hidePopupDialog();
+                }
+              });
+
+              dialogSupport.showPopupDialog(choiceCountDialog);
+            });
+
+            contextMenu.getItems().add(menuItem);
+          }
+          {
+            MenuItem menuItem = new MenuItem(I18n.UA.getString(I18nKeys.RETURN_BACK));
+            menuItem.setOnAction(event -> Dialog.confirm(dialogSupport, I18n.UA.getString(I18nKeys.RETURN_BACK_INVOICE_ITEM_ORDER_QUESTION), new DialogCallback() {
+              @Override
+              public void onCancel() {
+
+              }
+
+              @Override
+              public void onYes() {
+
+              }
+            }));
+            contextMenu.getItems().add(menuItem);
+          }
+
+          {
+            MenuItem menuItem = new MenuItem(I18n.UA.getString(I18nKeys.ADD_TO_COMBO));
+            menuItem.setOnAction(event -> {
+              OrderViewComboDialog dialog = getOrderViewComboDialog(dialogSupport.getStage());
+
+              dialog.loadCombos(ikeaProcessOrderId, newValue.getItem().getArtNumber(), new EntityDialogCallback<OrderViewComboDialog.ComboSelectResult>() {
+                @Override
+                public void onSave(OrderViewComboDialog.ComboSelectResult comboSelectResult, Object... params) {
+                  addComboPartService.setData(comboSelectResult);
+                  addComboPartService.restart();
+                  dialogSupport.hidePopupDialog();
+                }
+
+                @Override
+                public void onCancel() {
+                  dialogSupport.hidePopupDialog();
+                }
+              });
+
+              dialogSupport.showPopupDialog(dialog);
+
+            });
+
+            contextMenu.getItems().add(menuItem);
+          }
+
+          row.setContextMenu(contextMenu);
+        }
+      });
+
       {
         TableColumn<EntityCheckBoxHolder<StockItemDto>, Boolean> checked = new EntityCheckBoxTableColumn<>();
         checked.setCellValueFactory(new PropertyValueFactory<>("checked"));
         overBoughTableView.getColumns().add(checked);
       }
+
+      {
+        TableColumn<EntityCheckBoxHolder<StockItemDto>, String> column = new TableColumn<>(I18n.UA.getString(I18nKeys.ART_NUMBER));
+
+        column.setMinWidth(140);
+        column.setCellValueFactory(ColumnUtil.column("item.artNumber"));
+        column.setCellFactory(ArtNumberCell::new);
+        overBoughTableView.getColumns().add(column);
+      }
+
+      {
+        TableColumn<EntityCheckBoxHolder<StockItemDto>, String> column = new TableColumn<>(I18n.UA.getString(I18nKeys.SHORT_NAME));
+
+        column.setMinWidth(140);
+        column.setCellValueFactory(ColumnUtil.column("item.shortName"));
+
+        overBoughTableView.getColumns().add(column);
+      }
+
+      {
+        TableColumn<EntityCheckBoxHolder<StockItemDto>, String> column = new TableColumn<>(I18n.UA.getString(I18nKeys.COUNT));
+
+        column.setMinWidth(60);
+        column.setCellValueFactory(ColumnUtil.number("item.count"));
+
+        overBoughTableView.getColumns().add(column);
+      }
+
+      ToolBar overBoughToolBar = new ToolBar();
+
+      {
+        SplitMenuButton button = new SplitMenuButton();
+        button.setText("Actions");
+
+        {
+          MenuItem menuItem = new MenuItem(I18n.UA.getString(I18nKeys.ADD_CHECKED_TO_ORDER));
+          menuItem.setOnAction(event -> {
+            //TODO FIX ME SHOW DIALOG TO CHOOSE PROFILE
+            Profile profile = profileListView.getItems().get(0);
+
+            List<NewOrderItemInfo> newOrderItemInfos = overBoughTableView.getItems().stream()
+                .filter(EntityCheckBoxHolder::isChecked)
+                .map(stockItemDtoEntityCheckBoxHolder -> {
+                  StockItemDto itemDto = stockItemDtoEntityCheckBoxHolder.getItem();
+
+                  return new NewOrderItemInfo(profile.getId(), itemDto.getInvoiceItemId(), itemDto.getCount());
+                }).collect(Collectors.toList());
+
+            if (!newOrderItemInfos.isEmpty()) {
+              Dialog.confirm(dialogSupport, I18n.UA.getString(I18nKeys.WARNING), I18n.UA.getString(I18nKeys.ALL_CHECKED_ITEMS_WILL_ADD_TO_ORDER_WITH_FULL_COUNT), new DialogCallback() {
+                @Override
+                public void onCancel() {
+                  dialogSupport.hidePopupDialog();
+                }
+
+                @Override
+                public void onYes() {
+                  addToOrderItemService.setChoiceCountResult(ikeaProcessOrderId, newOrderItemInfos);
+                  addToOrderItemService.restart();
+                }
+              });
+            }
+          });
+
+          button.getItems().add(menuItem);
+
+          overBoughToolBar.getItems().add(button);
+        }
+      }
+
+      BorderPane main = new BorderPane();
+
+      main.setTop(overBoughToolBar);
+      main.setCenter(overBoughTableView);
+      main.setBottom(overBoughTotalStatusPanel = new TotalStatusPanel());
+
+      tab.setClosable(false);
+      tab.setContent(main);
+
+
+      tabPane.getTabs().add(tab);
     }
-
     {
-      TableColumn<EntityCheckBoxHolder<StockItemDto>, String> column = new TableColumn<>(I18n.UA.getString(I18nKeys.ART_NUMBER));
+      Tab tab = new Tab(I18n.UA.getString(I18nKeys.STORAGE_LACK));
+      tab.setClosable(false);
 
-      column.setMinWidth(140);
-      column.setCellValueFactory(ColumnUtil.column("item.artNumber"));
-      column.setCellFactory(ArtNumberCell::new);
-      overBoughTableView.getColumns().add(column);
-    }
+      BorderPane main = new BorderPane();
 
-    {
-      TableColumn<EntityCheckBoxHolder<StockItemDto>, String> column = new TableColumn<>(I18n.UA.getString(I18nKeys.SHORT_NAME));
+      storageLackTableView = new StockItemTableView();
 
-      column.setMinWidth(140);
-      column.setCellValueFactory(ColumnUtil.column("item.shortName"));
+      main.setCenter(storageLackTableView);
+      main.setBottom(storageLackTotalStatusPanel = new TotalStatusPanel());
 
-      overBoughTableView.getColumns().add(column);
-    }
-
-    {
-      TableColumn<EntityCheckBoxHolder<StockItemDto>, String> column = new TableColumn<>(I18n.UA.getString(I18nKeys.COUNT));
-
-      column.setMinWidth(60);
-      column.setCellValueFactory(ColumnUtil.number("item.count"));
-
-      overBoughTableView.getColumns().add(column);
-    }
-
-    storageLackTableView = new StockItemTableView();
-    {
-      storageLackTotalStatusPanel = new TotalStatusPanel();
-      Region space = new Region();
-      HBox.setHgrow(space, Priority.ALWAYS);
-
-      storageLackTotalStatusPanel.getItems().add(space);
+      ToolBar toolBar = new ToolBar();
 
       {
         Button button = new Button(null, ImageFactory.createIkeaSmallIcon());
@@ -411,60 +468,16 @@ public class StockManagementComponent extends BorderPane {
           dialogSupport.showPopupDialog(dialog);
         });
 
-        storageLackTotalStatusPanel.getItems().add(button);
+        toolBar.getItems().add(button);
       }
+      main.setTop(toolBar);
+      tab.setContent(main);
+
+      tabPane.getTabs().add(tab);
     }
 
-
-    overBoughTotalStatusPanel = new TotalStatusPanel();
-
-    ToolBar overBoughToolBar = new ToolBar();
-
-    {
-      SplitMenuButton button = new SplitMenuButton();
-      button.setText("Actions");
-
-      {
-        MenuItem menuItem = new MenuItem(I18n.UA.getString(I18nKeys.ADD_CHECKED_TO_ORDER));
-        menuItem.setOnAction(event -> {
-          //TODO FIX ME SHOW DIALOG TO CHOOSE PROFILE
-          Profile profile = profileListView.getItems().get(0);
-
-          List<NewOrderItemInfo> newOrderItemInfos = overBoughTableView.getItems().stream()
-              .filter(EntityCheckBoxHolder::isChecked)
-              .map(stockItemDtoEntityCheckBoxHolder -> {
-                StockItemDto itemDto = stockItemDtoEntityCheckBoxHolder.getItem();
-
-                return new NewOrderItemInfo(profile.getId(), itemDto.getInvoiceItemId(), itemDto.getCount());
-              }).collect(Collectors.toList());
-
-          if (!newOrderItemInfos.isEmpty()) {
-            Dialog.confirm(dialogSupport, I18n.UA.getString(I18nKeys.WARNING), I18n.UA.getString(I18nKeys.ALL_CHECKED_ITEMS_WILL_ADD_TO_ORDER_WITH_FULL_COUNT), new DialogCallback() {
-              @Override
-              public void onCancel() {
-                dialogSupport.hidePopupDialog();
-              }
-
-              @Override
-              public void onYes() {
-                addToOrderItemService.setChoiceCountResult(ikeaProcessOrderId, newOrderItemInfos);
-                addToOrderItemService.restart();
-              }
-            });
-          }
-        });
-
-        button.getItems().add(menuItem);
-
-        overBoughToolBar.getItems().add(button);
-      }
-    }
-
-    rightPane.getChildren().addAll(overBoughToolBar, overBoughTableView, overBoughTotalStatusPanel, storageLackTableView, storageLackTotalStatusPanel);
-    VBox.setVgrow(storageLackTableView, Priority.ALWAYS);
-
-    HBox.setHgrow(rightPane, Priority.ALWAYS);
-    return rightPane;
+    HBox.setHgrow(tabPane, Priority.ALWAYS);
+    return tabPane;
   }
 
   private OrderViewComboDialog getOrderViewComboDialog(Stage stage) {
