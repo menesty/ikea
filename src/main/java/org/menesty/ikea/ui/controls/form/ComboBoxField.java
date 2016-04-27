@@ -210,7 +210,13 @@ public class ComboBoxField<T> extends HBox implements Field {
   }
 
   private void updateItems(List<T> items) {
+    int currentItemsCount = comboBox.getItems().size();
     comboBox.getItems().setAll(items);
+
+    if (dataProvider != null && currentItemsCount < 6) {
+      ((AutoCompleteComboBoxListViewSkin) comboBox.getSkin()).hide();
+      ((AutoCompleteComboBoxListViewSkin) comboBox.getSkin()).show();
+    }
     buildFastMap();
   }
 

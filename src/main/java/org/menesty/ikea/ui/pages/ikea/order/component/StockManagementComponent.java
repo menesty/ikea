@@ -14,6 +14,7 @@ import org.menesty.ikea.i18n.I18n;
 import org.menesty.ikea.i18n.I18nKeys;
 import org.menesty.ikea.lib.domain.Profile;
 import org.menesty.ikea.lib.domain.ikea.IkeaProduct;
+import org.menesty.ikea.lib.domain.ikea.logistic.order.OrderPurchaseDifferentItem;
 import org.menesty.ikea.lib.domain.ikea.logistic.stock.StockItemDto;
 import org.menesty.ikea.lib.domain.ikea.logistic.stock.StorageCalculationResultDto;
 import org.menesty.ikea.lib.domain.order.IkeaClientOrderItemDto;
@@ -59,6 +60,7 @@ public class StockManagementComponent extends BorderPane {
   private ListView<Profile> profileListView;
   private TableView<StockItemDto> readyStockItemTableView;
   private BaseTableView<EntityCheckBoxHolder<StockItemDto>> overBoughTableView;
+  private TableView<OrderPurchaseDifferentItem> orderPurchaseDifferentItemTableView;
   private TableView<StockItemDto> storageLackTableView;
 
   private StorageCalculationService storageCalculationService;
@@ -102,6 +104,8 @@ public class StockManagementComponent extends BorderPane {
 
       storageLackTotalStatusPanel.setTotal(storageLackTotal);
       overBoughTotalStatusPanel.setTotal(overBoughTotal);
+
+      orderPurchaseDifferentItemTableView.getItems().setAll(value.getOrderPurchaseDifferentItems());
     });
 
     addToOrderItemService = new AddToOrderItemService();
@@ -249,6 +253,7 @@ public class StockManagementComponent extends BorderPane {
       Tab tab = new Tab(I18n.UA.getString(I18nKeys.OVER_BOUGH));
 
       overBoughTableView = new BaseTableView<>();
+      overBoughTableView.setEditable(true);
       overBoughTableView.setRowRenderListener((row, newValue) -> {
         row.setContextMenu(null);
 
@@ -476,6 +481,43 @@ public class StockManagementComponent extends BorderPane {
       tabPane.getTabs().add(tab);
     }
 
+    {
+      Tab tab = new Tab(I18n.UA.getString(I18nKeys.INFO));
+      tab.setClosable(false);
+
+      orderPurchaseDifferentItemTableView = new TableView<>();
+
+      {
+        TableColumn<OrderPurchaseDifferentItem, String> column = new TableColumn<>(I18n.UA.getString(I18nKeys.ART_NUMBER));
+
+        column.setMinWidth(140);
+        column.setCellValueFactory(ColumnUtil.column("artNumber"));
+        column.setCellFactory(ArtNumberCell::new);
+        orderPurchaseDifferentItemTableView.getColumns().add(column);
+      }
+
+      {
+        TableColumn<OrderPurchaseDifferentItem, String> column = new TableColumn<>(I18n.UA.getString(I18nKeys.ORDER_ITEM_COUNT));
+
+        column.setMinWidth(130);
+        column.setCellValueFactory(ColumnUtil.number("orderItemCount"));
+
+        orderPurchaseDifferentItemTableView.getColumns().add(column);
+      }
+
+      {
+        TableColumn<OrderPurchaseDifferentItem, String> column = new TableColumn<>(I18n.UA.getString(I18nKeys.INVOICE_ITEM_COUNT));
+
+        column.setMinWidth(120);
+        column.setCellValueFactory(ColumnUtil.number("invoiceOrderCount"));
+
+        orderPurchaseDifferentItemTableView.getColumns().add(column);
+      }
+
+      tab.setContent(orderPurchaseDifferentItemTableView);
+      tabPane.getTabs().add(tab);
+    }
+
     HBox.setHgrow(tabPane, Priority.ALWAYS);
     return tabPane;
   }
@@ -537,8 +579,6 @@ class StorageCalculationService extends AbstractAsyncService<StorageCalculationR
     profileIdsProperty.set(profileIds);
     setUploading(unloading);
   }
-
-
 }
 
 class IkeaProcessOrderResetStateService extends AbstractAsyncService<Boolean> {

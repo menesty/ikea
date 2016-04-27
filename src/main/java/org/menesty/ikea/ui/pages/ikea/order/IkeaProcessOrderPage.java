@@ -19,6 +19,8 @@ import org.menesty.ikea.ui.controls.dialog.Dialog;
 import org.menesty.ikea.ui.controls.table.component.BaseTableView;
 import org.menesty.ikea.ui.pages.BasePage;
 import org.menesty.ikea.ui.pages.DialogCallback;
+import org.menesty.ikea.ui.pages.EntityDialogCallback;
+import org.menesty.ikea.ui.pages.ikea.order.dialog.OrderPartsDetailDialog;
 import org.menesty.ikea.ui.pages.wizard.order.OrderCreateWizardPage;
 import org.menesty.ikea.util.*;
 
@@ -32,6 +34,7 @@ public class IkeaProcessOrderPage extends BasePage {
   private LoadService loadService;
   private DeleteService deleteService;
   private Pagination pagination;
+  private OrderPartsDetailDialog orderPartsDetailDialog;
 
   @Override
   protected void initialize() {
@@ -113,6 +116,32 @@ public class IkeaProcessOrderPage extends BasePage {
           contextMenu.getItems().add(menuItem);
         }
 
+        {
+          MenuItem menuItem = new MenuItem(I18n.UA.getString(I18nKeys.INFO), ImageFactory.createInfo22Icon());
+          menuItem.setOnAction(event -> {
+            OrderPartsDetailDialog orderPartsDetailDialog = getOrderPartsDetailDialog();
+            orderPartsDetailDialog.bind(newValue.getId(), new EntityDialogCallback<Boolean>() {
+              @Override
+              public void onSave(Boolean reload, Object... params) {
+                getDialogSupport().hidePopupDialog();
+                if (reload) {
+                  loadService.restart();
+                }
+
+              }
+
+              @Override
+              public void onCancel() {
+                getDialogSupport().hidePopupDialog();
+              }
+            });
+
+            getDialogSupport().showPopupDialog(orderPartsDetailDialog);
+          });
+
+          contextMenu.getItems().add(menuItem);
+        }
+
         row.setContextMenu(contextMenu);
       }
     });
@@ -162,6 +191,14 @@ public class IkeaProcessOrderPage extends BasePage {
     loadingPane.bindTask(loadService, deleteService);
     loadService.setPage(1);
     loadService.restart();
+  }
+
+  private OrderPartsDetailDialog getOrderPartsDetailDialog() {
+    if (orderPartsDetailDialog == null) {
+      orderPartsDetailDialog = new OrderPartsDetailDialog(getStage());
+    }
+
+    return orderPartsDetailDialog;
   }
 }
 

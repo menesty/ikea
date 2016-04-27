@@ -2,6 +2,8 @@ package org.menesty.ikea.util;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationConfig;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.http.HttpHost;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.*;
@@ -56,7 +58,7 @@ public class APIRequest {
     }
   }
 
-  private String postRequestData(Object object) throws IOException {
+  private String postRequestData(String method, Object object) throws IOException {
     HttpHost targetHost = new HttpHost(url.getHost(), url.getPort());
 
     CredentialsProvider credsProvider = HttpUtil.credentialsProvider(targetHost);
@@ -64,41 +66,54 @@ public class APIRequest {
     try (CloseableHttpClient httpClient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build()) {
       HttpClientContext localContext = HttpUtil.context(targetHost);
 
-      HttpPost httpPost = new HttpPost(url);
+      HttpEntityEnclosingRequestBase httpRequest;
 
-      ObjectMapper objectMapper = new ObjectMapper();
-
-      if (object != null) {
-        httpPost.setEntity(new StringEntity(objectMapper.writeValueAsString(object), ContentType.APPLICATION_JSON));
+      if (HttpPut.METHOD_NAME.equals(method)) {
+        httpRequest = new HttpPut(url);
+      } else {
+        httpRequest = new HttpPost(url);
       }
 
-      try (CloseableHttpResponse response = httpClient.execute(targetHost, httpPost, localContext)) {
+      if (object != null) {
+        String data = !(object instanceof String) ? getMapper().writeValueAsString(object) : (String) object;
+        httpRequest.setEntity(new StringEntity(data, ContentType.APPLICATION_JSON));
+      }
+
+      try (CloseableHttpResponse response = httpClient.execute(targetHost, httpRequest, localContext)) {
         return EntityUtils.toString(response.getEntity());
       }
     }
   }
 
   public <T> T postData(Object param, Class<T> clazz) throws Exception {
-    String response = postRequestData(param);
+    return postData(HttpPost.METHOD_NAME, param, clazz);
+  }
+
+  public <T> T postData(String method, Object param, Class<T> clazz) throws Exception {
+    String response = postRequestData(method, param);
     checkForError(response);
 
-    ObjectMapper objectMapper = new ObjectMapper();
-
-    return objectMapper.readValue(response, clazz);
+    return getMapper().readValue(response, clazz);
   }
 
   public void postData(Object param) throws Exception {
-    String response = postRequestData(param);
+    postData(HttpPost.METHOD_NAME, param);
+  }
+
+  public void postData(String method, Object param) throws Exception {
+    String response = postRequestData(method, param);
     checkForError(response);
   }
 
-
   public <T> T postData(Object param, TypeReference<T> typeReference) throws Exception {
-    String response = postRequestData(param);
-    checkForError(response);
-    ObjectMapper objectMapper = new ObjectMapper();
+    return postData(HttpPost.METHOD_NAME, param, typeReference);
+  }
 
-    return objectMapper.readValue(response, typeReference);
+  public <T> T postData(String method, Object param, TypeReference<T> typeReference) throws Exception {
+    String response = postRequestData(method, param);
+    checkForError(response);
+
+    return getMapper().readValue(response, typeReference);
   }
 
   public <T> T getData(Class<T> clazz) throws Exception {
@@ -108,9 +123,8 @@ public class APIRequest {
   public <T> T getData(Class<T> clazz, String method) throws Exception {
     String response = toString(loadData(method));
     checkForError(response);
-    ObjectMapper objectMapper = new ObjectMapper();
 
-    return objectMapper.readValue(response, clazz);
+    return getMapper().readValue(response, clazz);
   }
 
   public void get() throws Exception {
@@ -140,7 +154,7 @@ public class APIRequest {
   public <T> T getData(TypeReference<T> typeReference, String method) throws Exception {
     String response = toString(loadData(method));
     checkForError(response);
-    ObjectMapper objectMapper = new ObjectMapper();
+    ObjectMapper objectMapper = getMapper();
 
     return objectMapper.readValue(response, typeReference);
   }
@@ -152,9 +166,8 @@ public class APIRequest {
   public <T> List<T> getList(TypeReference<List<T>> typeReference, String method) throws Exception {
     String response = toString(loadData(method));
     checkForError(response);
-    ObjectMapper objectMapper = new ObjectMapper();
 
-    return objectMapper.readValue(response, typeReference);
+    return getMapper().readValue(response, typeReference);
   }
 
   public byte[] getBytes() throws Exception {
@@ -172,5 +185,12 @@ public class APIRequest {
     byte[] bytes = getBytes();
 
     return bytes.length == 0 ? null : new String(bytes);
+  }
+
+  private ObjectMapper getMapper() {
+    ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+
+    return objectMapper;
   }
 }

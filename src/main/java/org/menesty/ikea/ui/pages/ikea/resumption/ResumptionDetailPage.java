@@ -1,33 +1,32 @@
 package org.menesty.ikea.ui.pages.ikea.resumption;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import javafx.beans.property.LongProperty;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Task;
 import javafx.scene.Node;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ToolBar;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.FileChooser;
+import org.apache.commons.lang3.StringUtils;
 import org.menesty.ikea.factory.ImageFactory;
-import org.menesty.ikea.i18n.I18n;
-import org.menesty.ikea.i18n.I18nKeys;
 import org.menesty.ikea.lib.domain.ikea.logistic.resumption.Resumption;
 import org.menesty.ikea.lib.domain.ikea.logistic.resumption.ResumptionItem;
 import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.service.xls.XlsExportService;
-import org.menesty.ikea.ui.controls.table.component.BaseTableView;
+import org.menesty.ikea.ui.controls.TotalStatusPanel;
+import org.menesty.ikea.ui.controls.form.TextField;
 import org.menesty.ikea.ui.pages.BasePage;
-import org.menesty.ikea.ui.pages.ikea.resumption.dialog.ResumptionItemAlternativeDialog;
-import org.menesty.ikea.ui.table.ArtNumberCell;
-import org.menesty.ikea.util.APIRequest;
-import org.menesty.ikea.util.ColumnUtil;
+import org.menesty.ikea.ui.pages.ikea.resumption.component.ResumptionItemTableView;
+import org.menesty.ikea.ui.pages.ikea.resumption.service.ResumptionItemLoadService;
+import org.menesty.ikea.ui.pages.ikea.resumption.service.XlsResumptionItemExportService;
 import org.menesty.ikea.util.FileChooserUtil;
-import org.menesty.ikea.util.HttpServiceUtil;
 
 import java.io.File;
+import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by Menesty on
@@ -35,96 +34,40 @@ import java.util.List;
  * 14:11.
  */
 public class ResumptionDetailPage extends BasePage {
-  private BaseTableView<ResumptionItem> tableView;
+  private ResumptionItemTableView tableView;
 
-  private LoadService loadService;
-  private XlsDataExportService xlsDataExportService;
-  private ResumptionItemAlternativeDialog resumptionItemAlternativeDialog;
+  private ResumptionItemLoadService loadService;
+  private XlsResumptionItemExportService xlsDataExportService;
+  private TotalStatusPanel totalStatusPanel;
+
+  private List<ResumptionItem> resumptionItems;
 
   @Override
   protected void initialize() {
-    loadService = new LoadService();
-    loadService.setOnSucceededListener(value -> tableView.getItems().setAll(value));
-    xlsDataExportService = new XlsDataExportService();
+    loadService = new ResumptionItemLoadService();
+    loadService.setOnSucceededListener(value -> {
+      setItems(value);
+      resumptionItems = value;
+    });
+    xlsDataExportService = new XlsResumptionItemExportService();
   }
 
   @Override
   protected Node createView() {
     BorderPane main = new BorderPane();
 
-    tableView = new BaseTableView<>();
-
-    {
-      TableColumn<ResumptionItem, Number> column = new TableColumn<>();
-      column.setMaxWidth(45);
-      column.setCellValueFactory(ColumnUtil.<ResumptionItem>indexColumn());
-      tableView.getColumns().add(column);
-    }
-
-    {
-      TableColumn<ResumptionItem, String> column = new TableColumn<>(I18n.UA.getString(I18nKeys.ART_NUMBER));
-      column.setMinWidth(150);
-      column.setCellValueFactory(ColumnUtil.column("artNumber"));
-      column.setCellFactory(ArtNumberCell::new);
-
-      tableView.getColumns().add(column);
-    }
-
-    {
-      TableColumn<ResumptionItem, String> column = new TableColumn<>(I18n.UA.getString(I18nKeys.COUNT));
-
-      column.setCellValueFactory(ColumnUtil.number("count"));
-      column.setMinWidth(60);
-
-      tableView.getColumns().add(column);
-    }
-
-    {
-      TableColumn<ResumptionItem, String> column = new TableColumn<>(I18n.UA.getString(I18nKeys.INVOICE_NAME));
-      column.setPrefWidth(150);
-      column.setCellValueFactory(ColumnUtil.column("invoice.invoiceName"));
-
-      tableView.getColumns().add(column);
-    }
-
-    {
-      TableColumn<ResumptionItem, String> column = new TableColumn<>(I18n.UA.getString(I18nKeys.PARAGON_NUMBER));
-      column.setCellValueFactory(ColumnUtil.column("invoice.paragonNumber"));
-      column.setPrefWidth(150);
-      tableView.getColumns().add(column);
-    }
-
-    {
-      TableColumn<ResumptionItem, String> column = new TableColumn<>(I18n.UA.getString(I18nKeys.SELL_DATE));
-      column.setCellValueFactory(ColumnUtil.dateColumn("invoice.sellDate"));
-      column.setPrefWidth(150);
-      tableView.getColumns().add(column);
-    }
-
-    tableView.setRowRenderListener((row, newValue) -> {
-      row.setContextMenu(null);
-      if (newValue != null) {
-        ContextMenu contextMenu = new ContextMenu();
-
-        {
-          MenuItem menuItem = new MenuItem(I18n.UA.getString(I18nKeys.RESUMPTION_ALTERNATIVES_MENU));
-          menuItem.setOnAction(event -> {
-            ResumptionItemAlternativeDialog dialog = getResumptionItemAlternativeDialog();
-            dialog.setProductId(newValue.getProductId());
-
-            getDialogSupport().showPopupDialog(dialog);
-          });
-
-          contextMenu.getItems().add(menuItem);
-        }
-
-        row.setContextMenu(contextMenu);
-      }
-    });
-
-    main.setCenter(tableView);
+    main.setCenter(tableView = new ResumptionItemTableView(getDialogSupport()));
 
     ToolBar toolBar = new ToolBar();
+
+    {
+      TextField artNumber = new TextField();
+      artNumber.setDelay(1);
+      artNumber.setOnDelayAction(actionEvent -> applyFilter(artNumber.getText()));
+      artNumber.setPromptText("Product ID #");
+
+      toolBar.getItems().add(artNumber);
+    }
 
     {
       Button button = new Button(null, ImageFactory.createXlsExport32Icon());
@@ -142,8 +85,32 @@ public class ResumptionDetailPage extends BasePage {
     }
 
     main.setTop(toolBar);
+    main.setBottom(totalStatusPanel = new TotalStatusPanel());
 
     return wrap(main);
+  }
+
+  private void applyFilter(String artNumber) {
+    List<ResumptionItem> items;
+    if (StringUtils.isNotBlank(artNumber)) {
+      items = resumptionItems.stream()
+          .filter(resumptionItem -> resumptionItem.getArtNumber().contains(artNumber))
+          .collect(Collectors.toList());
+    } else {
+      items = resumptionItems;
+    }
+    setItems(items);
+  }
+
+  private void setItems(List<ResumptionItem> items) {
+    tableView.getItems().setAll(items);
+
+    BigDecimal total = items.stream()
+        .filter(resumptionItem -> resumptionItem.getInvoiceItem() != null)
+        .map(resumptionItem -> resumptionItem.getInvoiceItem().getPrice().multiply(resumptionItem.getCount()))
+        .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+    totalStatusPanel.setTotal(total);
   }
 
   @Override
@@ -156,69 +123,6 @@ public class ResumptionDetailPage extends BasePage {
     loadService.restart();
   }
 
-  public ResumptionItemAlternativeDialog getResumptionItemAlternativeDialog() {
-    if (resumptionItemAlternativeDialog == null) {
-      resumptionItemAlternativeDialog = new ResumptionItemAlternativeDialog(getDialogSupport().getStage()) {
-        @Override
-        public void onCancel() {
-          getDialogSupport().hidePopupDialog();
-        }
 
-        @Override
-        public void onOk() {
-          getDialogSupport().hidePopupDialog();
-        }
-      };
-    }
-    return resumptionItemAlternativeDialog;
-  }
 
-  class LoadService extends AbstractAsyncService<List<ResumptionItem>> {
-    private LongProperty resumptionIdProperty = new SimpleLongProperty();
-
-    @Override
-    protected Task<List<ResumptionItem>> createTask() {
-      final Long _resumptionId = resumptionIdProperty.get();
-
-      return new Task<List<ResumptionItem>>() {
-        @Override
-        protected List<ResumptionItem> call() throws Exception {
-          APIRequest request = HttpServiceUtil.get("/resumption/" + _resumptionId + "/items");
-
-          return request.getData(new TypeReference<List<ResumptionItem>>() {
-          });
-        }
-      };
-    }
-
-    public void setResumptionId(Long resumptionId) {
-      resumptionIdProperty.setValue(resumptionId);
-    }
-  }
-
-  class XlsDataExportService extends AbstractAsyncService<Void> {
-    private ObjectProperty<List<ResumptionItem>> resumptionItemListProperty = new SimpleObjectProperty<>();
-    private ObjectProperty<File> targetFileProperty = new SimpleObjectProperty<>();
-
-    @Override
-    protected Task<Void> createTask() {
-      final List<ResumptionItem> _resumptionItems = resumptionItemListProperty.get();
-      final File _targetFile = targetFileProperty.get();
-
-      return new Task<Void>() {
-        @Override
-        protected Void call() throws Exception {
-          XlsExportService xlsExportService = new XlsExportService();
-
-          xlsExportService.exportResumptionItems(_targetFile, _resumptionItems);
-          return null;
-        }
-      };
-    }
-
-    public void setData(File targetFile, List<ResumptionItem> resumptionItems) {
-      resumptionItemListProperty.setValue(resumptionItems);
-      targetFileProperty.setValue(targetFile);
-    }
-  }
 }

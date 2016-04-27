@@ -27,12 +27,7 @@ public class IkeaUserFillProgressDialog extends BaseDialog implements TaskProgre
         activeItem = new Label(log);
 
         final Label currentActive = activeItem;
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                logBox.getChildren().add(currentActive);
-            }
-        });
+        Platform.runLater(() -> logBox.getChildren().add(currentActive));
 
     }
 
@@ -42,24 +37,14 @@ public class IkeaUserFillProgressDialog extends BaseDialog implements TaskProgre
         else {
             final Label currentActive = activeItem;
 
-            Platform.runLater(new Runnable() {
-                @Override
-                public void run() {
-                    currentActive.setText(log);
-                }
-            });
+            Platform.runLater(() -> currentActive.setText(log));
         }
 
     }
 
     @Override
     public void done() {
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                okBtn.setVisible(true);
-            }
-        });
+        Platform.runLater(() -> okBtn.setVisible(true));
     }
 }
 

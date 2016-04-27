@@ -1,15 +1,20 @@
 package org.menesty.ikea.util;
 
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.TableColumn;
 import javafx.util.Callback;
+import org.menesty.ikea.beans.property.SimpleBigDecimalProperty;
 import org.menesty.ikea.lib.domain.ikea.logistic.stock.WarehouseAvailableItem;
 import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.ui.controls.PathProperty;
+import org.menesty.ikea.ui.pages.ikea.resumption.dialog.ResumptionItemAddDialog;
 
+import javax.swing.text.html.parser.Entity;
+import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -76,6 +81,21 @@ public class ColumnUtil {
       }
 
       return new SimpleStringProperty("Error");
+    };
+  }
+
+  public static <Entity> Callback<TableColumn.CellDataFeatures<Entity, Number>, ObservableValue<Number>> bigDecimal(String propertyName) {
+    return item -> {
+      try {
+        BigDecimal number = new PathProperty<Entity, BigDecimal>(item.getValue(), propertyName).get();
+        if (number != null) {
+          return new SimpleBigDecimalProperty(number);
+        }
+      } catch (Exception e) {
+        ServiceFacade.getErrorConsole().add(e);
+      }
+
+      return new SimpleBigDecimalProperty();
     };
   }
 }

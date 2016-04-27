@@ -77,6 +77,13 @@ public class InvoicePdfItemSearchPage extends BasePage {
     }
 
     {
+      TableColumn<RawInvoiceProductItem, String> column = new TableColumn<>("Sell Date #");
+      column.setMinWidth(100);
+      column.setCellValueFactory(ColumnUtil.<RawInvoiceProductItem>dateColumn("invoicePdf.paragonDate"));
+      tableView.getColumns().add(column);
+    }
+
+    {
       TableColumn<RawInvoiceProductItem, String> column = new TableColumn<>("Name");
       column.setMinWidth(200);
       column.setCellValueFactory(ColumnUtil.<RawInvoiceProductItem, String>column("name"));
@@ -87,12 +94,7 @@ public class InvoicePdfItemSearchPage extends BasePage {
     {
       TableColumn<RawInvoiceProductItem, String> column = new TableColumn<>("Count");
       column.setMaxWidth(50);
-      column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<RawInvoiceProductItem, String>, ObservableValue<String>>() {
-        @Override
-        public ObservableValue<String> call(TableColumn.CellDataFeatures<RawInvoiceProductItem, String> item) {
-          return new SimpleStringProperty(NumberUtil.toString(item.getValue().getCount()));
-        }
-      });
+      column.setCellValueFactory(item -> new SimpleStringProperty(NumberUtil.toString(item.getValue().getCount())));
 
       tableView.getColumns().add(column);
     }

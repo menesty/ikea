@@ -33,8 +33,10 @@ import org.menesty.ikea.ui.controls.dialog.InfoDialog;
 import org.menesty.ikea.ui.controls.pane.LoadingPane;
 import org.menesty.ikea.ui.pages.*;
 import org.menesty.ikea.ui.pages.ikea.contraget.ContragentPage;
+import org.menesty.ikea.ui.pages.ikea.log.WarehouseScanLogPage;
 import org.menesty.ikea.ui.pages.ikea.order.IkeaOrderViewPage;
 import org.menesty.ikea.ui.pages.ikea.order.IkeaProcessOrderPage;
+import org.menesty.ikea.ui.pages.ikea.product.ProductPage;
 import org.menesty.ikea.ui.pages.ikea.resumption.ResumptionDetailPage;
 import org.menesty.ikea.ui.pages.ikea.resumption.ResumptionPage;
 import org.menesty.ikea.ui.pages.ikea.warehouse.SiteWarehousePage;
@@ -139,7 +141,6 @@ public class IkeaApplication extends Application implements DialogSupport {
     orderList.addPage(new PageDescription(Pages.CUSTOMER_ORDER.getTitle(), OrderViewPage.class, false));
     group.add(orderList);
 
-    group.add(new PageDescription(Pages.PRODUCTS.getTitle(), ImageFactory.createProducts72Icon(), ProductPage.class));
     group.add(new PageDescription(Pages.USERS.getTitle(), ImageFactory.createUsersIcon64(), UserPage.class));
     group.add(new PageDescription(Pages.WAREHOUSE.getTitle(), ImageFactory.createWarehouseIcon72(), WarehousePage.class));
     group.add(new PageDescription(Pages.INVOICE.getTitle(), ImageFactory.createInvoice72Icon(), CustomInvoicePage.class));
@@ -171,6 +172,9 @@ public class IkeaApplication extends Application implements DialogSupport {
 
       group.add(resumptionListPageDescription);
     }
+
+    group.add(new PageDescription(Pages.SCAN_LOG.getTitle(), ImageFactory.createLogIcon72(), WarehouseScanLogPage.class));
+    group.add(new PageDescription(Pages.PRODUCTS.getTitle(), ImageFactory.createProducts72Icon(), ProductPage.class));
 
     return group;
   }

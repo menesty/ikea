@@ -6,11 +6,12 @@ package org.menesty.ikea.ui.controls.form;
  * 0:04.
  */
 public interface Field {
-    boolean isValid();
+  boolean isValid();
 
-    void reset();
+  void reset();
 
-    String getLabel();
+  String getLabel();
 
-    void setValid(boolean valid);
+  void setValid(boolean valid);
+
 }

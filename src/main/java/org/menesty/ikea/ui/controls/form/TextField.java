@@ -22,191 +22,199 @@ import java.util.regex.Pattern;
 
 public class TextField extends HBox implements Field {
 
-    private Timeline delayTimeLine;
+  private Timeline delayTimeLine;
 
-    private EventHandler<ActionEvent> delayAction;
+  private EventHandler<ActionEvent> delayAction;
 
-    private InvalidationListener invalidationListener;
+  private InvalidationListener invalidationListener;
 
-    private String label;
+  private String label;
 
-    protected javafx.scene.control.TextField textField;
-    private Label charCountLabel;
+  protected javafx.scene.control.TextField textField;
+  private Label charCountLabel;
 
-    protected List<ValidationRule> validationRules = new ArrayList<>();
+  protected List<ValidationRule> validationRules = new ArrayList<>();
 
-    public TextField() {
-        textField = new javafx.scene.control.TextField();
-        charCountLabel = new Label();
-        charCountLabel.setMinWidth(0);
-        HBox.setHgrow(textField, Priority.ALWAYS);
-        HBox.setMargin(charCountLabel, new Insets(0, 0, 0, 2));
-        charCountLabel.setVisible(false);
+  public TextField() {
+    textField = new javafx.scene.control.TextField();
+    charCountLabel = new Label();
+    charCountLabel.setMinWidth(0);
+    HBox.setHgrow(textField, Priority.ALWAYS);
+    HBox.setMargin(charCountLabel, new Insets(0, 0, 0, 2));
+    charCountLabel.setVisible(false);
 
-        textField.textProperty().addListener(observable -> {
-            if (charCountLabel.isVisible()) {
-                int charCount = textField.getText() != null ? textField.getText().length() : 0;
-                charCountLabel.setText(charCount != 0 ? charCount + "" : "");
-            }
-        });
+    textField.textProperty().addListener(observable -> {
+      if (charCountLabel.isVisible()) {
+        int charCount = textField.getText() != null ? textField.getText().length() : 0;
+        charCountLabel.setText(charCount != 0 ? charCount + "" : "");
+      }
+    });
 
-        getChildren().addAll(textField, charCountLabel);
-        textField.heightProperty().addListener((observable, oldValue, newValue) -> charCountLabel.setMinHeight(newValue.doubleValue()));
-        focusedProperty().addListener(observable -> {
-            if (!isFocused())
-                isValid();
-        });
+    getChildren().addAll(textField, charCountLabel);
+    textField.heightProperty().addListener((observable, oldValue, newValue) -> charCountLabel.setMinHeight(newValue.doubleValue()));
+    focusedProperty().addListener(observable -> {
+      if (!isFocused())
+        isValid();
+    });
+  }
+
+  public void showCharCounter(boolean showCharCounter) {
+    charCountLabel.setVisible(showCharCounter);
+  }
+
+  public String getText() {
+    return textField.getText();
+  }
+
+  public IndexRange getSelection() {
+    return textField.getSelection();
+  }
+
+  public void setText(String value) {
+    textField.setText(value);
+  }
+
+  public TextField(String value, String label, boolean allowBlank) {
+    this();
+    textField.setText(value);
+    this.label = label;
+    setAllowBlank(allowBlank);
+  }
+
+  public TextField(String value, String label) {
+    this(value, label, true);
+  }
+
+  public void setDelay(int sec) {
+    delayTimeLine = new Timeline(new KeyFrame(Duration.seconds(sec), actionEvent -> {
+      if (delayAction != null) {
+        delayTimeLine.stop();
+        delayAction.handle(actionEvent);
+      }
+    }));
+
+    if (invalidationListener != null)
+      textField.textProperty().removeListener(invalidationListener);
+
+    invalidationListener = observable -> {
+      delayTimeLine.stop();
+      delayTimeLine.playFromStart();
+    };
+    textField.textProperty().addListener(invalidationListener);
+  }
+
+  @Override
+  public boolean isValid() {
+    Object value = getValue();
+
+    ValidationRule result = validationRules
+        .stream()
+        .filter(rule -> !rule.validate(value))
+        .findFirst().orElse(null);
+
+    Boolean isValid = result == null;
+    setValid(isValid);
+
+    return isValid;
+  }
+
+  public Object getValue() {
+    return textField.getText();
+  }
+
+  @Override
+  public void setValid(boolean valid) {
+    textField.getStyleClass().removeAll("validation-succeed", "validation-error");
+    textField.getStyleClass().remove("white-border");
+
+    if (valid)
+      textField.getStyleClass().add("validation-succeed");
+    else
+      textField.getStyleClass().add("validation-error");
+
+  }
+
+  public void setAllowBlank(boolean allowBlank) {
+    ValidationRule rule = findValidationRule(NotBlankValidationRule.class);
+
+    if (allowBlank) {
+      validationRules.remove(rule);
+    } else if (rule == null) {
+      validationRules.add(new NotBlankValidationRule());
     }
+  }
 
-    public void showCharCounter(boolean showCharCounter) {
-        charCountLabel.setVisible(showCharCounter);
+  protected ValidationRule findValidationRule(Class<? extends ValidationRule> classRule) {
+    return validationRules.stream().filter(validationRule -> validationRule.getClass().equals(classRule)).findFirst().orElse(null);
+  }
+
+  public void setOnDelayAction(EventHandler<ActionEvent> onDelayAction) {
+    this.delayAction = onDelayAction;
+  }
+
+  public String getLabel() {
+    return label;
+  }
+
+  public void setLabel(String label) {
+    this.label = label;
+  }
+
+  @Override
+  public void reset() {
+    textField.setText(null);
+
+    textField.getStyleClass().removeAll("validation-succeed", "validation-error");
+    textField.getStyleClass().addAll("text-input", "text-field");
+  }
+
+  public void setValidationPattern(Pattern validationPattern) {
+    ValidationRule rule = findValidationRule(PatternValidationRule.class);
+
+    if (validationPattern == null) {
+      validationRules.remove(rule);
+    } else if (rule == null) {
+      validationRules.add(new PatternValidationRule(validationPattern));
     }
+  }
 
-    public String getText() {
-        return textField.getText();
-    }
+  public void addValidationRule(ValidationRule rule) {
+    validationRules.add(rule);
+  }
 
-    public IndexRange getSelection() {
-        return textField.getSelection();
-    }
+  public void setPromptText(String promptText) {
+    textField.setPromptText(promptText);
+  }
 
-    public void setText(String value) {
-        textField.setText(value);
-    }
+  public StringProperty textProperty() {
+    return textField.textProperty();
+  }
 
-    public TextField(String value, String label, boolean allowBlank) {
-        this();
-        textField.setText(value);
-        this.label = label;
-        setAllowBlank(allowBlank);
-    }
+  public boolean isEditable() {
+    return textField.isEditable();
+  }
 
-    public TextField(String value, String label) {
-        this(value, label, true);
-    }
+  public void setPrefColumnCount(int prefColumnCount) {
+    textField.setPrefColumnCount(prefColumnCount);
+  }
 
-    public void setDelay(int sec) {
-        delayTimeLine = new Timeline(new KeyFrame(Duration.seconds(sec), actionEvent -> {
-            if (delayAction != null) {
-                delayTimeLine.stop();
-                delayAction.handle(actionEvent);
-            }
-        }));
+  public void setEditable(boolean editable) {
+    textField.setEditable(editable);
+  }
 
-        if (invalidationListener != null)
-            textField.textProperty().removeListener(invalidationListener);
+  public void setOnAction(EventHandler<ActionEvent> value) {
+    textField.setOnAction(value);
+  }
 
-        invalidationListener = observable -> {
-            delayTimeLine.stop();
-            delayTimeLine.playFromStart();
-        };
-        textField.textProperty().addListener(invalidationListener);
-    }
+  public void selectAll() {
+    textField.selectAll();
+  }
 
-    @Override
-    public boolean isValid() {
-        Object value = getValue();
+  public void clear() {
+    textField.clear();
+  }
 
-        ValidationRule result = validationRules
-                .stream()
-                .filter(rule -> !rule.validate(value))
-                .findFirst().orElse(null);
-
-        Boolean isValid = result == null;
-        setValid(isValid);
-
-        return isValid;
-    }
-
-    public Object getValue() {
-        return textField.getText();
-    }
-
-    @Override
-    public void setValid(boolean valid) {
-        textField.getStyleClass().removeAll("validation-succeed", "validation-error");
-        textField.getStyleClass().remove("white-border");
-
-        if (valid)
-            textField.getStyleClass().add("validation-succeed");
-        else
-            textField.getStyleClass().add("validation-error");
-
-    }
-
-    public void setAllowBlank(boolean allowBlank) {
-        ValidationRule rule = findValidationRule(NotBlankValidationRule.class);
-
-        if (allowBlank) {
-            validationRules.remove(rule);
-        } else if (rule == null) {
-            validationRules.add(new NotBlankValidationRule());
-        }
-    }
-
-    protected ValidationRule findValidationRule(Class<? extends ValidationRule> classRule) {
-        return validationRules.stream().filter(validationRule -> validationRule.getClass().equals(classRule)).findFirst().orElse(null);
-    }
-
-    public void setOnDelayAction(EventHandler<ActionEvent> onDelayAction) {
-        this.delayAction = onDelayAction;
-    }
-
-    public String getLabel() {
-        return label;
-    }
-
-    public void setLabel(String label) {
-        this.label = label;
-    }
-
-    @Override
-    public void reset() {
-        textField.setText(null);
-
-        textField.getStyleClass().removeAll("validation-succeed", "validation-error");
-        textField.getStyleClass().addAll("text-input", "text-field");
-    }
-
-    public void setValidationPattern(Pattern validationPattern) {
-        ValidationRule rule = findValidationRule(PatternValidationRule.class);
-
-        if (validationPattern == null) {
-            validationRules.remove(rule);
-        } else if (rule == null) {
-            validationRules.add(new PatternValidationRule(validationPattern));
-        }
-    }
-
-    public void setPromptText(String promptText) {
-        textField.setPromptText(promptText);
-    }
-
-    public StringProperty textProperty() {
-        return textField.textProperty();
-    }
-
-    public boolean isEditable() {
-        return textField.isEditable();
-    }
-
-    public void setPrefColumnCount(int prefColumnCount) {
-        textField.setPrefColumnCount(prefColumnCount);
-    }
-
-    public void setEditable(boolean editable) {
-        textField.setEditable(editable);
-    }
-
-    public void setOnAction(EventHandler<ActionEvent> value) {
-        textField.setOnAction(value);
-    }
-
-    public void selectAll() {
-        textField.selectAll();
-    }
-
-    public void clear() {
-        textField.clear();
-    }
+  public javafx.scene.control.TextField getField() {
+    return textField;
+  }
 }

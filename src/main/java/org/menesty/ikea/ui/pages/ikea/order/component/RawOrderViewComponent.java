@@ -138,6 +138,7 @@ public class RawOrderViewComponent extends BorderPane {
 
     loadingPanel.bindTask(ikeaProductUpdateService);
 
+    tableView.setRowDoubleClickListener(row -> showProductDialog(dialogSupport, row.getItem()));
     tableView.setRowRenderListener((row, newValue) -> {
       row.setContextMenu(null);
 
@@ -147,27 +148,7 @@ public class RawOrderViewComponent extends BorderPane {
         {
           MenuItem menuItem = new MenuItem(I18n.UA.getString(I18nKeys.EDIT));
           menuItem.setOnAction(event -> {
-            ProductEditDialog productEditDialog = getProductEditDialog(dialogSupport.getStage());
-            productEditDialog.bind(newValue.getProduct(), new EntityDialogCallback<IkeaProduct>() {
-              @Override
-              public void onSave(IkeaProduct ikeaProduct, Object... params) {
-                newValue.setProduct(ikeaProduct);
-
-                tableView.update(newValue);
-
-                ikeaProductUpdateService.setIkeaProduct(ikeaProduct);
-                ikeaProductUpdateService.restart();
-
-                dialogSupport.hidePopupDialog();
-              }
-
-              @Override
-              public void onCancel() {
-                dialogSupport.hidePopupDialog();
-              }
-            });
-
-            dialogSupport.showPopupDialog(productEditDialog);
+            showProductDialog(dialogSupport, newValue);
           });
 
           contextMenu.getItems().add(menuItem);
@@ -226,6 +207,14 @@ public class RawOrderViewComponent extends BorderPane {
       tableView.getColumns().add(column);
     }
 
+    {
+      TableColumn<IkeaOrderItem, Product.Group> column = new TableColumn<>();
+      column.setMinWidth(30);
+      column.getStyleClass().add("align-right");
+      column.setCellValueFactory(ColumnUtil.<IkeaOrderItem, Product.Group>column("processedByLogistic"));
+      tableView.getColumns().add(column);
+    }
+
     main.getChildren().addAll(tableView, loadingPanel);
 
     setCenter(main);
@@ -242,6 +231,30 @@ public class RawOrderViewComponent extends BorderPane {
     });
 
     return exportDialog;
+  }
+
+  private void showProductDialog(DialogSupport dialogSupport, IkeaOrderItem ikeaOrderItem) {
+    ProductEditDialog productEditDialog = getProductEditDialog(dialogSupport.getStage());
+    productEditDialog.bind(ikeaOrderItem.getProduct(), new EntityDialogCallback<IkeaProduct>() {
+      @Override
+      public void onSave(IkeaProduct ikeaProduct, Object... params) {
+        ikeaOrderItem.setProduct(ikeaProduct);
+
+        tableView.update(ikeaOrderItem);
+
+        ikeaProductUpdateService.setIkeaProduct(ikeaProduct);
+        ikeaProductUpdateService.restart();
+
+        dialogSupport.hidePopupDialog();
+      }
+
+      @Override
+      public void onCancel() {
+        dialogSupport.hidePopupDialog();
+      }
+    });
+
+    dialogSupport.showPopupDialog(productEditDialog);
   }
 
   private void filter() {
@@ -298,6 +311,11 @@ public class RawOrderViewComponent extends BorderPane {
     BigDecimal diff = priceMismatches.stream().map(ProductPriceMismatch::getDiff).reduce(BigDecimal.ZERO, BigDecimal::add);
     statusPanel.setDiffAmount(diff);
 
+    BigDecimal weightTotal = items.stream().map(ikeaOrderItem -> ikeaOrderItem.getCount().multiply(new BigDecimal(ikeaOrderItem.getProduct().getWeight())))
+        .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+    statusPanel.setWeight(weightTotal.intValue());
+
     tableView.getItems().clear();
     tableView.getItems().addAll(items);
   }
@@ -348,6 +366,8 @@ public class RawOrderViewComponent extends BorderPane {
     private Label warningLabel;
     private Label diffAmount;
     private Label diffAmountLabel;
+    private Label weightLabel;
+    private Label weight;
 
     public StatusPanel() {
       getItems().add(warningLabel = new Label());
@@ -355,8 +375,22 @@ public class RawOrderViewComponent extends BorderPane {
       warningLabel.setVisible(false);
       Region space = new Region();
       HBox.setHgrow(space, Priority.ALWAYS);
-      getItems().addAll(space, diffAmountLabel = new Label(I18n.UA.getString(I18nKeys.DIFF_AMOUNT) + " : "), diffAmount = new Label());
+
+      Region space2 = new Region();
+      HBox.setHgrow(space2, Priority.ALWAYS);
+      getItems().addAll(space,
+          weightLabel = new Label(I18n.UA.getString(I18nKeys.WEIGHT_KG) + " : "),
+          weight = new Label(),
+          space2, diffAmountLabel = new Label(I18n.UA.getString(I18nKeys.DIFF_AMOUNT) + " : "), diffAmount = new Label());
       setDiffAmount(BigDecimal.ZERO);
+    }
+
+    public void setWeight(int weight) {
+      if (weight != 0) {
+        this.weight.setText(NumberUtil.convertToKg(weight) + "");
+      } else {
+        this.weight.setText("");
+      }
     }
 
     public void setDiffAmount(BigDecimal total) {

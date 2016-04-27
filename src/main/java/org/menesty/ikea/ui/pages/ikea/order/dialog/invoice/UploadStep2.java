@@ -1,16 +1,11 @@
 package org.menesty.ikea.ui.pages.ikea.order.dialog.invoice;
 
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import org.menesty.ikea.i18n.I18n;
 import org.menesty.ikea.i18n.I18nKeys;
-import org.menesty.ikea.lib.service.parse.pdf.invoice.RawInvoiceItem;
 import org.menesty.ikea.ui.controls.pane.wizard.BaseWizardStep;
 import org.menesty.ikea.ui.pages.wizard.order.step.component.ItemProcessingInfoLabel;
-import org.menesty.ikea.ui.table.ArtNumberCell;
-import org.menesty.ikea.util.ColumnUtil;
 
 import java.util.ArrayList;
 
@@ -44,9 +39,7 @@ public class UploadStep2 extends BaseWizardStep<IkeaInvoiceUploadDialog.IkeaInvo
 
         mainPane.getChildren().addAll(progress, invoiceInformationTableView, rawInvoiceItemTableView);
 
-        loadService = new LoadInvoiceParseService(parseResult ->{
-            invoiceInformationTableView.getItems().add(parseResult);
-        }, progress);
+        loadService = new LoadInvoiceParseService(parseResult -> invoiceInformationTableView.getItems().add(parseResult), progress);
         loadService.setOnSucceeded(event -> getWizardPanel().unLockButtons());
 
         setContent(mainPane);

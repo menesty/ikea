@@ -151,4 +151,15 @@ public interface I18nKeys {
   String RESUMPTION_ALTERNATIVES_MENU = "resumption.alternatives.menu";
   String OVER_BOUGH = "over.bough";
   String STORAGE_LACK = "storage.lack";
+  String ORDER_ITEM_COUNT = "order.item.count";
+  String INVOICE_ITEM_COUNT = "invoice.item.count";
+  String RESUMPTION_ITEM_SEARCH = "resumption.item.search";
+  String RESUMPTION_CORRECTION = "resumption.correction";
+  String RESUMPTION_DATE = "resumption.date";
+  String RESUMPTION_INVOICE = "resumption.invoice";
+  String RESUMPTION_CORRECTION_TITLE = "resumption.correction.title";
+  String RESUMPTION_COUNT = "resumption.count";
+
+  String SCAN_DATE = "scan.date";
+  String NO = "no";
 }

@@ -48,12 +48,9 @@ public class InvoiceEppTableView extends BaseTableView<InvoiceItem> {
 
                                     ImageView imageView = ImageFactory.createWeb16Icon();
                                     HBox.setMargin(imageView, new Insets(0, 0, 0, 2));
-                                    imageView.setOnMouseClicked(new EventHandler<MouseEvent>() {
-                                        @Override
-                                        public void handle(MouseEvent mouseEvent) {
-                                            InvoiceItem item = getTableView().getItems().get(getIndex());
-                                            ProductDialog.browse(item.getOriginArtNumber());
-                                        }
+                                    imageView.setOnMouseClicked(mouseEvent -> {
+                                        InvoiceItem item = getTableView().getItems().get(getIndex());
+                                        ProductDialog.browse(item.getOriginArtNumber());
                                     });
 
                                     Region space = new Region();

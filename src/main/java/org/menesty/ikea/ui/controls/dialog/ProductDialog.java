@@ -89,12 +89,7 @@ public class ProductDialog extends BaseDialog {
             TableColumn<ProductPart, Integer> column = new TableColumn<>();
             column.setText("Count");
             column.setMinWidth(50);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ProductPart, Integer>, ObservableValue<Integer>>() {
-                @Override
-                public ObservableValue<Integer> call(TableColumn.CellDataFeatures<ProductPart, Integer> item) {
-                    return new PathProperty<>(item.getValue(), "count");
-                }
-            });
+            column.setCellValueFactory(item -> new PathProperty<>(item.getValue(), "count"));
 
             subProductTableView.getColumns().add(column);
         }
@@ -102,33 +97,20 @@ public class ProductDialog extends BaseDialog {
             TableColumn<ProductPart, String> column = new TableColumn<>();
             column.setText("Art # ");
             column.setMinWidth(100);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ProductPart, String>, ObservableValue<String>>() {
-                @Override
-                public ObservableValue<String> call(TableColumn.CellDataFeatures<ProductPart, String> item) {
-                    return new PathProperty<>(item.getValue(), "productInfo.artNumber");
-                }
-            });
+            column.setCellValueFactory(item -> new PathProperty<>(item.getValue(), "productInfo.artNumber"));
             subProductTableView.getColumns().add(column);
         }
         {
             TableColumn<ProductPart, String> column = new TableColumn<>();
             column.setText("Name");
             column.setMinWidth(200);
-            column.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ProductPart, String>, ObservableValue<String>>() {
-                @Override
-                public ObservableValue<String> call(TableColumn.CellDataFeatures<ProductPart, String> item) {
-                    return new PathProperty<>(item.getValue(), "productInfo.name");
-                }
-            });
+            column.setCellValueFactory(item -> new PathProperty<>(item.getValue(), "productInfo.name"));
 
             subProductTableView.getColumns().add(column);
         }
-        subProductTableView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<ProductPart>() {
-            @Override
-            public void changed(ObservableValue<? extends ProductPart> observableValue, ProductPart old, ProductPart newValue) {
-                if (newValue != null)
-                    bind(newValue);
-            }
+        subProductTableView.getSelectionModel().selectedItemProperty().addListener((observableValue, old, newValue) -> {
+            if (newValue != null)
+                bind(newValue);
         });
 
         addRow(options, bottomBar);

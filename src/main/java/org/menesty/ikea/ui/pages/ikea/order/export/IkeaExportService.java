@@ -132,8 +132,10 @@ public class IkeaExportService {
 
       taskProgressLog.addLog("start prepare data for next users ...");
 
-      List<StockItem> joinedItems = flatItems(slittedByUsers);
-      Map<String, List<StockItem>> allRestItems = joinedItems.isEmpty() ? new HashMap<>() : prepareSplitByCategory("Category", joinedItems);
+      /*List<StockItem> joinedItems = flatItems(slittedByUsers);
+      Map<String, List<StockItem>> allRestItems = joinedItems.isEmpty() ? new HashMap<>() : prepareSplitByCategory("Category", joinedItems);*/
+
+      Map<String, List<StockItem>> allRestItems = slittedByUsers.remove(0);
 
 
       ikeaShops.stream().forEach(ikeaShop ->
@@ -143,7 +145,6 @@ public class IkeaExportService {
       if (sortedByIkeaShop.containsKey(NOT_IN_ANY_SHOP_INDEX)) {
         addMapContent(allRestItems, prepareSplitByCategory("NOT_IN_ANY_SHOP", sortedByIkeaShop.get(NOT_IN_ANY_SHOP_INDEX)).entrySet());
       }
-
 
 
       if (!specialItems.isEmpty()) {

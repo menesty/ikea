@@ -28,7 +28,7 @@ public class InvoiceAddEditDialog extends EntityDialog<Invoice> {
 
   @Override
   protected EntityDialog<Invoice>.EntityForm<Invoice> createForm() {
-    return new InvoiceFormDialog();
+    return new InvoiceForm();
   }
 
   @Override
@@ -42,13 +42,13 @@ public class InvoiceAddEditDialog extends EntityDialog<Invoice> {
     }
   }
 
-  class InvoiceFormDialog extends EntityForm<Invoice> {
+  class InvoiceForm extends EntityForm<Invoice> {
     private DatePicker sellDate;
     private TextField invoiceNameField;
     private TextField paragonNumberField;
     private NumberTextField payedField;
 
-    public InvoiceFormDialog() {
+    public InvoiceForm() {
       add(invoiceNameField = new TextField(null, I18n.UA.getString(I18nKeys.INVOICE_NAME), false));
       add(paragonNumberField = new TextField(null, I18n.UA.getString(I18nKeys.PARAGON_NUMBER)));
       add(payedField = new NumberTextField(I18n.UA.getString(I18nKeys.AMOUNT), false));

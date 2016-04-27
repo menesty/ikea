@@ -13,6 +13,10 @@ public class EntityCheckBoxHolder<T> {
 
   private final T item;
 
+  public EntityCheckBoxHolder(T item) {
+    this(false, item);
+  }
+
   public EntityCheckBoxHolder(boolean checked, T item) {
     this.item = item;
     this.checked = new SimpleBooleanProperty(checked);
@@ -20,6 +24,10 @@ public class EntityCheckBoxHolder<T> {
 
   public BooleanProperty checkedProperty() {
     return checked;
+  }
+
+  public boolean getChecked() {
+    return checked.get();
   }
 
   public boolean isChecked() {

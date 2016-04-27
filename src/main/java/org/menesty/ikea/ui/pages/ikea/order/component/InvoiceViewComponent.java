@@ -53,6 +53,8 @@ public class InvoiceViewComponent extends HBox {
   private CreateFakeOrderInvoice createFakeOrderInvoice;
   private ProductEditDialog productEditDialog;
 
+  private TotalStatusPanel invoiceTotalStatusPanel;
+
   enum ItemAction {
     Delete, Add
   }
@@ -101,9 +103,9 @@ public class InvoiceViewComponent extends HBox {
     invoiceTableView = new TableView<>();
 
     {
-      TableColumn<Invoice, String> column = new TableColumn<>(I18n.UA.getString(I18nKeys.ID));
-      column.setPrefWidth(50);
-      column.setCellValueFactory(ColumnUtil.column("id"));
+      TableColumn<Invoice, Number> column = new TableColumn<>();
+      column.setMaxWidth(45);
+      column.setCellValueFactory(ColumnUtil.indexColumn());
 
       invoiceTableView.getColumns().add(column);
     }
@@ -252,8 +254,10 @@ public class InvoiceViewComponent extends HBox {
 
     }
 
+    invoiceTotalStatusPanel = new TotalStatusPanel();
 
     leftPanel.setTop(toolBar);
+    leftPanel.setBottom(invoiceTotalStatusPanel);
 
     invoiceItemChangeCountService = new InvoiceItemChangeCountService();
     invoiceItemChangeCountService.setOnSucceededListener(value -> {
@@ -502,6 +506,12 @@ public class InvoiceViewComponent extends HBox {
 
   public void setInvoices(List<Invoice> invoices) {
     invoiceTableView.getItems().setAll(invoices);
+
+    BigDecimal totalCount = invoices.stream()
+        .map(Invoice::getPayed)
+        .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+    invoiceTotalStatusPanel.setTotal(totalCount);
   }
 
   class InvoiceActionService extends AbstractAsyncService<ItemActionResult<Invoice>> {
@@ -654,7 +664,7 @@ public class InvoiceViewComponent extends HBox {
         protected Boolean call() throws Exception {
           APIRequest request = HttpServiceUtil.get("/ikea-order/invoice-item/" + _id + "/change/count/" + _itemCount.toString());
 
-          return request.postData(null, Boolean.class);
+          return request.postData((Object) null, Boolean.class);
         }
       };
     }

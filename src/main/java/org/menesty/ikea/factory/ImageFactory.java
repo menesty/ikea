@@ -170,6 +170,10 @@ public class ImageFactory {
     return createImage("/styles/images/info-22x22.png");
   }
 
+  public static ImageView createInfo16Icon() {
+    return createImage("/styles/images/info-16x16.png");
+  }
+
   public static ImageView createSearch72Icon() {
     return createIcon("search-72x72.png");
   }
@@ -230,14 +234,19 @@ public class ImageFactory {
     return createIcon("ikea-small.png");
   }
 
-  public static ImageView createResumptionIcon72(){
+  public static ImageView createResumptionIcon72() {
     return createIcon("resumption-72x72.png");
   }
 
-  public static ImageView createCopyIcon32(){
+  public static ImageView createLogIcon72() {
+    return createIcon("log-72x72.png");
+  }
+
+  public static ImageView createCopyIcon32() {
     return createIcon("copy-32x32.png");
   }
-  public static ImageView createCopyIcon316(){
+
+  public static ImageView createCopyIcon316() {
     return createIcon("copy-16x16.png");
   }
 }

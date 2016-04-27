@@ -17,6 +17,9 @@ import org.menesty.ikea.ui.controls.dialog.Dialog;
 import org.menesty.ikea.ui.controls.table.component.BaseTableView;
 import org.menesty.ikea.ui.pages.BasePage;
 import org.menesty.ikea.ui.pages.DialogCallback;
+import org.menesty.ikea.ui.pages.ikea.resumption.component.ResumptionItemComponent;
+import org.menesty.ikea.ui.pages.ikea.resumption.component.ResumptionItemSearchComponent;
+import org.menesty.ikea.ui.pages.ikea.resumption.dialog.ResumptionItemAddDialog;
 import org.menesty.ikea.util.APIRequest;
 import org.menesty.ikea.util.ColumnUtil;
 import org.menesty.ikea.util.HttpServiceUtil;
@@ -33,11 +36,16 @@ public class ResumptionPage extends BasePage {
   private BaseTableView<Resumption> resumptionTableView;
   private LoadService loadService;
   private DeleteService deleteService;
+  private ResumptionItemSearchComponent resumptionItemSearchComponent;
+  private ResumptionItemComponent resumptionItemComponent;
 
   @Override
   protected void initialize() {
     loadService = new LoadService();
-    loadService.setOnSucceededListener(value -> resumptionTableView.getItems().setAll(value));
+    loadService.setOnSucceededListener(value -> {
+      resumptionTableView.getItems().setAll(value);
+      resumptionItemSearchComponent.setResumptions(value);
+    });
 
     deleteService = new DeleteService();
     deleteService.setOnSucceededListener(value -> {
@@ -47,81 +55,114 @@ public class ResumptionPage extends BasePage {
     });
   }
 
-
   @Override
   protected Node createView() {
-    BorderPane main = new BorderPane();
-
-    resumptionTableView = new BaseTableView<>();
+    TabPane tabPane = new TabPane();
 
     {
-      TableColumn<Resumption, Number> column = new TableColumn<>();
-      column.setMaxWidth(45);
-      column.setCellValueFactory(ColumnUtil.<Resumption>indexColumn());
-      resumptionTableView.getColumns().add(column);
-    }
+      Tab tab = new Tab(I18n.UA.getString(I18nKeys.RESUMPTION));
+      tab.setClosable(false);
 
-    {
-      TableColumn<Resumption, String> column = new TableColumn<>(I18n.UA.getString(I18nKeys.CREATED_DATE));
-      column.setMinWidth(150);
-      column.getStyleClass().add("align-right");
-      column.setCellValueFactory(ColumnUtil.<Resumption>dateColumn("createdDate"));
-      resumptionTableView.getColumns().add(column);
-    }
+      BorderPane main = new BorderPane();
 
-    resumptionTableView.setRowRenderListener((row, newValue1) -> {
-      row.setContextMenu(null);
+      resumptionTableView = new BaseTableView<>();
 
-      if (newValue1 != null) {
-        ContextMenu contextMenu = new ContextMenu();
-
-        {
-          MenuItem menuItem = new MenuItem(I18n.UA.getString(I18nKeys.DELETE), ImageFactory.createDelete16Icon());
-          menuItem.setOnAction(event -> {
-            Dialog.confirm(getDialogSupport(), I18n.UA.getString(I18nKeys.WARNING), I18n.UA.getString(I18nKeys.DELETE_CONFIRMATION_MESSAGE), new DialogCallback() {
-              @Override
-              public void onCancel() {
-                getDialogSupport().hidePopupDialog();
-              }
-
-              @Override
-              public void onYes() {
-                getDialogSupport().hidePopupDialog();
-
-                deleteService.setResumptionId(newValue1.getId());
-                deleteService.restart();
-              }
-            });
-          });
-
-          contextMenu.getItems().add(menuItem);
-        }
-
-        row.setContextMenu(contextMenu);
+      {
+        TableColumn<Resumption, Number> column = new TableColumn<>();
+        column.setMaxWidth(45);
+        column.setCellValueFactory(ColumnUtil.<Resumption>indexColumn());
+        resumptionTableView.getColumns().add(column);
       }
-    });
 
-    main.setCenter(resumptionTableView);
+      {
+        TableColumn<Resumption, String> column = new TableColumn<>(I18n.UA.getString(I18nKeys.CREATED_DATE));
+        column.setMinWidth(150);
+        column.getStyleClass().add("align-right");
+        column.setCellValueFactory(ColumnUtil.<Resumption>dateColumn("createdDate"));
+        resumptionTableView.getColumns().add(column);
+      }
+
+      resumptionTableView.setRowRenderListener((row, newValue1) -> {
+        row.setContextMenu(null);
+
+        if (newValue1 != null) {
+          ContextMenu contextMenu = new ContextMenu();
+
+          {
+            MenuItem menuItem = new MenuItem(I18n.UA.getString(I18nKeys.DELETE), ImageFactory.createDelete16Icon());
+            menuItem.setOnAction(event -> {
+              Dialog.confirm(getDialogSupport(), I18n.UA.getString(I18nKeys.WARNING), I18n.UA.getString(I18nKeys.DELETE_CONFIRMATION_MESSAGE), new DialogCallback() {
+                @Override
+                public void onCancel() {
+                  getDialogSupport().hidePopupDialog();
+                }
+
+                @Override
+                public void onYes() {
+                  getDialogSupport().hidePopupDialog();
+
+                  deleteService.setResumptionId(newValue1.getId());
+                  deleteService.restart();
+                }
+              });
+            });
+
+            contextMenu.getItems().add(menuItem);
+          }
+
+          row.setContextMenu(contextMenu);
+        }
+      });
+
+      main.setCenter(resumptionTableView);
 
 
-    ToolBar toolBar = new ToolBar();
+      ToolBar toolBar = new ToolBar();
 
-    {
-      Button button = new Button(null, ImageFactory.creteInfo48Icon());
+      {
+        Button button = new Button(null, ImageFactory.creteInfo48Icon());
 
-      button.setOnAction(event -> navigateSubPage(ResumptionDetailPage.class, resumptionTableView.getSelectionModel().getSelectedItem()));
-      button.setTooltip(ToolTipUtil.create(I18n.UA.getString(I18nKeys.INFO)));
-      button.setDisable(true);
+        button.setOnAction(event -> navigateSubPage(ResumptionDetailPage.class, resumptionTableView.getSelectionModel().getSelectedItem()));
+        button.setTooltip(ToolTipUtil.create(I18n.UA.getString(I18nKeys.INFO)));
+        button.setDisable(true);
 
-      resumptionTableView.getSelectionModel()
-          .selectedItemProperty()
-          .addListener((observable, oldValue, newValue) -> button.setDisable(newValue == null));
-      toolBar.getItems().add(button);
+        resumptionTableView.getSelectionModel()
+            .selectedItemProperty()
+            .addListener((observable, oldValue, newValue) -> button.setDisable(newValue == null));
+        toolBar.getItems().add(button);
+      }
+
+      main.setTop(toolBar);
+
+      tab.setContent(main);
+
+      tabPane.getTabs().add(tab);
     }
 
-    main.setTop(toolBar);
+    {
+      Tab tab = new Tab(I18n.UA.getString(I18nKeys.RESUMPTION_ITEM_SEARCH));
+      tab.setClosable(false);
 
-    return wrap(main);
+      tab.setContent(resumptionItemSearchComponent = new ResumptionItemSearchComponent(getDialogSupport()));
+      tabPane.getTabs().add(tab);
+    }
+
+    {
+      Tab tab = new Tab(I18n.UA.getString(I18nKeys.RESUMPTION_CORRECTION));
+
+      tab.setClosable(false);
+
+      tab.setContent(resumptionItemComponent = new ResumptionItemComponent(getDialogSupport()));
+      tab.selectedProperty().addListener((observable, oldValue, newValue) -> {
+        if (newValue) {
+          resumptionItemComponent.load();
+        }
+      });
+
+      tabPane.getTabs().add(tab);
+    }
+
+    return wrap(tabPane);
   }
 
   @Override
