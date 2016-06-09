@@ -186,6 +186,10 @@ public class ImageFactory {
     return createIcon("wizard-48x48.png");
   }
 
+  public static ImageView creatReport48Icon() {
+    return createIcon("report-48x48.png");
+  }
+
   public static ImageView createError32Icon() {
     return createIcon("error-32x32.png");
   }

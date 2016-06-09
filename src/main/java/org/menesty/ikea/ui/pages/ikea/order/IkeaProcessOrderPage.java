@@ -21,6 +21,7 @@ import org.menesty.ikea.ui.pages.BasePage;
 import org.menesty.ikea.ui.pages.DialogCallback;
 import org.menesty.ikea.ui.pages.EntityDialogCallback;
 import org.menesty.ikea.ui.pages.ikea.order.dialog.OrderPartsDetailDialog;
+import org.menesty.ikea.ui.pages.ikea.reports.order.OrderSummaryReportPage;
 import org.menesty.ikea.ui.pages.wizard.order.OrderCreateWizardPage;
 import org.menesty.ikea.util.*;
 
@@ -177,6 +178,15 @@ public class IkeaProcessOrderPage extends BasePage {
 
       button.setOnAction(event -> navigateSubPage(OrderCreateWizardPage.class));
       button.setTooltip(new Tooltip(I18n.UA.getString(I18nKeys.CREATE_ORDER_WIZARD)));
+
+      toolBar.getItems().add(button);
+    }
+
+    {
+      Button button = new Button(null,ImageFactory.creatReport48Icon());
+
+      button.setOnAction(event -> navigateSubPage(OrderSummaryReportPage.class));
+      button.setTooltip(ToolTipUtil.create(I18n.UA.getString(I18nKeys.ORDER_REPORT)));
 
       toolBar.getItems().add(button);
     }

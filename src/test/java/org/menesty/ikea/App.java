@@ -6,11 +6,10 @@ package org.menesty.ikea;
  * 8:12.
  */
 
-import org.apache.pdfbox.exceptions.COSVisitorException;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.edit.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 
@@ -19,7 +18,7 @@ import java.util.*;
 
 
 public class App {
-    public static void main(String[] args) throws IOException, COSVisitorException {
+    public static void main(String[] args) throws IOException {
         PDDocument document = new PDDocument();//PDDocument.load()
         TableRender tableRender = new TableRender();
 
@@ -110,7 +109,7 @@ class Table {
 }
 
 class TableRender {
-    private PDRectangle pageSize = PDPage.PAGE_SIZE_A4;
+    private PDRectangle pageSize = PDRectangle.A4;
     private PDFont font = PDType1Font.TIMES_ROMAN;
     private float fontSize = 10;
     private float pageHeight;
@@ -139,7 +138,7 @@ class TableRender {
         this.table = table;
         Margin pageMargin = new Margin(2);
         //calculate column width
-        PDRectangle pageSize = page.findMediaBox();
+        PDRectangle pageSize = page.getMediaBox();
         float pageWidth = pageSize.getWidth();
         pageHeight = pageSize.getHeight();
 

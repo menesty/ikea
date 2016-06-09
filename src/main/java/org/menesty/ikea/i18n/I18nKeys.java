@@ -162,4 +162,13 @@ public interface I18nKeys {
 
   String SCAN_DATE = "scan.date";
   String NO = "no";
+  String ORDER_REPORT = "order.report";
+  String INVOICE_PRICE = "invoice.price";
+  String ACCEPTED_COUNT = "accepted.count";
+  String ACCEPTED_PRICE = "accepted.price";
+  String PRICE_PDF = "price.pdf";
+  String ITEM_SUM_PRICE ="item.sum.price";
+  String COMBO_LACK = "combo.lack";
+  String EXPECTED_COUNT = "expected.count";
+  String BOUGHT_COUNT = "bought.count";
 }

@@ -62,6 +62,7 @@ public class StockManagementComponent extends BorderPane {
   private BaseTableView<EntityCheckBoxHolder<StockItemDto>> overBoughTableView;
   private TableView<OrderPurchaseDifferentItem> orderPurchaseDifferentItemTableView;
   private TableView<StockItemDto> storageLackTableView;
+  private ComboLackInfoComponent comboLackInfoComponent;
 
   private StorageCalculationService storageCalculationService;
   private AddToOrderItemService addToOrderItemService;
@@ -106,6 +107,8 @@ public class StockManagementComponent extends BorderPane {
       overBoughTotalStatusPanel.setTotal(overBoughTotal);
 
       orderPurchaseDifferentItemTableView.getItems().setAll(value.getOrderPurchaseDifferentItems());
+
+      comboLackInfoComponent.setCombos(value.getNotCompleteCombos());
     });
 
     addToOrderItemService = new AddToOrderItemService();
@@ -515,6 +518,15 @@ public class StockManagementComponent extends BorderPane {
       }
 
       tab.setContent(orderPurchaseDifferentItemTableView);
+      tabPane.getTabs().add(tab);
+    }
+
+    {
+      Tab tab = new Tab(I18n.UA.getString(I18nKeys.COMBO_LACK));
+      tab.setClosable(false);
+
+      tab.setContent(comboLackInfoComponent = new ComboLackInfoComponent());
+
       tabPane.getTabs().add(tab);
     }
 

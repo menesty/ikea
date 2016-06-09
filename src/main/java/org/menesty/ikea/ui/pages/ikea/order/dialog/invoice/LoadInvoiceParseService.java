@@ -1,12 +1,10 @@
 package org.menesty.ikea.ui.pages.ikea.order.dialog.invoice;
 
-import com.google.common.base.Preconditions;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Task;
 import org.menesty.ikea.lib.domain.ikea.IkeaProduct;
-import org.menesty.ikea.lib.domain.product.Product;
 import org.menesty.ikea.lib.service.IkeaProductService;
 import org.menesty.ikea.lib.service.parse.pdf.invoice.InvoiceParseResult;
 import org.menesty.ikea.lib.service.parse.pdf.invoice.InvoicePdfParserService;
@@ -33,7 +31,6 @@ class LoadInvoiceParseService extends AbstractAsyncService<Void> {
   private final ItemProcessingInfoLabel progressLabel;
 
   public LoadInvoiceParseService(OnParseListener onParseListener, ItemProcessingInfoLabel progressLabel) {
-    Preconditions.checkNotNull(onParseListener);
     this.onParseListener = onParseListener;
     this.progressLabel = progressLabel;
   }

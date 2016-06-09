@@ -4,13 +4,13 @@ import javafx.application.Platform;
 import javafx.beans.property.*;
 import javafx.concurrent.Task;
 import org.menesty.ikea.lib.domain.ikea.IkeaProduct;
+import org.menesty.ikea.lib.domain.parse.RawItem;
 import org.menesty.ikea.lib.dto.IkeaOrderItem;
 import org.menesty.ikea.lib.dto.OrderItemDetails;
 import org.menesty.ikea.lib.dto.ProductPriceMismatch;
 import org.menesty.ikea.lib.service.IkeaProductService;
 import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.service.ServiceFacade;
-import org.menesty.ikea.service.parser.RawItem;
 
 import java.util.List;
 

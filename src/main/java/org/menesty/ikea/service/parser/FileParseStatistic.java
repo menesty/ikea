@@ -9,42 +9,46 @@ import java.text.NumberFormat;
  * 00:42.
  */
 public class FileParseStatistic {
-    private final ParseResult parseResult;
-    private BigDecimal sum;
+  private final ParseResult parseResult;
+  private BigDecimal sum;
 
-    public FileParseStatistic(ParseResult parseResult) {
-        this.parseResult = parseResult;
-    }
+  public FileParseStatistic(ParseResult parseResult) {
+    this.parseResult = parseResult;
+  }
 
-    public BigDecimal getSum() {
-        return sum;
-    }
+  public BigDecimal getSum() {
+    return sum;
+  }
 
-    public String getSumFormat() {
-        return NumberFormat.getInstance().format(sum.doubleValue());
-    }
+  public String getSumFormat() {
+    return NumberFormat.getInstance().format(sum.doubleValue());
+  }
 
-    public void setSum(BigDecimal sum) {
-        this.sum = sum;
-    }
+  public String getParseResultSumFormat() {
+    return NumberFormat.getInstance().format(parseResult.getTotalAmount().doubleValue());
+  }
 
-    public ParseResult getParseResult() {
-        return parseResult;
-    }
+  public void setSum(BigDecimal sum) {
+    this.sum = sum;
+  }
 
-    public int getItemCount() {
-        return parseResult.getRawOrderItems().size();
-    }
+  public ParseResult getParseResult() {
+    return parseResult;
+  }
 
-    public int getWarningCount() {
-        return parseResult.getParseWarnings().size();
-    }
+  public int getItemCount() {
+    return parseResult.getRawOrderItems().size();
+  }
 
-    public String getFileName() {
-        return parseResult.getFileName();
-    }
+  public int getWarningCount() {
+    return parseResult.getParseWarnings().size();
+  }
 
-    public void setFileName(String finalName) {
-        parseResult.setFileName(finalName);
-    }
+  public String getFileName() {
+    return parseResult.getFileName();
+  }
+
+  public void setFileName(String finalName) {
+    parseResult.setFileName(finalName);
+  }
 }

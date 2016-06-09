@@ -20,55 +20,54 @@ import org.menesty.ikea.util.APIRequest;
 import org.menesty.ikea.util.HttpServiceUtil;
 
 public class OrderCreateWizardPage extends BasePage {
-    private CreateOrderService createOrderService;
+  private CreateOrderService createOrderService;
 
+  @Override
+  protected void initialize() {
+    createOrderService = new CreateOrderService();
+  }
+
+  @Override
+  protected Node createView() {
+    WizardPanel<DesktopOrderInfo> wizardPanel = new WizardPanel<>(new DesktopOrderInfo());
+
+    wizardPanel.addStep(new Step1(getStage()));
+    wizardPanel.addStep(new Step2ParseDocuments());
+    wizardPanel.addStep(new Step3OrderPreview(getDialogSupport()));
+    wizardPanel.addStep(new Step4PriceMismatch(getDialogSupport()));
+    wizardPanel.setOnFinishListener(param -> {
+      createOrderService.property.set(param);
+      loadingPane.bindTask(createOrderService);
+      createOrderService.restart();
+    });
+    createOrderService.setOnSucceededListener(value -> {
+      navigate(IkeaOrderViewPage.class, value);
+    });
+
+    wizardPanel.start();
+
+    StackPane mainPane = new StackPane();
+    mainPane.getChildren().add(wizardPanel);
+    mainPane.setPadding(new Insets(0, 0, 5, 0));
+    mainPane.getStyleClass().add("wizard-pane");
+
+    return wrap(mainPane);
+  }
+
+  class CreateOrderService extends AbstractAsyncService<IkeaProcessOrder> {
+    private ObjectProperty<DesktopOrderInfo> property = new SimpleObjectProperty<>();
 
     @Override
-    protected void initialize() {
-        createOrderService = new CreateOrderService();
-    }
-
-    @Override
-    protected Node createView() {
-        WizardPanel<DesktopOrderInfo> wizardPanel = new WizardPanel<>(new DesktopOrderInfo());
-
-        wizardPanel.addStep(new Step1(getStage()));
-        wizardPanel.addStep(new Step2ParseDocuments());
-        wizardPanel.addStep(new Step3OrderPreview(getDialogSupport()));
-        wizardPanel.addStep(new Step4PriceMismatch(getDialogSupport()));
-        wizardPanel.setOnFinishListener(param -> {
-            createOrderService.property.set(param);
-            loadingPane.bindTask(createOrderService);
-            createOrderService.restart();
-        });
-        createOrderService.setOnSucceededListener(value -> {
-            navigate(IkeaOrderViewPage.class, value);
-        });
-
-        wizardPanel.start();
-
-        StackPane mainPane = new StackPane();
-        mainPane.getChildren().add(wizardPanel);
-        mainPane.setPadding(new Insets(0, 0, 5, 0));
-        mainPane.getStyleClass().add("wizard-pane");
-
-        return wrap(mainPane);
-    }
-
-    class CreateOrderService extends AbstractAsyncService<IkeaProcessOrder> {
-        private ObjectProperty<DesktopOrderInfo> property = new SimpleObjectProperty<>();
-
+    protected Task<IkeaProcessOrder> createTask() {
+      DesktopOrderInfo _desktopOrderInfo = property.get();
+      return new Task<IkeaProcessOrder>() {
         @Override
-        protected Task<IkeaProcessOrder> createTask() {
-            DesktopOrderInfo _desktopOrderInfo = property.get();
-            return new Task<IkeaProcessOrder>() {
-                @Override
-                protected IkeaProcessOrder call() throws Exception {
-                    APIRequest apiRequest = HttpServiceUtil.get("/order/create");
+        protected IkeaProcessOrder call() throws Exception {
+          APIRequest apiRequest = HttpServiceUtil.get("/order/create");
 
-                    return apiRequest.postData(_desktopOrderInfo, IkeaProcessOrder.class);
-                }
-            };
+          return apiRequest.postData(_desktopOrderInfo, IkeaProcessOrder.class);
         }
+      };
     }
+  }
 }

@@ -6,6 +6,7 @@ import org.jxls.reader.*;
 import org.menesty.ikea.domain.RawOrderItem;
 import org.menesty.ikea.i18n.I18n;
 import org.menesty.ikea.i18n.I18nKeys;
+import org.menesty.ikea.lib.domain.parse.RawItem;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;

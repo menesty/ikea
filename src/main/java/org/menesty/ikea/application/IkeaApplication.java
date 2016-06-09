@@ -37,6 +37,7 @@ import org.menesty.ikea.ui.pages.ikea.log.WarehouseScanLogPage;
 import org.menesty.ikea.ui.pages.ikea.order.IkeaOrderViewPage;
 import org.menesty.ikea.ui.pages.ikea.order.IkeaProcessOrderPage;
 import org.menesty.ikea.ui.pages.ikea.product.ProductPage;
+import org.menesty.ikea.ui.pages.ikea.reports.order.OrderSummaryReportPage;
 import org.menesty.ikea.ui.pages.ikea.resumption.ResumptionDetailPage;
 import org.menesty.ikea.ui.pages.ikea.resumption.ResumptionPage;
 import org.menesty.ikea.ui.pages.ikea.warehouse.SiteWarehousePage;
@@ -141,11 +142,8 @@ public class IkeaApplication extends Application implements DialogSupport {
     orderList.addPage(new PageDescription(Pages.CUSTOMER_ORDER.getTitle(), OrderViewPage.class, false));
     group.add(orderList);
 
-    group.add(new PageDescription(Pages.USERS.getTitle(), ImageFactory.createUsersIcon64(), UserPage.class));
-    group.add(new PageDescription(Pages.WAREHOUSE.getTitle(), ImageFactory.createWarehouseIcon72(), WarehousePage.class));
     group.add(new PageDescription(Pages.INVOICE.getTitle(), ImageFactory.createInvoice72Icon(), CustomInvoicePage.class));
     group.add(new PageDescription(Pages.IKEA_PARAGONS.getTitle(), ImageFactory.createIkea72Icon(), IkeaParagonPage.class));
-    group.add(new PageDescription(Pages.SHOPS.getTitle(), ImageFactory.createShopIcon72(), IkeaShopPage.class));
     group.add(new PageDescription(Pages.INVOICE_ITEM_SEARCH.getTitle(), ImageFactory.createSearch72Icon(), InvoicePdfItemSearchPage.class));
 
 
@@ -158,6 +156,7 @@ public class IkeaApplication extends Application implements DialogSupport {
     PageDescription ikeaOrderList = new PageDescription(Pages.SITE_ORDERS.getTitle(), ImageFactory.createSiteOrders72Icon(), IkeaProcessOrderPage.class);
 
     ikeaOrderList.addPage(new PageDescription(Pages.ORDER_WIZARD.getTitle(), OrderCreateWizardPage.class, false));
+    ikeaOrderList.addPage(new PageDescription(Pages.ORDER_REPORT.getTitle(), OrderSummaryReportPage.class, false));
     ikeaOrderList.addPage(new PageDescription(Pages.ORDER_DETAIL.getTitle(), IkeaOrderViewPage.class, false));
 
 

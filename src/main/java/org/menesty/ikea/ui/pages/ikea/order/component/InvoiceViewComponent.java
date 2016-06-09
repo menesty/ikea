@@ -1,6 +1,5 @@
 package org.menesty.ikea.ui.pages.ikea.order.component;
 
-import com.google.common.base.Preconditions;
 import javafx.beans.property.*;
 import javafx.concurrent.Task;
 import javafx.scene.Node;
@@ -8,7 +7,6 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.util.Callback;
 import org.apache.commons.lang3.StringUtils;
 import org.menesty.ikea.core.component.DialogSupport;
 import org.menesty.ikea.factory.ImageFactory;
@@ -86,7 +84,6 @@ public class InvoiceViewComponent extends HBox {
   private InvoiceItemChangeCountService invoiceItemChangeCountService;
 
   public InvoiceViewComponent(DialogSupport dialogSupport, InvoiceActionListener invoiceActionListener) {
-    Preconditions.checkNotNull(invoiceActionListener);
 
     getChildren().addAll(initLeftPanel(dialogSupport, invoiceActionListener), initRightPanel(dialogSupport, invoiceActionListener));
   }
@@ -540,8 +537,6 @@ public class InvoiceViewComponent extends HBox {
     }
 
     public void setInvoice(Invoice invoice, ItemAction action) {
-      Preconditions.checkNotNull(invoice);
-      Preconditions.checkNotNull(action);
 
       invoiceProperty.set(invoice);
       invoiceActionProperty.set(action);

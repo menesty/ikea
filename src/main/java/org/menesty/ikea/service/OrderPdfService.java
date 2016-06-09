@@ -1,7 +1,7 @@
 package org.menesty.ikea.service;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.util.PDFTextStripper;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.menesty.ikea.domain.RawOrderItem;
 import org.menesty.ikea.lib.dto.ikea.JsonProduct;
 import org.menesty.ikea.lib.util.DownloadProductTask;

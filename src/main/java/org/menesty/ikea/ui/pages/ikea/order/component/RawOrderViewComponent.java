@@ -141,20 +141,23 @@ public class RawOrderViewComponent extends BorderPane {
     tableView.setRowDoubleClickListener(row -> showProductDialog(dialogSupport, row.getItem()));
     tableView.setRowRenderListener((row, newValue) -> {
       row.setContextMenu(null);
+      row.getStyleClass().remove("productNotVerified");
 
       if (newValue != null) {
         ContextMenu contextMenu = new ContextMenu();
 
         {
           MenuItem menuItem = new MenuItem(I18n.UA.getString(I18nKeys.EDIT));
-          menuItem.setOnAction(event -> {
-            showProductDialog(dialogSupport, newValue);
-          });
+          menuItem.setOnAction(event -> showProductDialog(dialogSupport, newValue));
 
           contextMenu.getItems().add(menuItem);
         }
 
         row.setContextMenu(contextMenu);
+
+        if (!newValue.getProduct().getProductProperties().isValidated()) {
+          row.getStyleClass().add("productNotVerified");
+        }
       }
     });
 
@@ -239,6 +242,8 @@ public class RawOrderViewComponent extends BorderPane {
       @Override
       public void onSave(IkeaProduct ikeaProduct, Object... params) {
         ikeaOrderItem.setProduct(ikeaProduct);
+
+        ikeaProduct.getProductProperties().setValidated(true);
 
         tableView.update(ikeaOrderItem);
 
@@ -329,16 +334,29 @@ public class RawOrderViewComponent extends BorderPane {
       if (ikeaOrderItems.size() == 1) {
         itemList.add(ikeaOrderItems.get(0));
       } else if (ikeaOrderItems.size() > 1) {
-        IkeaOrderItem first = ikeaOrderItems.get(0);
+        //filter special
+        List<IkeaOrderItem> specials = ikeaOrderItems.stream().filter(IkeaOrderItem::isSpecial).collect(Collectors.toList());
 
-        IkeaOrderItem item = new IkeaOrderItem();
-        item.setCount(BigDecimal.ZERO);
-        item.setProduct(first.getProduct());
-        item.setPrice(first.getPrice());
+        if (!specials.isEmpty()) {
+          itemList.addAll(specials);
+        }
 
-        ikeaOrderItems.stream().reduce(item, (item1, item2) -> item1.addCount(item2.getCount()));
+        List<IkeaOrderItem> normal = ikeaOrderItems.stream().filter(ikeaOrderItem -> !ikeaOrderItem.isSpecial()).collect(Collectors.toList());
 
-        itemList.add(item);
+        if (!normal.isEmpty()) {
+
+          IkeaOrderItem first = normal.get(0);
+
+          IkeaOrderItem item = new IkeaOrderItem();
+          item.setCount(BigDecimal.ZERO);
+          item.setProduct(first.getProduct());
+          item.setPrice(first.getPrice());
+
+          normal.stream().reduce(item, (item1, item2) -> item1.addCount(item2.getCount()));
+
+          itemList.add(item);
+        }
+
       }
     });
 

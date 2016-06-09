@@ -1,6 +1,5 @@
 package org.menesty.ikea.ui.pages.ikea.order.dialog;
 
-import com.google.common.base.Preconditions;
 import javafx.stage.Stage;
 import org.menesty.ikea.i18n.I18n;
 import org.menesty.ikea.i18n.I18nKeys;
@@ -47,9 +46,6 @@ public class ChoiceCountDialog extends BaseDialog {
     }
 
     public void maxValue(String artNumber, Long invoiceItemId, List<Profile> profiles, BigDecimal maxValue, EntityDialogCallback<NewOrderItemInfo> callback) {
-        Preconditions.checkNotNull(maxValue);
-        Preconditions.checkNotNull(callback);
-
         profileComboBoxField.setItems(profiles);
         countField.setMaxValue(maxValue);
         countField.setNumber(maxValue);

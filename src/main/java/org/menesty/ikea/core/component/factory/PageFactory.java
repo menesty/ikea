@@ -6,6 +6,7 @@ import org.menesty.ikea.ui.pages.ikea.log.WarehouseScanLogPage;
 import org.menesty.ikea.ui.pages.ikea.order.IkeaOrderViewPage;
 import org.menesty.ikea.ui.pages.ikea.order.IkeaProcessOrderPage;
 import org.menesty.ikea.ui.pages.ikea.product.ProductPage;
+import org.menesty.ikea.ui.pages.ikea.reports.order.OrderSummaryReportPage;
 import org.menesty.ikea.ui.pages.ikea.resumption.ResumptionDetailPage;
 import org.menesty.ikea.ui.pages.ikea.resumption.ResumptionPage;
 import org.menesty.ikea.ui.pages.ikea.warehouse.SiteWarehousePage;
@@ -55,6 +56,8 @@ public class PageFactory {
       return new WarehouseScanLogPage();
     } else if (ProductPage.class.equals(page)) {
       return new ProductPage();
+    } else if (OrderSummaryReportPage.class.equals(page)) {
+      return new OrderSummaryReportPage();
     }
 
     throw new RuntimeException(String.format("Requested page not defined for creation: %s, please add it to Page factory", page.getName()));
