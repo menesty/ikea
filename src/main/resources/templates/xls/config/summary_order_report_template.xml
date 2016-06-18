@@ -1,0 +1,12 @@
+<xls>
+    <area ref="OrderItems!A1:F2">
+        <each items="reportItemList" var="item" ref="OrderItems!A2:F2">
+            <area ref="OrderItems!A2:F2"/>
+        </each>
+    </area>
+    <area ref="OrderCombos!A1:D2">
+        <each items="comboReportItems" var="comboItem" ref="OrderCombos!A2:D2">
+            <area ref="OrderCombos!A2:D2"/>
+        </each>
+    </area>
+</xls>

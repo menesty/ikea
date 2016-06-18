@@ -1,6 +1,6 @@
 package org.menesty.ikea.ui;
 
-import com.sun.javafx.Utils;
+import com.sun.javafx.util.Utils;
 import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;

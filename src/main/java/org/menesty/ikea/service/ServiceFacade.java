@@ -1,65 +1,58 @@
 package org.menesty.ikea.service;
 
 import org.menesty.ikea.ApplicationPreference;
+import org.menesty.ikea.lib.service.IkeaProductService;
+import org.menesty.ikea.lib.service.parse.pdf.invoice.InvoicePdfParserService;
+import org.menesty.ikea.service.xls.XlsExportService;
+import org.menesty.ikea.ui.pages.ikea.order.export.IkeaExportService;
+import org.menesty.ikea.util.ErrorConsole;
 
 public class ServiceFacade {
 
-    private static OrderService orderService;
+  private static ApplicationPreference applicationPreference;
 
-    private static InvoiceItemService invoiceItemService;
+  private static ErrorConsole errorConsole;
 
-    private static InvoicePdfService invoicePdfService;
+  private final static IkeaProductService ikeaProductService;
 
-    private static ApplicationPreference applicationPreference;
+  private final static XlsExportService xlsExportService;
 
-    private static ProductService productService;
+  private final static IkeaExportService ikeaExportService;
 
-    private static OrderItemService orderItemService;
+  private final static InvoicePdfParserService invoicePdfParserService;
 
-    private static InvoiceService invoiceService;
+  static {
+    applicationPreference = new ApplicationPreference();
+    errorConsole = new ErrorConsole();
+    ikeaProductService = new IkeaProductService();
+    xlsExportService = new XlsExportService();
+    ikeaExportService = new IkeaExportService();
+    invoicePdfParserService = new InvoicePdfParserService();
+  }
 
-    static {
-        orderService = new OrderService();
-        invoiceItemService = new InvoiceItemService();
-        invoicePdfService = new InvoicePdfService();
-        applicationPreference = new ApplicationPreference();
-        productService = new ProductService();
-        orderItemService = new OrderItemService();
-        invoiceService = new InvoiceService();
-        ikeaUserService = new IkeaUserService();
-    }
 
-    private static IkeaUserService ikeaUserService;
+  public static ApplicationPreference getApplicationPreference() {
+    return applicationPreference;
+  }
 
-    public static OrderService getOrderService() {
-        return orderService;
-    }
+  public static ErrorConsole getErrorConsole() {
+    return errorConsole;
+  }
 
-    public static InvoiceItemService getInvoiceItemService() {
-        return invoiceItemService;
-    }
+  public static IkeaProductService getIkeaProductService() {
+    return ikeaProductService;
+  }
 
-    public static InvoicePdfService getInvoicePdfService() {
-        return invoicePdfService;
-    }
+  public static XlsExportService getXlsExportService() {
+    return xlsExportService;
+  }
 
-    public static ApplicationPreference getApplicationPreference() {
-        return applicationPreference;
-    }
+  public static IkeaExportService getIkeaExportService() {
+    return ikeaExportService;
+  }
 
-    public static ProductService getProductService() {
-        return productService;
-    }
-
-    public static OrderItemService getOrderItemService() {
-        return orderItemService;
-    }
-
-    public static InvoiceService getInvoiceService() {
-        return invoiceService;
-    }
-
-    public static IkeaUserService getIkeaUserService() {
-        return ikeaUserService;
-    }
+  public static InvoicePdfParserService getInvoicePdfParserService() {
+    return invoicePdfParserService;
+  }
 }
+

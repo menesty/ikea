@@ -2,17 +2,17 @@
 "1.05",3,1250,"Subiekt GT","olia","10-11","10-11",,,,"2314543267","#43","43",,,1,@{createDate},@{createDate},"Szef Olia",@{createDate},"Polska","PL",,0
 
 [NAGLOWEK]
-"FZ",1,0,2,"306/S/20381",,"2/2013",,,,,"IKEA_KAT","IKEA RETAIL sp z o.o.","IKEA RETAIL","Katowice","40-203","Walentego Roździeńskiego 95","5270103385","Zakup","Zakup towarów lub usług","Katowice",@{createDate},@{createDate},@{createDate},7,0,"Specjalna",1665.8900,383.1600,2049.0500,1665.8900,,0.0000,,@{createDate},2049.0500,2049.0500,0,0,1,3,,"Olia Szef",,0.0000,0.0000,"PLN",1.0000,,,,,0,0,0,,0.0000,,0.0000,"Polska","PL",0
+"FZ",1,0,2,"@{invoiceName}",,"2/2013",,,,,"YAR HUS","Yaroslav Husar","Yaroslav Husar","Kraków","31-159","al. Juliusza Słowackiego 1 lok. 6","6762478016","Zakup","Zakup towarów lub usług","Kraków",@{createDate},@{createDate},@{createDate},7,0,"Specjalna",@{totalItem.format(totalItem.price)},@{totalItem.format(totalItem.taxPay)},@{totalItem.format(totalItem.priceWat)},1665.8900,,0.0000,,@{createDate},@{totalItem.format(totalItem.priceWat)},@{totalItem.format(totalItem.priceWat)},0,0,1,3,,"Olia Szef",,0.0000,0.0000,"PLN",1.0000,,,,,0,0,0,,0.0000,,0.0000,"Polska","PL",0
 
 [ZAWARTOSC]
-@foreach{item : invoiceItems}@{item.index},1,"@{item.artNumber}",1,0,0,1,0.0000,0.0000,"szt.",@{item.count},@{item.count},0.0000,@{item.format(item.price)},@{item.format(item.priceWat)},23.0000,@{item.format(item.priceWatTotal)},@{item.format(item.taxPay)},@{item.format(item.priceTotal)},@{item.format(item.priceWatTotal)},,
+@foreach{item : invoiceItems}@{item.index},@{item.isZestav() ? '8' : '1'},"@{item.artNumber}",1,0,0,1,0.0000,0.0000,"szt.",@{item.count},@{item.count},0.0000,@{item.format(item.price)},@{item.format(item.priceWat)},23.0000,@{item.format(item.priceWatTotal)},@{item.format(item.taxPay)},@{item.format(item.priceTotal)},@{item.format(item.priceWatTotal)},,
 @end{}
 
 [NAGLOWEK]
 "KONTRAHENCI"
 
 [ZAWARTOSC]
-0,"IKEA RET","IKEA Retail (KRK)","IKEA RetaIl Sp. z o.o.","Krak�w","31-357","Josepha Conrada 66","5270103385","010577890",,,,,,,,,,,,,,,,,,,"Polska","PL",0
+0,"YAR HUS","Yaroslav Husar","Kraków","31-159","al. Juliusza Słowackiego 1 lok. 6","6762478016","123171918",,,,,,,,,,,,,,,,,,,"Polska","PL",0
 
 [NAGLOWEK]
 "GRUPYKONTRAHENTOW"
@@ -29,14 +29,14 @@
 "TOWARY"
 
 [ZAWARTOSC]
-@foreach{item : invoiceItems}1,"@{item.artNumber}",,,"@{item.shortName}","@{item.name}","@{item.shortName}",,,"szt.","23",23.0000,"23",23.0000,0.0000,0.0000,,0,,,,0.0000,0,,,0,"szt.",0.0000,0.0000,,0,,0,0,,,,,,,,
+@foreach{item : invoiceItems}@{item.isZestav() ? '8' : '1'},"@{item.artNumber}",,,"@{item.shortName}","@{item.name}","@{item.shortName}",,,"szt.","23",23.0000,"23",23.0000,0.0000,0.0000,,0,,,,0.0000,0,,,0,"szt.",0.0000,0.0000,,0,,0,0,,,,,,,,
 @end{}
 [NAGLOWEK]
 "CENNIK"
 
 [ZAWARTOSC]
-@foreach{item : invoiceItems}"@{item.artNumber}","Detaliczna",@{item.format(item.retail)},@{item.format(item.retailWat)},2.0000,@{item.format(item.marginPercent)},@{item.format(item.margin)}
-"@{item.artNumber}","Hurtowa",@{item.format(item.retail)},@{item.format(item.retailWat)},2.0000,@{item.format(item.marginPercent)},@{item.format(item.margin)}
+@foreach{item : invoiceItems}"@{item.artNumber}","Detaliczna",@{item.format(item.retail)},@{item.format(item.retailWat)},@{item.format(item.retailPercentage)},@{item.format(item.marginPercent)},@{item.format(item.margin)}
+"@{item.artNumber}","Hurtowa",@{item.format(item.retail)},@{item.format(item.retailWat)},@{item.format(item.retailPercentage)},@{item.format(item.marginPercent)},@{item.format(item.margin)}
 "@{item.artNumber}","Specjalna",@{item.format(item.price)},@{item.format(item.priceWat)},0.0000,0.0000,0.0000
 @end{}
 [NAGLOWEK]
@@ -49,4 +49,5 @@
 "CECHYTOWAROW"
 
 [ZAWARTOSC]
-
+@foreach{item : invoiceItems}"@{item.artNumber}","@{item.section}",
+@end{}

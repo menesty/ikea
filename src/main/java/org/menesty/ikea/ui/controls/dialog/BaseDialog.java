@@ -1,18 +1,15 @@
 package org.menesty.ikea.ui.controls.dialog;
 
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
+import javafx.event.Event;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import org.menesty.ikea.IkeaApplication;
 import org.menesty.ikea.ui.controls.pane.LoadingPane;
 
 /**
@@ -21,6 +18,9 @@ import org.menesty.ikea.ui.controls.pane.LoadingPane;
  * Time: 1:11 PM
  */
 public class BaseDialog extends StackPane {
+    public interface DefaultAction {
+        void defaultAction(BaseDialog baseDialog);
+    }
 
     protected final HBox bottomBar;
 
@@ -34,18 +34,29 @@ public class BaseDialog extends StackPane {
 
     private VBox content;
 
-    public BaseDialog() {
+    private Label title;
+
+    private DefaultAction defaultAction;
+
+    private Stage stage;
+
+    public BaseDialog(Stage stage) {
+        this(stage, true);
+    }
+
+    public BaseDialog(Stage stage, boolean showTitle) {
         super();
+        this.stage = stage;
+        content = new VBox();
+
         setId("ProxyDialog");
         setMaxSize(430, USE_PREF_SIZE);
-        // block mouse clicks
-        setOnMouseClicked(new EventHandler<MouseEvent>() {
-            public void handle(MouseEvent t) {
-                t.consume();
-            }
-        });
 
-        content = new VBox();
+        if (showTitle)
+            addRow(title = createTitle(null));
+        // block mouse clicks
+        setOnMouseClicked(Event::consume);
+
         content.setSpacing(10);
         loadingPane = new LoadingPane();
 
@@ -53,37 +64,38 @@ public class BaseDialog extends StackPane {
 
         cancelBtn = new Button("Cancel");
         cancelBtn.setId("cancelButton");
-        cancelBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                onCancel();
-            }
+        cancelBtn.setOnAction(actionEvent -> {
+            if (defaultAction != null)
+                defaultAction.defaultAction(BaseDialog.this);
+
+            onCancel();
         });
         cancelBtn.setMinWidth(74);
         cancelBtn.setPrefWidth(74);
-        HBox.setMargin(cancelBtn, new Insets(0, 8, 0, 0));
         okBtn = new Button("Ok");
         okBtn.setId("saveButton");
         okBtn.setDefaultButton(true);
 
-        okBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                onOk();
-
-            }
-        });
+        okBtn.setOnAction(actionEvent -> onActionOk());
         okBtn.setMinWidth(74);
         okBtn.setPrefWidth(74);
 
-        bottomBar = new HBox(0);
+        bottomBar = new HBox(4);
         bottomBar.setAlignment(Pos.BASELINE_RIGHT);
         bottomBar.getChildren().addAll(cancelBtn, okBtn);
         VBox.setMargin(bottomBar, new Insets(20, 5, 5, 5));
     }
 
-    public Stage getStage(){
-        return IkeaApplication.get().getStage();
+    protected void onActionOk() {
+        if (defaultAction != null) {
+            defaultAction.defaultAction(BaseDialog.this);
+        }
+
+        onOk();
+    }
+
+    public Stage getStage() {
+        return stage;
     }
 
     public void addRow(Node... rows) {
@@ -126,12 +138,21 @@ public class BaseDialog extends StackPane {
         this.allowAutoHide = allowAutoHide;
     }
 
-    protected Label createTitle(String text) {
+    private Label createTitle(String text) {
         Label title = new Label(text);
         title.setId("title");
         title.setMaxWidth(Double.MAX_VALUE);
         title.setAlignment(Pos.CENTER);
+
         return title;
+    }
+
+    public void setTitle(String title) {
+        this.title.setText(title);
+    }
+
+    public void setDefaultAction(DefaultAction defaultAction) {
+        this.defaultAction = defaultAction;
     }
 }
 

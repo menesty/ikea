@@ -26,29 +26,35 @@ public class WindowButtons extends VBox {
         Button closeBtn = new Button();
         closeBtn.setId("window-close");
         closeBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override public void handle(ActionEvent actionEvent) {
+            @Override
+            public void handle(ActionEvent actionEvent) {
                 Platform.exit();
             }
         });
+
         Button minBtn = new Button();
         minBtn.setId("window-min");
         minBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override public void handle(ActionEvent actionEvent) {
+            @Override
+            public void handle(ActionEvent actionEvent) {
                 stage.setIconified(true);
             }
         });
+
         Button maxBtn = new Button();
         maxBtn.setId("window-max");
         maxBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override public void handle(ActionEvent actionEvent) {
-                toogleMaximized();
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                toggleMaximized();
             }
         });
+
         getChildren().addAll(closeBtn, minBtn, maxBtn);
     }
 
-    public void toogleMaximized() {
-        final Screen screen = Screen.getScreensForRectangle(stage.getX(), stage.getY(), 1, 1).get(0);
+    public void toggleMaximized() {
+        final Screen screen = Screen.getScreensForRectangle(stage.getX(), stage.getY(), stage.getWidth(), stage.getHeight()).get(0);
         if (maximized) {
             maximized = false;
             if (backupWindowBounds != null) {
@@ -61,7 +67,11 @@ public class WindowButtons extends VBox {
             maximized = true;
             backupWindowBounds = new Rectangle2D(stage.getX(), stage.getY(), stage.getWidth(), stage.getHeight());
             stage.setX(screen.getVisualBounds().getMinX());
-            stage.setY(screen.getVisualBounds().getMinY());
+            if (screen.getBounds().getMinY() != screen.getVisualBounds().getMinY()) {
+                stage.setY(screen.getBounds().getMinY() + screen.getVisualBounds().getMinY());
+            } else {
+                stage.setY(screen.getVisualBounds().getMinY());
+            }
             stage.setWidth(screen.getVisualBounds().getWidth());
             stage.setHeight(screen.getVisualBounds().getHeight());
         }

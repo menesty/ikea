@@ -27,11 +27,13 @@ public class WindowResizeButton extends Region {
                 e.consume();
             }
         });
+
         setOnMouseDragged(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent e) {
                 ObservableList<Screen> screens = Screen.getScreensForRectangle(stage.getX(), stage.getY(), 1, 1);
                 final Screen screen;
+
                 if (screens.size() > 0)
                     screen = screens.get(0);
                 else
@@ -45,5 +47,7 @@ public class WindowResizeButton extends Region {
                 e.consume();
             }
         });
+
+        setManaged(false);
     }
 }

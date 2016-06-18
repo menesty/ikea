@@ -1,33 +1,56 @@
 package org.menesty.ikea.ui.controls.form;
 
 import javafx.beans.InvalidationListener;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
-import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import org.menesty.ikea.factory.ImageFactory;
-import org.menesty.ikea.ui.controls.dialog.ProductDialog;
+import org.menesty.ikea.ui.table.ArtNumberCell;
 
-public class ProductIdField extends HBox {
+import java.util.regex.Pattern;
+
+public class ProductIdField extends HBox implements Field {
     private TextField productId;
+    private ImageView imageView;
+    private BooleanProperty validProperty;
+    public static final Pattern VALIDATION_PATTERN = Pattern.compile("^(?i)S{0,1}\\d{3}\\.{0,1}\\d{3}\\.{0,1}\\d{2}$");
+
+    public ProductIdField(String label, boolean allowBlank) {
+        this();
+        productId.setLabel(label);
+        productId.setAllowBlank(allowBlank);
+    }
 
     public ProductIdField() {
-        ImageView imageView = ImageFactory.createWeb16Icon();
-        imageView.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent mouseEvent) {
-                ProductDialog.browse(productId.getText());
-            }
-        });
+        imageView = ImageFactory.createWeb22Icon();
+        imageView.setOnMouseClicked(mouseEvent -> ArtNumberCell.browse(productId.getText()));
 
         HBox.setMargin(imageView, new Insets(2, 2, 2, 2));
 
         productId = new TextField();
         HBox.setHgrow(productId, Priority.ALWAYS);
         getChildren().addAll(productId, imageView);
+
+        validProperty = new SimpleBooleanProperty();
+
+        productId.textProperty().addListener(event -> {
+            validProperty.set(isValid());
+        });
+
+        setValidationPattern(VALIDATION_PATTERN);
+    }
+
+    public void setValidationPattern(Pattern pattern) {
+        productId.setValidationPattern(pattern);
+    }
+
+    public void enableBrowse(boolean enable) {
+        imageView.setVisible(enable);
     }
 
     public void setEditable(boolean editable) {
@@ -51,12 +74,7 @@ public class ProductIdField extends HBox {
     }
 
     public void setInvalid(boolean invalid) {
-        productId.getStyleClass().remove("validation-error");
-        productId.getStyleClass().remove("validation-succeed");
-        if (invalid)
-            productId.getStyleClass().add("validation-error");
-        else
-            productId.getStyleClass().add("validation-succeed");
+        productId.setValid(!invalid);
 
     }
 
@@ -67,5 +85,37 @@ public class ProductIdField extends HBox {
 
     public void setChangeListener(InvalidationListener listener) {
         productId.textProperty().addListener(listener);
+    }
+
+    @Override
+    public boolean isValid() {
+        return productId.isValid();
+    }
+
+    @Override
+    public void reset() {
+        productId.setText(null);
+    }
+
+    @Override
+    public String getLabel() {
+        return productId.getLabel();
+    }
+
+    @Override
+    public void setValid(boolean valid) {
+        productId.setValid(valid);
+    }
+
+    public BooleanProperty validProperty() {
+        return validProperty;
+    }
+
+    public void setOnDelayAction(EventHandler<ActionEvent> onDelayAction) {
+        productId.setOnDelayAction(onDelayAction);
+    }
+
+    public void setDelay(int sec) {
+        productId.setDelay(sec);
     }
 }

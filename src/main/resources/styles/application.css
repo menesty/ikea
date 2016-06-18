@@ -58,6 +58,7 @@
     -fx-background-size: cover;
     -fx-background-position: left top;
     -fx-background-repeat: no-repeat;
+    -fx-cursor: hand;
 }
 
 #newButton {
@@ -164,6 +165,7 @@
     -fx-background-image: url("images/window-corner.png");
     -fx-background-position: right 1px bottom 1px;
     -fx-background-repeat: no-repeat;
+    -fx-cursor: s_resize;
 }
 
 #window-close {
@@ -249,6 +251,11 @@
 }
 
 #page-toolbar #SettingsButton {
+    -fx-border-color: transparent transparent transparent #6e737d, transparent transparent transparent rgba(255, 255, 255, 0.3);
+    -fx-border-insets: 0, 0 1 0 1;
+}
+
+#page-toolbar #infoButton {
     -fx-border-color: transparent transparent transparent #6e737d, transparent transparent transparent rgba(255, 255, 255, 0.3);
     -fx-border-insets: 0, 0 1 0 1;
 }
@@ -707,24 +714,60 @@
 
 .validation-error {
     -fx-border-color: #ff0000;
-    -fx-border-style: solid;
-}
-.validation-succeed {
-    -fx-border-color: #008000;
-    -fx-border-style: solid;
+    -fx-border-radius: 2, 2, 2, 2;
 }
 
-.pagination{
-    -fx-base:black;
+.validation-succeed {
+    -fx-border-color: #008000;
+    -fx-border-radius: 2, 2, 2, 2;
 }
+
+.white-border {
+    -fx-border-color: #ffffff;
+    -fx-border-radius: 2, 2, 2, 2;
+}
+
+.gray-border {
+    -fx-border-color: #919191;
+}
+
+.pagination {
+    -fx-base: black;
+}
+
 .pagination .toggle-button {
-    -fx-background-radius:15px;
+    -fx-background-radius: 15px;
     -fx-padding: 0px;
 }
-.pagination .button{
+
+.pagination .button {
     -fx-padding: 5 15 5 16px;
-    -fx-background-radius:15px;
+    -fx-background-radius: 15px;
 }
+
 .pagination .label {
-    -fx-text-fill:white;
+    -fx-text-fill: white;
+}
+
+.application-pane {
+
+    -fx-padding: 15;
+}
+
+.wizard-pane {
+    -fx-background-color: black, white, linear-gradient(rgb(250, 250, 250), rgb(230, 230, 230));
+}
+
+.align-right {
+    -fx-alignment: CENTER-RIGHT;
+}
+.align-center {
+    -fx-alignment: CENTER;
+}
+
+.text-green {
+    -fx-text-fill: #008000;
+}
+.text-red {
+    -fx-text-fill: #ff0000;
 }

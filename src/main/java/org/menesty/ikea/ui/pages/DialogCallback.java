@@ -6,7 +6,7 @@ package org.menesty.ikea.ui.pages;
  * Time: 7:54 PM
  */
 public interface DialogCallback {
-    public abstract void onCancel();
+    void onCancel();
 
-    public abstract void onYes();
+    void onYes();
 }

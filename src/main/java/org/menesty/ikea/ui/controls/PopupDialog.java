@@ -1,9 +1,6 @@
 package org.menesty.ikea.ui.controls;
 
-import javafx.animation.Interpolator;
-import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
-import javafx.animation.TimelineBuilder;
+import javafx.animation.*;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
@@ -38,7 +35,8 @@ public class PopupDialog extends StackPane {
         setOpacity(0);
         setVisible(true);
         setCache(true);
-        TimelineBuilder.create().keyFrames(
+
+        new Timeline(
                 new KeyFrame(Duration.seconds(1),
                         new EventHandler<ActionEvent>() {
                             public void handle(ActionEvent t) {
@@ -46,24 +44,37 @@ public class PopupDialog extends StackPane {
                             }
                         },
                         new KeyValue(opacityProperty(), 1, Interpolator.EASE_BOTH)
-                )).build().play();
+                )
+        ).play();
     }
 
     /**
      * Hide any modal message that is shown
      */
     public void hideModalMessage() {
-        setCache(true);
-        TimelineBuilder.create().keyFrames(
-                new KeyFrame(Duration.seconds(1),
-                        new EventHandler<ActionEvent>() {
-                            public void handle(ActionEvent t) {
-                                setCache(false);
-                                setVisible(false);
-                                getChildren().clear();
-                            }
-                        },
-                        new KeyValue(opacityProperty(), 0, Interpolator.EASE_BOTH)
-                )).build().play();
+        hideModalMessage(true);
+    }
+
+    public void hideModalMessage(boolean animate) {
+        if (animate) {
+            setCache(true);
+
+            new Timeline(
+                    new KeyFrame(Duration.seconds(1),
+                            new EventHandler<ActionEvent>() {
+                                public void handle(ActionEvent t) {
+                                    setCache(false);
+                                    setVisible(false);
+                                    getChildren().clear();
+                                }
+                            },
+                            new KeyValue(opacityProperty(), 0, Interpolator.EASE_BOTH)
+                    )
+            ).play();
+        } else {
+            setCache(false);
+            setVisible(false);
+            getChildren().clear();
+        }
     }
 }
