@@ -94,7 +94,7 @@ public interface I18nKeys {
   String EPP_EXPORT = "epp.export";
   String REMOVE_FROM_ORDER = "remove.from.order";
   String RETURN_BACK = "return.back";
-  String RETURN_BACK_INVOICE_ITEM_ORDER_QUESTION = "return.back.invoice.item.order.question";
+  String RETURN_BACK_INVOICE_ITEM_ORDER = "return.back.invoice.item.order";
   String INVOICE_ITEM_SEARCH = "invoice.item.search";
   String ADD_TO_COMBO = "add.to.combo";
   String CHOICE_COMBO_DIALOG = "choice.combo.dialog";
@@ -171,4 +171,8 @@ public interface I18nKeys {
   String COMBO_LACK = "combo.lack";
   String EXPECTED_COUNT = "expected.count";
   String BOUGHT_COUNT = "bought.count";
+  String RETURN_BACK_ITEMS = "return.back.items";
+  String DEFECT_TYPE = "defect.type";
+  String LOCATION = "location";
+  String STOCK_CRASHED = "stock.crashed";
 }

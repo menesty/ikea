@@ -244,5 +244,7 @@ public class ComboBoxField<T> extends HBox implements Field {
   public void setTooltip(String tooltip) {
     comboBox.setTooltip(ToolTipUtil.create(tooltip));
   }
+
+
 }
 

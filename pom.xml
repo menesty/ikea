@@ -189,7 +189,7 @@
         </dependency>
 
         <!-- JPA -->
-        <dependency>
+        <!--<dependency>
             <groupId>com.jolbox</groupId>
             <artifactId>bonecp</artifactId>
             <version>0.7.1.RELEASE</version>
@@ -198,12 +198,12 @@
             <groupId>javax.validation</groupId>
             <artifactId>validation-api</artifactId>
             <version>1.0.0.GA</version>
-        </dependency>
-        <dependency>
+        </dependency>-->
+        <!--<dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <version>1.3.174</version>
-        </dependency>
+        </dependency>-->
 
         <!-- <dependency>
              <groupId>com.itextpdf</groupId>
@@ -212,11 +212,11 @@
          </dependency>-->
 
 
-        <dependency>
+       <!-- <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>org.eclipse.persistence.jpa</artifactId>
             <version>2.5.0</version>
-        </dependency>
+        </dependency>-->
 
         <!-- Json -->
         <dependency>

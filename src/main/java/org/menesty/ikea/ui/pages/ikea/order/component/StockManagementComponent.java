@@ -1,48 +1,41 @@
 package org.menesty.ikea.ui.pages.ikea.order.component;
 
-import javafx.beans.property.*;
 import javafx.collections.ListChangeListener;
-import javafx.concurrent.Task;
 import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
-import javafx.stage.Stage;
 import org.menesty.ikea.core.component.DialogSupport;
 import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.i18n.I18n;
 import org.menesty.ikea.i18n.I18nKeys;
 import org.menesty.ikea.lib.domain.Profile;
 import org.menesty.ikea.lib.domain.ikea.IkeaProduct;
+import org.menesty.ikea.lib.domain.ikea.logistic.invoice.Invoice;
 import org.menesty.ikea.lib.domain.ikea.logistic.order.OrderPurchaseDifferentItem;
 import org.menesty.ikea.lib.domain.ikea.logistic.stock.StockItemDto;
-import org.menesty.ikea.lib.domain.ikea.logistic.stock.StorageCalculationResultDto;
 import org.menesty.ikea.lib.domain.order.IkeaClientOrderItemDto;
 import org.menesty.ikea.lib.domain.order.IkeaOrderDetail;
 import org.menesty.ikea.lib.dto.IkeaOrderItem;
-import org.menesty.ikea.lib.dto.ikea.order.NewOrderItemInfo;
-import org.menesty.ikea.service.AbstractAsyncService;
 import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.ui.controls.TotalStatusPanel;
 import org.menesty.ikea.ui.controls.dialog.Dialog;
 import org.menesty.ikea.ui.controls.pane.LoadingPane;
 import org.menesty.ikea.ui.controls.table.EntityCheckBoxHolder;
-import org.menesty.ikea.ui.controls.table.component.BaseTableView;
-import org.menesty.ikea.ui.controls.table.component.EntityCheckBoxTableColumn;
 import org.menesty.ikea.ui.pages.DialogCallback;
-import org.menesty.ikea.ui.pages.EntityDialogCallback;
-import org.menesty.ikea.ui.pages.ikea.order.component.service.AddComboPartService;
+import org.menesty.ikea.ui.pages.ikea.order.component.service.*;
+import org.menesty.ikea.ui.pages.ikea.order.component.stock.OverBoughtComponent;
+import org.menesty.ikea.ui.pages.ikea.order.component.stock.ReturnItemTableView;
+import org.menesty.ikea.ui.pages.ikea.order.component.stock.StockCrashComponent;
 import org.menesty.ikea.ui.pages.ikea.order.component.table.StockItemTableView;
-import org.menesty.ikea.ui.pages.ikea.order.dialog.ChoiceCountDialog;
-import org.menesty.ikea.ui.pages.ikea.order.dialog.combo.OrderViewComboDialog;
 import org.menesty.ikea.ui.pages.ikea.order.dialog.export.IkeaSiteExportDialog;
 import org.menesty.ikea.ui.pages.wizard.order.step.service.AbstractExportAsyncService;
 import org.menesty.ikea.ui.table.ArtNumberCell;
-import org.menesty.ikea.util.*;
+import org.menesty.ikea.util.ColumnUtil;
+import org.menesty.ikea.util.FileChooserUtil;
+import org.menesty.ikea.util.ToolTipUtil;
 
 import java.io.File;
 import java.math.BigDecimal;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -59,54 +52,46 @@ public class StockManagementComponent extends BorderPane {
   private AbstractExportAsyncService<XlsExportInfo> xlsResultExportAsyncService;
   private ListView<Profile> profileListView;
   private TableView<StockItemDto> readyStockItemTableView;
-  private BaseTableView<EntityCheckBoxHolder<StockItemDto>> overBoughTableView;
+  private OverBoughtComponent overBoughtComponent;
   private TableView<OrderPurchaseDifferentItem> orderPurchaseDifferentItemTableView;
   private TableView<StockItemDto> storageLackTableView;
   private ComboLackInfoComponent comboLackInfoComponent;
-
   private StorageCalculationService storageCalculationService;
   private AddToOrderItemService addToOrderItemService;
   private AddComboPartService addComboPartService;
   private IkeaProcessOrderResetStateService ikeaProcessOrderResetStateService;
-
-  private Long ikeaProcessOrderId;
-  private OrderViewComboDialog orderViewComboDialog;
+  private ReturnItemService returnItemService;
 
   private TotalStatusPanel storageLackTotalStatusPanel;
-  private TotalStatusPanel overBoughTotalStatusPanel;
+  private ReturnItemTableView returnItemTableView;
+  private StockCrashComponent stockCrashComponent;
+  private IkeaOrderDetail ikeaOrderDetail;
 
   public StockManagementComponent(DialogSupport dialogSupport) {
     StackPane mainPane = new StackPane();
 
-    HBox groupPane = new HBox();
-    groupPane.getChildren().addAll(initLeftPane(), initRightPane(dialogSupport));
 
-    LoadingPane loadingPane = new LoadingPane();
-
-    mainPane.getChildren().addAll(groupPane, loadingPane);
-
+    //Storage calculation result service
     storageCalculationService = new StorageCalculationService();
     storageCalculationService.setOnSucceededListener(value -> {
       readyStockItemTableView.getItems().setAll(value.getReadyStockItems());
-      overBoughTableView.getItems().setAll(
+      overBoughtComponent.setItems(
           value.getOverBoughtStockItems().stream()
               .map(stockItemDto -> new EntityCheckBoxHolder<>(false, stockItemDto))
               .collect(Collectors.toList())
       );
       storageLackTableView.getItems().setAll(value.getLackStockItems());
 
-      BigDecimal overBoughTotal = value.getOverBoughtStockItems().stream()
-          .map(StockItemDto::getAmount)
-          .reduce(BigDecimal.ZERO, BigDecimal::add);
-
       BigDecimal storageLackTotal = value.getLackStockItems().stream()
           .map(StockItemDto::getAmount)
           .reduce(BigDecimal.ZERO, BigDecimal::add);
 
       storageLackTotalStatusPanel.setTotal(storageLackTotal);
-      overBoughTotalStatusPanel.setTotal(overBoughTotal);
 
       orderPurchaseDifferentItemTableView.getItems().setAll(value.getOrderPurchaseDifferentItems());
+
+      returnItemTableView.getItems().setAll(value.getReturnedItems());
+      stockCrashComponent.setItems(value.getStockCrashItems());
 
       comboLackInfoComponent.setCombos(value.getNotCompleteCombos());
     });
@@ -129,6 +114,14 @@ public class StockManagementComponent extends BorderPane {
       storageCalculationService.restart();
     });
 
+    returnItemService = new ReturnItemService();
+    returnItemService.setOnSucceededListener(value -> {
+      if (value) {
+        storageCalculationService.setUploading(false);
+        storageCalculationService.restart();
+      }
+    });
+
     xlsResultExportAsyncService = new AbstractExportAsyncService<XlsExportInfo>() {
       @Override
       protected void export(File file, XlsExportInfo param) {
@@ -136,7 +129,14 @@ public class StockManagementComponent extends BorderPane {
       }
     };
 
-    loadingPane.bindTask(storageCalculationService, addToOrderItemService, addComboPartService, ikeaProcessOrderResetStateService);
+    HBox groupPane = new HBox();
+    groupPane.getChildren().addAll(initLeftPane(), initRightPane(dialogSupport));
+
+    LoadingPane loadingPane = new LoadingPane();
+
+    mainPane.getChildren().addAll(groupPane, loadingPane);
+
+    loadingPane.bindTask(storageCalculationService, addToOrderItemService, addComboPartService, ikeaProcessOrderResetStateService, returnItemService);
     setCenter(mainPane);
 
     ToolBar toolBar = new ToolBar();
@@ -152,7 +152,7 @@ public class StockManagementComponent extends BorderPane {
 
         @Override
         public void onYes() {
-          ikeaProcessOrderResetStateService.setIkeaProcessOrderId(ikeaProcessOrderId);
+          ikeaProcessOrderResetStateService.setIkeaProcessOrderId(ikeaOrderDetail.getId());
           ikeaProcessOrderResetStateService.restart();
         }
       }));
@@ -168,7 +168,7 @@ public class StockManagementComponent extends BorderPane {
 
         if (selectedFile != null) {
           xlsResultExportAsyncService.setFile(selectedFile);
-          xlsResultExportAsyncService.setParam(new XlsExportInfo(convert(overBoughTableView.getItems()), storageLackTableView.getItems()));
+          xlsResultExportAsyncService.setParam(new XlsExportInfo(convert(overBoughtComponent.getItems()), storageLackTableView.getItems()));
           xlsResultExportAsyncService.restart();
         }
       });
@@ -190,14 +190,16 @@ public class StockManagementComponent extends BorderPane {
         .distinct()
         .collect(toList());
     profileListView.getItems().setAll(profiles);
+    this.ikeaOrderDetail = ikeaOrderDetail;
 
-    ikeaProcessOrderId = ikeaOrderDetail.getId();
+    overBoughtComponent.setIkeaProcessOrderId(ikeaOrderDetail.getId());
+
 
     calculate(false);
   }
 
   private void calculate(boolean unload) {
-    storageCalculationService.setIkeaProcessOrderId(ikeaProcessOrderId,
+    storageCalculationService.setIkeaProcessOrderId(ikeaOrderDetail.getId(),
         profileListView.getItems().stream()
             .map(Profile::getId)
             .collect(Collectors.toList()),
@@ -255,168 +257,13 @@ public class StockManagementComponent extends BorderPane {
     {
       Tab tab = new Tab(I18n.UA.getString(I18nKeys.OVER_BOUGH));
 
-      overBoughTableView = new BaseTableView<>();
-      overBoughTableView.setEditable(true);
-      overBoughTableView.setRowRenderListener((row, newValue) -> {
-        row.setContextMenu(null);
-
-        if (newValue != null) {
-          ContextMenu contextMenu = new ContextMenu();
-
-          {
-            MenuItem menuItem = new MenuItem(I18n.UA.getString(I18nKeys.ADD_TO_ORDER));
-            menuItem.setOnAction(event -> {
-              ChoiceCountDialog choiceCountDialog = new ChoiceCountDialog(dialogSupport.getStage());
-              choiceCountDialog.maxValue(newValue.getItem().getArtNumber(), newValue.getItem().getInvoiceItemId(), profileListView.getItems(), newValue.getItem().getCount(), new EntityDialogCallback<NewOrderItemInfo>() {
-                @Override
-                public void onSave(NewOrderItemInfo newOrderItemInfo, Object... params) {
-                  dialogSupport.hidePopupDialog();
-
-                  addToOrderItemService.setChoiceCountResult(ikeaProcessOrderId, Collections.singletonList(newOrderItemInfo));
-                  addToOrderItemService.restart();
-                }
-
-                @Override
-                public void onCancel() {
-                  dialogSupport.hidePopupDialog();
-                }
-              });
-
-              dialogSupport.showPopupDialog(choiceCountDialog);
-            });
-
-            contextMenu.getItems().add(menuItem);
-          }
-          {
-            MenuItem menuItem = new MenuItem(I18n.UA.getString(I18nKeys.RETURN_BACK));
-            menuItem.setOnAction(event -> Dialog.confirm(dialogSupport, I18n.UA.getString(I18nKeys.RETURN_BACK_INVOICE_ITEM_ORDER_QUESTION), new DialogCallback() {
-              @Override
-              public void onCancel() {
-
-              }
-
-              @Override
-              public void onYes() {
-
-              }
-            }));
-            contextMenu.getItems().add(menuItem);
-          }
-
-          {
-            MenuItem menuItem = new MenuItem(I18n.UA.getString(I18nKeys.ADD_TO_COMBO));
-            menuItem.setOnAction(event -> {
-              OrderViewComboDialog dialog = getOrderViewComboDialog(dialogSupport.getStage());
-
-              dialog.loadCombos(ikeaProcessOrderId, newValue.getItem().getArtNumber(), new EntityDialogCallback<OrderViewComboDialog.ComboSelectResult>() {
-                @Override
-                public void onSave(OrderViewComboDialog.ComboSelectResult comboSelectResult, Object... params) {
-                  addComboPartService.setData(comboSelectResult);
-                  addComboPartService.restart();
-                  dialogSupport.hidePopupDialog();
-                }
-
-                @Override
-                public void onCancel() {
-                  dialogSupport.hidePopupDialog();
-                }
-              });
-
-              dialogSupport.showPopupDialog(dialog);
-
-            });
-
-            contextMenu.getItems().add(menuItem);
-          }
-
-          row.setContextMenu(contextMenu);
+      tab.setClosable(false);
+      tab.setContent(overBoughtComponent = new OverBoughtComponent(dialogSupport, addToOrderItemService, addComboPartService, returnItemService) {
+        @Override
+        public List<Profile> getProfiles() {
+          return profileListView.getItems();
         }
       });
-
-      {
-        TableColumn<EntityCheckBoxHolder<StockItemDto>, Boolean> checked = new EntityCheckBoxTableColumn<>();
-        checked.setCellValueFactory(new PropertyValueFactory<>("checked"));
-        overBoughTableView.getColumns().add(checked);
-      }
-
-      {
-        TableColumn<EntityCheckBoxHolder<StockItemDto>, String> column = new TableColumn<>(I18n.UA.getString(I18nKeys.ART_NUMBER));
-
-        column.setMinWidth(140);
-        column.setCellValueFactory(ColumnUtil.column("item.artNumber"));
-        column.setCellFactory(ArtNumberCell::new);
-        overBoughTableView.getColumns().add(column);
-      }
-
-      {
-        TableColumn<EntityCheckBoxHolder<StockItemDto>, String> column = new TableColumn<>(I18n.UA.getString(I18nKeys.SHORT_NAME));
-
-        column.setMinWidth(140);
-        column.setCellValueFactory(ColumnUtil.column("item.shortName"));
-
-        overBoughTableView.getColumns().add(column);
-      }
-
-      {
-        TableColumn<EntityCheckBoxHolder<StockItemDto>, String> column = new TableColumn<>(I18n.UA.getString(I18nKeys.COUNT));
-
-        column.setMinWidth(60);
-        column.setCellValueFactory(ColumnUtil.number("item.count"));
-
-        overBoughTableView.getColumns().add(column);
-      }
-
-      ToolBar overBoughToolBar = new ToolBar();
-
-      {
-        SplitMenuButton button = new SplitMenuButton();
-        button.setText("Actions");
-
-        {
-          MenuItem menuItem = new MenuItem(I18n.UA.getString(I18nKeys.ADD_CHECKED_TO_ORDER));
-          menuItem.setOnAction(event -> {
-            //TODO FIX ME SHOW DIALOG TO CHOOSE PROFILE
-            Profile profile = profileListView.getItems().get(0);
-
-            List<NewOrderItemInfo> newOrderItemInfos = overBoughTableView.getItems().stream()
-                .filter(EntityCheckBoxHolder::isChecked)
-                .map(stockItemDtoEntityCheckBoxHolder -> {
-                  StockItemDto itemDto = stockItemDtoEntityCheckBoxHolder.getItem();
-
-                  return new NewOrderItemInfo(profile.getId(), itemDto.getInvoiceItemId(), itemDto.getCount());
-                }).collect(Collectors.toList());
-
-            if (!newOrderItemInfos.isEmpty()) {
-              Dialog.confirm(dialogSupport, I18n.UA.getString(I18nKeys.WARNING), I18n.UA.getString(I18nKeys.ALL_CHECKED_ITEMS_WILL_ADD_TO_ORDER_WITH_FULL_COUNT), new DialogCallback() {
-                @Override
-                public void onCancel() {
-                  dialogSupport.hidePopupDialog();
-                }
-
-                @Override
-                public void onYes() {
-                  addToOrderItemService.setChoiceCountResult(ikeaProcessOrderId, newOrderItemInfos);
-                  addToOrderItemService.restart();
-                }
-              });
-            }
-          });
-
-          button.getItems().add(menuItem);
-
-          overBoughToolBar.getItems().add(button);
-        }
-      }
-
-      BorderPane main = new BorderPane();
-
-      main.setTop(overBoughToolBar);
-      main.setCenter(overBoughTableView);
-      main.setBottom(overBoughTotalStatusPanel = new TotalStatusPanel());
-
-      tab.setClosable(false);
-      tab.setContent(main);
-
 
       tabPane.getTabs().add(tab);
     }
@@ -523,23 +370,39 @@ public class StockManagementComponent extends BorderPane {
 
     {
       Tab tab = new Tab(I18n.UA.getString(I18nKeys.COMBO_LACK));
-      tab.setClosable(false);
 
+      tab.setClosable(false);
       tab.setContent(comboLackInfoComponent = new ComboLackInfoComponent());
+
+      tabPane.getTabs().add(tab);
+    }
+
+    {
+      Tab tab = new Tab(I18n.UA.getString(I18nKeys.RETURN_BACK_ITEMS));
+
+      tab.setClosable(false);
+      tab.setContent(returnItemTableView = new ReturnItemTableView());
+
+      tabPane.getTabs().add(tab);
+    }
+
+    {
+      Tab tab = new Tab(I18n.UA.getString(I18nKeys.STOCK_CRASHED));
+
+      tab.setClosable(false);
+      tab.setContent(stockCrashComponent = new StockCrashComponent(dialogSupport) {
+
+        @Override
+        public List<Invoice> getInvoices() {
+          return ikeaOrderDetail.getInvoices();
+        }
+      });
 
       tabPane.getTabs().add(tab);
     }
 
     HBox.setHgrow(tabPane, Priority.ALWAYS);
     return tabPane;
-  }
-
-  private OrderViewComboDialog getOrderViewComboDialog(Stage stage) {
-    if (orderViewComboDialog == null) {
-      orderViewComboDialog = new OrderViewComboDialog(stage);
-    }
-
-    return orderViewComboDialog;
   }
 
 
@@ -553,88 +416,6 @@ public class StockManagementComponent extends BorderPane {
     return exportDialog;
   }
 
-}
-
-class StorageCalculationService extends AbstractAsyncService<StorageCalculationResultDto> {
-  private LongProperty ikeaProcessOrderIdProperty = new SimpleLongProperty();
-  private ObjectProperty<List<Long>> profileIdsProperty = new SimpleObjectProperty<>();
-  private BooleanProperty unloadingProperty = new SimpleBooleanProperty();
-
-  @Override
-  protected Task<StorageCalculationResultDto> createTask() {
-    final Long _ikeaProcessOrderId = ikeaProcessOrderIdProperty.get();
-    final List<Long> _profileIds = profileIdsProperty.get();
-    final boolean _unloading = unloadingProperty.get();
-
-    return new Task<StorageCalculationResultDto>() {
-      @Override
-      protected StorageCalculationResultDto call() throws Exception {
-        APIRequest apiRequest;
-
-        if (!_unloading) {
-          apiRequest = HttpServiceUtil.get("/ikea-order/storage/calculate/" + _ikeaProcessOrderId);
-        } else {
-          apiRequest = HttpServiceUtil.get("/ikea-order/storage/unload/" + _ikeaProcessOrderId);
-        }
-
-        return apiRequest.postData(_profileIds, StorageCalculationResultDto.class);
-      }
-    };
-  }
-
-  public void setUploading(boolean unloading) {
-    unloadingProperty.set(unloading);
-  }
-
-  public void setIkeaProcessOrderId(Long ikeaProcessOrderId, List<Long> profileIds, boolean unloading) {
-    ikeaProcessOrderIdProperty.set(ikeaProcessOrderId);
-    profileIdsProperty.set(profileIds);
-    setUploading(unloading);
-  }
-}
-
-class IkeaProcessOrderResetStateService extends AbstractAsyncService<Boolean> {
-  private LongProperty ikeaProcessOrderIdProperty = new SimpleLongProperty();
-
-  @Override
-  protected Task<Boolean> createTask() {
-    final Long _ikeaProcessOrderId = ikeaProcessOrderIdProperty.get();
-    return new Task<Boolean>() {
-      @Override
-      protected Boolean call() throws Exception {
-        APIRequest request = HttpServiceUtil.get("/ikea-order/warehouse/" + _ikeaProcessOrderId + "/reset");
-        return request.getData(Boolean.class);
-      }
-    };
-  }
-
-  public void setIkeaProcessOrderId(Long ikeaProcessOrderId) {
-    this.ikeaProcessOrderIdProperty.setValue(ikeaProcessOrderId);
-  }
-}
-
-class AddToOrderItemService extends AbstractAsyncService<Void> {
-  private ObjectProperty<List<NewOrderItemInfo>> choiceCountResultProperty = new SimpleObjectProperty<>();
-  private LongProperty ikeaProcessOrderIdProperty = new SimpleLongProperty();
-
-  @Override
-  protected Task<Void> createTask() {
-    final List<NewOrderItemInfo> _newOrderItemInfo = choiceCountResultProperty.get();
-    final Long _ikeaProcessOrderId = ikeaProcessOrderIdProperty.get();
-    return new Task<Void>() {
-      @Override
-      protected Void call() throws Exception {
-        APIRequest request = HttpServiceUtil.get("/ikea-order/order/item/add/" + _ikeaProcessOrderId);
-        request.postData(_newOrderItemInfo);
-        return null;
-      }
-    };
-  }
-
-  public void setChoiceCountResult(Long ikeaProcessOrderId, List<NewOrderItemInfo> newOrderItemInfos) {
-    choiceCountResultProperty.setValue(newOrderItemInfos);
-    ikeaProcessOrderIdProperty.setValue(ikeaProcessOrderId);
-  }
 }
 
 class XlsExportInfo {
@@ -654,5 +435,3 @@ class XlsExportInfo {
     return lack;
   }
 }
-
-

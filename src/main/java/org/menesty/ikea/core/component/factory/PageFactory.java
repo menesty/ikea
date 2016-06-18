@@ -1,6 +1,7 @@
 package org.menesty.ikea.core.component.factory;
 
-import org.menesty.ikea.ui.pages.*;
+import org.menesty.ikea.ui.pages.BasePage;
+import org.menesty.ikea.ui.pages.SiteOrderPage;
 import org.menesty.ikea.ui.pages.ikea.contraget.ContragentPage;
 import org.menesty.ikea.ui.pages.ikea.log.WarehouseScanLogPage;
 import org.menesty.ikea.ui.pages.ikea.order.IkeaOrderViewPage;
@@ -20,23 +21,7 @@ import org.menesty.ikea.ui.pages.wizard.order.OrderCreateWizardPage;
 public class PageFactory {
 
   public static BasePage createPage(Class<? extends BasePage> page) {
-    if (OrderListPage.class.equals(page))
-      return new OrderListPage();
-    else if (OrderViewPage.class.equals(page))
-      return new OrderViewPage();
-    else if (UserPage.class.equals(page))
-      return new UserPage();
-    else if (WarehousePage.class.equals(page))
-      return new WarehousePage();
-    else if (CustomInvoicePage.class.equals(page))
-      return new CustomInvoicePage();
-    else if (IkeaParagonPage.class.equals(page))
-      return new IkeaParagonPage();
-    else if (IkeaShopPage.class.equals(page))
-      return new IkeaShopPage();
-    else if (InvoicePdfItemSearchPage.class.equals(page))
-      return new InvoicePdfItemSearchPage();
-    else if (SiteOrderPage.class.equals(page)) {
+    if (SiteOrderPage.class.equals(page)) {
       return new SiteOrderPage();
     } else if (OrderCreateWizardPage.class.equals(page)) {
       return new OrderCreateWizardPage();

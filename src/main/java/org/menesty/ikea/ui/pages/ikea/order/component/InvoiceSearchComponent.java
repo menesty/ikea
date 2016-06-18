@@ -11,7 +11,6 @@ import org.menesty.ikea.lib.domain.ikea.logistic.invoice.InvoiceItem;
 import org.menesty.ikea.lib.domain.ikea.logistic.invoice.InvoiceSearchItem;
 import org.menesty.ikea.ui.controls.form.TextField;
 import org.menesty.ikea.ui.pages.ikea.order.component.table.InvoiceItemSearchResultTableView;
-import org.menesty.ikea.ui.table.ArtNumberCell;
 import org.menesty.ikea.util.ColumnUtil;
 
 import java.util.Collection;
@@ -82,22 +81,16 @@ public class InvoiceSearchComponent extends BorderPane {
           }
 
           return items.stream().map(invoiceItem -> {
-            InvoiceSearchItem item = new InvoiceSearchItem();
+            InvoiceSearchItem item = InvoiceSearchItem.valueOf(invoiceItem);
 
-            item.setArtNumber(invoiceItem.getArtNumber());
-            item.setPrice(invoiceItem.getPrice());
-            item.setCount(invoiceItem.getCount());
             item.setInvoiceName(invoice.getInvoiceName());
             item.setParagonNumber(invoice.getParagonNumber());
-            item.setShortName(invoiceItem.getShortName());
-            item.setWat(invoiceItem.getWat());
 
             return item;
           }).collect(Collectors.toList());
 
         }).flatMap(Collection::stream).collect(Collectors.toList());
 
-    invoiceItemSearchResultTableView.getItems().clear();
-    invoiceItemSearchResultTableView.getItems().addAll(invoiceSearchItems);
+    invoiceItemSearchResultTableView.getItems().setAll(invoiceSearchItems);
   }
 }

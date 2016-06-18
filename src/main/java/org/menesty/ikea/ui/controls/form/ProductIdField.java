@@ -10,7 +10,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import org.menesty.ikea.factory.ImageFactory;
-import org.menesty.ikea.ui.controls.dialog.ProductDialog;
+import org.menesty.ikea.ui.table.ArtNumberCell;
 
 import java.util.regex.Pattern;
 
@@ -28,7 +28,7 @@ public class ProductIdField extends HBox implements Field {
 
     public ProductIdField() {
         imageView = ImageFactory.createWeb22Icon();
-        imageView.setOnMouseClicked(mouseEvent -> ProductDialog.browse(productId.getText()));
+        imageView.setOnMouseClicked(mouseEvent -> ArtNumberCell.browse(productId.getText()));
 
         HBox.setMargin(imageView, new Insets(2, 2, 2, 2));
 

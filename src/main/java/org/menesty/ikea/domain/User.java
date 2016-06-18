@@ -1,61 +1,41 @@
 package org.menesty.ikea.domain;
 
-import javax.persistence.*;
 
-@Entity
-public class User extends Identifiable {
+public class User {
 
-    private String login;
+  private String login;
 
-    private String password;
+  private String password;
 
-    private boolean comboUser;
+  public User() {
 
-    public User() {
+  }
 
-    }
+  public User(String login, String password) {
+    this.login = login;
+    this.password = password;
+  }
 
-    public User(String login, String password) {
-        this.login = login;
-        this.password = password;
-    }
 
-    public boolean isComboUser() {
-        return comboUser;
-    }
+  public String getLogin() {
+    return login;
+  }
 
-    public void setComboUser(boolean comboUser) {
-        this.comboUser = comboUser;
-    }
+  public void setLogin(String login) {
+    this.login = login;
+  }
 
-    public String getLogin() {
-        return login;
-    }
+  public String getPassword() {
+    return password;
+  }
 
-    public void setLogin(String login) {
-        this.login = login;
-    }
+  public void setPassword(String password) {
+    this.password = password;
+  }
 
-    public String getPassword() {
-        return password;
-    }
+  @Override
+  public String toString() {
+    return login;
+  }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    @Override
-    public String toString() {
-        return login;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Identifiable)) return false;
-
-        Identifiable that = (Identifiable) o;
-
-        return getId().equals(that.getId());
-    }
 }

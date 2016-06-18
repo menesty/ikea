@@ -4,7 +4,6 @@ import javafx.application.Application;
 import javafx.application.ConditionalFeature;
 import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
-import javafx.concurrent.Task;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -22,7 +21,6 @@ import org.menesty.ikea.core.component.ui.ApplicationControlToolBar;
 import org.menesty.ikea.core.component.ui.ApplicationWindow;
 import org.menesty.ikea.core.component.ui.BreadCrumbToolBar;
 import org.menesty.ikea.core.component.ui.WorkspaceArea;
-import org.menesty.ikea.db.DatabaseService;
 import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.ui.controls.PopupDialog;
@@ -31,7 +29,8 @@ import org.menesty.ikea.ui.controls.dialog.BaseDialog;
 import org.menesty.ikea.ui.controls.dialog.ErrorConsoleDialog;
 import org.menesty.ikea.ui.controls.dialog.InfoDialog;
 import org.menesty.ikea.ui.controls.pane.LoadingPane;
-import org.menesty.ikea.ui.pages.*;
+import org.menesty.ikea.ui.pages.BasePage;
+import org.menesty.ikea.ui.pages.Pages;
 import org.menesty.ikea.ui.pages.ikea.contraget.ContragentPage;
 import org.menesty.ikea.ui.pages.ikea.log.WarehouseScanLogPage;
 import org.menesty.ikea.ui.pages.ikea.order.IkeaOrderViewPage;
@@ -79,7 +78,6 @@ public class IkeaApplication extends Application implements DialogSupport {
     pageArea = new WorkspaceArea(breadCrumb, this);
 
 
-    pageArea.addCategory(createIkeaCategoryGroup());
     pageArea.addCategory(createSiteGroup());
 
     BreadCrumbToolBar.ControlActionListener controlActionListener = new BreadCrumbToolBar.ControlActionListener() {
@@ -126,28 +124,6 @@ public class IkeaApplication extends Application implements DialogSupport {
     rootPane.add(modalDimmer = new PopupDialog());
 
     show(stage, rootPane);
-    initDatabase();
-  }
-
-  private void initDatabase() {
-    Task<Void> initDbTask = DatabaseService.init();
-    loadingPane.bindTask(initDbTask);
-    initDbTask.setOnSucceeded(workerStateEvent -> pageArea.navigate(pageArea.getCategories().get(0).getItems().get(0)));
-
-  }
-
-  private CategoryGroup createIkeaCategoryGroup() {
-    CategoryGroup group = new CategoryGroup("IKEA");
-    PageDescription orderList = new PageDescription(Pages.ORDERS.getTitle(), ImageFactory.createOrders72Icon(), OrderListPage.class);
-    orderList.addPage(new PageDescription(Pages.CUSTOMER_ORDER.getTitle(), OrderViewPage.class, false));
-    group.add(orderList);
-
-    group.add(new PageDescription(Pages.INVOICE.getTitle(), ImageFactory.createInvoice72Icon(), CustomInvoicePage.class));
-    group.add(new PageDescription(Pages.IKEA_PARAGONS.getTitle(), ImageFactory.createIkea72Icon(), IkeaParagonPage.class));
-    group.add(new PageDescription(Pages.INVOICE_ITEM_SEARCH.getTitle(), ImageFactory.createSearch72Icon(), InvoicePdfItemSearchPage.class));
-
-
-    return group;
   }
 
   private CategoryGroup createSiteGroup() {
@@ -254,7 +230,6 @@ public class IkeaApplication extends Application implements DialogSupport {
   @Override
   public void stop() throws Exception {
     super.stop();
-    DatabaseService.close();
   }
 
 

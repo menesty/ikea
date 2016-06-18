@@ -81,7 +81,6 @@ public class RowPanel extends GridPane {
                 getChildren().removeAll(currentRow.getElements());
             }
         }
-
     }
 
     public int getCurrentRow() {

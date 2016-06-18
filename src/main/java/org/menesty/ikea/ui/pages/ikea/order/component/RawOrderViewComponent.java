@@ -1,8 +1,11 @@
 package org.menesty.ikea.ui.pages.ikea.order.component;
 
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 import org.menesty.ikea.core.component.DialogSupport;
 import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.i18n.I18n;
@@ -23,6 +26,7 @@ import org.menesty.ikea.ui.pages.ikea.order.component.service.IkeaProductUpdateS
 import org.menesty.ikea.ui.pages.ikea.order.dialog.export.IkeaSiteExportDialog;
 import org.menesty.ikea.ui.pages.ikea.order.dialog.product.ProductEditDialog;
 import org.menesty.ikea.ui.table.ArtNumberCell;
+import org.menesty.ikea.ui.table.ProductImageCell;
 import org.menesty.ikea.util.ColumnUtil;
 import org.menesty.ikea.util.NumberUtil;
 import org.menesty.ikea.util.ToolTipUtil;
@@ -165,6 +169,16 @@ public class RawOrderViewComponent extends BorderPane {
       TableColumn<IkeaOrderItem, Number> column = new TableColumn<>();
       column.setMaxWidth(40);
       column.setCellValueFactory(ColumnUtil.<IkeaOrderItem>indexColumn());
+
+      tableView.getColumns().add(column);
+    }
+
+    {
+      TableColumn<IkeaOrderItem, String> column = new TableColumn<>();
+
+      column.setMinWidth(120);
+      column.setCellFactory(ProductImageCell::new);
+      column.setCellValueFactory(ColumnUtil.column("product.artNumber"));
 
       tableView.getColumns().add(column);
     }

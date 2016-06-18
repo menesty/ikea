@@ -7,6 +7,7 @@ import org.jxls.common.CellRef;
 import org.jxls.common.Context;
 import org.jxls.transform.Transformer;
 import org.jxls.util.TransformerFactory;
+import org.menesty.ikea.domain.ComparatorProductPrice;
 import org.menesty.ikea.i18n.I18n;
 import org.menesty.ikea.i18n.I18nKeys;
 import org.menesty.ikea.lib.domain.ikea.logistic.resumption.ResumptionItem;
@@ -37,6 +38,7 @@ public class XlsExportService {
   private static final String PRODUCT_BUY_RESULT_TEMPLATE = "buy_result";
   private static final String RESUMPTION_ITEM_TEMPLATE = "resumption_item";
   private static final String SUMMARY_ORDER_REPORT_TEMPLATE = "summary_order_report_template";
+  private static final String PRICE_COMPARATOR_TEMPLATE = "price_comparator_template";
 
   public void exportProductPriceMismatchNotAvailable(File targetFile, List<String> items, List<ProductPriceMismatch> mismatches) {
     Context context = new Context();
@@ -52,6 +54,13 @@ public class XlsExportService {
     context.putVar("comboReportItems", summaryOrderReport.getComboReportItems());
 
     transformSingleSheet(targetFile, SUMMARY_ORDER_REPORT_TEMPLATE, context, Arrays.asList("OrderItems!A1", "OrderCombos!A1"));
+  }
+
+  public void exportPriceComparator(File targetFile, List<ComparatorProductPrice> items) {
+    Context context = new Context();
+    context.putVar("items", items);
+
+    transformSingleSheet(targetFile, PRICE_COMPARATOR_TEMPLATE, context, Collections.singletonList("Price!A1"));
   }
 
   private void transformSingleSheet(File targetFile, String templateName, Context context, List<String> cellRef) {

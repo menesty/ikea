@@ -9,8 +9,11 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import org.menesty.ikea.factory.ImageFactory;
-import org.menesty.ikea.ui.controls.dialog.ProductDialog;
 
+import java.awt.*;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,11 +25,10 @@ import java.util.regex.Pattern;
 public class ArtNumberCell<T> extends TableCell<T, String> {
   private Label numberLabel;
   private HBox content;
-  private final TableColumn<T, String> column;
   private final Pattern ART_NUMBER_PATTERN = Pattern.compile("(\\d+)_\\d+");
 
   public ArtNumberCell(TableColumn<T, String> column) {
-    this.column = column;
+
   }
 
   @Override
@@ -52,7 +54,7 @@ public class ArtNumberCell<T> extends TableCell<T, String> {
             artNumber = matcher.group(1);
           }
 
-          ProductDialog.browse(artNumber);
+          browse(artNumber);
 
         });
 
@@ -67,4 +69,20 @@ public class ArtNumberCell<T> extends TableCell<T, String> {
     }
   }
 
+  public static void browse(String artNumber) {
+    try {
+      artNumber = cleanProductId(artNumber);
+      URI uri = new URI("http://www.ikea.com/pl/pl/catalog/products/" + artNumber);
+      Desktop.getDesktop().browse(uri);
+    } catch (URISyntaxException | IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  public static String cleanProductId(final String artNumber) {
+    if (artNumber == null || artNumber.length() < 1)
+      throw new RuntimeException("ArtNumber can't be null or less then one length");
+
+    return artNumber.toUpperCase().replaceAll("[^\\dS]", "");
+  }
 }
