@@ -1,24 +1,27 @@
 package org.menesty.ikea.ui.pages.ikea.order.component.stock;
 
 import javafx.beans.property.SimpleStringProperty;
-import javafx.scene.control.Button;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.ToolBar;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.apache.commons.lang3.StringUtils;
+import org.jxls.common.Context;
 import org.menesty.ikea.core.component.DialogSupport;
 import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.i18n.I18n;
 import org.menesty.ikea.i18n.I18nKeys;
 import org.menesty.ikea.lib.domain.ikea.logistic.invoice.Invoice;
+import org.menesty.ikea.lib.domain.ikea.logistic.invoice.InvoiceItem;
 import org.menesty.ikea.lib.domain.ikea.logistic.invoice.InvoiceSearchItem;
 import org.menesty.ikea.lib.domain.ikea.logistic.stock.StockCrashItem;
 import org.menesty.ikea.ui.controls.BaseEntityDialog;
 import org.menesty.ikea.ui.controls.form.*;
+import org.menesty.ikea.ui.controls.form.TextField;
 import org.menesty.ikea.ui.controls.table.component.BaseTableView;
 import org.menesty.ikea.ui.pages.EntityDialogCallback;
+import org.menesty.ikea.ui.pages.ikea.order.component.service.AddStockCrashService;
+import org.menesty.ikea.ui.pages.ikea.order.component.service.DeleteStockItemService;
 import org.menesty.ikea.ui.pages.ikea.order.component.table.InvoiceItemSearchResultTableView;
 import org.menesty.ikea.ui.table.ArtNumberCell;
 import org.menesty.ikea.util.ColumnUtil;
@@ -38,7 +41,8 @@ public abstract class StockCrashComponent extends BorderPane {
   private BaseTableView<StockCrashItem> stockCrashItemTableView;
   private StockCrashDialog stockCrashDialog;
 
-  public StockCrashComponent(DialogSupport dialogSupport) {
+  public StockCrashComponent(DialogSupport dialogSupport, AddStockCrashService addStockCrashService,
+                             DeleteStockItemService deleteStockItemService) {
     stockCrashItemTableView = new BaseTableView<>();
 
     {
@@ -87,6 +91,26 @@ public abstract class StockCrashComponent extends BorderPane {
       stockCrashItemTableView.getColumns().add(column);
     }
 
+    stockCrashItemTableView.setRowRenderListener((row, newValue) -> {
+      row.setContextMenu(null);
+
+      if (newValue != null) {
+        ContextMenu contextMenu = new ContextMenu();
+
+        {
+          MenuItem menuItem = new MenuItem(I18n.UA.getString(I18nKeys.DELETE));
+
+          menuItem.setOnAction(event -> {
+            deleteStockItemService.setData(DeleteStockItemService.StockAction.DELETE_STOCK_CRASH_ITEM, newValue);
+            deleteStockItemService.restart();
+          });
+
+          contextMenu.getItems().add(menuItem);
+        }
+
+        row.setContextMenu(contextMenu);
+      }
+    });
     setCenter(stockCrashItemTableView);
 
     ToolBar toolBar = new ToolBar();
@@ -100,7 +124,9 @@ public abstract class StockCrashComponent extends BorderPane {
         dialog.bind(null, new EntityDialogCallback<StockCrashItem>() {
           @Override
           public void onSave(StockCrashItem stockCrashItem, Object... params) {
-
+            addStockCrashService.setData(stockCrashItem);
+            addStockCrashService.restart();
+            dialogSupport.hidePopupDialog();
           }
 
           @Override
@@ -148,7 +174,19 @@ class StockCrashDialog extends BaseEntityDialog<StockCrashItem> {
 
   @Override
   protected StockCrashItem collect() {
-    return null;
+    InvoiceSearchItem searchItem = form.getInvoiceItem();
+
+    StockCrashItem crashItem = new StockCrashItem();
+
+    crashItem.setArtNumber(searchItem.getArtNumber());
+    crashItem.setProductId(searchItem.getProductId());
+    crashItem.setLocationPlace(form.getLocationPlace());
+    crashItem.setDefectType(form.getDefectType());
+    crashItem.setPrice(searchItem.getPrice());
+    crashItem.setIkeaProcessedOrderId(searchItem.getIkeaProcessedOrderId());
+    crashItem.setCount(form.getCount());
+
+    return crashItem;
   }
 
   @Override
@@ -158,13 +196,12 @@ class StockCrashDialog extends BaseEntityDialog<StockCrashItem> {
 
   @Override
   public void reset() {
-
+    form.reset();
   }
 
   @Override
   protected void populate(StockCrashItem entityValue) {
 
-    StockCrashItem.DefectType.values();
   }
 
   public void setInvoices(List<Invoice> invoices) {
@@ -174,6 +211,7 @@ class StockCrashDialog extends BaseEntityDialog<StockCrashItem> {
 
           item.setInvoiceName(invoice.getInvoiceName());
           item.setParagonNumber(invoice.getParagonNumber());
+          item.setIkeaProcessedOrderId(invoice.getIkeaProcessOrderId());
 
           return item;
         }).collect(Collectors.toList()))
@@ -249,6 +287,22 @@ class StockCrashDialog extends BaseEntityDialog<StockCrashItem> {
             .filter(invoiceSearchItem -> invoiceSearchItem.getArtNumber().startsWith(text)).collect(Collectors.toList());
       }
       tableView.getItems().setAll(result);
+    }
+
+    public BigDecimal getCount() {
+      return countField.getNumber();
+    }
+
+    public InvoiceSearchItem getInvoiceItem() {
+      return tableView.getSelectionModel().getSelectedItem();
+    }
+
+    public StockCrashItem.DefectType getDefectType() {
+      return defectTypeComboField.getValue().getValue();
+    }
+
+    public StockCrashItem.LocationPlace getLocationPlace() {
+      return locationPlaceComboField.getValue().getValue();
     }
   }
 }

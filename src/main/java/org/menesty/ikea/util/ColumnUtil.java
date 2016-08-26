@@ -55,9 +55,7 @@ public class ColumnUtil {
     return item -> {
       try {
         Number number = new PathProperty<Entity, Number>(item.getValue(), propertyName).get();
-        if (number != null) {
-          return new SimpleStringProperty(NumberUtil.toString(number.doubleValue()));
-        }
+        return number != null ? new SimpleStringProperty(NumberUtil.toString(number.doubleValue())) : null;
       } catch (Exception e) {
         ServiceFacade.getErrorConsole().add(e);
       }

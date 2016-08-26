@@ -25,30 +25,15 @@ public class WindowButtons extends VBox {
         // create buttons
         Button closeBtn = new Button();
         closeBtn.setId("window-close");
-        closeBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                Platform.exit();
-            }
-        });
+        closeBtn.setOnAction(actionEvent -> Platform.exit());
 
         Button minBtn = new Button();
         minBtn.setId("window-min");
-        minBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                stage.setIconified(true);
-            }
-        });
+        minBtn.setOnAction(actionEvent -> stage.setIconified(true));
 
         Button maxBtn = new Button();
         maxBtn.setId("window-max");
-        maxBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                toggleMaximized();
-            }
-        });
+        maxBtn.setOnAction(actionEvent -> toggleMaximized());
 
         getChildren().addAll(closeBtn, minBtn, maxBtn);
     }

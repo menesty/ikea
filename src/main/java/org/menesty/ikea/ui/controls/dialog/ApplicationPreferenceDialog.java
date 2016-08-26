@@ -10,8 +10,10 @@ import org.menesty.ikea.i18n.I18n;
 import org.menesty.ikea.i18n.I18nKeys;
 import org.menesty.ikea.service.ServiceFacade;
 import org.menesty.ikea.ui.controls.form.ComboBoxField;
+import org.menesty.ikea.ui.controls.form.NumberTextField;
 import org.menesty.ikea.ui.layout.RowPanel;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public class ApplicationPreferenceDialog extends BaseDialog {
@@ -38,6 +40,12 @@ public class ApplicationPreferenceDialog extends BaseDialog {
     preference.setWarehousePassword(warehouseForm.getPassword());
     preference.setIkeaUser(warehouseForm.getIkeaUser());
     preference.setIkeaPassword(warehouseForm.getIkeaPassword());
+    preference.setVKApplicationId(warehouseForm.getVKApplicationId());
+    preference.setVKGroupId(warehouseForm.getVKGroupId());
+    preference.setVKUser(warehouseForm.getVKUser());
+    preference.setVKPassword(warehouseForm.getVKPassword());
+    preference.setVKSecureKey(warehouseForm.getVKSecureKey());
+
   }
 
   @Override
@@ -48,6 +56,12 @@ public class ApplicationPreferenceDialog extends BaseDialog {
     warehouseForm.setIkeaPassword(preference.getIkeaPassword());
     warehouseForm.setIkeaUser(preference.getIkeaUser());
     warehouseForm.setProfiles(preference.getProfiles(), preference.getActiveProfile());
+
+    warehouseForm.setVKPassword(preference.getVKPassword());
+    warehouseForm.setVKUser(preference.getVKUser());
+    warehouseForm.setVkApplicationId(preference.getVKApplicationId());
+    warehouseForm.setVKGroupId(preference.getVKGroupId());
+    warehouseForm.setVKSecureKey(preference.getVKSecureKey());
   }
 
   private void updateWarehouseForm() {
@@ -66,6 +80,11 @@ public class ApplicationPreferenceDialog extends BaseDialog {
     private final TextField ikeaUser;
     private final PasswordField ikeaPassword;
     private final ComboBoxField<String> profiles;
+    private final TextField vkUser;
+    private final TextField vkPassword;
+    private final NumberTextField vkApplicationId;
+    private final NumberTextField vkGroupId;
+    private final TextField vkSecureKey;
 
     public WarehousePreferenceForm() {
       getStyleClass().add(TabPane.STYLE_CLASS_FLOATING);
@@ -93,6 +112,25 @@ public class ApplicationPreferenceDialog extends BaseDialog {
       }
 
       {
+        Tab tab = new Tab("VK");
+
+        RowPanel panel = new RowPanel();
+
+        panel.addRow("User :", vkUser = new TextField());
+        panel.addRow("Password :", vkPassword = new TextField());
+        panel.addRow("Application ID", vkApplicationId = new NumberTextField("", false));
+        panel.addRow("Group ID", vkGroupId = new NumberTextField("", false));
+        panel.addRow("Secure key", vkSecureKey = new TextField());
+
+        vkApplicationId.setAllowDouble(false);
+        vkGroupId.setAllowDouble(false);
+
+        tab.setContent(panel);
+
+        getTabs().add(tab);
+      }
+
+      {
         Tab tab = new Tab("Ikea");
 
         RowPanel panel = new RowPanel();
@@ -104,6 +142,8 @@ public class ApplicationPreferenceDialog extends BaseDialog {
 
         getTabs().add(tab);
       }
+
+
     }
 
     public void setUser(String user) {
@@ -144,6 +184,46 @@ public class ApplicationPreferenceDialog extends BaseDialog {
 
     public String getIkeaUser() {
       return ikeaUser.getText();
+    }
+
+    public void setVKUser(String value) {
+      vkUser.setText(value);
+    }
+
+    public void setVKSecureKey(String value) {
+      vkSecureKey.setText(value);
+    }
+
+    public String getVKSecureKey(){
+      return vkSecureKey.getText();
+    }
+
+    public String getVKUser() {
+      return vkUser.getText();
+    }
+
+    public String getVKPassword() {
+      return vkPassword.getText();
+    }
+
+    public void setVKPassword(String value) {
+      vkPassword.setText(value);
+    }
+
+    public int getVKApplicationId() {
+      return vkApplicationId.getNumber().intValue();
+    }
+
+    public void setVkApplicationId(int value) {
+      vkApplicationId.setNumber(BigDecimal.valueOf(value));
+    }
+
+    public void setVKGroupId(int value) {
+      vkGroupId.setNumber(BigDecimal.valueOf(value));
+    }
+
+    public int getVKGroupId() {
+      return vkGroupId.getNumber().intValue();
     }
 
     public void setProfiles(List<String> profiles, String activeProfile) {

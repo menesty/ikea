@@ -59,6 +59,8 @@ public class StockManagementComponent extends BorderPane {
   private StorageCalculationService storageCalculationService;
   private AddToOrderItemService addToOrderItemService;
   private AddComboPartService addComboPartService;
+  private AddStockCrashService addStockCrashService;
+
   private IkeaProcessOrderResetStateService ikeaProcessOrderResetStateService;
   private ReturnItemService returnItemService;
 
@@ -66,6 +68,7 @@ public class StockManagementComponent extends BorderPane {
   private ReturnItemTableView returnItemTableView;
   private StockCrashComponent stockCrashComponent;
   private IkeaOrderDetail ikeaOrderDetail;
+  private DeleteStockItemService deleteStockItemService;
 
   public StockManagementComponent(DialogSupport dialogSupport) {
     StackPane mainPane = new StackPane();
@@ -122,6 +125,22 @@ public class StockManagementComponent extends BorderPane {
       }
     });
 
+    addStockCrashService = new AddStockCrashService();
+    addStockCrashService.setOnSucceededListener(value -> {
+      if (value) {
+        storageCalculationService.setUploading(false);
+        storageCalculationService.restart();
+      }
+    });
+
+    deleteStockItemService = new DeleteStockItemService();
+    deleteStockItemService.setOnSucceededListener(value -> {
+      if (value) {
+        storageCalculationService.setUploading(false);
+        storageCalculationService.restart();
+      }
+    });
+
     xlsResultExportAsyncService = new AbstractExportAsyncService<XlsExportInfo>() {
       @Override
       protected void export(File file, XlsExportInfo param) {
@@ -136,7 +155,8 @@ public class StockManagementComponent extends BorderPane {
 
     mainPane.getChildren().addAll(groupPane, loadingPane);
 
-    loadingPane.bindTask(storageCalculationService, addToOrderItemService, addComboPartService, ikeaProcessOrderResetStateService, returnItemService);
+    loadingPane.bindTask(storageCalculationService, addToOrderItemService, addComboPartService, ikeaProcessOrderResetStateService,
+        returnItemService, addStockCrashService, deleteStockItemService);
     setCenter(mainPane);
 
     ToolBar toolBar = new ToolBar();
@@ -193,7 +213,7 @@ public class StockManagementComponent extends BorderPane {
     this.ikeaOrderDetail = ikeaOrderDetail;
 
     overBoughtComponent.setIkeaProcessOrderId(ikeaOrderDetail.getId());
-
+    deleteStockItemService.setIkeaProcessOrderId(ikeaOrderDetail.getId());
 
     calculate(false);
   }
@@ -381,7 +401,7 @@ public class StockManagementComponent extends BorderPane {
       Tab tab = new Tab(I18n.UA.getString(I18nKeys.RETURN_BACK_ITEMS));
 
       tab.setClosable(false);
-      tab.setContent(returnItemTableView = new ReturnItemTableView());
+      tab.setContent(returnItemTableView = new ReturnItemTableView(deleteStockItemService));
 
       tabPane.getTabs().add(tab);
     }
@@ -390,7 +410,7 @@ public class StockManagementComponent extends BorderPane {
       Tab tab = new Tab(I18n.UA.getString(I18nKeys.STOCK_CRASHED));
 
       tab.setClosable(false);
-      tab.setContent(stockCrashComponent = new StockCrashComponent(dialogSupport) {
+      tab.setContent(stockCrashComponent = new StockCrashComponent(dialogSupport, addStockCrashService, deleteStockItemService) {
 
         @Override
         public List<Invoice> getInvoices() {

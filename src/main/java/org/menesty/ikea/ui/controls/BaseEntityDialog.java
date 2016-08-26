@@ -41,7 +41,7 @@ public abstract class BaseEntityDialog<Entity> extends BaseDialog implements For
 
   protected abstract void populate(Entity entityValue);
 
-  private void onSave(Entity currentEntity) {
+  protected void onSave(Entity currentEntity) {
     if (callback != null)
       callback.onSave(currentEntity);
   }

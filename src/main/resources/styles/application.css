@@ -771,3 +771,7 @@
 .text-red {
     -fx-text-fill: #ff0000;
 }
+
+.gallery-pane {
+    -fx-padding: 10px 10px 10px 10px;
+}

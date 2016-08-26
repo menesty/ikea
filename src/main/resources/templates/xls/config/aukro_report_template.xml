@@ -1,0 +1,7 @@
+<xls>
+    <area ref="Aukro!A1:F2">
+        <each items="items" var="item" ref="Aukro!A2:F2">
+            <area ref="Aukro!A2:F2"/>
+        </each>
+    </area>
+</xls>

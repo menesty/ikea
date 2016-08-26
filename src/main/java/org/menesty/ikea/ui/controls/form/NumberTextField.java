@@ -167,6 +167,7 @@ public class NumberTextField extends TextField {
       String input = getText();
 
       if (input == null || input.length() == 0) {
+        setNumber(null);
         return;
       }
 

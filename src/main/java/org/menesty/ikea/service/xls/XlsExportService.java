@@ -12,6 +12,7 @@ import org.menesty.ikea.i18n.I18n;
 import org.menesty.ikea.i18n.I18nKeys;
 import org.menesty.ikea.lib.domain.ikea.logistic.resumption.ResumptionItem;
 import org.menesty.ikea.lib.domain.ikea.logistic.stock.StockItemDto;
+import org.menesty.ikea.lib.domain.product.ProductShortInfo;
 import org.menesty.ikea.lib.domain.report.SummaryOrderReport;
 import org.menesty.ikea.lib.dto.ProductPriceMismatch;
 import org.menesty.ikea.util.ColumnUtil;
@@ -21,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
@@ -37,6 +39,7 @@ public class XlsExportService {
   private static final String PRODUCT_PRICE_MISMATCH_NOT_AVAILABLE_TEMPLATE = "mismatch_not_available";
   private static final String PRODUCT_BUY_RESULT_TEMPLATE = "buy_result";
   private static final String RESUMPTION_ITEM_TEMPLATE = "resumption_item";
+  private static final String AUKRO_REPORT_TEMPLATE = "aukro_report_template";
   private static final String SUMMARY_ORDER_REPORT_TEMPLATE = "summary_order_report_template";
   private static final String PRICE_COMPARATOR_TEMPLATE = "price_comparator_template";
 
@@ -116,6 +119,23 @@ public class XlsExportService {
     context.putVar("items", resumptionItems);
     context.putVar("dateFormatter", new DateFormatter(ColumnUtil.DEFAULT_DATE_FORMAT));
     transformSingleSheet(targetFile, RESUMPTION_ITEM_TEMPLATE, context, Collections.singletonList("Resumption!A1"));
+  }
 
+  public void exportProductShortInfos(File targetFile, List<ProductShortInfo> items) {
+    Context context = new Context();
+
+    items.stream().forEach(item -> {
+      if (item.getWeight() == null) {
+        item.setWeight(BigDecimal.ZERO);
+      }
+
+      if (item.getPriceWeightCof() == null) {
+        item.setPriceWeightCof(BigDecimal.ZERO);
+      }
+    });
+
+    context.putVar("items", items);
+
+    transformSingleSheet(targetFile, AUKRO_REPORT_TEMPLATE, context, Collections.singletonList("Aukro!A1"));
   }
 }

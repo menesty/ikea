@@ -9,7 +9,8 @@ public enum Pages {
   SITE_ORDERS("Site orders"), ORDER_WIZARD("Order Create Wizard"), ORDER_DETAIL("Order Details"), SCAN_LOG("Scan log"),
   CONTRAGENT(I18n.UA.getString(I18nKeys.CONTRAGENTS)), RESUMPTION(I18n.UA.getString(I18nKeys.RESUMPTION)),
   ORDER_REPORT(I18n.UA.getString(I18nKeys.ORDER_REPORT)),
-  RESUMPTION_DETAIL(I18n.UA.getString(I18nKeys.RESUMPTION_DETAIL));
+  RESUMPTION_DETAIL(I18n.UA.getString(I18nKeys.RESUMPTION_DETAIL)),
+  AUKRO("Aukro"), VK("VK");
 
 
   private final String title;

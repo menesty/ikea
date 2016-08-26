@@ -50,12 +50,7 @@ public class WorkspaceArea extends Pane {
         setId("page-area");
         getStyleClass().add("noborder-scroll-pane");
 
-        pageClickListener = new CategoryPane.PageClickListener() {
-            @Override
-            public void onPageClick(PageDescription pageDescription) {
-                navigate(pageDescription);
-            }
-        };
+        pageClickListener = pageDescription -> navigate(pageDescription);
 
         categoryWorkspace = new ScrollPane();
         categoryWorkspace.getStyleClass().add("noborder-scroll-pane");
@@ -222,11 +217,9 @@ class CategoryPane extends VBox {
         tile.getStyleClass().clear();
         tile.getStyleClass().add("sample-tile");
 
-        tile.setOnAction(new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent event) {
-                if (pageClickListener != null)
-                    pageClickListener.onPageClick(pageDescription);
-            }
+        tile.setOnAction(event -> {
+            if (pageClickListener != null)
+                pageClickListener.onPageClick(pageDescription);
         });
 
         return tile;

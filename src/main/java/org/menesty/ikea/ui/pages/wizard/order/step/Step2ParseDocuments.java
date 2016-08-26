@@ -115,7 +115,7 @@ public class Step2ParseDocuments extends BaseWizardStep<DesktopOrderInfo> {
 
   @Override
   public boolean canSkip(DesktopOrderInfo param) {
-    return DesktopOrderInfo.SourceType.MANUAL == param.getSourceType();
+    return DesktopOrderInfo.SourceType.MANUAL == param.getSourceType() || DesktopOrderInfo.SourceType.SITE == param.getSourceType();
   }
 
   @Override
@@ -131,7 +131,7 @@ public class Step2ParseDocuments extends BaseWizardStep<DesktopOrderInfo> {
 
     DesktopOrderInfo.SourceType sourceType = param.getSourceType();
 
-    if (sourceType == null || DesktopOrderInfo.SourceType.MANUAL == sourceType) {
+    if (sourceType == null || DesktopOrderInfo.SourceType.MANUAL == sourceType || DesktopOrderInfo.SourceType.SITE == param.getSourceType()) {
       return;
     }
 
@@ -215,7 +215,7 @@ public class Step2ParseDocuments extends BaseWizardStep<DesktopOrderInfo> {
   }
 
   private String unique() {
-    return RandomStringUtils.random(4, true, true);
+    return RandomStringUtils.random(6, true, true);
   }
 
   class XlsParseService extends AbstractParseOrderService {

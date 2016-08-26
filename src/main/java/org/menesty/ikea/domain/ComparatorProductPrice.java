@@ -10,15 +10,35 @@ import java.math.BigDecimal;
 public class ComparatorProductPrice {
   private String artNumber;
 
-  private BigDecimal priceRu;
+  private BigDecimal count = BigDecimal.ZERO;
 
-  private BigDecimal pricePl;
+  private BigDecimal priceRu = BigDecimal.ZERO;
 
-  private BigDecimal priceLt;
+  private BigDecimal pricePl = BigDecimal.ZERO;
 
-  private BigDecimal priceRo;
+  private BigDecimal priceLt = BigDecimal.ZERO;
+
+  private BigDecimal priceRo = BigDecimal.ZERO;
+
+  private BigDecimal priceHu = BigDecimal.ZERO;
 
   public ComparatorProductPrice() {
+  }
+
+  public BigDecimal getCount() {
+    return count;
+  }
+
+  public void setCount(BigDecimal count) {
+    this.count = count;
+  }
+
+  public BigDecimal getPriceHu() {
+    return priceHu;
+  }
+
+  public void setPriceHu(BigDecimal priceHu) {
+    this.priceHu = priceHu;
   }
 
   public BigDecimal getPriceRo() {
@@ -29,8 +49,9 @@ public class ComparatorProductPrice {
     this.priceRo = priceRo;
   }
 
-  public ComparatorProductPrice(String artNumber) {
+  public ComparatorProductPrice(String artNumber, BigDecimal count) {
     this.artNumber = artNumber;
+    this.count = count;
   }
 
   public String getArtNumber() {

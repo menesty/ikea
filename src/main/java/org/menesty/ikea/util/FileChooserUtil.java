@@ -10,7 +10,7 @@ import java.io.File;
 
 public class FileChooserUtil {
   public enum FolderType {
-    PARAGON, INVOICE
+    PARAGON, INVOICE, IMG
   }
 
   public static FileChooser getEpp(FolderType folderType) {
@@ -46,11 +46,17 @@ public class FileChooserUtil {
     return createFileChooser("Invoice PDF location", "Pdf files (*.pdf)", null, "*.pdf");
   }
 
+  public static FileChooser getImg() {
+    return createFileChooser("Image location", "Image files (*.png, *.jpg)", FolderType.IMG, "*.png", "*.jpg");
+  }
+
   public static FileChooser getByType(FileSourceType fileType) {
     if (FileSourceType.XLS == fileType) {
       return getXls();
     } else if (FileSourceType.PDF == fileType) {
       return getPdf();
+    } else if (FileSourceType.IMG == fileType) {
+      return getImg();
     } else {
       return createFileChooser("File location", null, null);
     }

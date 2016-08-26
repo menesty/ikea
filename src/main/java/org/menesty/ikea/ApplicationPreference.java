@@ -58,6 +58,46 @@ public class ApplicationPreference {
     return preferences.get("ikea-user", "");
   }
 
+  public String getVKUser() {
+    return preferences.get("vk-user", "");
+  }
+
+  public void setVKUser(String value) {
+    preferences.put("vk-user", value);
+  }
+
+  public String getVKPassword() {
+    return preferences.get("vk-password", "");
+  }
+
+  public void setVKPassword(String value) {
+    preferences.put("vk-password", value);
+  }
+
+  public void setVKApplicationId(int value) {
+    preferences.putInt("vk-application-id", value);
+  }
+
+  public int getVKApplicationId() {
+    return preferences.getInt("vk-application-id", 0);
+  }
+
+  public void setVKGroupId(int value) {
+    preferences.putInt("vk-group-id", value);
+  }
+
+  public int getVKGroupId() {
+    return preferences.getInt("vk-group-id", 0);
+  }
+
+  public String getVKSecureKey() {
+    return preferences.get("vk-secure-key", "");
+  }
+
+  public void setVKSecureKey(String value) {
+    preferences.put("vk-secure-key", value);
+  }
+
   public String getIkeaPassword() {
     return preferences.get("ikea-password", "");
   }

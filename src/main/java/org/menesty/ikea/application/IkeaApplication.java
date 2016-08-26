@@ -28,7 +28,6 @@ import org.menesty.ikea.ui.controls.dialog.ApplicationPreferenceDialog;
 import org.menesty.ikea.ui.controls.dialog.BaseDialog;
 import org.menesty.ikea.ui.controls.dialog.ErrorConsoleDialog;
 import org.menesty.ikea.ui.controls.dialog.InfoDialog;
-import org.menesty.ikea.ui.controls.pane.LoadingPane;
 import org.menesty.ikea.ui.pages.BasePage;
 import org.menesty.ikea.ui.pages.Pages;
 import org.menesty.ikea.ui.pages.ikea.contraget.ContragentPage;
@@ -36,9 +35,11 @@ import org.menesty.ikea.ui.pages.ikea.log.WarehouseScanLogPage;
 import org.menesty.ikea.ui.pages.ikea.order.IkeaOrderViewPage;
 import org.menesty.ikea.ui.pages.ikea.order.IkeaProcessOrderPage;
 import org.menesty.ikea.ui.pages.ikea.product.ProductPage;
+import org.menesty.ikea.ui.pages.ikea.reports.aukro.AukroReportPage;
 import org.menesty.ikea.ui.pages.ikea.reports.order.OrderSummaryReportPage;
 import org.menesty.ikea.ui.pages.ikea.resumption.ResumptionDetailPage;
 import org.menesty.ikea.ui.pages.ikea.resumption.ResumptionPage;
+import org.menesty.ikea.ui.pages.ikea.vk.VkPage;
 import org.menesty.ikea.ui.pages.ikea.warehouse.SiteWarehousePage;
 import org.menesty.ikea.ui.pages.wizard.order.OrderCreateWizardPage;
 import org.menesty.ikea.util.HttpUtil;
@@ -50,7 +51,6 @@ import org.menesty.ikea.util.HttpUtil;
  */
 public class IkeaApplication extends Application implements DialogSupport {
   private PopupDialog modalDimmer;
-  private LoadingPane loadingPane;
   private WorkspaceArea pageArea;
   private Stage stage;
 
@@ -99,11 +99,15 @@ public class IkeaApplication extends Application implements DialogSupport {
 
     final Button errorConsoleButton = new Button(null, ImageFactory.createError22Icon());
     ServiceFacade.getErrorConsole().errorsProperty().get().addListener((ListChangeListener<Throwable>) c -> {
-      if (!c.getList().isEmpty()) {
-        Platform.runLater(() ->
-            errorConsoleButton.setText("(" + c.getList().size() + ")"));
-      }
+      Platform.runLater(() -> {
+        if (!c.getList().isEmpty()) {
+          errorConsoleButton.setText("(" + c.getList().size() + ")");
+        } else {
+          errorConsoleButton.setText(null);
+        }
+      });
     });
+
     errorConsoleButton.setOnAction(event -> showPopupDialog(getErrorDialog()));
 
     breadCrumbToolBar.addControlButton(errorConsoleButton);
@@ -116,7 +120,7 @@ public class IkeaApplication extends Application implements DialogSupport {
     pagePane.setCenter(pageArea);
 
 
-    pageContainer.getChildren().addAll(pagePane, loadingPane = new LoadingPane());
+    pageContainer.getChildren().addAll(pagePane);
 
 
     mainPane.setCenter(pageContainer);
@@ -150,6 +154,9 @@ public class IkeaApplication extends Application implements DialogSupport {
 
     group.add(new PageDescription(Pages.SCAN_LOG.getTitle(), ImageFactory.createLogIcon72(), WarehouseScanLogPage.class));
     group.add(new PageDescription(Pages.PRODUCTS.getTitle(), ImageFactory.createProducts72Icon(), ProductPage.class));
+    group.add(new PageDescription(Pages.AUKRO.getTitle(), ImageFactory.createProducts72Icon(), AukroReportPage.class));
+    group.add(new PageDescription(Pages.VK.getTitle(), ImageFactory.createVk72Icon(), VkPage.class));
+
 
     return group;
   }

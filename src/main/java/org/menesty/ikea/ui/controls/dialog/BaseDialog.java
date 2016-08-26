@@ -10,6 +10,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import org.menesty.ikea.i18n.I18n;
+import org.menesty.ikea.i18n.I18nKeys;
 import org.menesty.ikea.ui.controls.pane.LoadingPane;
 
 /**
@@ -18,141 +20,141 @@ import org.menesty.ikea.ui.controls.pane.LoadingPane;
  * Time: 1:11 PM
  */
 public class BaseDialog extends StackPane {
-    public interface DefaultAction {
-        void defaultAction(BaseDialog baseDialog);
+  public interface DefaultAction {
+    void defaultAction(BaseDialog baseDialog);
+  }
+
+  protected final HBox bottomBar;
+
+  protected Button okBtn;
+
+  protected Button cancelBtn;
+
+  private boolean allowAutoHide = true;
+
+  protected LoadingPane loadingPane;
+
+  private VBox content;
+
+  private Label title;
+
+  private DefaultAction defaultAction;
+
+  private Stage stage;
+
+  public BaseDialog(Stage stage) {
+    this(stage, true);
+  }
+
+  public BaseDialog(Stage stage, boolean showTitle) {
+    super();
+    this.stage = stage;
+    content = new VBox();
+
+    setId("ProxyDialog");
+    setMaxSize(430, USE_PREF_SIZE);
+
+    if (showTitle)
+      addRow(title = createTitle(null));
+    // block mouse clicks
+    setOnMouseClicked(Event::consume);
+
+    content.setSpacing(10);
+    loadingPane = new LoadingPane();
+
+    getChildren().addAll(content, loadingPane);
+
+    cancelBtn = new Button("Cancel");
+    cancelBtn.setId("cancelButton");
+    cancelBtn.setOnAction(actionEvent -> {
+      if (defaultAction != null)
+        defaultAction.defaultAction(BaseDialog.this);
+
+      onCancel();
+    });
+    cancelBtn.setMinWidth(74);
+    cancelBtn.setPrefWidth(74);
+    okBtn = new Button(I18n.UA.getString(I18nKeys.OK));
+    okBtn.setId("saveButton");
+    okBtn.setDefaultButton(true);
+
+    okBtn.setOnAction(actionEvent -> onActionOk());
+    okBtn.setMinWidth(74);
+    okBtn.setPrefWidth(74);
+
+    bottomBar = new HBox(4);
+    bottomBar.setAlignment(Pos.BASELINE_RIGHT);
+    bottomBar.getChildren().addAll(cancelBtn, okBtn);
+    VBox.setMargin(bottomBar, new Insets(20, 5, 5, 5));
+  }
+
+  protected void onActionOk() {
+    if (defaultAction != null) {
+      defaultAction.defaultAction(BaseDialog.this);
     }
 
-    protected final HBox bottomBar;
+    onOk();
+  }
 
-    protected Button okBtn;
+  public Stage getStage() {
+    return stage;
+  }
 
-    protected Button cancelBtn;
+  public void addRow(Node... rows) {
+    content.getChildren().addAll(rows);
+  }
 
-    private boolean allowAutoHide = true;
+  public void addRow(int index, Node row) {
+    content.getChildren().add(index, row);
+  }
 
-    protected LoadingPane loadingPane;
+  protected boolean removeRow(Node row) {
+    return content.getChildren().remove(row);
+  }
 
-    private VBox content;
+  protected int rowCount() {
+    return content.getChildren().size();
+  }
 
-    private Label title;
+  protected boolean containRaw(Node row) {
+    return content.getChildren().contains(row);
+  }
 
-    private DefaultAction defaultAction;
+  public void onCancel() {
 
-    private Stage stage;
+  }
 
-    public BaseDialog(Stage stage) {
-        this(stage, true);
-    }
+  public void onOk() {
 
-    public BaseDialog(Stage stage, boolean showTitle) {
-        super();
-        this.stage = stage;
-        content = new VBox();
+  }
 
-        setId("ProxyDialog");
-        setMaxSize(430, USE_PREF_SIZE);
+  public void onShow() {
 
-        if (showTitle)
-            addRow(title = createTitle(null));
-        // block mouse clicks
-        setOnMouseClicked(Event::consume);
+  }
 
-        content.setSpacing(10);
-        loadingPane = new LoadingPane();
+  public boolean isAllowAutoHide() {
+    return allowAutoHide;
+  }
 
-        getChildren().addAll(content, loadingPane);
+  public void setAllowAutoHide(boolean allowAutoHide) {
+    this.allowAutoHide = allowAutoHide;
+  }
 
-        cancelBtn = new Button("Cancel");
-        cancelBtn.setId("cancelButton");
-        cancelBtn.setOnAction(actionEvent -> {
-            if (defaultAction != null)
-                defaultAction.defaultAction(BaseDialog.this);
+  private Label createTitle(String text) {
+    Label title = new Label(text);
+    title.setId("title");
+    title.setMaxWidth(Double.MAX_VALUE);
+    title.setAlignment(Pos.CENTER);
 
-            onCancel();
-        });
-        cancelBtn.setMinWidth(74);
-        cancelBtn.setPrefWidth(74);
-        okBtn = new Button("Ok");
-        okBtn.setId("saveButton");
-        okBtn.setDefaultButton(true);
+    return title;
+  }
 
-        okBtn.setOnAction(actionEvent -> onActionOk());
-        okBtn.setMinWidth(74);
-        okBtn.setPrefWidth(74);
+  public void setTitle(String title) {
+    this.title.setText(title);
+  }
 
-        bottomBar = new HBox(4);
-        bottomBar.setAlignment(Pos.BASELINE_RIGHT);
-        bottomBar.getChildren().addAll(cancelBtn, okBtn);
-        VBox.setMargin(bottomBar, new Insets(20, 5, 5, 5));
-    }
-
-    protected void onActionOk() {
-        if (defaultAction != null) {
-            defaultAction.defaultAction(BaseDialog.this);
-        }
-
-        onOk();
-    }
-
-    public Stage getStage() {
-        return stage;
-    }
-
-    public void addRow(Node... rows) {
-        content.getChildren().addAll(rows);
-    }
-
-    public void addRow(int index, Node row) {
-        content.getChildren().add(index, row);
-    }
-
-    protected boolean removeRow(Node row) {
-        return content.getChildren().remove(row);
-    }
-
-    protected int rowCount() {
-        return content.getChildren().size();
-    }
-
-    protected boolean containRaw(Node row) {
-        return content.getChildren().contains(row);
-    }
-
-    public void onCancel() {
-
-    }
-
-    public void onOk() {
-
-    }
-
-    public void onShow() {
-
-    }
-
-    public boolean isAllowAutoHide() {
-        return allowAutoHide;
-    }
-
-    public void setAllowAutoHide(boolean allowAutoHide) {
-        this.allowAutoHide = allowAutoHide;
-    }
-
-    private Label createTitle(String text) {
-        Label title = new Label(text);
-        title.setId("title");
-        title.setMaxWidth(Double.MAX_VALUE);
-        title.setAlignment(Pos.CENTER);
-
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title.setText(title);
-    }
-
-    public void setDefaultAction(DefaultAction defaultAction) {
-        this.defaultAction = defaultAction;
-    }
+  public void setDefaultAction(DefaultAction defaultAction) {
+    this.defaultAction = defaultAction;
+  }
 }
 

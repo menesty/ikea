@@ -253,4 +253,12 @@ public class ImageFactory {
   public static ImageView createCopyIcon316() {
     return createIcon("copy-16x16.png");
   }
+
+  public static ImageView createVk72Icon() {
+    return createIcon("vk-logo-72x72.png");
+  }
+
+  public static ImageView createImport16Icon() {
+    return createIcon("import_16x16.gif");
+  }
 }

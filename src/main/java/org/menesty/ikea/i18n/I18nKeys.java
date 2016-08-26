@@ -9,6 +9,7 @@ public interface I18nKeys {
   String CREATE_SITE_ORDER = "create.site.order";
   String CREATED_DATE = "created.date";
   String AMOUNT = "amount";
+  String OLD_AMOUNT = "amount.old";
   String FIRST_NAME = "first.name";
   String LAST_NAME = "last.name";
   String ORDER_STATUS = "order.status";
@@ -167,7 +168,7 @@ public interface I18nKeys {
   String ACCEPTED_COUNT = "accepted.count";
   String ACCEPTED_PRICE = "accepted.price";
   String PRICE_PDF = "price.pdf";
-  String ITEM_SUM_PRICE ="item.sum.price";
+  String ITEM_SUM_PRICE = "item.sum.price";
   String COMBO_LACK = "combo.lack";
   String EXPECTED_COUNT = "expected.count";
   String BOUGHT_COUNT = "bought.count";
@@ -175,4 +176,18 @@ public interface I18nKeys {
   String DEFECT_TYPE = "defect.type";
   String LOCATION = "location";
   String STOCK_CRASHED = "stock.crashed";
+  String PRICE_WEIGHT_COF = "price.weight.cof";
+  String BUY_COUNT = "buy.count";
+  String FILTER = "filter";
+  String PURCHASED_COUNT = "purchased.count";
+  String SITE_ORDERS = "site.orders";
+
+  String VK_ALBUM = "vk.album";
+  String BROWSE_PHOTO = "browse.photo";
+  String OK = "ok";
+  String CATEGORY = "category";
+  String ESERVICE_TRANSACTION = "eservice.transaction";
+  String BUYER_NAME = "buyer.name";
+  String TRANSACTION_ID = "transaction.id";
+  String MARK_AS_USED = "mark.as.used";
 }

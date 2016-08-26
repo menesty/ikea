@@ -33,7 +33,7 @@
         <org.jsoup.version>1.8.3</org.jsoup.version>
         <org.mvel.version>2.2.6.Final</org.mvel.version>
         <org.menesty.ikea.lib>1.0.2-SNAPSHOT</org.menesty.ikea.lib>
-
+        <httpclient.version>4.5.2</httpclient.version>
         <!--<project.build.sourceEncoding>ISO-8859-1</project.build.sourceEncoding>-->
     </properties>
 
@@ -126,11 +126,17 @@
             <artifactId>commons-lang</artifactId>
             <version>2.6</version>
         </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.5</version>
+        </dependency>
+
 
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>4.5</version>
+            <version>${httpclient.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>commons-logging</groupId>
@@ -138,6 +144,12 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpmime</artifactId>
+            <version>${httpclient.version}</version>
+        </dependency>
+
         <!-- Logging  -->
 
         <dependency>

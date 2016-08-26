@@ -8,10 +8,12 @@ import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import org.menesty.ikea.core.component.DialogSupport;
 import org.menesty.ikea.factory.ImageFactory;
 import org.menesty.ikea.i18n.I18n;
 import org.menesty.ikea.i18n.I18nKeys;
+import org.menesty.ikea.lib.domain.eservice.EServiceTransaction;
 import org.menesty.ikea.lib.domain.ikea.logistic.Contragent;
 import org.menesty.ikea.lib.domain.ikea.logistic.invoice.EppInformation;
 import org.menesty.ikea.lib.domain.ikea.logistic.paragon.Paragon;
@@ -23,6 +25,7 @@ import org.menesty.ikea.ui.controls.table.component.BaseTableView;
 import org.menesty.ikea.ui.pages.DialogCallback;
 import org.menesty.ikea.ui.pages.EntityDialogCallback;
 import org.menesty.ikea.ui.pages.ikea.warehouse.dialog.ContragentChoiceDialog;
+import org.menesty.ikea.ui.pages.ikea.warehouse.dialog.EServiceTransactionDialog;
 import org.menesty.ikea.ui.pages.ikea.warehouse.dialog.ParagonViewDialog;
 import org.menesty.ikea.util.*;
 
@@ -49,11 +52,15 @@ public class ParagonViewComponent extends BorderPane {
 
   private AssignContragentService assignContragentService;
 
+  private ParagonNewAmountService paragonNewAmountService;
+
   private ParagonViewDialog paragonViewDialog;
 
   private static final int ITEM_PER_PAGE = 20;
 
   private ContragentChoiceDialog contragentChoiceDialog;
+
+  private EServiceTransactionDialog eServiceTransactionDialog;
 
   private Pagination pagination;
 
@@ -75,6 +82,9 @@ public class ParagonViewComponent extends BorderPane {
     });
 
     assignContragentService = new AssignContragentService();
+
+    paragonNewAmountService = new ParagonNewAmountService();
+    paragonNewAmountService.setOnSucceededListener(value -> loadService.restart());
 
     paragonEppService = new ParagonEppService();
     paragonEppService.setOnSucceededListener(value -> {
@@ -140,24 +150,53 @@ public class ParagonViewComponent extends BorderPane {
 
         {
           MenuItem menuItem = new MenuItem(I18n.UA.getString(I18nKeys.PARAGON_CANCEL), ImageFactory.createDelete16Icon());
-          menuItem.setOnAction(actionEvent -> {
-            Dialog.confirm(dialogSupport, I18n.UA.getString(I18nKeys.WARNING), I18n.UA.getString(I18nKeys.PARAGON_CANCEL_CONFIRMATION), new DialogCallback() {
-              @Override
-              public void onCancel() {
-                dialogSupport.hidePopupDialog();
-              }
+          menuItem.setOnAction(actionEvent ->
+              Dialog.confirm(dialogSupport, I18n.UA.getString(I18nKeys.WARNING), I18n.UA.getString(I18nKeys.PARAGON_CANCEL_CONFIRMATION), new DialogCallback() {
+                @Override
+                public void onCancel() {
+                  dialogSupport.hidePopupDialog();
+                }
 
-              @Override
-              public void onYes() {
-                paragonCancelService.setParagonId(paragon.getId());
-                paragonCancelService.restart();
-                dialogSupport.hidePopupDialog();
-              }
-            });
-
-          });
+                @Override
+                public void onYes() {
+                  paragonCancelService.setParagonId(paragon.getId());
+                  paragonCancelService.restart();
+                  dialogSupport.hidePopupDialog();
+                }
+              }));
 
           contextMenu.getItems().add(menuItem);
+        }
+
+        if (paragon.getOldAmount() == null) {
+          {
+            MenuItem menuItem = new MenuItem(I18n.UA.getString(I18nKeys.ESERVICE_TRANSACTION));
+
+            menuItem.setOnAction(event -> {
+              //fetch
+              EServiceTransactionDialog dialog = getEServiceTransactionDialog(dialogSupport.getStage());
+
+              eServiceTransactionDialog.bind(paragon.getAmount(), new EntityDialogCallback<EServiceTransaction>() {
+                @Override
+                public void onSave(EServiceTransaction eServiceTransaction, Object... params) {
+                  if (eServiceTransaction != null) {
+                    paragonNewAmountService.updateAmount(paragon.getId(), eServiceTransaction.getTransactionId());
+                    paragonNewAmountService.restart();
+                  }
+                }
+
+                @Override
+                public void onCancel() {
+                  dialogSupport.hidePopupDialog();
+                }
+              });
+
+              dialogSupport.showPopupDialog(dialog);
+
+            });
+
+            contextMenu.getItems().add(menuItem);
+          }
         }
 
 
@@ -189,6 +228,14 @@ public class ParagonViewComponent extends BorderPane {
       column.setCellValueFactory(ColumnUtil.<Paragon>number("amount"));
       tableView.getColumns().add(column);
     }
+
+    {
+      TableColumn<Paragon, String> column = new TableColumn<>(I18n.UA.getString(I18nKeys.OLD_AMOUNT));
+      column.setMinWidth(100);
+      column.setCellValueFactory(ColumnUtil.<Paragon>number("oldAmount"));
+      tableView.getColumns().add(column);
+    }
+
 
     {
       TableColumn<Paragon, String> column = new TableColumn<>(I18n.UA.getString(I18nKeys.DOWNLOAD_DATE));
@@ -275,6 +322,20 @@ public class ParagonViewComponent extends BorderPane {
       tableView.getColumns().add(column);
     }
 
+    {
+      TableColumn<Paragon, Boolean> column = new TableColumn<>();
+      column.setMinWidth(100);
+      column.setCellValueFactory(ColumnUtil.column("manualFix"));
+      column.setCellFactory(param -> new TableCell<Paragon, Boolean>() {
+        @Override
+        protected void updateItem(Boolean item, boolean empty) {
+          super.updateItem(item, empty);
+          setText(null);
+          setGraphic(empty || !item ? null : ImageFactory.createWarning16Icon());
+        }
+      });
+    }
+
     ToolBar control = new ToolBar();
     Button refresh = new Button(null, ImageFactory.createReload32Icon());
     refresh.setOnAction(actionEvent -> load());
@@ -282,7 +343,7 @@ public class ParagonViewComponent extends BorderPane {
 
     StackPane main = new StackPane();
     LoadingPane loadingPane = new LoadingPane();
-    loadingPane.bindTask(loadService, assignContragentService);
+    loadingPane.bindTask(loadService, assignContragentService, paragonNewAmountService);
 
     main.getChildren().addAll(tableView, loadingPane);
 
@@ -297,6 +358,14 @@ public class ParagonViewComponent extends BorderPane {
     });
 
     setBottom(pagination);
+  }
+
+  public EServiceTransactionDialog getEServiceTransactionDialog(Stage stage) {
+    if (eServiceTransactionDialog == null) {
+      eServiceTransactionDialog = new EServiceTransactionDialog(stage);
+    }
+
+    return eServiceTransactionDialog;
   }
 
   public void load() {
@@ -454,6 +523,31 @@ public class ParagonViewComponent extends BorderPane {
 
     public void setPageIndex(int pageIndex) {
       this.pageIndex.set(PaginationUtil.getPageNumber(pageIndex));
+    }
+  }
+
+  class ParagonNewAmountService extends AbstractAsyncService<Boolean> {
+    private LongProperty paragonIdProperty = new SimpleLongProperty();
+    private LongProperty transactionIdProperty = new SimpleLongProperty();
+
+    @Override
+    protected Task<Boolean> createTask() {
+      Long _paragonId = paragonIdProperty.get();
+      Long _transactionId = transactionIdProperty.get();
+
+      return new Task<Boolean>() {
+        @Override
+        protected Boolean call() throws Exception {
+          APIRequest request = HttpServiceUtil.get("/paragon/" + _paragonId + "/adapted-price/transaction/" + _transactionId);
+
+          return request.getData(Boolean.class);
+        }
+      };
+    }
+
+    public void updateAmount(Long paragonId, Long transactionId) {
+      paragonIdProperty.setValue(paragonId);
+      transactionIdProperty.setValue(transactionId);
     }
   }
 

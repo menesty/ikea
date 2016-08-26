@@ -19,6 +19,7 @@ import java.util.List;
 public class SiteWarehousePage extends BasePage {
   private WarehouseViewComponent warehouseViewComponent;
   private ParagonViewComponent paragonViewComponent;
+  private EServiceTransactionComponent eserviceTransactionComponent;
 
   public SiteWarehousePage() {
   }
@@ -39,6 +40,7 @@ public class SiteWarehousePage extends BasePage {
   protected Node createView() {
     warehouseViewComponent = new WarehouseViewComponent(getDialogSupport());
     paragonViewComponent = new ParagonViewComponent(getDialogSupport());
+    eserviceTransactionComponent = new EServiceTransactionComponent();
 
     TabPane tabPane = new TabPane();
 
@@ -54,6 +56,20 @@ public class SiteWarehousePage extends BasePage {
       tab.setClosable(false);
       tab.setContent(paragonViewComponent);
       tabPane.getTabs().add(tab);
+    }
+
+    {
+      final Tab tab = new Tab(I18n.UA.getString(I18nKeys.ESERVICE_TRANSACTION));
+      tab.setClosable(false);
+      tab.setContent(eserviceTransactionComponent);
+
+      tabPane.getTabs().add(tab);
+
+      tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+        if (newValue.equals(tab)) {
+          eserviceTransactionComponent.load();
+        }
+      });
     }
 
     return wrap(tabPane);

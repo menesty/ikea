@@ -42,29 +42,20 @@ public class ApplicationControlToolBar extends ToolBar {
         final WindowButtons windowButtons = new WindowButtons(stage);
         getItems().add(windowButtons);
         // add window header double clicking
-        setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                if (event.getClickCount() == 2)
-                    windowButtons.toggleMaximized();
-            }
+        setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2)
+                windowButtons.toggleMaximized();
         });
         // add window dragging
-        setOnMousePressed(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                mouseDragOffsetX = event.getSceneX();
-                mouseDragOffsetY = event.getSceneY();
-            }
+        setOnMousePressed(event -> {
+            mouseDragOffsetX = event.getSceneX();
+            mouseDragOffsetY = event.getSceneY();
         });
 
-        setOnMouseDragged(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                if (!windowButtons.isMaximized()) {
-                    stage.setX(event.getScreenX() - mouseDragOffsetX);
-                    stage.setY(event.getScreenY() - mouseDragOffsetY);
-                }
+        setOnMouseDragged(event -> {
+            if (!windowButtons.isMaximized()) {
+                stage.setX(event.getScreenX() - mouseDragOffsetX);
+                stage.setY(event.getScreenY() - mouseDragOffsetY);
             }
         });
     }

@@ -1,7 +1,7 @@
 <xls>
-    <area ref="Price!A1:E2">
-        <each items="items" var="item" ref="Price!A2:E2">
-            <area ref="Price!A2:E2"/>
+    <area ref="Price!A1:G2">
+        <each items="items" var="item" ref="Price!A2:G2">
+            <area ref="Price!A2:G2"/>
         </each>
     </area>
 </xls>

@@ -6,6 +6,7 @@ import org.jsoup.select.Elements;
 import org.menesty.ikea.domain.ComparatorProductPrice;
 import org.menesty.ikea.lib.domain.order.IkeaClientOrderItemDto;
 import org.menesty.ikea.lib.domain.order.IkeaOrderDetail;
+import org.menesty.ikea.lib.dto.IkeaOrderItem;
 import org.menesty.ikea.lib.util.NumberUtil;
 import org.menesty.ikea.lib.util.PageDownloadTask;
 import org.menesty.ikea.service.xls.XlsExportService;
@@ -15,7 +16,6 @@ import org.menesty.ikea.util.HttpServiceUtil;
 import java.io.File;
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -36,7 +36,7 @@ public class PriceComparatorService {
     return comparePrice(getOrderProducts(orderId), sites);
   }
 
-  public List<ComparatorProductPrice> comparePrice(Set<String> artNumbers, List<String> sites) {
+  public List<ComparatorProductPrice> comparePrice(Map<String, BigDecimal> artNumbers, List<String> sites) {
     final Map<String, IkeaSitePriceParser> parserMap = new HashMap<>();
 
     sites.stream().forEach(s -> {
@@ -48,29 +48,28 @@ public class PriceComparatorService {
     });
 
 
-    return artNumbers.stream().map(artNumber -> {
-      ComparatorProductPrice comparatorProductPrice = new ComparatorProductPrice(artNumber);
+    return artNumbers.entrySet().stream().map(entry -> {
+      ComparatorProductPrice comparatorProductPrice = new ComparatorProductPrice(entry.getKey(), entry.getValue());
 
-      try {
-        TimeUnit.SECONDS.sleep(1);
-        System.out.println(artNumber);
+      //TimeUnit.SECONDS.sleep(1);
+      System.out.println(comparatorProductPrice.getArtNumber());
 
-        parserMap.entrySet().stream().forEach(ikeaSitePriceParserEntry -> {
-          BigDecimal price = ikeaSitePriceParserEntry.getValue().getPrice(artNumber);
+      parserMap.entrySet().stream().forEach(ikeaSitePriceParserEntry -> {
+        BigDecimal price = ikeaSitePriceParserEntry.getValue().getPrice(entry.getKey());
 
-          if ("ru".equals(ikeaSitePriceParserEntry.getKey())) {
-            comparatorProductPrice.setPriceRu(price);
-          } else if ("pl".equals(ikeaSitePriceParserEntry.getKey())) {
-            comparatorProductPrice.setPricePl(price);
-          } else if ("lt".equals(ikeaSitePriceParserEntry.getKey())) {
-            comparatorProductPrice.setPriceLt(price);
-          } else if ("ro".equals(ikeaSitePriceParserEntry.getKey())) {
-            comparatorProductPrice.setPriceRo(price);
-          }
-        });
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
+        if ("ru".equals(ikeaSitePriceParserEntry.getKey())) {
+          comparatorProductPrice.setPriceRu(price);
+        } else if ("pl".equals(ikeaSitePriceParserEntry.getKey())) {
+          comparatorProductPrice.setPricePl(price);
+        } else if ("lt".equals(ikeaSitePriceParserEntry.getKey())) {
+          comparatorProductPrice.setPriceLt(price);
+        } else if ("ro".equals(ikeaSitePriceParserEntry.getKey())) {
+          comparatorProductPrice.setPriceRo(price);
+        } else if ("hu".equals(ikeaSitePriceParserEntry.getKey())) {
+          comparatorProductPrice.setPriceHu(price);
+        }
+
+      });
 
       return comparatorProductPrice;
     }).collect(Collectors.toList());
@@ -79,19 +78,21 @@ public class PriceComparatorService {
 
   private IkeaSitePriceParser getParser(String site) {
     if ("ru".equals(site)) {
-      return new BaseIkeaSitePriceParser("http://www.ikea.com/ru/ru/catalog/products/");
+      return new BaseIkeaSitePriceParser("http://www.ikea.com/ru/ru/catalog/products/", "");
     } else if ("pl".equals(site)) {
-      return new BaseIkeaSitePriceParser("http://www.ikea.com/pl/pl/catalog/products/");
+      return new BaseIkeaSitePriceParser("http://www.ikea.com/pl/pl/catalog/products/","");
     } else if ("lt".equals(site)) {
-      return new BaseIkeaSitePriceParser("http://www.ikea.com/lt/lt/catalog/products/");
+      return new BaseIkeaSitePriceParser("http://www.ikea.com/lt/lt/catalog/products/","");
     } else if ("ro".equals(site)) {
-      return new BaseIkeaSitePriceParser("http://www.ikea.com/ro/ro/catalog/products/");
+      return new BaseIkeaSitePriceParser("http://www.ikea.com/ro/ro/catalog/products/","");
+    } else if ("hu".equals(site)) {
+      return new BaseIkeaSitePriceParser("http://www.ikea.com/hu/hu/catalog/products/",".");
     }
 
     throw new RuntimeException("No Parser for site : " + site);
   }
 
-  private Set<String> getOrderProducts(Long ikeaOrderProcessOrderId) throws Exception {
+  private Map<String, BigDecimal> getOrderProducts(Long ikeaOrderProcessOrderId) throws Exception {
     APIRequest apiRequest = HttpServiceUtil.get("/ikea-order-detail/" + ikeaOrderProcessOrderId);
 
     IkeaOrderDetail ikeaOrderDetail = apiRequest.getData(IkeaOrderDetail.class);
@@ -99,13 +100,9 @@ public class PriceComparatorService {
     return ikeaOrderDetail.getIkeaClientOrderItemDtos()
         .stream()
         .map(IkeaClientOrderItemDto::getIkeaOrderItems)
-        .map(ikeaOrderItems ->
-                ikeaOrderItems.stream()
-                    .map(ikeaOrderItem -> ikeaOrderItem.getProduct().getArtNumber())
-                    .collect(Collectors.toList())
-        )
         .flatMap(Collection::stream)
-        .collect(Collectors.toSet());
+        .collect(Collectors.groupingBy(ikeaOrderItem -> ikeaOrderItem.getProduct().getArtNumber(),
+            Collectors.mapping(IkeaOrderItem::getCount, Collectors.reducing(BigDecimal.ZERO, BigDecimal::add))));
   }
 
 
@@ -113,11 +110,11 @@ public class PriceComparatorService {
     PriceComparatorService service = new PriceComparatorService();
 
 
-    List<ComparatorProductPrice> productPrices = service.comparePrice(150l, Arrays.asList("pl", "ru", "lt", "ro"));
+    List<ComparatorProductPrice> productPrices = service.comparePrice(167l, Arrays.asList("pl", "hu"));
 
     XlsExportService xlsExportService = new XlsExportService();
 
-    xlsExportService.exportPriceComparator(new File("/Users/andrewhome/Documents/320.xls"), productPrices);
+    xlsExportService.exportPriceComparator(new File("/Users/andrewhome/Documents/326.xls"), productPrices);
   }
 }
 
@@ -128,9 +125,11 @@ interface IkeaSitePriceParser {
 
 class BaseIkeaSitePriceParser implements IkeaSitePriceParser {
   private final String siteUrl;
+  private final String thousandSeparator;
 
-  public BaseIkeaSitePriceParser(String siteUrl) {
+  public BaseIkeaSitePriceParser(String siteUrl, String thousandSeparator) {
     this.siteUrl = siteUrl;
+    this.thousandSeparator = thousandSeparator;
   }
 
   public BigDecimal getPrice(String artNumber) {
@@ -141,11 +140,11 @@ class BaseIkeaSitePriceParser implements IkeaSitePriceParser {
       Elements normalPrice = document.select("span.packagePrice");
 
       if (!ikeaPrice.isEmpty() && !StringUtils.isBlank(ikeaPrice.text())) {
-        return NumberUtil.parseBigDecimal(ikeaPrice.text(), BigDecimal.ZERO);
+        return NumberUtil.parseBigDecimal(ikeaPrice.text().replace(thousandSeparator, ""), BigDecimal.ZERO);
       }
 
       if (!normalPrice.isEmpty()) {
-        return NumberUtil.parseBigDecimal(normalPrice.text(), BigDecimal.ZERO);
+        return NumberUtil.parseBigDecimal(normalPrice.text().replace(thousandSeparator, ""), BigDecimal.ZERO);
       }
 
     } catch (Exception e) {
